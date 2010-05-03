@@ -1,0 +1,10 @@
+<export></export>
+<library name=TauAnalysisTauIDEfficiency_plugins file=*.cc>
+  <use name=FWCore/Framework>
+  <use name=FWCore/MessageLogger>
+  <use name=FWCore/PluginManager>
+  <use name=FWCore/ParameterSet>
+  <use name=DataFormats/Common>
+  <use name=TauAnalysis/BgEstimationTools>
+  <use name=TauAnalysis/Core>
+</library>
