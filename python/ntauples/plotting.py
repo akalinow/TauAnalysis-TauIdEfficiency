@@ -7,7 +7,12 @@ Author: Evan K. Friis, UC Davis
 '''
 
 def draw(expression, selection="", output_name="", binning=(), options="goff"):
-    " Plot a histogram of expression "
+    ''' Plot a histogram of expression 
+    
+    Can optionally pass an event selection.  Output histogram is stored in 
+    output_name.  Specific binning is optional, and of the form (nBins, x_low, x_high).
+    The options are passed to TTree::Draw.
+    '''
     if not output_name:
         output_name = "htemp"
     events_to_draw_from = expression.events
@@ -25,6 +30,13 @@ def draw(expression, selection="", output_name="", binning=(), options="goff"):
     return ROOT.gDirectory.Get(output_name)
 
 def efficiency(expression, numerator="", output_name="", denominator="", **kwargs):
+    ''' Compute the efficiency versus expression
+
+    Returns a tuple containing a background TH1F (used to draw the axis)
+    and a TGraphAsymmErrors that gives the efficiency of the numerator selection
+    w.r.t the denominator selection, parameterized by the given expression.  Numerator
+    and denomiantor are computed using draw(...).  The kwargs are passed to draw(...).
+    '''
     if not output_name:
         output_name = "eff_temp"
     numerator_h = draw(expression, numerator, "numerator_temp", **kwargs)
