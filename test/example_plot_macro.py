@@ -25,18 +25,18 @@ if __name__ == "__main__":
     # returns
     #== TauNtupleManager
     #===  Available ntuples for label exampleNtuple
-    #==== allLayer1Taus
+    #==== selectedPatTaus
 
-    # So lets use allLayer1Taus
-    allLayer1Taus = manager.get_ntuple("allLayer1Taus")
+    # So lets use selectedPatTaus
+    selectedPatTaus = manager.get_ntuple("selectedPatTaus")
 
     # All this helper funciton does it makes it easy for use
     # to interface to TTree::Draw, etc.
 
     # Get list of variables available
-    print allLayer1Taus
+    print selectedPatTaus
     # returns
-    # Tau Ntuple - collection allLayer1Taus
+    # Tau Ntuple - collection selectedPatTaus
     #  byIsolation
     #  byLeadPionPt
     #  byTaNCfrOne
@@ -44,18 +44,18 @@ if __name__ == "__main__":
     #  pt
     
     # Now it easy to create expressions using the expr method
-    print allLayer1Taus.expr('$pt')
+    print selectedPatTaus.expr('$pt')
     # returns
-    # exampleNtuple#allLayer1Taus#pt
+    # exampleNtuple#selectedPatTaus#pt
 
     # You can also build selection string, with operator overloading
     # or without.  The following are logically equivalent
-    my_selection = allLayer1Taus.expr('$pt > 5 && $pt < 20')
+    my_selection = selectedPatTaus.expr('$pt > 5 && $pt < 20')
     print my_selection
 
     # or
-    my_first_selection = allLayer1Taus.expr('$pt') > 5 
-    my_second_selection = allLayer1Taus.expr('$pt') < 20 
+    my_first_selection = selectedPatTaus.expr('$pt') > 5 
+    my_second_selection = selectedPatTaus.expr('$pt') < 20 
     # NB the notation for logical AND
     my_selection = my_first_selection & my_second_selection
     print my_selection
@@ -67,8 +67,8 @@ if __name__ == "__main__":
     # for taus in the barrel 
     canvas = ROOT.TCanvas("example", "example", 500, 500)
 
-    pt_hist = plot.draw(expression=allLayer1Taus.expr('$pt'), 
-                        selection=allLayer1Taus.expr('$absEta < 1.0'),
+    pt_hist = plot.draw(expression=selectedPatTaus.expr('$pt'), 
+                        selection=selectedPatTaus.expr('$absEta < 1.0'),
                         binning=(10, 0, 50))
 
     # pt_hist is a TH1F
@@ -78,16 +78,16 @@ if __name__ == "__main__":
     # We can easily make an efficiency plot as well
     # Let's compute the TaNC eff w.r.t Leading Piont for taus with Pt > 5 
     # with eta < 2.5
-    denom_selection = allLayer1Taus.expr('$pt > 5') & \
-            allLayer1Taus.expr('$absEta < 2.5') & \
-            allLayer1Taus.expr('$byLeadPionPt > 0.5')
+    denom_selection = selectedPatTaus.expr('$pt > 5') & \
+            selectedPatTaus.expr('$absEta < 2.5') & \
+            selectedPatTaus.expr('$byLeadPionPt > 0.5')
 
-    numerator_selection = denom_selection & allLayer1Taus.expr('$byTaNCfrOne')
+    numerator_selection = denom_selection & selectedPatTaus.expr('$byTaNCfrOne')
 
     # The efficiency function returns a tuple with
     # a histo background + a TGraph asymmerrors
     bkg_histo, efficiency = plot.efficiency(
-        expression=allLayer1Taus.expr('$pt'),
+        expression=selectedPatTaus.expr('$pt'),
         numerator=numerator_selection,
         denominator=denom_selection,
         binning=(10, 0, 50))

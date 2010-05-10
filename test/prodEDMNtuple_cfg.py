@@ -36,13 +36,27 @@ process.maxEvents = cms.untracked.PSet(
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
         # Comment out if not at Davis T3
-        'file:/mnt/hadoop/store/mc/Summer09/Ztautau/AODSIM/MC_31X_V3_AODSIM-v1/0008/08206CD7-7F7F-DE11-9C51-000AE488BBBA.root',
+        #'file:/mnt/hadoop/store/mc/Summer09/Ztautau/AODSIM/MC_31X_V3_AODSIM-v1/0008/08206CD7-7F7F-DE11-9C51-000AE488BBBA.root',
         # Uncomment to run on lxplus/lcp
-        #'/store/relval/CMSSW_3_3_6/RelValZTT/GEN-SIM-RECO/STARTUP3X_V8H-v1/0009/C884F463-40E4-DE11-B272-003048679220.root',
-        #'/store/relval/CMSSW_3_3_6/RelValZTT/GEN-SIM-RECO/STARTUP3X_V8H-v1/0009/B2466310-42E4-DE11-88CD-0030486792B6.root',
-        #'/store/relval/CMSSW_3_3_6/RelValZTT/GEN-SIM-RECO/STARTUP3X_V8H-v1/0009/40201F20-41E4-DE11-9F5A-003048678B0E.root',
-        #'/store/relval/CMSSW_3_3_6/RelValZTT/GEN-SIM-RECO/STARTUP3X_V8H-v1/0009/3AD94763-40E4-DE11-B871-002618FDA287.root',
-        #'/store/relval/CMSSW_3_3_6/RelValZTT/GEN-SIM-RECO/STARTUP3X_V8H-v1/0009/24052BB1-9EE4-DE11-87C2-002618943957.root'
+        '/store/relval/CMSSW_3_5_5/RelValZTT/GEN-SIM-RECO/START3X_V25-v1/0009/FAB3991D-8039-DF11-8E2E-002618FDA277.root',
+        '/store/relval/CMSSW_3_5_5/RelValZTT/GEN-SIM-RECO/START3X_V25-v1/0009/DC514536-9639-DF11-B076-001BFCDBD160.root',
+        '/store/relval/CMSSW_3_5_5/RelValZTT/GEN-SIM-RECO/START3X_V25-v1/0009/C4855F52-9439-DF11-A454-0018F3D0962E.root',
+        '/store/relval/CMSSW_3_5_5/RelValZTT/GEN-SIM-RECO/START3X_V25-v1/0009/B6ABAECD-8E39-DF11-A23B-00261894389E.root',
+        '/store/relval/CMSSW_3_5_5/RelValZTT/GEN-SIM-RECO/START3X_V25-v1/0009/B287B900-9739-DF11-AB6D-0018F3D095EC.root',
+        '/store/relval/CMSSW_3_5_5/RelValZTT/GEN-SIM-RECO/START3X_V25-v1/0009/9238AEC8-8F39-DF11-94CF-003048678FE4.root',
+        '/store/relval/CMSSW_3_5_5/RelValZTT/GEN-SIM-RECO/START3X_V25-v1/0009/8CC8BCCB-9439-DF11-8572-0018F3D0968A.root',
+        '/store/relval/CMSSW_3_5_5/RelValZTT/GEN-SIM-RECO/START3X_V25-v1/0009/7A13CC45-9139-DF11-883B-00304867915A.root',
+        '/store/relval/CMSSW_3_5_5/RelValZTT/GEN-SIM-RECO/START3X_V25-v1/0009/56EEA948-9039-DF11-9782-0030486790FE.root',
+        '/store/relval/CMSSW_3_5_5/RelValZTT/GEN-SIM-RECO/START3X_V25-v1/0009/4C4DE0CB-9539-DF11-B29F-001BFCDBD154.root',
+        '/store/relval/CMSSW_3_5_5/RelValZTT/GEN-SIM-RECO/START3X_V25-v1/0009/441C2548-9539-DF11-9E04-001BFCDBD160.root',
+        '/store/relval/CMSSW_3_5_5/RelValZTT/GEN-SIM-RECO/START3X_V25-v1/0009/427DC648-8F39-DF11-8B87-002618943821.root',
+        '/store/relval/CMSSW_3_5_5/RelValZTT/GEN-SIM-RECO/START3X_V25-v1/0009/1CDE1F22-533A-DF11-A12A-00261894388A.root',
+        '/store/relval/CMSSW_3_5_5/RelValZTT/GEN-SIM-RECO/START3X_V25-v1/0009/08B28CC8-8F39-DF11-B0F8-0026189438D7.root',
+        '/store/relval/CMSSW_3_5_5/RelValZTT/GEN-SIM-RECO/START3X_V25-v1/0007/F6AC0AB4-1138-DF11-A8F8-00261894383A.root',
+        '/store/relval/CMSSW_3_5_5/RelValZTT/GEN-SIM-RECO/START3X_V25-v1/0006/C884454F-D337-DF11-8BCA-002618943935.root',
+        '/store/relval/CMSSW_3_5_5/RelValZTT/GEN-SIM-RECO/START3X_V25-v1/0006/70362C4B-D337-DF11-AF72-00304867BED8.root',
+        '/store/relval/CMSSW_3_5_5/RelValZTT/GEN-SIM-RECO/START3X_V25-v1/0006/50717D2B-D237-DF11-84BD-00304867BED8.root',
+        '/store/relval/CMSSW_3_5_5/RelValZTT/GEN-SIM-RECO/START3X_V25-v1/0006/2AE4C62F-D837-DF11-8718-002354EF3BDB.root'
     ),
     skipEvents = cms.untracked.uint32(0)            
 )
@@ -64,7 +78,7 @@ process.ntupleProducer = cms.EDAnalyzer(
             pluginType = cms.string("PATTauVectorValExtractor"),
 
             # Collection to extract from
-            src = cms.InputTag("allLayer1Taus"),
+            src = cms.InputTag("selectedPatTaus"),
 
             # Variables to compute for this source
             columns = cms.PSet(
@@ -87,8 +101,8 @@ process.out = cms.OutputModule(
 )
 
 process.p = cms.Path(
-    process.makeAllLayer1Taus
-    * process.selectedLayer1Taus
+    process.makePatTaus
+    * process.selectedPatTaus
     * process.ntupleProducer )
 
 process.end = cms.EndPath(process.out)
