@@ -13,8 +13,7 @@ TODO: ppMuX matcher
 '''
 
 # Cleaner is used to match pat::Taus to different probe jets
-dijetCleanerPrototype = cms.EDProducer(
-    "PATTauCleaner",
+dijetCleanerPrototype = cms.EDProducer("PATTauCleaner",
     src = cms.InputTag("myPatTaus"),
     preselection = cms.string(''),
     checkOverlaps = cms.PSet(
