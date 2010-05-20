@@ -2,7 +2,7 @@ import FWCore.ParameterSet.Config as cms
 
 # Ntuple values to use for PAT taus built from PFTaus
 
-pfTauVariables = cms.PSet(
+variables = cms.PSet(
     # Signal occupancy
     nSignalCharged = cms.string('signalPFChargedHadrCands().size()'),
     nSignalGammas = cms.string('signalPFGammaCands().size()'),
@@ -14,11 +14,11 @@ pfTauVariables = cms.PSet(
     nIsoNeutralHadrons = cms.string('isolationPFNeutrHadrCands().size()'),
 
     # Quantitiies from underlying jet
-    jetPt = cms.string('pfTauTagInfoRef().pfJetRef().pt()'),
-    jetMass = cms.string('pfTauTagInfoRef().pfJetRef().mass()'),
-    jetPhi = cms.string('pfTauTagInfoRef().pfJetRef().phi()'),
-    jetEta = cms.string('pfTauTagInfoRef().pfJetRef().eta()'),
-    jetEnergy = cms.string('pfTauTagInfoRef().pfJetRef().energy()'),
+    jetPt = cms.string('pfTauTagInfoRef().pfjetRef().pt()'),
+    jetMass = cms.string('pfTauTagInfoRef().pfjetRef().mass()'),
+    jetPhi = cms.string('pfTauTagInfoRef().pfjetRef().phi()'),
+    jetEta = cms.string('pfTauTagInfoRef().pfjetRef().eta()'),
+    jetEnergy = cms.string('pfTauTagInfoRef().pfjetRef().energy()'),
 
     # Jet width moments
     etaetaMoment = cms.string('etaetaMoment()'),

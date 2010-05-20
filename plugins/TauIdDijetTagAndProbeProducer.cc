@@ -69,7 +69,7 @@ TauIdDijetTagAndProbeProducer::TauIdDijetTagAndProbeProducer(const ParameterSet&
 
    edm::ParameterSet extractorConfig;
    extractorConfig.addParameter<InputTag>("src", src_);
-   extractorConfig.addParameter<InputTag>("value", eval_func);
+   extractorConfig.addParameter<string>("value", eval_func);
 
    // build extractor
    valueExtractor_ = 

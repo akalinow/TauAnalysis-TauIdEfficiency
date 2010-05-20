@@ -63,6 +63,10 @@ process.source = cms.Source("PoolSource",
 
 #--------------------------------------------------------------------------------
 
+# dijet tag and probe production test
+process.load("TauAnalysis.TauIdEfficiency.TauIdDijetTagAndProbeProducer_cfi")
+process.dijetTagAndProbes.source = cms.InputTag("selectedPatTaus")
+
 # produce ntuple
 process.ntupleProducer = cms.EDAnalyzer(
     "ObjValEDNtupleProducer",
@@ -78,7 +82,7 @@ process.ntupleProducer = cms.EDAnalyzer(
             pluginType = cms.string("PATTauVectorValExtractor"),
 
             # Collection to extract from
-            src = cms.InputTag("selectedPatTaus"),
+            src = cms.InputTag("dijetTagAndProbes", "highestPtProbe"),
 
             # Variables to compute for this source
             columns = cms.PSet(
@@ -103,6 +107,7 @@ process.out = cms.OutputModule(
 process.p = cms.Path(
     process.makePatTaus
     * process.selectedPatTaus
+    * process.dijetTagAndProbes
     * process.ntupleProducer )
 
 process.end = cms.EndPath(process.out)

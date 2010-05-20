@@ -2,7 +2,7 @@ import FWCore.ParameterSet.Config as cms
 
 # Common values taken from the reco::Candidate data type
 
-commonVariables = cms.PSet(
+variables = cms.PSet(
     pt = cms.string('pt()'),
     mass = cms.string('mass()'),
     phi = cms.string('phi()'),

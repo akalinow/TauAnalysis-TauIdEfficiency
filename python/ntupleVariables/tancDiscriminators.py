@@ -1,6 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 
-tancDiscriminators = cms.PSet(
+variables = cms.PSet(
     byTaNC = cms.string('tauID("byTaNC")'),
     byTaNCfrOnePercent = cms.string('tauID("byTaNCfrOnePercent")'),
     byTaNCfrHalfPercent = cms.string('tauID("byTaNCfrHalfPercent")'),
