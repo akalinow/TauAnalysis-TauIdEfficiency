@@ -5,6 +5,7 @@
   <use name=FWCore/PluginManager>
   <use name=FWCore/ParameterSet>
   <use name=DataFormats/Common>
+  <use name=PhysicsTools/JetMCUtils>
   <use name=TauAnalysis/BgEstimationTools>
   <use name=TauAnalysis/Core>
 </library>
