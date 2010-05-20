@@ -1,110 +1,98 @@
 import FWCore.ParameterSet.Config as cms
 
-process = cms.Process("USER")
+process = cms.Process("prodCommissioningDijetNtuple")
 
-process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(-1)
-)
+# import of standard configurations for RECOnstruction
+# of electrons, muons and tau-jets with non-standard isolation cones
+process.load('Configuration/StandardSequences/Services_cff')
+process.load('FWCore/MessageService/MessageLogger_cfi')
+process.MessageLogger.cerr.FwkReport.reportEvery = 100
+#process.MessageLogger.cerr.threshold = cms.untracked.string('INFO')
+process.load('Configuration/StandardSequences/GeometryIdeal_cff')
+process.load('Configuration/StandardSequences/MagneticField_cff')
+process.load('Configuration/StandardSequences/Reconstruction_cff')
+process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
+process.GlobalTag.globaltag = cms.string('MC_36Y_V7A::All')
 
-from May6thPDSkim2_SD_JetMETTau_files import data_files
+#--------------------------------------------------------------------------------
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
-        '/store/relval/CMSSW_3_5_5/RelValZTT/GEN-SIM-RECO/START3X_V25-v1/0009/FAB3991D-8039-DF11-8E2E-002618FDA277.root',
-        #'/store/data/Commissioning10/MinimumBias/RECO/May6thPDSkim2_SD_JetMETTau-v1/0137/FEADF2F9-D25D-DF11-91B3-002618943935.root',
-        #data_files
+        '/store/relval/CMSSW_3_6_1/RelValZTT/GEN-SIM-RECO/START36_V7-v1/0021/F405BC9A-525D-DF11-AB96-002618943811.root',
+        '/store/relval/CMSSW_3_6_1/RelValZTT/GEN-SIM-RECO/START36_V7-v1/0020/EE3E8F74-365D-DF11-AE3D-002618FDA211.root'
+        ##'rfio:/castor/cern.ch/user/l/lusito/SkimOctober09/ZtautauSkimMT314_3/muTauSkim_1.root',
+        ##'rfio:/castor/cern.ch/user/l/lusito/SkimOctober09/ZtautauSkimMT314_3/muTauSkim_2.root'
     ),
     skipEvents = cms.untracked.uint32(0)            
 )
 
-# Load the selections to apply on dijet events
-process.load("TauAnalysis.TauIdEfficiency.TauIdDijetEventSelection_cfi")
+# print event content 
+process.printEventContent = cms.EDAnalyzer("EventContentAnalyzer")
 
-from TauAnalysis.TauIdEfficiency.tools.sequenceBuilder \
-        import buildDijetTauSequence
-
-from TauAnalysis.TauIdEfficiency.patConfiguration.tauTypeDefintions \
-        import patTauProducerOptions
-
-# Build the sequence for shrinking cone taus
-shrinkingConeSequenceInfo = buildDijetTauSequence(
-    process, niceName = "shrinkingCone", 
-    cleanerOverlapCheckerSource = "pfJetsTagAndProbes",
-    patTauProdOptions = patTauProducerOptions['shrinkingCone']
+process.maxEvents = cms.untracked.PSet(
+    input = cms.untracked.int32(1000)
 )
-# Output is a dict containing the relevant sequence and 
-# a list of the important output collections
-process.buildShrinkingConeTaus = shrinkingConeSequenceInfo['sequence']
+#--------------------------------------------------------------------------------
 
-# Build the sequence for the fixed cone taus
-fixedConeSequenceInfo = buildDijetTauSequence(
-    process, niceName = "fixedCone", cleanerOverlapCheckerSource = "pfJetsTagAndProbes",
-    patTauProdOptions = patTauProducerOptions['fixedCone']
-)
-process.buildFixedConeTaus = fixedConeSequenceInfo['sequence']
+#--------------------------------------------------------------------------------
+#
+# produce PAT objects
+#
+from TauAnalysis.TauIdEfficiency.tools.configurePatTupleProduction import configurePatTupleProduction
 
-#  TODO factorize this stuff out into separate function
-# Build the ntuple skeleton
-process.ntupleProducer = cms.EDAnalyzer(
-    "ObjValEDNtupleProducer",
-    ntupleName = cms.string("tauCommissioning"),
-    sources = cms.PSet()
-)
+configurePatTupleProduction(process)
+#--------------------------------------------------------------------------------
 
-# Load the definitions of the variables to put into the ntuples
-from TauAnalysis.TauIdEfficiency.ntupleVariables import common
-from TauAnalysis.TauIdEfficiency.ntupleVariables import pftau
-from TauAnalysis.TauIdEfficiency.ntupleVariables import tancDiscriminators
+#--------------------------------------------------------------------------------
+#
+# produce Ntuple
+#
+process.load("TauAnalysis.TauIdEfficiency.ntupleConfigCaloTau_cfi")
+process.load("TauAnalysis.TauIdEfficiency.ntupleConfigPFTauFixedCone_cfi")
+process.load("TauAnalysis.TauIdEfficiency.ntupleConfigPFTauShrinkingCone_cfi")
+process.load("TauAnalysis.TauIdEfficiency.ntupleConfigPFTauHPS_cfi")
 
-# Add the shrinkingCone collections to the ntuple
-for ntupleInputName in shrinkingConeSequenceInfo['outputCollections']:
-    #build this source
-    newSource = cms.PSet(
-        columns = cms.PSet(
-            tancDiscriminators.variables,
-            common.variables,
-            pftau.variables,
-        ),
-        vector = cms.bool(True),
-        pluginType = cms.string('PATTauVectorValExtractor'),
-        src = cms.InputTag(ntupleInputName)
+process.ntupleProducer = cms.EDAnalyzer("ObjValEDNtupleProducer",
+                                        
+    ntupleName = cms.string("tauIdEffNtuple"),
+                                        
+    sources = cms.PSet(
+        # Grouping of sources is for convenience of specifying pluginTypes, etc
+
+        # variables specific to CaloTaus                                            
+        caloTaus_part01 = process.caloTaus_template01,
+        caloTaus_part02 = process.caloTaus_template02,                                    
+
+        # variables specific to fixed cone PFTaus                                            
+        pfTausFixedCone_part01 = process.pfTausFixedCone_template01,
+        pfTausFixedCone_part02 = process.pfTausFixedCone_template02,
+
+        # variables specific to shrinking cone PFTaus                                            
+        pfTausShrinkingCone_part01 = process.pfTausShrinkingCone_template01,
+        pfTausShrinkingCone_part02 = process.pfTausShrinkingCone_template02,
+
+        # variables specific to PFTaus reconstructed by hadron + strips (HPS) algorithm                                           
+        ##pfTausHPS_part01 = process.pfTausHPS_template01,
+        ##pfTausHPS_part02 = process.pfTausHPS_template02                                    
     )
-    # Add to ntuple producer
-    setattr(process.ntupleProducer.sources, ntupleInputName, newSource)
-
-# Add the fixedCone collections to the ntuple
-for ntupleInputName in fixedConeSequenceInfo['outputCollections']:
-    #build this source
-    newSource = cms.PSet(
-        columns = cms.PSet(
-            common.variables,
-            pftau.variables,
-        ),
-        vector = cms.bool(True),
-        pluginType = cms.string('PATTauVectorValExtractor'),
-        src = cms.InputTag(ntupleInputName)
-    )
-    # Add to ntuple producer
-    setattr(process.ntupleProducer.sources, ntupleInputName, newSource)
-
-# Setup our path to run
-process.p = cms.Path(
-    process.pfJetTagAndProbeSequence
-    *process.buildShrinkingConeTaus
-    *process.buildFixedConeTaus
-    *process.ntupleProducer
-)
-
-# Get trigger report
-process.options = cms.untracked.PSet(
-        wantSummary = cms.untracked.bool(True)
 )
 
 # Save ntuple
-process.out = cms.OutputModule(
-    "PoolOutputModule",                                                                                                                                                        
-    outputCommands = cms.untracked.vstring("drop *", "keep *_*ntupleProducer*_*_*" ),
+process.out = cms.OutputModule("PoolOutputModule",
+    outputCommands = cms.untracked.vstring(
+        "drop *",
+        "keep *_*ntupleProducer*_*_*"
+    ),
     verbose = cms.untracked.bool(False),
-    fileName = cms.untracked.string("commissioning_ntuple.root")      
+    fileName = cms.untracked.string("tauIdEff_ntuple.root")      
+)
+
+process.p = cms.Path(
+    process.patTupleProductionSequence
+   + process.printEventContent
+   + process.ntupleProducer
 )
 
 process.end = cms.EndPath(process.out)
+
+# print-out all python configuration parameter information
+#print process.dumpPython()
