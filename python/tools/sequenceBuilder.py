@@ -12,13 +12,13 @@ Author: Evan K. Friis (UC Davis)
 
 '''
 
-import TauAnalysis.TauIdEfficiency.patConfiguration.tauProductionPrototypes as tauProto
-import TauAnalysis.TauIdEfficiency.patConfiguration.matchingPrototypes as matchProto
+##import TauAnalysis.TauIdEfficiency.patConfiguration.tauProductionPrototypes as tauProto
+##import TauAnalysis.TauIdEfficiency.patConfiguration.matchingPrototypes as matchProto
 
 def buildTauSequence(
     process, 
-    niceName = "shrinkingCone",
-    patTauProdOptions = {},
+    collectionName = "",
+    producerProtoType = None,
     cleanerProtoType = None,
     cleanerOverlapCheckerSource = "pfJetsTagAndProbes",
     matchedCollections = []):
@@ -27,14 +27,10 @@ def buildTauSequence(
     '''
 
     # Build basic pat::Taus from input collection
-    myPatTaus = tauProto.patTauPrototype.clone()
-    # Setup parameters specific to each collection
-    for attribute, value in patTauProdOptions.iteritems():
-        if not hasattr(myPatTaus, attribute):
-            raise AttributeError, "attempting to set non-existant attribute %s in PATTAuProducer" % attribute
-        setattr(myPatTaus, attribute, value)
+    myPatTaus = cleanerProtoType.clone()
+    
+    patTauProductionName = collectionName + "BuildPatTaus"
 
-    patTauProductionName = niceName + "BuildPatTaus"
     # Insert pat production into process
     setattr(process, patTauProductionName, myPatTaus) 
 
@@ -56,7 +52,7 @@ def buildTauSequence(
         overlapPSet.src.setModuleLabel(cleanerOverlapCheckerSource)
 
     # Add the overlap checker to the process & sequence
-    cleanerName = niceName + "WithMatches"
+    cleanerName = collectionName + "WithMatches"
     setattr(process, cleanerName, myCleaner)
     outputSequence += myCleaner
 
@@ -64,10 +60,9 @@ def buildTauSequence(
     # pat::Taus associated with that matching (matching was done by cleaner)
     finalOutputNames = []
     for name, cut in matchedCollections:
-        selectorName = niceName + name
+        selectorName = collectionName + name
         finalOutputNames.append(selectorName)
-        mySelector = cms.EDProducer(
-            'PATTauSelector',
+        mySelector = cms.EDProducer("PATTauSelector",
             src = cms.InputTag(cleanerName),
             cut = cms.string(cut)
         )
@@ -77,15 +72,12 @@ def buildTauSequence(
     # We now have a collection of taus corresponding to each of the different
     # matching collections.  Return the full sequence, and a list of the output
     # collections
-    return {
-        'outputCollections' : finalOutputNames,
-        'sequence' : outputSequence
-    }
+    return outputSequence
 
 def buildDijetTauSequence(process, **kwargs):
     ''' Build a sequence for the dijet fake rate measurement method '''
     return buildTauSequence(
-        process, cleanerProtoType = matchProto.dijetCleanerPrototype,
+        process,
         matchedCollections = [
             ('TagJet', 'hasOverlaps("TagJet")'),
             ('HighestPtProbe', 'hasOverlaps("HighestPtProbe")'),
