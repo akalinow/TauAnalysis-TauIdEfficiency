@@ -97,7 +97,7 @@ namespace {
    }
 }
 
-void
+   void
 TauIdDijetTagAndProbeProducer::produce(Event &evt, const EventSetup &es)
 {
    // output products
