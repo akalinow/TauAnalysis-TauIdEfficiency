@@ -1,6 +1,10 @@
 import FWCore.ParameterSet.Config as cms
+import copy
 
 from PhysicsTools.PatAlgos.tools.tauTools import *
+from PhysicsTools.PatAlgos.tools.jetTools import *
+
+from TauAnalysis.Configuration.tools.metTools import *
 
 from TauAnalysis.TauIdEfficiency.tools.sequenceBuilder import buildDijetTauSequence
 
@@ -17,16 +21,15 @@ def configurePatTupleProduction(process):
     process.load("TauAnalysis.CandidateTools.muTauPairProduction_cff")
 
     process.load("TauAnalysis.TauIdEfficiency.patConfiguration.matchingPrototypes")
-    process.patCaloTauMatchProtoType = process.dijetCleanerPrototype.clone(
-        TagJet.src = cms.InputTag("pfJetsTagAndProbes", "tagObject"),
-        HighestPtProbeJet.src = cms.InputTag("pfJetsTagAndProbes", "highestPtProbe"),
-        SecondHighestPtProbe.src = cms.InputTag("pfJetsTagAndProbes", "secondHighestPtProbe")        
-    )
-    process.patPFTauMatchProtoType = process.dijetCleanerPrototype.clone(
-        TagJet.src = cms.InputTag("caloJetsTagAndProbes", "tagObject"),
-        HighestPtProbeJet.src = cms.InputTag("caloJetsTagAndProbes", "highestPtProbe"),
-        SecondHighestPtProbe.src = cms.InputTag("caloJetsTagAndProbes", "secondHighestPtProbe")  
-    )
+    patCaloTauMatchProtoType = copy.deepcopy(process.dijetCleanerPrototype)
+    patCaloTauMatchProtoType.checkOverlaps.TagJet.src = cms.InputTag("caloJetsTagAndProbes", "tagObject")
+    patCaloTauMatchProtoType.checkOverlaps.HighestPtProbeJet.src = cms.InputTag("caloJetsTagAndProbes", "highestPtProbe")
+    patCaloTauMatchProtoType.checkOverlaps.SecondHighestPtProbe.src = cms.InputTag("caloJetsTagAndProbes", "secondHighestPtProbe")
+
+    patPFTauMatchProtoType = copy.deepcopy(process.dijetCleanerPrototype)
+    patPFTauMatchProtoType.checkOverlaps.TagJet.src = cms.InputTag("pfJetsTagAndProbes", "tagObject")
+    patPFTauMatchProtoType.checkOverlaps.HighestPtProbeJet.src = cms.InputTag("pfJetsTagAndProbes", "highestPtProbe")
+    patPFTauMatchProtoType.checkOverlaps.SecondHighestPtProbe.src = cms.InputTag("pfJetsTagAndProbes", "secondHighestPtProbe")
 
     #-------------------------------------------------------------------------------- 
     #
@@ -44,7 +47,7 @@ def configurePatTupleProduction(process):
         genParticleMatch = cms.InputTag("caloTauMatch"),
         genJetMatch      = cms.InputTag("caloTauGenJetMatch")
     )
-    process.buildCaloTaus = buildDiJetTauSequence(
+    process.buildCaloTaus = buildDijetTauSequence(
         process,
         collectionName = "caloTau",
         producerProtoType = patCaloTauProducerProtoType,
@@ -80,7 +83,7 @@ def configurePatTupleProduction(process):
         genParticleMatch = cms.InputTag("pfTauMatchFixedCone"),
         genJetMatch      = cms.InputTag("pfTauGenJetMatchFixedCone")
     )
-    process.buildPFTausFixedCone = buildDiJetTauSequence(
+    process.buildPFTausFixedCone = buildDijetTauSequence(
         process,
         collectionName = "pfTauFixedCone",
         producerProtoType = patPFTauProducerProtoTypeFixedCone,
@@ -116,7 +119,7 @@ def configurePatTupleProduction(process):
         genParticleMatch = cms.InputTag("pfTauMatchShrinkingCone"),
         genJetMatch      = cms.InputTag("pfTauGenJetMatchShrinkingCone")
     )
-    process.buildPFTausShrinkingCone = buildDiJetTauSequence(
+    process.buildPFTausShrinkingCone = buildDijetTauSequence(
         process,
         collectionName = "pfTauShrinkingCone",
         producerProtoType = patPFTauProducerProtoTypeShrinkingCone,
@@ -152,7 +155,7 @@ def configurePatTupleProduction(process):
         genParticleMatch = cms.InputTag("pfTauMatchHPS"),
         genJetMatch      = cms.InputTag("pfTauGenJetMatchHPS")
     )
-    process.buildPFTausHPS = buildDiJetTauSequence(
+    process.buildPFTausHPS = buildDijetTauSequence(
         process,
         collectionName = "pfTauHPS",
         producerProtoType = patPFTauProducerProtoTypeHPS,
@@ -173,24 +176,18 @@ def configurePatTupleProduction(process):
 
     #--------------------------------------------------------------------------------
     # replace caloJets by pfJets
-    from PhysicsTools.PatAlgos.tools.jetTools import *
-    
     switchJetCollection(process, cms.InputTag("iterativeCone5PFJets"))
     #--------------------------------------------------------------------------------
 
     #--------------------------------------------------------------------------------
     # add pfMET
-    from TauAnalysis.Configuration.tools.metTools import *
-
     # set Boolean swich to true in order to apply type-1 corrections
     addPFMet(process, correct = False)
     #--------------------------------------------------------------------------------
 
     process.patTupleProductionSequence = cms.Sequence(
         process.patDefaultSequence
-       ##+ process.patCaloTauMatchProtoType
        ##+ process.caloTauSequence
-       + process.patPFTauMatchProtoType
        + process.pfTauSequenceFixedCone + process.pfTauSequenceShrinkingCone ##+ process.pfTauSequenceHPS
        ##+ process.patMuonCaloTauPairs
        ##+ process.patMuonPFTauPairsFixedCone + process.patMuonPFTauPairsShrinkingCone ##+ process.patMuonPFTauPairsHPS
