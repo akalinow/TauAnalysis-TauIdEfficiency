@@ -14,15 +14,20 @@ pfTausFixedCone_template01 = cms.PSet(
     pluginType = cms.string("PATTauVectorValExtractor"),
     
     # Collection to extract from
-    src = cms.InputTag("patPFTausFixedCone"),
+    src = cms.InputTag("patPFTausDijetTagAndProbeFixedCone"),
     
     # Variables to compute for this source
     columns = cms.PSet(
-        # kinematic variables
+        # kinematic variables for PFTau
         pt = cms.string("pt()"),
         eta = cms.string("eta()"),
         phi = cms.string("phi()"),
-        
+
+        # kinematic variables for PFJet associated to PFTau
+        jetPt = cms.string('pfTauTagInfoRef().pfjetRef().pt()'),
+        jetEta = cms.string('pfTauTagInfoRef().pfjetRef().eta()'),
+        jetPhi = cms.string('pfTauTagInfoRef().pfjetRef().phi()'),
+                
         # tau id. discriminators based on leading track/PFChargedHadron                                                 
         byLeadTrackFinding = cms.string("tauID('leadingTrackFinding')"),
         byLeadTrackPtCut = cms.string("tauID('leadingTrackPtCut')"),

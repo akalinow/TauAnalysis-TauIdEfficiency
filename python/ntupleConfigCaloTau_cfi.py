@@ -13,14 +13,19 @@ caloTaus_template01 = cms.PSet(
     pluginType = cms.string("PATTauVectorValExtractor"),
     
     # Collection to extract from
-    src = cms.InputTag("patCaloTaus"),
+    src = cms.InputTag("patCaloTausDijetTagAndProbe"),
     
     # Variables to compute for this source
     columns = cms.PSet(
-        # kinematic variables
+        # kinematic variables for CaloTau
         pt = cms.string("pt()"),
         eta = cms.string("eta()"),
         phi = cms.string("phi()"),
+
+        # kinematic variables for CaloJet associated to CaloTau
+        jetPt = cms.string("caloTauTagInfoRef().calojetRef().pt()"),
+        jetEta = cms.string("caloTauTagInfoRef().calojetRef().eta()"),
+        jetPhi = cms.string("caloTauTagInfoRef().calojetRef().phi()"),
         
         # tau id. discriminators based on leading track
         byLeadTrackFinding = cms.string("tauID('leadingTrackFinding')"),
