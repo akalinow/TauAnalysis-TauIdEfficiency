@@ -18,12 +18,12 @@ using namespace std;
 
 class TauIdTagAndProbeProducer : public EDProducer {
 
-   struct TauInfo {
-      const pat::Tau tau;
-      bool matchesTriggerObject;
-   };
-
    public:
+      struct TauInfo {
+         pat::Tau tau;
+         bool matchesTriggerObject;
+      };
+
       typedef std::vector<pat::Tau> vPatTaus;
       explicit TauIdTagAndProbeProducer(const ParameterSet& pset);
       virtual ~TauIdTagAndProbeProducer(){}
@@ -48,7 +48,7 @@ namespace {
    bool tauInfoDescendingPt(const TauIdTagAndProbeProducer::TauInfo &a, 
          const TauIdTagAndProbeProducer::TauInfo &b)
    {
-      return (a.pt() > b.pt());
+      return (a.tau.pt() > b.tau.pt());
    }
 }
 
@@ -61,17 +61,17 @@ TauIdTagAndProbeProducer::produce(Event &evt, const EventSetup &es)
    Handle<View<pat::Tau> > sourceView;
    evt.getByLabel(src_, sourceView);
 
-   size_t inputSize = sourceView.size();
+   size_t inputSize = sourceView->size();
    vector<TauInfo> tauInfos(inputSize);
    // count how many taus are matched to a trigger object
    unsigned int nTriggers = 0;
    for(size_t iTau = 0; iTau < inputSize; ++iTau)
    {
       // get tau and check if it matches trigger
-      const pat::Tau* tau = sourceView[iTau].get();
-      bool matchesTriggerObject = tau->triggerObjectMatchesByPath(triggerPath_);
+      const pat::Tau tau = sourceView->at(iTau);
+      bool matchesTriggerObject = tau.triggerObjectMatchesByPath(triggerPath_).size();
       TauInfo myTauInfo;
-      myTauInfo.tau = *tau;
+      myTauInfo.tau = tau;
       myTauInfo.matchesTriggerObject = matchesTriggerObject;
       tauInfos[iTau] = myTauInfo;
       if(matchesTriggerObject)
