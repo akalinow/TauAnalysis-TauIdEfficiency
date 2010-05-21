@@ -26,6 +26,12 @@ caloTaus_template01 = cms.PSet(
         jetPt = cms.string("caloTauTagInfoRef().calojetRef().pt()"),
         jetEta = cms.string("caloTauTagInfoRef().calojetRef().eta()"),
         jetPhi = cms.string("caloTauTagInfoRef().calojetRef().phi()"),
+
+        # flags for tag/probe and Pt_index for distinguishing between
+        # highest Pt, second highest Pt and third highest Pt jet
+        tag = cms.string("userFloat('tag')"),
+        probe = cms.string("userFloat('probe')"),
+        ptIndex = cms.string("userFloat('pt_index')"),
         
         # tau id. discriminators based on leading track
         byLeadTrackFinding = cms.string("tauID('leadingTrackFinding')"),

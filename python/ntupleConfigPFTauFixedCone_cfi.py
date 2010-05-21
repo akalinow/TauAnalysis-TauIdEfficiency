@@ -24,10 +24,16 @@ pfTausFixedCone_template01 = cms.PSet(
         phi = cms.string("phi()"),
 
         # kinematic variables for PFJet associated to PFTau
-        jetPt = cms.string('pfTauTagInfoRef().pfjetRef().pt()'),
-        jetEta = cms.string('pfTauTagInfoRef().pfjetRef().eta()'),
-        jetPhi = cms.string('pfTauTagInfoRef().pfjetRef().phi()'),
-                
+        jetPt = cms.string("pfTauTagInfoRef().pfjetRef().pt()"),
+        jetEta = cms.string("pfTauTagInfoRef().pfjetRef().eta()"),
+        jetPhi = cms.string("pfTauTagInfoRef().pfjetRef().phi()"),
+
+        # flags for tag/probe and Pt_index for distinguishing between
+        # highest Pt, second highest Pt and third highest Pt jet
+        tag = cms.string("userFloat('tag')"),
+        probe = cms.string("userFloat('probe')"),
+        ptIndex = cms.string("userFloat('pt_index')"),
+                        
         # tau id. discriminators based on leading track/PFChargedHadron                                                 
         byLeadTrackFinding = cms.string("tauID('leadingTrackFinding')"),
         byLeadTrackPtCut = cms.string("tauID('leadingTrackPtCut')"),
