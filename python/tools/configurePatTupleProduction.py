@@ -3,6 +3,7 @@ import copy
 
 from PhysicsTools.PatAlgos.tools.tauTools import *
 from PhysicsTools.PatAlgos.tools.jetTools import *
+from PhysicsTools.PatAlgos.tools.trigTools import switchOnTrigger
 
 from TauAnalysis.Configuration.tools.metTools import *
 
@@ -31,37 +32,47 @@ def configurePatTupleProduction(process):
     patPFTauMatchProtoType.checkOverlaps.HighestPtProbeJet.src = cms.InputTag("pfJetsTagAndProbes", "highestPtProbe")
     patPFTauMatchProtoType.checkOverlaps.SecondHighestPtProbe.src = cms.InputTag("pfJetsTagAndProbes", "secondHighestPtProbe")
 
+    #--------------------------------------------------------------------------------
+    # configure PAT trigger matching
+    process.load("PhysicsTools.PatAlgos.triggerLayer1.triggerProducer_cff")
+    
+    patTauTriggerMatchHLTsingleJet15UprotoType = cms.EDFilter("PATTriggerMatcherDRDPtLessByR",
+        src                   = cms.InputTag("cleanLayer1Taus"),
+        matched               = cms.InputTag("patTrigger"),
+        andOr                 = cms.bool(False),
+        filterIdsEnum         = cms.vstring('*'),
+        filterIds             = cms.vint32(0),
+        filterLabels          = cms.vstring('*'),
+        pathNames             = cms.vstring('HLT_Jet15U'),
+        collectionTags        = cms.vstring('*'),
+        maxDPtRel             = cms.double(0.5),
+        maxDeltaR             = cms.double(0.5),
+        resolveAmbiguities    = cms.bool(True),
+        resolveByMatchQuality = cms.bool(False)
+    )                                                             
+
+    ##process.patTriggerSequence.remove(process.patTriggerMatcher)
+    ##process.patTriggerEvent.patTriggerMatches = []
+    #--------------------------------------------------------------------------------
+
     #-------------------------------------------------------------------------------- 
     #
     # produce combinations of muon + tau-jet pairs
     # for collection of pat::Tau objects representing CaloTaus 
     #
-    process.caloTauMatch = process.tauMatch.clone(
-        src = cms.InputTag("caloRecoTauProducer")
-    )
-    process.caloTauGenJetMatch = process.tauGenJetMatch.clone(
-        src = cms.InputTag("caloRecoTauProducer")
-    )
-    switchToCaloTau(process)
-    patCaloTauProducerProtoType = process.patTaus.clone(
-        genParticleMatch = cms.InputTag("caloTauMatch"),
-        genJetMatch      = cms.InputTag("caloTauGenJetMatch")
-    )
-    process.buildCaloTaus = buildDijetTauSequence(
+    switchToCaloTau(process)    
+    patCaloTauProducer = copy.deepcopy(process.patTaus)
+
+    process.caloTauSequence = buildDijetTauSequence(
         process,
-        collectionName = "caloTau",
-        producerProtoType = patCaloTauProducerProtoType,
-        cleanerProtoType = patCaloTauMatchProtoType,
-        cleanerOverlapCheckerSource = "pfJetsTagAndProbe"
-    )
-    process.caloTauSequence = cms.Sequence(
-        process.caloTauMatch + process.caloTauGenJetMatch
-       + process.buildCaloTaus
+        collectionName = [ "patCaloTaus", "" ],
+        patTauProducerPrototype = patCaloTauProducer,
+        triggerMatcherProtoType = patTauTriggerMatchHLTsingleJet15UprotoType
     )
 
     process.patMuonCaloTauPairs = process.allMuTauPairs.clone(
         srcLeg1 = cms.InputTag('patMuons'),
-        srcLeg2 = cms.InputTag('patCaloTaus'),
+        srcLeg2 = cms.InputTag('patCaloTausDijetTagAndProbe'),
         srcMET = cms.InputTag('patMETs')
     )
     #--------------------------------------------------------------------------------
@@ -72,32 +83,19 @@ def configurePatTupleProduction(process):
     # reconstructed by fixed signal cone algorithm
     # (plus combinations of muon + tau-jet pairs)
     #
-    process.pfTauMatchFixedCone = process.tauMatch.clone(
-        src = cms.InputTag("fixedConePFTauProducer")
-    )
-    process.pfTauGenJetMatchFixedCone = process.tauGenJetMatch.clone(
-        src = cms.InputTag("fixedConePFTauProducer")
-    )
     switchToPFTauFixedCone(process)
-    patPFTauProducerProtoTypeFixedCone = process.patTaus.clone(
-        genParticleMatch = cms.InputTag("pfTauMatchFixedCone"),
-        genJetMatch      = cms.InputTag("pfTauGenJetMatchFixedCone")
-    )
-    process.buildPFTausFixedCone = buildDijetTauSequence(
+    patPFTauProducerFixedCone = copy.deepcopy(process.patTaus)
+
+    process.pfTauSequenceFixedCone = buildDijetTauSequence(
         process,
-        collectionName = "pfTauFixedCone",
-        producerProtoType = patPFTauProducerProtoTypeFixedCone,
-        cleanerProtoType = patPFTauMatchProtoType,
-        cleanerOverlapCheckerSource = "pfJetsTagAndProbe"
+        collectionName = [ "patPFTaus", "FixedCone" ],
+        patTauProducerPrototype = patPFTauProducerFixedCone,
+        triggerMatcherProtoType = patTauTriggerMatchHLTsingleJet15UprotoType
     )
-    process.pfTauSequenceFixedCone = cms.Sequence(
-        process.pfTauMatchFixedCone + process.pfTauGenJetMatchFixedCone
-       + process.buildPFTausFixedCone
-    )
-    
+
     process.patMuonPFTauPairsFixedCone = process.allMuTauPairs.clone(
         srcLeg1 = cms.InputTag('patMuons'),
-        srcLeg2 = cms.InputTag('patPFTausFixedCone'),
+        srcLeg2 = cms.InputTag('patPFTausDijetTagAndProbeFixedCone'),
         srcMET = cms.InputTag('patPFMETs')
     )
     #--------------------------------------------------------------------------------
@@ -108,32 +106,19 @@ def configurePatTupleProduction(process):
     # reconstructed by shrinking signal cone algorithm
     # (plus combinations of muon + tau-jet pairs) 
     #
-    process.pfTauMatchShrinkingCone = process.tauMatch.clone(
-        src = cms.InputTag("shrinkingConePFTauProducer")
-    )
-    process.pfTauGenJetMatchShrinkingCone = process.tauGenJetMatch.clone(
-        src = cms.InputTag("shrinkingConePFTauProducer")
-    )
     switchToPFTauShrinkingCone(process)
-    patPFTauProducerProtoTypeShrinkingCone = process.patTaus.clone(
-        genParticleMatch = cms.InputTag("pfTauMatchShrinkingCone"),
-        genJetMatch      = cms.InputTag("pfTauGenJetMatchShrinkingCone")
-    )
-    process.buildPFTausShrinkingCone = buildDijetTauSequence(
+    patPFTauProducerShrinkingCone = copy.deepcopy(process.patTaus)
+
+    process.pfTauSequenceShrinkingCone = buildDijetTauSequence(
         process,
-        collectionName = "pfTauShrinkingCone",
-        producerProtoType = patPFTauProducerProtoTypeShrinkingCone,
-        cleanerProtoType = patPFTauMatchProtoType,
-        cleanerOverlapCheckerSource = "pfJetsTagAndProbe"
-    )
-    process.pfTauSequenceShrinkingCone = cms.Sequence(
-        process.pfTauMatchShrinkingCone + process.pfTauGenJetMatchShrinkingCone
-       + process.buildPFTausShrinkingCone
+        collectionName = [ "patPFTaus", "ShrinkingCone" ],
+        patTauProducerPrototype = patPFTauProducerShrinkingCone,
+        triggerMatcherProtoType = patTauTriggerMatchHLTsingleJet15UprotoType
     )
 
     process.patMuonPFTauPairsShrinkingCone = process.allMuTauPairs.clone(
         srcLeg1 = cms.InputTag('patMuons'),
-        srcLeg2 = cms.InputTag('patPFTausShrinkingCone'),
+        srcLeg2 = cms.InputTag('patPFTausDijetTagAndProbeShrinkingCone'),
         srcMET = cms.InputTag('patPFMETs')
     )
     #--------------------------------------------------------------------------------
@@ -144,39 +129,26 @@ def configurePatTupleProduction(process):
     # reconstructed by hadron + strips (HPS) algorithm
     # (plus combinations of muon + tau-jet pairs) 
     #
-    process.pfTauMatchHPS = process.tauMatch.clone(
-        src = cms.InputTag("hpsPFTauProducer")
-    )
-    process.pfTauGenJetMatchHPS = process.tauGenJetMatch.clone(
-        src = cms.InputTag("hpsPFTauProducer")
-    )
     switchToPFTauHPS(process)
-    patPFTauProducerProtoTypeHPS = process.patTaus.clone(
-        genParticleMatch = cms.InputTag("pfTauMatchHPS"),
-        genJetMatch      = cms.InputTag("pfTauGenJetMatchHPS")
-    )
-    process.buildPFTausHPS = buildDijetTauSequence(
+    patPFTauProducerHPS = copy.deepcopy(process.patTaus)
+
+    process.pfTauSequenceHPS = buildDijetTauSequence(
         process,
-        collectionName = "pfTauHPS",
-        producerProtoType = patPFTauProducerProtoTypeHPS,
-        cleanerProtoType = patPFTauMatchProtoType,
-        cleanerOverlapCheckerSource = "pfJetsTagAndProbe"
-    )
-    process.pfTauSequenceHPS = cms.Sequence(
-        process.pfTauMatchHPS + process.pfTauGenJetMatchHPS
-       + process.buildPFTausHPS
+        collectionName = [ "patPFTaus", "HPS" ],
+        patTauProducerPrototype = patPFTauProducerHPS,
+        triggerMatcherProtoType = patTauTriggerMatchHLTsingleJet15UprotoType
     )
 
     process.patMuonPFTauPairsHPS = process.allMuTauPairs.clone(
         srcLeg1 = cms.InputTag('patMuons'),
-        srcLeg2 = cms.InputTag('patPFTausHPS'),
+        srcLeg2 = cms.InputTag('patPFTausDijetTagAndProbeHPS'),
         srcMET = cms.InputTag('patPFMETs')
     )
     #--------------------------------------------------------------------------------
 
     #--------------------------------------------------------------------------------
     # replace caloJets by pfJets
-    switchJetCollection(process, cms.InputTag("iterativeCone5PFJets"))
+    switchJetCollection(process, jetCollection = cms.InputTag("iterativeCone5PFJets"))
     #--------------------------------------------------------------------------------
 
     #--------------------------------------------------------------------------------
@@ -187,6 +159,7 @@ def configurePatTupleProduction(process):
 
     process.patTupleProductionSequence = cms.Sequence(
         process.patDefaultSequence
+       + process.patTrigger
        ##+ process.caloTauSequence
        + process.pfTauSequenceFixedCone + process.pfTauSequenceShrinkingCone ##+ process.pfTauSequenceHPS
        ##+ process.patMuonCaloTauPairs

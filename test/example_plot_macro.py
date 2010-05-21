@@ -29,7 +29,7 @@ if __name__ == "__main__":
     #==== selectedPatTaus
 
     # So lets use selectedPatTaus
-    selectedPatTaus = manager.get_ntuple("selectedPatTaus")
+    selectedPatTaus = manager.get_ntuple("patPFTausDijetTagAndProbeShrinkingCone")
 
     # All this helper funciton does it makes it easy for use
     # to interface to TTree::Draw, etc.
@@ -38,11 +38,12 @@ if __name__ == "__main__":
     print selectedPatTaus
     # returns
     # Tau Ntuple - collection selectedPatTaus
-    #  byIsolation
-    #  byLeadPionPt
-    #  byTaNCfrOne
-    #  absEta
     #  pt
+    #  eta
+    #  byLeadPionPtCut
+    #  byIsolation
+    #  byLeadPionPtCut
+    #  byTaNCfrOnePercent
     
     # Now it easy to create expressions using the expr method
     print selectedPatTaus.expr('$pt')
@@ -51,12 +52,12 @@ if __name__ == "__main__":
 
     # You can also build selection string, with operator overloading
     # or without.  The following are logically equivalent
-    my_selection = selectedPatTaus.expr('$pt > 5 && $pt < 20')
+    my_selection = selectedPatTaus.expr('$pt > 20 && $pt < 50')
     print my_selection
 
     # or
-    my_first_selection = selectedPatTaus.expr('$pt') > 5 
-    my_second_selection = selectedPatTaus.expr('$pt') < 20 
+    my_first_selection = selectedPatTaus.expr('$pt') > 20 
+    my_second_selection = selectedPatTaus.expr('$pt') < 50 
     # NB the notation for logical AND
     my_selection = my_first_selection & my_second_selection
     print my_selection
@@ -69,7 +70,7 @@ if __name__ == "__main__":
     canvas = ROOT.TCanvas("example", "example", 500, 500)
 
     pt_hist = plot.draw(expression=selectedPatTaus.expr('$pt'), 
-                        selection=selectedPatTaus.expr('$absEta < 1.0'),
+                        selection=selectedPatTaus.expr('$eta > -2.1 && $eta < +2.1'),
                         binning=(10, 0, 50))
 
     # pt_hist is a TH1F
@@ -80,10 +81,10 @@ if __name__ == "__main__":
     # Let's compute the TaNC eff w.r.t Leading Piont for taus with Pt > 5 
     # with eta < 2.5
     denom_selection = selectedPatTaus.expr('$pt > 5') & \
-            selectedPatTaus.expr('$absEta < 2.5') & \
-            selectedPatTaus.expr('$byLeadPionPt > 0.5')
+            selectedPatTaus.expr('$eta > -2.5 && $eta < +2.5') & \
+            selectedPatTaus.expr('$byLeadPionPtCut > 0.5')
 
-    numerator_selection = denom_selection & selectedPatTaus.expr('$byTaNCfrOne')
+    numerator_selection = denom_selection & selectedPatTaus.expr('$byTaNCfrOnePercent')
 
     # The efficiency function returns a tuple with
     # a histo background + a TGraph asymmerrors

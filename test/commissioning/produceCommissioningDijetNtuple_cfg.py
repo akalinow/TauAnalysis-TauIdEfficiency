@@ -59,8 +59,8 @@ process.ntupleProducer = cms.EDAnalyzer("ObjValEDNtupleProducer",
         # Grouping of sources is for convenience of specifying pluginTypes, etc
 
         # variables specific to CaloTaus                                            
-        caloTaus_part01 = process.caloTaus_template01,
-        caloTaus_part02 = process.caloTaus_template02,                                    
+        ##caloTaus_part01 = process.caloTaus_template01,
+        ##caloTaus_part02 = process.caloTaus_template02,                                    
 
         # variables specific to fixed cone PFTaus                                            
         pfTausFixedCone_part01 = process.pfTausFixedCone_template01,
@@ -75,8 +75,12 @@ process.ntupleProducer = cms.EDAnalyzer("ObjValEDNtupleProducer",
         ##pfTausHPS_part02 = process.pfTausHPS_template02                                    
     )
 )
+#--------------------------------------------------------------------------------
 
+#--------------------------------------------------------------------------------
+#
 # Save ntuple
+#
 process.out = cms.OutputModule("PoolOutputModule",
     outputCommands = cms.untracked.vstring(
         "drop *",
@@ -85,10 +89,11 @@ process.out = cms.OutputModule("PoolOutputModule",
     verbose = cms.untracked.bool(False),
     fileName = cms.untracked.string("tauIdEff_ntuple.root")      
 )
+#--------------------------------------------------------------------------------
 
 process.p = cms.Path(
     process.patTupleProductionSequence
-   + process.printEventContent
+   #+ process.printEventContent
    + process.ntupleProducer
 )
 

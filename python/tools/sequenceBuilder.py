@@ -1,4 +1,5 @@
 import FWCore.ParameterSet.Config as cms
+import copy
 
 '''
 
@@ -8,7 +9,7 @@ Create pat::Taus from a specified collection, match
 them to the tag and probe jets, and create ntuples
 of the resulting collections.
 
-Author: Evan K. Friis (UC Davis)
+Author: Evan K. Friis, Christian Veelken (UC Davis)
 
 '''
 
@@ -17,72 +18,107 @@ Author: Evan K. Friis (UC Davis)
 
 def buildTauSequence(
     process, 
-    collectionName = "",
-    producerProtoType = None,
-    cleanerProtoType = None,
-    cleanerOverlapCheckerSource = "pfJetsTagAndProbes",
-    matchedCollections = []):
+    collectionName = [ "patTaus", "" ],
+    patTauProducerPrototype = None,
+    triggerMatcherProtoType = None):
     '''
     blah
     '''
 
-    # Build basic pat::Taus from input collection
-    myPatTaus = cleanerProtoType.clone()
+    # build basic pat::Taus from input collection
+    patTauProducer = copy.deepcopy(patTauProducerPrototype)
+    patTauProducerName = "".join(collectionName)
+    setattr(process, patTauProducerName, patTauProducer)
+
+    # configure matching of basic pat::Tau collection
+    # to generator level particles and jets
+    patTauGenParticleMatch = process.tauMatch.clone(
+        src = patTauProducer.tauSource
+    )
+    patTauGenParticleMatchName = collectionName[0] + "GenParticleMatch" + collectionName[1]
+    setattr(process, patTauGenParticleMatchName, patTauGenParticleMatch)
+
+    patTauGenJetMatch = process.tauGenJetMatch.clone(
+        src = patTauProducer.tauSource
+    )
+    patTauGenJetMatchName = collectionName[0] + "GenJetMatch" + collectionName[1]
+    setattr(process, patTauGenJetMatchName, patTauGenJetMatch)
+
+    patTauProducer.genParticleMatch = cms.InputTag(patTauGenParticleMatchName)
+    patTauProducer.genJetMatch = cms.InputTag(patTauGenJetMatchName)
     
-    patTauProductionName = collectionName + "BuildPatTaus"
+    outputSequence = cms.Sequence(
+        patTauGenParticleMatch + patTauGenJetMatch
+       + patTauProducer
+    )
 
-    # Insert pat production into process
-    setattr(process, patTauProductionName, myPatTaus) 
+    # configure matching of basic pat::Tau collection
+    # to trigger primitives;
+    # produce new collection of pat::Taus with trigger primitives embedded
+    patTauTriggerMatch = triggerMatcherProtoType.clone(
+        src = cms.InputTag(patTauProducerName)
+    )
+    patTauTriggerMatchName = collectionName[0]  + "TriggerMatched" + collectionName[1]
+    setattr(process, patTauTriggerMatchName, patTauTriggerMatch)
+    outputSequence += cms.Sequence(patTauTriggerMatch)
 
-    # First step in the sequence is to build the pat taus
-    outputSequence = cms.Sequence(myPatTaus)
+    patTauTriggerEvent = process.patTriggerEvent.clone(
+        patTriggerMatches = cms.VInputTag(collectionName[0]  + "TriggerMatched" + collectionName[1])
+    )
+    patTauTriggerEventName = collectionName[0] + "TriggerEvent" + collectionName[1]
+    setattr(process, patTauTriggerEventName, patTauTriggerEvent)
+    outputSequence += cms.Sequence(patTauTriggerEvent)
 
-    # Now we split the pat::Taus into three categories
-    # * matched to tag jet
-    # * matched to highest pt probe jet
-    # * matched to second highest pt probe jet
+    patTauTriggerEmbedder = cms.EDProducer("PATTriggerMatchTauEmbedder",
+        src     = cms.InputTag(patTauProducerName),
+        matches = cms.VInputTag(patTauTriggerMatchName)
+    )
+    patTauTriggerEmbedderName = collectionName[0] + "TriggerEmbedder" + collectionName[1]
+    setattr(process, patTauTriggerEmbedderName, patTauTriggerEmbedder)
+    outputSequence += cms.Sequence(patTauTriggerEmbedder)
 
-    myCleaner = cleanerProtoType.clone()
-    myCleaner.src = cms.InputTag(patTauProductionName)
-
-    # Set the overlap checker to use our input for each of the overlap matchers
-    overlaps = myCleaner.checkOverlaps.parameterNames_()
-    for overlap in overlaps:
-        overlapPSet = getattr(myCleaner.checkOverlaps, overlap)
-        overlapPSet.src.setModuleLabel(cleanerOverlapCheckerSource)
-
-    # Add the overlap checker to the process & sequence
-    cleanerName = collectionName + "WithMatches"
-    setattr(process, cleanerName, myCleaner)
-    outputSequence += myCleaner
-
-    # Now for each of the desired matching collections, produce a collection of
-    # pat::Taus associated with that matching (matching was done by cleaner)
-    finalOutputNames = []
-    for name, cut in matchedCollections:
-        selectorName = collectionName + name
-        finalOutputNames.append(selectorName)
-        mySelector = cms.EDProducer("PATTauSelector",
-            src = cms.InputTag(cleanerName),
-            cut = cms.string(cut)
-        )
-        # Add to process
-        setattr(process, selectorName, mySelector)
-        outputSequence += mySelector
-    # We now have a collection of taus corresponding to each of the different
-    # matching collections.  Return the full sequence, and a list of the output
-    # collections
+    # return sequence for production of basic tau collection,
+    # generator level particle and jet matches
+    # and trigger primitives embedded
     return outputSequence
 
-def buildDijetTauSequence(process, **kwargs):
-    ''' Build a sequence for the dijet fake rate measurement method '''
-    return buildTauSequence(
-        process,
-        matchedCollections = [
-            ('TagJet', 'hasOverlaps("TagJet")'),
-            ('HighestPtProbe', 'hasOverlaps("HighestPtProbe")'),
-            ('SecondHighestPtProbe', 'hasOverlaps("SecondHighestPtProbe")'),
-        ], **kwargs)
+def buildDijetTauSequence(
+    process, 
+    collectionName = [ "patTaus", "" ],
+    patTauProducerPrototype = None,
+    triggerMatcherProtoType = None):
+    '''
+    blah
+    '''
+
+    # produce collection of basic pat::Taus
+    # matched to generator level particles and jets
+    # and trigger primitives embedded
+    outputSequence = buildTauSequence(
+        process, 
+        collectionName = collectionName,
+        patTauProducerPrototype = patTauProducerPrototype,
+        triggerMatcherProtoType = triggerMatcherProtoType
+    )
+
+    # produce final collection of pat::Taus with
+    # flags embedded to:
+    #  o indicate index of tau-jet candidate in Pt-sorted collection of jets
+    #  o indicate whether tau-jet candidate is tag/probe
+    patTauDijetTagAndProbe = cms.EDProducer("TauIdTagAndProbeProducer",
+        source = cms.InputTag(collectionName[0] + "TriggerEmbedder" + collectionName[1]),
+        triggerPath = cms.string(triggerMatcherProtoType.pathNames.value()[0])
+    )
+    patTauDijetTagAndProbeName = collectionName[0] + "DijetTagAndProbe" + collectionName[1]
+    setattr(process, patTauDijetTagAndProbeName, patTauDijetTagAndProbe)
+    outputSequence += cms.Sequence(patTauDijetTagAndProbe)
+
+    # return full sequence for production of basic tau collection,
+    # generator level particle and jet matches, trigger matches,
+    # Pt-sorting and tag/probe flags
+    return outputSequence
+
+
 
 
 
