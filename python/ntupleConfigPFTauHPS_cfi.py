@@ -5,7 +5,7 @@ import FWCore.ParameterSet.Config as cms
 # reconstructed by hadron + strips (HPS) algorithm
 #--------------------------------------------------------------------------------
 
-pfTausHPS_template01 = cms.PSet(
+pfTausHPS_recInfo = cms.PSet(
     # Select multiplicy of object(s) to store
     vector = cms.bool(True), # Store a value for all objects in this collection
     #indices = cms.vuint_32([0, 1, 2]) # Store values for first, second, third objects
@@ -46,7 +46,7 @@ pfTausHPS_template01 = cms.PSet(
     )
 )                
 
-pfTausHPS_template02 = pfTausHPS_template01.clone(
+pfTausHPS_genInfo = pfTausHPS_recInfo.clone(
     pluginType = cms.string("PATTauVectorGenJetValExtractor"),
 
     columns = cms.PSet(
