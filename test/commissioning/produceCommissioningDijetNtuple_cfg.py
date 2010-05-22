@@ -31,6 +31,9 @@ process.printEventContent = cms.EDAnalyzer("EventContentAnalyzer")
 process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(1000)
 )
+
+addGenInfo = True # use for MC
+##addGenInfo = False # use for Data
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
@@ -39,13 +42,14 @@ process.maxEvents = cms.untracked.PSet(
 #
 from TauAnalysis.TauIdEfficiency.tools.configurePatTupleProduction import configurePatTupleProduction
 
-configurePatTupleProduction(process)
+configurePatTupleProduction(process, addGenInfo = addGenInfo)
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
 #
 # produce Ntuple
 #
+process.load("TauAnalysis.TauIdEfficiency.ntupleConfigVertex_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigCaloTau_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigPFTauFixedCone_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigPFTauShrinkingCone_cfi")
@@ -58,23 +62,32 @@ process.ntupleProducer = cms.EDAnalyzer("ObjValEDNtupleProducer",
     sources = cms.PSet(
         # Grouping of sources is for convenience of specifying pluginTypes, etc
 
+        # variables specifying x,y,z coordinates of primary event vertex
+        vertex = process.vertex_template,                   
+
         # variables specific to CaloTaus                                            
-        ##caloTaus_part01 = process.caloTaus_template01,
-        ##caloTaus_part02 = process.caloTaus_template02,                                    
+        caloTaus_part01 = process.caloTaus_recInfo,
+        ##caloTaus_part02 = process.caloTaus_genInfo,                                    
 
         # variables specific to fixed cone PFTaus                                            
-        pfTausFixedCone_part01 = process.pfTausFixedCone_template01,
-        pfTausFixedCone_part02 = process.pfTausFixedCone_template02,
+        pfTausFixedCone_part01 = process.pfTausFixedCone_recInfo,
+        ##pfTausFixedCone_part02 = process.pfTausFixedCone_genInfo,
 
         # variables specific to shrinking cone PFTaus                                            
-        pfTausShrinkingCone_part01 = process.pfTausShrinkingCone_template01,
-        pfTausShrinkingCone_part02 = process.pfTausShrinkingCone_template02,
+        pfTausShrinkingCone_part01 = process.pfTausShrinkingCone_recInfo,
+        ##pfTausShrinkingCone_part02 = process.pfTausShrinkingCone_genInfo,
 
         # variables specific to PFTaus reconstructed by hadron + strips (HPS) algorithm                                           
-        ##pfTausHPS_part01 = process.pfTausHPS_template01,
-        ##pfTausHPS_part02 = process.pfTausHPS_template02                                    
+        pfTausHPS_part01 = process.pfTausHPS_recInfo,
+        ##pfTausHPS_part02 = process.pfTausHPS_genInfo                                    
     )
 )
+
+if addGenInfo:
+    setattr(process.ntupleProducer.sources, "caloTaus_part02", process.caloTaus_genInfo)
+    setattr(process.ntupleProducer.sources, "pfTausFixedCone_part02", process.pfTausFixedCone_genInfo)
+    setattr(process.ntupleProducer.sources, "pfTausShrinkingCone_part02", process.pfTausShrinkingCone_genInfo)
+    setattr(process.ntupleProducer.sources, "pfTausHPS_part02", process.pfTausHPS_genInfo)
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
