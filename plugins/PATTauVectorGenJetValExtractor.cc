@@ -30,12 +30,6 @@ PATTauVectorGenJetValExtractor::~PATTauVectorGenJetValExtractor()
 //--- nothing to be done yet...
 }
 
-unsigned int 
-PATTauVectorGenJetValExtractor::size() const
-{
-   return 0;
-}
-
 std::vector<double> PATTauVectorGenJetValExtractor::operator()(const edm::Event& evt) const
 {
   std::vector<double> vec;

@@ -15,9 +15,9 @@
  * 
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.2 $
+ * \version $Revision: 1.1 $
  *
- * $Id: PATTauVectorGenJetValExtractor.h,v 1.2 2009/10/25 12:38:14 veelken Exp $
+ * $Id: PATTauVectorGenJetValExtractor.h,v 1.1 2010/05/20 17:34:34 veelken Exp $
  *
  */
 
@@ -34,9 +34,7 @@ class PATTauVectorGenJetValExtractor : public ObjValVectorExtractorBase
   
   explicit PATTauVectorGenJetValExtractor(const edm::ParameterSet&);
   ~PATTauVectorGenJetValExtractor();
-  
-  unsigned int size() const;
-  
+    
   std::vector<double> operator()(const edm::Event&) const;
 
  private:
