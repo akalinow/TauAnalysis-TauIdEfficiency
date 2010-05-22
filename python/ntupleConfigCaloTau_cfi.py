@@ -4,7 +4,7 @@ import FWCore.ParameterSet.Config as cms
 # define variables specific to CaloTaus
 #--------------------------------------------------------------------------------
 
-caloTaus_template01 = cms.PSet(
+caloTaus_recInfo = cms.PSet(
     # Select multiplicy of object(s) to store
     vector = cms.bool(True), # Store a value for all objects in this collection
     #indices = cms.vuint_32([0, 1, 2]) # Store values for first, second, third objects
@@ -43,7 +43,7 @@ caloTaus_template01 = cms.PSet(
     )
 )
 
-caloTaus_template02 = caloTaus_template01.clone(
+caloTaus_genInfo = caloTaus_recInfo.clone(
     pluginType = cms.string("PATTauVectorGenJetValExtractor"),
 
     columns = cms.PSet(
