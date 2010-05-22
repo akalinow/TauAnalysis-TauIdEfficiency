@@ -20,7 +20,8 @@ def buildTauSequence(
     process, 
     collectionName = [ "patTaus", "" ],
     patTauProducerPrototype = None,
-    triggerMatcherProtoType = None):
+    triggerMatcherProtoType = None,
+    addGenInfo = False):
     '''
     blah
     '''
@@ -32,25 +33,34 @@ def buildTauSequence(
 
     # configure matching of basic pat::Tau collection
     # to generator level particles and jets
-    patTauGenParticleMatch = process.tauMatch.clone(
-        src = patTauProducer.tauSource
-    )
-    patTauGenParticleMatchName = collectionName[0] + "GenParticleMatch" + collectionName[1]
-    setattr(process, patTauGenParticleMatchName, patTauGenParticleMatch)
+    outputSequence = None
+    if addGenInfo:
+        patTauGenParticleMatch = process.tauMatch.clone(
+            src = patTauProducer.tauSource
+        )
+        patTauGenParticleMatchName = collectionName[0] + "GenParticleMatch" + collectionName[1]
+        setattr(process, patTauGenParticleMatchName, patTauGenParticleMatch)
 
-    patTauGenJetMatch = process.tauGenJetMatch.clone(
-        src = patTauProducer.tauSource
-    )
-    patTauGenJetMatchName = collectionName[0] + "GenJetMatch" + collectionName[1]
-    setattr(process, patTauGenJetMatchName, patTauGenJetMatch)
+        patTauGenJetMatch = process.tauGenJetMatch.clone(
+           src = patTauProducer.tauSource
+        )
+        patTauGenJetMatchName = collectionName[0] + "GenJetMatch" + collectionName[1]
+        setattr(process, patTauGenJetMatchName, patTauGenJetMatch)
 
-    patTauProducer.genParticleMatch = cms.InputTag(patTauGenParticleMatchName)
-    patTauProducer.genJetMatch = cms.InputTag(patTauGenJetMatchName)
+        patTauProducer.genParticleMatch = cms.InputTag(patTauGenParticleMatchName)
+        patTauProducer.genJetMatch = cms.InputTag(patTauGenJetMatchName)
     
-    outputSequence = cms.Sequence(
-        patTauGenParticleMatch + patTauGenJetMatch
-       + patTauProducer
-    )
+        outputSequence = cms.Sequence(
+            patTauGenParticleMatch + patTauGenJetMatch
+           + patTauProducer
+        )
+    else:
+        patTauProducer.addGenMatch = cms.bool(False)
+        patTauProducer.addGenJetMatch = cms.bool(False)
+        
+        outputSequence = cms.Sequence(
+            patTauProducer
+        )
 
     # configure matching of basic pat::Tau collection
     # to trigger primitives;
@@ -86,7 +96,8 @@ def buildDijetTauSequence(
     process, 
     collectionName = [ "patTaus", "" ],
     patTauProducerPrototype = None,
-    triggerMatcherProtoType = None):
+    triggerMatcherProtoType = None,
+    addGenInfo = False):
     '''
     blah
     '''
@@ -98,7 +109,8 @@ def buildDijetTauSequence(
         process, 
         collectionName = collectionName,
         patTauProducerPrototype = patTauProducerPrototype,
-        triggerMatcherProtoType = triggerMatcherProtoType
+        triggerMatcherProtoType = triggerMatcherProtoType,
+        addGenInfo = addGenInfo
     )
 
     # produce final collection of pat::Taus with
