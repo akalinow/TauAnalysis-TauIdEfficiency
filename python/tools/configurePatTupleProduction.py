@@ -4,12 +4,13 @@ import copy
 from PhysicsTools.PatAlgos.tools.tauTools import *
 from PhysicsTools.PatAlgos.tools.jetTools import *
 from PhysicsTools.PatAlgos.tools.trigTools import switchOnTrigger
+from PhysicsTools.PatAlgos.tools.coreTools import RemoveMCMatching
 
 from TauAnalysis.Configuration.tools.metTools import *
 
 from TauAnalysis.TauIdEfficiency.tools.sequenceBuilder import buildDijetTauSequence
 
-def configurePatTupleProduction(process):
+def configurePatTupleProduction(process, addGenInfo):
 
     #--------------------------------------------------------------------------------
     # produce PAT objects
@@ -32,6 +33,9 @@ def configurePatTupleProduction(process):
     patPFTauMatchProtoType.checkOverlaps.HighestPtProbeJet.src = cms.InputTag("pfJetsTagAndProbes", "highestPtProbe")
     patPFTauMatchProtoType.checkOverlaps.SecondHighestPtProbe.src = cms.InputTag("pfJetsTagAndProbes", "secondHighestPtProbe")
 
+    if not addGenInfo:
+        RemoveMCMatching(process)
+
     #--------------------------------------------------------------------------------
     # configure PAT trigger matching
     process.load("PhysicsTools.PatAlgos.triggerLayer1.triggerProducer_cff")
@@ -50,9 +54,6 @@ def configurePatTupleProduction(process):
         resolveAmbiguities    = cms.bool(True),
         resolveByMatchQuality = cms.bool(False)
     )                                                             
-
-    ##process.patTriggerSequence.remove(process.patTriggerMatcher)
-    ##process.patTriggerEvent.patTriggerMatches = []
     #--------------------------------------------------------------------------------
 
     #-------------------------------------------------------------------------------- 
@@ -67,13 +68,15 @@ def configurePatTupleProduction(process):
         process,
         collectionName = [ "patCaloTaus", "" ],
         patTauProducerPrototype = patCaloTauProducer,
-        triggerMatcherProtoType = patTauTriggerMatchHLTsingleJet15UprotoType
+        triggerMatcherProtoType = patTauTriggerMatchHLTsingleJet15UprotoType,
+        addGenInfo = addGenInfo
     )
 
     process.patMuonCaloTauPairs = process.allMuTauPairs.clone(
         srcLeg1 = cms.InputTag('patMuons'),
         srcLeg2 = cms.InputTag('patCaloTausDijetTagAndProbe'),
-        srcMET = cms.InputTag('patMETs')
+        srcMET = cms.InputTag('patMETs'),
+        doSVreco = cms.bool(False)
     )
     #--------------------------------------------------------------------------------
 
@@ -90,13 +93,15 @@ def configurePatTupleProduction(process):
         process,
         collectionName = [ "patPFTaus", "FixedCone" ],
         patTauProducerPrototype = patPFTauProducerFixedCone,
-        triggerMatcherProtoType = patTauTriggerMatchHLTsingleJet15UprotoType
+        triggerMatcherProtoType = patTauTriggerMatchHLTsingleJet15UprotoType,
+        addGenInfo = addGenInfo
     )
 
     process.patMuonPFTauPairsFixedCone = process.allMuTauPairs.clone(
         srcLeg1 = cms.InputTag('patMuons'),
         srcLeg2 = cms.InputTag('patPFTausDijetTagAndProbeFixedCone'),
-        srcMET = cms.InputTag('patPFMETs')
+        srcMET = cms.InputTag('patPFMETs'),
+        doSVreco = cms.bool(False)
     )
     #--------------------------------------------------------------------------------
 
@@ -113,13 +118,15 @@ def configurePatTupleProduction(process):
         process,
         collectionName = [ "patPFTaus", "ShrinkingCone" ],
         patTauProducerPrototype = patPFTauProducerShrinkingCone,
-        triggerMatcherProtoType = patTauTriggerMatchHLTsingleJet15UprotoType
+        triggerMatcherProtoType = patTauTriggerMatchHLTsingleJet15UprotoType,
+        addGenInfo = addGenInfo
     )
 
     process.patMuonPFTauPairsShrinkingCone = process.allMuTauPairs.clone(
         srcLeg1 = cms.InputTag('patMuons'),
         srcLeg2 = cms.InputTag('patPFTausDijetTagAndProbeShrinkingCone'),
-        srcMET = cms.InputTag('patPFMETs')
+        srcMET = cms.InputTag('patPFMETs'),
+        doSVreco = cms.bool(False)
     )
     #--------------------------------------------------------------------------------
 
@@ -136,13 +143,15 @@ def configurePatTupleProduction(process):
         process,
         collectionName = [ "patPFTaus", "HPS" ],
         patTauProducerPrototype = patPFTauProducerHPS,
-        triggerMatcherProtoType = patTauTriggerMatchHLTsingleJet15UprotoType
+        triggerMatcherProtoType = patTauTriggerMatchHLTsingleJet15UprotoType,
+        addGenInfo = addGenInfo
     )
 
     process.patMuonPFTauPairsHPS = process.allMuTauPairs.clone(
         srcLeg1 = cms.InputTag('patMuons'),
         srcLeg2 = cms.InputTag('patPFTausDijetTagAndProbeHPS'),
-        srcMET = cms.InputTag('patPFMETs')
+        srcMET = cms.InputTag('patPFMETs'),
+        doSVreco = cms.bool(False)
     )
     #--------------------------------------------------------------------------------
 
@@ -160,8 +169,8 @@ def configurePatTupleProduction(process):
     process.patTupleProductionSequence = cms.Sequence(
         process.patDefaultSequence
        + process.patTrigger
-       ##+ process.caloTauSequence
-       + process.pfTauSequenceFixedCone + process.pfTauSequenceShrinkingCone ##+ process.pfTauSequenceHPS
-       ##+ process.patMuonCaloTauPairs
-       ##+ process.patMuonPFTauPairsFixedCone + process.patMuonPFTauPairsShrinkingCone ##+ process.patMuonPFTauPairsHPS
+       + process.caloTauSequence
+       + process.pfTauSequenceFixedCone + process.pfTauSequenceShrinkingCone + process.pfTauSequenceHPS
+       + process.patMuonCaloTauPairs
+       + process.patMuonPFTauPairsFixedCone + process.patMuonPFTauPairsShrinkingCone + process.patMuonPFTauPairsHPS
     )
