@@ -4,13 +4,13 @@ import copy
 from PhysicsTools.PatAlgos.tools.tauTools import *
 from PhysicsTools.PatAlgos.tools.jetTools import *
 from PhysicsTools.PatAlgos.tools.trigTools import switchOnTrigger
-from PhysicsTools.PatAlgos.tools.coreTools import RemoveMCMatching
+from PhysicsTools.PatAlgos.tools.coreTools import removeMCMatching
 
 from TauAnalysis.Configuration.tools.metTools import *
 
 from TauAnalysis.TauIdEfficiency.tools.sequenceBuilder import buildDijetTauSequence
 
-def configurePatTupleProduction(process, addGenInfo):
+def configurePatTupleProduction(process, addGenInfo = False):
 
     #--------------------------------------------------------------------------------
     # produce PAT objects
@@ -34,7 +34,7 @@ def configurePatTupleProduction(process, addGenInfo):
     patPFTauMatchProtoType.checkOverlaps.SecondHighestPtProbe.src = cms.InputTag("pfJetsTagAndProbes", "secondHighestPtProbe")
 
     if not addGenInfo:
-        RemoveMCMatching(process)
+        removeMCMatching(process)
 
     #--------------------------------------------------------------------------------
     # configure PAT trigger matching
@@ -76,6 +76,7 @@ def configurePatTupleProduction(process, addGenInfo):
         srcLeg1 = cms.InputTag('patMuons'),
         srcLeg2 = cms.InputTag('patCaloTausDijetTagAndProbe'),
         srcMET = cms.InputTag('patMETs'),
+        srcGenParticles = cms.InputTag(''),
         doSVreco = cms.bool(False)
     )
     #--------------------------------------------------------------------------------
@@ -101,6 +102,7 @@ def configurePatTupleProduction(process, addGenInfo):
         srcLeg1 = cms.InputTag('patMuons'),
         srcLeg2 = cms.InputTag('patPFTausDijetTagAndProbeFixedCone'),
         srcMET = cms.InputTag('patPFMETs'),
+        srcGenParticles = cms.InputTag(''),
         doSVreco = cms.bool(False)
     )
     #--------------------------------------------------------------------------------
@@ -126,6 +128,7 @@ def configurePatTupleProduction(process, addGenInfo):
         srcLeg1 = cms.InputTag('patMuons'),
         srcLeg2 = cms.InputTag('patPFTausDijetTagAndProbeShrinkingCone'),
         srcMET = cms.InputTag('patPFMETs'),
+        srcGenParticles = cms.InputTag(''),
         doSVreco = cms.bool(False)
     )
     #--------------------------------------------------------------------------------
@@ -151,6 +154,7 @@ def configurePatTupleProduction(process, addGenInfo):
         srcLeg1 = cms.InputTag('patMuons'),
         srcLeg2 = cms.InputTag('patPFTausDijetTagAndProbeHPS'),
         srcMET = cms.InputTag('patPFMETs'),
+        srcGenParticles = cms.InputTag(''),
         doSVreco = cms.bool(False)
     )
     #--------------------------------------------------------------------------------
