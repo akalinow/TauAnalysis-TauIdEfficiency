@@ -15,49 +15,28 @@ if __name__ == "__main__":
     ROOT.gROOT.SetBatch(True)
     ROOT.gROOT.SetStyle("Plain")
     ROOT.gStyle.SetOptStat(0)
-    file = ROOT.TFile("commissioning_ntuple.root", "READ")
+    file = ROOT.TFile("tauIdEff_ntuple.root", "READ")
     
     # Get the events tree (this can also be a TChain)
     events = file.Get("Events")
 
     # Get the ntuple we produced
-    manager = TauNtupleManager(events, "tauCommissioning")
+    manager = TauNtupleManager(events, "tauIdEffNtuple")
 
     # Get the list of collections availabe for our ntuple
     print manager
 
     # So lets use selectedPatTaus
-    selectedPatTaus = manager.get_ntuple("shrinkingConeSecondHighestPtProbe")
+    selectedPatTaus = manager.get_ntuple("patPFTausDijetTagAndProbeShrinkingCone")
 
     # All this helper funciton does it makes it easy for use
     # to interface to TTree::Draw, etc.
 
     # Get list of variables available
     print selectedPatTaus
-    # returns
-    # Tau Ntuple - collection selectedPatTaus
-    #  byIsolation
-    #  byLeadPionPt
-    #  byTaNCfrOne
-    #  absEta
-    #  pt
     
-    # Now it easy to create expressions using the expr method
-    print selectedPatTaus.expr('$pt')
-    # returns
-    # exampleNtuple#selectedPatTaus#pt
 
-    # You can also build selection string, with operator overloading
-    # or without.  The following are logically equivalent
-    my_selection = selectedPatTaus.expr('$pt > 5 && $pt < 20')
-    print my_selection
-
-    # or
-    my_first_selection = selectedPatTaus.expr('$pt') > 5 
-    my_second_selection = selectedPatTaus.expr('$pt') < 20 
-    # NB the notation for logical AND
-    my_selection = my_first_selection & my_second_selection
-    print my_selection
+    my_selection = selectedPatTaus.expr('$pt > 5')
 
     # The following operators are available
     # + - * / & | < > <= >=
@@ -67,21 +46,30 @@ if __name__ == "__main__":
     canvas = ROOT.TCanvas("example", "example", 500, 500)
 
     pt_hist = plot.draw(expression=selectedPatTaus.expr('$pt'), 
-                        selection=selectedPatTaus.expr('$absEta < 2.5'),
+                        selection=selectedPatTaus.expr('abs($eta) < 2.5'),
                         binning=(10, 0, 50))
 
     # pt_hist is a TH1F
     pt_hist.Draw()
     canvas.SaveAs("pt_spectrum.png")
 
+    # Plot track angle 0 TaNC discriminant
+    track_angle_hist = plot.draw(expression=selectedPatTaus.expr('$TaNCTrackAngle0'),
+                        selection=(selectedPatTaus.expr('abs($eta) < 2.5') & selectedPatTaus.expr('$byLeadPionPtCut')),
+                        binning=(40, 0, 0.4))
+
+    track_angle_hist.Draw()
+    canvas.SaveAs("track_angle_0.png")
+
+
     # We can easily make an efficiency plot as well
     # Let's compute the TaNC eff w.r.t Leading Piont for taus with Pt > 5 
     # with eta < 2.5
     denom_selection = selectedPatTaus.expr('$pt > 5') & \
-            selectedPatTaus.expr('$absEta < 2.5')  
+            selectedPatTaus.expr('abs($eta) < 2.5')  
 
     numerator_selection = denom_selection & selectedPatTaus.expr('$byTaNCfrOnePercent') &\
-            selectedPatTaus.expr('$leadingPionPtCut > 0.5')
+            selectedPatTaus.expr('$byLeadPionPtCut > 0.5')
 
     # The efficiency function returns a tuple with
     # a histo background + a TGraph asymmerrors
@@ -101,7 +89,7 @@ if __name__ == "__main__":
     canvas.SaveAs("tanc_pt_eff.pdf")
 
     numerator_selection = denom_selection & selectedPatTaus.expr('$byIsolation') &\
-            selectedPatTaus.expr('$leadingPionPtCut > 0.5')
+            selectedPatTaus.expr('$byLeadPionPtCut > 0.5')
     # The efficiency function returns a tuple with
     # a histo background + a TGraph asymmerrors
     bkg_histo, efficiency = plot.efficiency(

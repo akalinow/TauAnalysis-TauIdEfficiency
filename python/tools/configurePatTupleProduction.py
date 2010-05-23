@@ -8,6 +8,10 @@ from PhysicsTools.PatAlgos.tools.coreTools import removeMCMatching
 
 from TauAnalysis.Configuration.tools.metTools import *
 
+# Get the files to support embedding of TaNC inputs
+from RecoTauTag.TauTagTools.PFTauMVAInputDiscriminatorTranslator_cfi import \
+        loadMVAInputsIntoPatTauDiscriminants
+
 from TauAnalysis.TauIdEfficiency.tools.sequenceBuilder import buildDijetTauSequence
 
 def configurePatTupleProduction(process, addGenInfo = False):
@@ -116,6 +120,11 @@ def configurePatTupleProduction(process, addGenInfo = False):
     switchToPFTauShrinkingCone(process)
     patPFTauProducerShrinkingCone = copy.deepcopy(process.patTaus)
 
+    # Load TaNC inputs into pat::Tau
+    process.load("RecoTauTag.Configuration.ShrinkingConePFTaus_cfi")
+    process.load("RecoTauTag.TauTagTools.PFTauMVAInputDiscriminatorTranslator_cfi")
+    loadMVAInputsIntoPatTauDiscriminants(patPFTauProducerShrinkingCone)
+
     process.pfTauSequenceShrinkingCone = buildDijetTauSequence(
         process,
         collectionName = [ "patPFTaus", "ShrinkingCone" ],
@@ -174,7 +183,11 @@ def configurePatTupleProduction(process, addGenInfo = False):
         process.patDefaultSequence
        + process.patTrigger
        + process.caloTauSequence
+       # Recomputed decay modes and embed TaNC inputs
+       + process.shrinkingConePFTauDecayModeProducer               
+       + process.produceTancMVAInputDiscriminators
        + process.pfTauSequenceFixedCone + process.pfTauSequenceShrinkingCone + process.pfTauSequenceHPS
-       + process.patMuonCaloTauPairs
-       + process.patMuonPFTauPairsFixedCone + process.patMuonPFTauPairsShrinkingCone + process.patMuonPFTauPairsHPS
+       # EKF temporarily turning off, breaks runtime
+       #+ process.patMuonCaloTauPairs
+       #+ process.patMuonPFTauPairsFixedCone + process.patMuonPFTauPairsShrinkingCone + process.patMuonPFTauPairsHPS
     )

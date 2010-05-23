@@ -5,6 +5,9 @@ import FWCore.ParameterSet.Config as cms
 # reconstructed by shrinking signal cone algorithm
 #--------------------------------------------------------------------------------
 
+from RecoTauTag.TauTagTools.PFTauMVAInputDiscriminatorTranslator_cfi import \
+        produceTancMVAInputDiscriminators
+
 pfTausShrinkingCone_recInfo = cms.PSet(
     # Select multiplicy of object(s) to store
     vector = cms.bool(True), # Store a value for all objects in this collection
@@ -78,9 +81,24 @@ pfTausShrinkingCone_recInfo = cms.PSet(
         
         # discriminators against electrons/muons
         againstElectron = cms.string("tauID('againstElectron')"),
-        againstMuon = cms.string("tauID('againstMuon')")
+        againstMuon = cms.string("tauID('againstMuon')"),
     )
 )
+
+# Insert TaNC inputs into ntuple
+print "Embedding TaNC inputs into shrinking cone ntuple"
+for tancInputInfo in produceTancMVAInputDiscriminators.discriminants:
+    name = "TaNC" + tancInputInfo.name.value()
+    if hasattr(tancInputInfo, "indices"): 
+        # multiple input
+        for index in tancInputInfo.indices:
+            collectionName = name + str(index)
+            setattr(pfTausShrinkingCone_recInfo.columns, collectionName, cms.string(
+                "tauID('%s')" % collectionName))
+    else: 
+        # single input
+        setattr(pfTausShrinkingCone_recInfo.columns, name, cms.string(
+                "tauID('%s')" % name ))
 
 pfTausShrinkingCone_genInfo = pfTausShrinkingCone_recInfo.clone(
     pluginType = cms.string("PATTauVectorGenJetValExtractor"),
