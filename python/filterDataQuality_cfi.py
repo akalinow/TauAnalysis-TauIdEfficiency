@@ -35,7 +35,7 @@ dcsstatus.AndOr = cms.bool(True)
 # (identified by small percentage "good" tracks fitted to primary event vertex)
 scrapingBeamsFilter = cms.EDFilter("FilterOutScraping",
     applyfilter = cms.untracked.bool(True),
-    debugOn = cms.untracked.bool(True),
+    debugOn = cms.untracked.bool(False),
     numtrack = cms.untracked.uint32(10),
     thresh = cms.untracked.double(0.25)
 )
@@ -49,9 +49,14 @@ primaryVertexFilter = cms.EDFilter("GoodVertexFilter",
     maxd0 = cms.double(2)
 )
 
+# veto events with significant RBX/HPD noise activity
+# ( see https://twiki.cern.ch/twiki/bin/view/CMS/HcalDPGAnomalousSignals )
+from CommonTools.RecoAlgos.HBHENoiseFilter_cfi import *
+
 dataQualityFilters = cms.Sequence(
     hltPhysicsDeclared
    + dcsstatus
    + scrapingBeamsFilter
    + primaryVertexFilter
+   + HBHENoiseFilter
 )    
