@@ -61,8 +61,8 @@ process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(1000)
 )
 
-addGenInfo = True # use for MC
-##addGenInfo = False # use for Data
+##addGenInfo = True # use for MC
+addGenInfo = False # use for Data
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
@@ -96,19 +96,15 @@ process.ntupleProducer = cms.EDAnalyzer("ObjValEDNtupleProducer",
 
         # variables specific to CaloTaus                                            
         caloTaus_part01 = process.caloTaus_recInfo,
-        ##caloTaus_part02 = process.caloTaus_genInfo,                                    
 
         # variables specific to fixed cone PFTaus                                            
         pfTausFixedCone_part01 = process.pfTausFixedCone_recInfo,
-        ##pfTausFixedCone_part02 = process.pfTausFixedCone_genInfo,
 
         # variables specific to shrinking cone PFTaus                                            
         pfTausShrinkingCone_part01 = process.pfTausShrinkingCone_recInfo,
-        ##pfTausShrinkingCone_part02 = process.pfTausShrinkingCone_genInfo,
 
         # variables specific to PFTaus reconstructed by hadron + strips (HPS) algorithm                                           
         pfTausHPS_part01 = process.pfTausHPS_recInfo,
-        ##pfTausHPS_part02 = process.pfTausHPS_genInfo                                    
     )
 )
 
@@ -133,8 +129,13 @@ process.out = cms.OutputModule("PoolOutputModule",
 )
 #--------------------------------------------------------------------------------
 
+# produce collections of PFTaus reconstructed by hadron + strips (HPS) algorithm
+# "on-the-fly", as it is not contained in data taken with CMSSW_3_5_x
+process.load("RecoTauTag.Configuration.HPSPFTaus_cfi")
+
 process.p = cms.Path(
-    process.patTupleProductionSequence
+    process.produceAndDiscriminateHPSPFTaus
+   + process.patTupleProductionSequence
    #+ process.printEventContent
    + process.ntupleProducer
 )
