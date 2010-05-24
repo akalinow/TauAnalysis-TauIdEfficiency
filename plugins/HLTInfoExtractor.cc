@@ -8,36 +8,32 @@
 
 HLTInfoExtractor::HLTInfoExtractor(const edm::ParameterSet& cfg)
 {
-
-  srcTrigger_  = cfg.getParameter<edm::InputTag>("triggerResults"); 
-  valueString_ = cfg.getParameter<std::string>("HLTPath") ;
+  src_ = cfg.getParameter<edm::InputTag>("src"); 
+  value_ = cfg.getParameter<std::string>("value") ;
 }
 
 HLTInfoExtractor::~HLTInfoExtractor()
-{
-
-}
+{}
 
 double  
 HLTInfoExtractor::operator()(const edm::Event& evt) const
 {
-  edm::Handle<edm::TriggerResults> trigResults;
-  evt.getByLabel(srcTrigger_, trigResults);
+  edm::Handle<edm::TriggerResults> hltResults;
+  evt.getByLabel(src_, hltResults);
 
   //get the names of the triggers
-  edm::TriggerNames const& triggerNames = evt.triggerNames(*trigResults);
-  unsigned int triggerId = triggerNames.triggerIndex(valueString_);
-  double value=-1;//Return -1 if error or path not in the menu
-  if(triggerId!=triggerNames.size()) {
-    if(trigResults->accept(triggerId)) {
-      value= 1.0;
-    }
-    else {
-      value = 0.0;
+  edm::TriggerNames const& triggerNames = evt.triggerNames(*hltResults);
+  unsigned int triggerId = triggerNames.triggerIndex(value_);
+  double val = -1.; // return -1 if error or path not in the menu
+  if ( triggerId != triggerNames.size() ) {
+    if ( hltResults->accept(triggerId) ) {
+      val = 1.0;
+    } else {
+      val = 0.0;
     }
   }
-
-  return value;
+  
+  return val;
 }
 
 #include "FWCore/Framework/interface/MakerMacros.h"

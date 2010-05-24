@@ -6,9 +6,9 @@
  * Auxiliary class for extracting HLT Info for the event
  * (used for Ntuple filling)
  *
- * \author Michail Bachtis , U.Wisconsin
+ * \author Michail Bachtis, U.Wisconsin
  *
- * \version $Revision: 1.2 $
+ * \version $Revision: 1.1 $
  */
 
 #include "FWCore/Framework/interface/Event.h"
@@ -28,8 +28,8 @@ class HLTInfoExtractor : public ObjValExtractorBase
 
  private:
   //--- configuration parameters
-  edm::InputTag srcTrigger_;
-  std::string valueString_;
+  edm::InputTag src_;
+  std::string value_;
 };
 
 #endif  
