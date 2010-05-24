@@ -68,6 +68,7 @@ configurePatTupleProduction(process, addGenInfo = addGenInfo)
 #
 # produce Ntuple
 #
+process.load("TauAnalysis.TauIdEfficiency.ntupleConfigTrigger_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigVertex_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigCaloTau_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigPFTauFixedCone_cfi")
@@ -80,6 +81,9 @@ process.ntupleProducer = cms.EDAnalyzer("ObjValEDNtupleProducer",
                                         
     sources = cms.PSet(
         # Grouping of sources is for convenience of specifying pluginTypes, etc
+
+        # variables indicating decision of HLT trigger paths
+        trigger = process.trigger_template,                                    
 
         # variables specifying x,y,z coordinates of primary event vertex
         vertex = process.vertex_template,                   
