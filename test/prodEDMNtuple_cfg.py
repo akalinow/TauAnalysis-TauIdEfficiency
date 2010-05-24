@@ -54,8 +54,8 @@ process.ntupleProducer = cms.EDAnalyzer("ObjValEDNtupleProducer",
                                         
     sources = cms.PSet(
         # variables specific to shrinking cone PFTaus                                            
-        pfTausShrinkingCone_part01 = process.pfTausShrinkingCone_template01,
-        pfTausShrinkingCone_part02 = process.pfTausShrinkingCone_template02
+        pfTausShrinkingCone_part01 = process.pfTausShrinkingCone_recInfo,
+        pfTausShrinkingCone_part02 = process.pfTausShrinkingCone_genInfo
     )
 )
 #--------------------------------------------------------------------------------
