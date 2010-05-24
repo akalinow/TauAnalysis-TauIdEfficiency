@@ -1,0 +1,37 @@
+#ifndef TauAnalysis_TauIdEfficiency_HLTInfoExtractor_h  
+#define TauAnalysis_TauIdEfficiency_HLTInfoExtractor_h
+
+/** \class HLTInfoExtractor
+ *
+ * Auxiliary class for extracting HLT Info for the event
+ * (used for Ntuple filling)
+ *
+ * \author Michail Bachtis , U.Wisconsin
+ *
+ * \version $Revision: 1.2 $
+ */
+
+#include "FWCore/Framework/interface/Event.h"
+#include "FWCore/Framework/interface/EventSetup.h"
+#include "FWCore/ParameterSet/interface/InputTag.h"
+#include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "TauAnalysis/BgEstimationTools/interface/ObjValExtractorBase.h"
+
+class HLTInfoExtractor : public ObjValExtractorBase
+{
+ public:
+  
+  explicit HLTInfoExtractor(const edm::ParameterSet&);
+  ~HLTInfoExtractor();
+ 
+  double operator()(const edm::Event&) const;
+
+ private:
+  //--- configuration parameters
+  edm::InputTag srcTrigger_;
+  std::string valueString_;
+};
+
+#endif  
+
+
