@@ -42,7 +42,16 @@ pfTausHPS_recInfo = cms.PSet(
         
         # discriminators against electrons/muons
         againstElectron = cms.string("tauID('againstElectron')"),
-        againstMuon = cms.string("tauID('againstMuon')")                             
+        againstMuon = cms.string("tauID('againstMuon')"),                             
+
+        mass = cms.string("mass"),
+        prongs = cms.string("signalPFChargedHadrCands().size()"),
+        gammas = cms.string("signalPFGammaCands().size()"),
+        nIsoCharged = cms.string("isolationPFChargedHadrCands().size()"),
+        nIsoGamma = cms.string("isolationPFGammaCands().size()"),
+        nIsoNeutral = cms.string("isolationPFNeutrHadrCands().size()"),
+        isoChargedEtSum = cms.string("isolationPFChargedHadrCandsPtSum()"),
+        isoGammaEtSum = cms.string("isolationPFGammaCandsEtSum()")
     )
 )                
 
