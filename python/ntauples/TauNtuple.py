@@ -2,8 +2,7 @@ import string
 
 class TauNtuple(object):
     " Class that maps user-friendly variable names to complicated TTree branches "
-    def __init__(self, events, ntuple_name, collection_name, variables=[]):
-        self.events = events
+    def __init__(self, ntuple_name, collection_name, variables=[]):
         self.collection = collection_name
         self.variables = list(variables)
         # Build
@@ -28,74 +27,64 @@ class TauNtuple(object):
 
     def expr(self, expression):
         " Build an expression from this ntuple "
-        return TauNtupleExpression(self.events, self.substitute(expression)) 
+        return TauNtupleExpression(self.substitute(expression)) 
 
 class TauNtupleExpression(object):
-    def __init__(self, events, value):
-        self.events = events
+    def __init__(self, value):
         self.value = value
     def check_other(self, other):
-        if isinstance(other, TauNtupleExpression):
-            if self.events is not other.events:
-                raise ValueError
+        # To be implemented if needed later
+        pass
+        #if isinstance(other, TauNtupleExpression):
+        #    if self.events is not other.events:
+        #       raise ValueError
     def __add__(self, other):
         self.check_other(other)
         return TauNtupleExpression(
-            self.events, 
             "(%s) + (%s)" % (self.value, other))
     def __sub__(self, other):
         self.check_other(other)
         return TauNtupleExpression(
-            self.events, "(%s) - (%s)" % (self.value, other))
+            "(%s) - (%s)" % (self.value, other))
     def __mul__(self, other):
         self.check_other(other)
-        return TauNtupleExpression(
-            self.events, "(%s)*(%s)" % (self.value, other))
+        return TauNtupleExpression("(%s)*(%s)" % (self.value, other))
     def __div__(self, other):
         self.check_other(other)
-        return TauNtupleExpression(
-            self.events, "(%s)/(%s)" % (self.value, other))
+        return TauNtupleExpression("(%s)/(%s)" % (self.value, other))
     def __and__(self, other):
         self.check_other(other)
-        return TauNtupleExpression(
-            self.events, "(%s) && (%s)" % (self.value, other))
+        return TauNtupleExpression("(%s) && (%s)" % (self.value, other))
     def __or__(self, other):
         self.check_other(other)
-        return TauNtupleExpression(
-            self.events, "(%s) || (%s)" % (self.value, other))
+        return TauNtupleExpression("(%s) || (%s)" % (self.value, other))
     def __lt__(self, other):
         self.check_other(other)
-        return TauNtupleExpression(
-            self.events, "(%s) < (%s)" % (self.value, other))
+        return TauNtupleExpression("(%s) < (%s)" % (self.value, other))
     def __le__(self, other):
         self.check_other(other)
-        return TauNtupleExpression(
-            self.events, "(%s) <= (%s)" % (self.value, other))
+        return TauNtupleExpression("(%s) <= (%s)" % (self.value, other))
     def __gt__(self, other):
         self.check_other(other)
-        return TauNtupleExpression(
-            self.events, "(%s) > (%s)" % (self.value, other))
+        return TauNtupleExpression("(%s) > (%s)" % (self.value, other))
     def __ge__(self, other):
         self.check_other(other)
-        return TauNtupleExpression(
-            self.events, "(%s) >= (%s)" % (self.value, other))
+        return TauNtupleExpression("(%s) >= (%s)" % (self.value, other))
     def __eq__(self, other):
         self.check_other(other)
-        return TauNtupleExpression(
-            self.events, "(%s) == (%s)" % (self.value, other))
+        return TauNtupleExpression("(%s) == (%s)" % (self.value, other))
     def __str__(self):
         return self.value
     def false(self):
         " Negate expression "
         return TauNtupleExpression(
-            self.events, "!(%s)" % self.value)
+             "!(%s)" % self.value)
 
 if __name__ == "__main__":
     # Some tests
     # Some mutable object 
-    events = ['a', 'b', 'c']
-    pt = TauNtupleExpression(events, 'pt')
-    eta = TauNtupleExpression(events, 'eta')
+    pt = TauNtupleExpression('pt')
+    eta = TauNtupleExpression('eta')
     new = pt | eta
     print new
 

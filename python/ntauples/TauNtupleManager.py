@@ -27,7 +27,7 @@ class TauNtupleManager(object):
                 variables.append(collection_aliases[2])
             # Make a new ntuple
             self.ntuples[collection] = \
-                TauNtuple(events, ntuple_name, collection, variables)
+                TauNtuple(ntuple_name, collection, variables)
 
     def get_ntuple(self, ntuple):
         " Retrive the specfied ntuple "
