@@ -1,4 +1,5 @@
 import TauAnalysis.TauIdEfficiency.ntauples.plotting as plot
+import TauAnalysis.TauIdEfficiency.ntauples.styles as style
 
 from ROOT import gROOT
 # Prevent complaining about X server
@@ -6,39 +7,7 @@ gROOT.SetBatch(True)
 
 import ROOT
 import copy
-import hashlib
-
-_GOOD_MARKERS = []
-_GOOD_COLORS = []
-
-_HISTO_METHOD_MAP = {
-    'draw_option' : lambda histo: histo.SetDrawOption ,
-    'marker_color' : lambda histo: histo.SetMarkerColor,
-    'marker_size' : lambda histo: histo.SetMarkerSize,
-    'marker_style' : lambda histo: histo.SetMarkerStyle,
-    'fill_color': lambda histo: histo.SetFillColor,
-    'fill_style': lambda histo: histo.SetFillStyle,
-    'line_width': lambda histo: histo.SetLineWidth,
-    'line_color': lambda histo: histo.SetLineColor,
-    'x_axis_title' : lambda histo: histo.GetXaxis().SetTitle,
-    'y_axis_title' : lambda histo: histo.GetYaxis().SetTitle,
-}
-
-_DEFAULT_STYLE = {
-    'draw_option' : "",
-    'marker_color' : ROOT.EColor.kBlack,
-    'marker_size' : 1.0,
-    'marker_style': 22,
-    'fill_color': ROOT.EColor.kWhite,
-    'fill_style': 0,
-    'line_width': 1,
-    'line_color': ROOT.EColor.kBlack,
-}
-
-def _update_histo_style(histo, style_dict):
-    " Update a histograms style, given style dict "
-    for style_item, value in style_dict.iteritems():
-        _HISTO_METHOD_MAP[style_item](histo)(value)
+import helpers
 
 class LegendMaker(object):
     " Accumulate objects and produces TLegends of them "
@@ -55,6 +24,27 @@ class PlotManager(object):
         self.int_lumi = None
 
     def add_sample(self, sample_mananger, nice_name, **style_options):
+        ''' Add a sample to the plot manager
+
+        Add a sample (MC_QCD, Data, etc) to the PlotManager. The style options
+        to use for plots of this sample can be sepecified using [style_options]
+        keyword arguments.  The [sample_manager] input should be an instance
+        of the NtupleSampleCollection class.
+        
+        The available style options are:
+            draw_option 
+            marker_color 
+            marker_size 
+            marker_style 
+            fill_color
+            fill_style
+            line_width
+            line_color
+            x_axis_title 
+            y_axis_title 
+
+        '''
+        
         if sample_mananger.name in self.samples:
             raise KeyError, "attempt to add a sample to the plot manager that already exits"
         # Create a new dictionary
@@ -65,7 +55,7 @@ class PlotManager(object):
         self.sample_order.append(sample_mananger.name)
 
         # Get any desired style overrides for this sample
-        sample_style = copy.copy(_DEFAULT_STYLE)
+        sample_style = copy.copy(style.DEFAULT_STYLE)
         sample_style.update(style_options)
         sample_dict['style'] = sample_style
 
@@ -85,7 +75,7 @@ class PlotManager(object):
                               **options):
         " Compare a distribution from the different samples "
         # Get a unique name for the ROOT name
-        unique_name = hashlib.md5(str(expression) + str(selection)).hexdigest()
+        unique_name = helpers.make_unique_name(expression, selection)
         result_dict = {}
         result_dict['result'] = ROOT.THStack(unique_name, "blah")
         # Keep track of all the plots we make
@@ -114,7 +104,7 @@ class PlotManager(object):
             plot_dict['overflow'] = my_plot.GetBinContent(
                 my_plot.GetNbinsX()+1)
             # Update the styles for this histogram
-            _update_histo_style(my_plot, sample_info['style'])
+            style.update_histo_style(my_plot, sample_info['style'])
             # Add this histogram to the stack (will be plotted using 
             # nostack option)
             result_dict['result'].Add(my_plot, sample_info['style']['draw_option'])
@@ -126,3 +116,13 @@ class PlotManager(object):
         result_dict['result'].Draw("nostack")
         # and return all the crap we have generated in case the user is interested
         return result_dict
+
+    def compare_efficiencies(self, expression, numerator, denominator,
+                             binning=(), **options):
+        ''' Compare efficiencies for different samples 
+
+        Compute the efficiency of the [numerator] selection with respect
+        to the [denominator] selection, parameterized by [expression]. The efficiencies
+        are computed with binomial errors using TGraphAsymmErrors.
+
+        '''

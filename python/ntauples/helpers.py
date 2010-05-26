@@ -1,3 +1,13 @@
+import hashlib 
+
+'''
+
+Helper functions for the ntaupls package.
+
+Author: Evan K. Friis (UC Davis)
+
+'''
+
 def copy_aliases(tchain):
    ''' Ensure that all TTrees in a TChain have their aliases set correctly '''
    # Get the first ttree in the chain
@@ -19,4 +29,10 @@ def filter_aliases(aliases, *match_to):
                 break
         if matches:
             yield alias
+
+def make_unique_name(*args):
+    " Make a unique hash using the concatenation of str(args) "
+    return hashlib.md5(''.join(str(arg) for arg in args)).digest()
+
+
 
