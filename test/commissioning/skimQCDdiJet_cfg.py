@@ -29,12 +29,18 @@ process.printEventContent = cms.EDAnalyzer("EventContentAnalyzer")
 process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(1000)
 )
+
+isMC = True # use for MC
+##isMC = False # use for Data
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
 # define skimming criteria
 # (HLT single jet trigger passed && either two CaloJets or two PFJets of Pt > 10 GeV within |eta| < 2.5)
 process.load('TauAnalysis.TauIdEfficiency.filterQCDdiJet_cfi')
+if isMC:
+    process.dataQualityFilters.remove(process.hltPhysicsDeclared)
+    process.dataQualityFilters.remove(process.dcsstatus)
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
