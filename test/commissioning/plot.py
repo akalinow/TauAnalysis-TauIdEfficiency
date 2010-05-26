@@ -45,7 +45,7 @@ if __name__ == "__main__":
     # for taus in the barrel 
     canvas = ROOT.TCanvas("example", "example", 500, 500)
 
-    pt_hist = plot.draw(expression=selectedPatTaus.expr('$pt'), 
+    pt_hist = plot.draw(events, expression=selectedPatTaus.expr('$pt'), 
                         selection=selectedPatTaus.expr('abs($eta) < 2.5'),
                         binning=(10, 0, 50))
 
@@ -54,13 +54,20 @@ if __name__ == "__main__":
     canvas.SaveAs("pt_spectrum.png")
 
     # Plot track angle 0 TaNC discriminant
-    track_angle_hist = plot.draw(expression=selectedPatTaus.expr('$TaNCTrackAngle0'),
+    track_angle_hist = plot.draw(events, expression=selectedPatTaus.expr('$TaNCTrackAngle0'),
                         selection=(selectedPatTaus.expr('abs($eta) < 2.5') & selectedPatTaus.expr('$byLeadPionPtCut')),
                         binning=(40, 0, 0.4))
 
     track_angle_hist.Draw()
     canvas.SaveAs("track_angle_0.png")
 
+    # Plot decay mode
+    decay_mode_hist = plot.draw(events, expression=selectedPatTaus.expr('$decayMode'),
+                        selection=(selectedPatTaus.expr('abs($eta) < 2.5') & selectedPatTaus.expr('$byLeadPionPtCut')),
+                        binning=(14, -0.5, 13.5))
+
+    decay_mode_hist.Draw()
+    canvas.SaveAs("decay_mode_hist.png")
 
     # We can easily make an efficiency plot as well
     # Let's compute the TaNC eff w.r.t Leading Piont for taus with Pt > 5 
@@ -74,6 +81,7 @@ if __name__ == "__main__":
     # The efficiency function returns a tuple with
     # a histo background + a TGraph asymmerrors
     bkg_histo, efficiency = plot.efficiency(
+        events,
         expression=selectedPatTaus.expr('$pt'),
         numerator=numerator_selection,
         denominator=denom_selection,
@@ -93,6 +101,7 @@ if __name__ == "__main__":
     # The efficiency function returns a tuple with
     # a histo background + a TGraph asymmerrors
     bkg_histo, efficiency = plot.efficiency(
+        events,
         expression=selectedPatTaus.expr('$pt'),
         numerator=numerator_selection,
         denominator=denom_selection,

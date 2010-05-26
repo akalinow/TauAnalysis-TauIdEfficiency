@@ -69,7 +69,7 @@ if __name__ == "__main__":
     # for taus in the barrel 
     canvas = ROOT.TCanvas("example", "example", 500, 500)
 
-    pt_hist = plot.draw(expression=selectedPatTaus.expr('$pt'), 
+    pt_hist = plot.draw(events, expression=selectedPatTaus.expr('$pt'), 
                         selection=selectedPatTaus.expr('$eta > -2.1 && $eta < +2.1'),
                         binning=(10, 0, 50))
 
@@ -89,6 +89,7 @@ if __name__ == "__main__":
     # The efficiency function returns a tuple with
     # a histo background + a TGraph asymmerrors
     bkg_histo, efficiency = plot.efficiency(
+        events,
         expression=selectedPatTaus.expr('$pt'),
         numerator=numerator_selection,
         denominator=denom_selection,
