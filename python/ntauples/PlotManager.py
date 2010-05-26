@@ -50,6 +50,8 @@ class LegendMaker(object):
 class PlotManager(object):
     def __init__(self):
         self.samples = {}
+        # Keep track of sample ordering
+        self.sample_order = []
         self.int_lumi = None
 
     def add_sample(self, sample_mananger, nice_name, **style_options):
@@ -60,6 +62,7 @@ class PlotManager(object):
         sample_dict['sample'] = sample_mananger
         sample_dict['int_lumi'] = sample_mananger.effective_luminosity()
         sample_dict['nice_name'] = nice_name
+        self.sample_order.append(sample_mananger.name)
 
         # Get any desired style overrides for this sample
         sample_style = copy.copy(_DEFAULT_STYLE)
@@ -88,7 +91,8 @@ class PlotManager(object):
         # Keep track of all the plots we make
         result_dict['samples'] = {}
         result_dict['legend'] = LegendMaker()
-        for sample_name, sample_info in self.samples.iteritems():
+        for sample_name in self.sample_order:
+            sample_info = self.samples[sample_name]
             # Keep track of relevant info for each sample
             plot_dict = {}
             result_dict['samples'][sample_name] = plot_dict
