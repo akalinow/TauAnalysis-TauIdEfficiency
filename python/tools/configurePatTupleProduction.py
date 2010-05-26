@@ -124,6 +124,8 @@ def configurePatTupleProduction(process, addGenInfo = False):
     process.load("RecoTauTag.Configuration.ShrinkingConePFTaus_cfi")
     process.load("RecoTauTag.TauTagTools.PFTauMVAInputDiscriminatorTranslator_cfi")
     loadMVAInputsIntoPatTauDiscriminants(patPFTauProducerShrinkingCone)
+    # Enable embedding of decay mode from PFT Decay Mode data format
+    patPFTauProducerShrinkingCone.addDecayMode = cms.bool(True)
 
     process.pfTauSequenceShrinkingCone = buildDijetTauSequence(
         process,

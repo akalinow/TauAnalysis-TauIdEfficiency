@@ -73,6 +73,7 @@ pfTausShrinkingCone_recInfo = cms.PSet(
         byIsolationUsingLeadingPion = cms.string("tauID('byIsolationUsingLeadingPion')"),
         
         # additional TaNC (neural network) based discriminators
+        decayMode = cms.string('decayMode()'),
         byTaNC = cms.string("tauID('byTaNC')"),
         byTaNCfrOnePercent = cms.string("tauID('byTaNCfrOnePercent')"),
         byTaNCfrHalfPercent = cms.string("tauID('byTaNCfrHalfPercent')"),
