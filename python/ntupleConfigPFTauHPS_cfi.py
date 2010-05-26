@@ -44,14 +44,23 @@ pfTausHPS_recInfo = cms.PSet(
         againstElectron = cms.string("tauID('againstElectron')"),
         againstMuon = cms.string("tauID('againstMuon')"),                             
 
+        # reconstructed visible invariant mass of tau decay products
+        # ("meson mass")
         mass = cms.string("mass"),
-        prongs = cms.string("signalPFChargedHadrCands().size()"),
-        gammas = cms.string("signalPFGammaCands().size()"),
-        nIsoCharged = cms.string("isolationPFChargedHadrCands().size()"),
-        nIsoGamma = cms.string("isolationPFGammaCands().size()"),
-        nIsoNeutral = cms.string("isolationPFNeutrHadrCands().size()"),
-        isoChargedEtSum = cms.string("isolationPFChargedHadrCandsPtSum()"),
-        isoGammaEtSum = cms.string("isolationPFGammaCandsEtSum()")
+
+        # multiplicity and Pt sum of charged/neutral particles within signal and isolation cones
+        numChargedParticlesSignalCone = cms.string("signalPFChargedHadrCands().size()"),
+        numNeutralHadronsSignalCone = cms.string("signalPFNeutrHadrCands().size()"),
+        numPhotonsSignalCone = cms.string("signalPFGammaCands().size()"),
+        numParticlesSignalCone = cms.string("signalPFCands().size()"),
+
+        numChargedParticlesIsoCone = cms.string("isolationPFChargedHadrCands().size()"),
+        numNeutralHadronsIsoCone = cms.string("isolationPFNeutrHadrCands().size()"),
+        numPhotonsIsoCone = cms.string("isolationPFGammaCands().size()"),
+        numParticlesIsoCone = cms.string("isolationPFCands().size()"),
+
+        ptSumChargedParticlesIsoCone = cms.string("isolationPFChargedHadrCandsPtSum()"),
+        ptSumPhotonsIsoCone = cms.string("isolationPFGammaCandsEtSum()"),
     )
 )                
 

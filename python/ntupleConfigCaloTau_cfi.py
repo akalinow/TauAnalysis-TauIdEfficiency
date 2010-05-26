@@ -22,6 +22,10 @@ caloTaus_recInfo = cms.PSet(
         eta = cms.string("eta()"),
         phi = cms.string("phi()"),
 
+        # charge of CaloTau
+        # (sum of charges of tracks within signal cone)
+        charge = cms.string("charge()"),
+
         # kinematic variables for CaloJet associated to CaloTau
         jetPt = cms.string("caloTauTagInfoRef().calojetRef().pt()"),
         jetEta = cms.string("caloTauTagInfoRef().calojetRef().eta()"),

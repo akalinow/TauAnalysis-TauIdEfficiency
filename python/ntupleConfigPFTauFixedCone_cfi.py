@@ -23,6 +23,10 @@ pfTausFixedCone_recInfo = cms.PSet(
         eta = cms.string("eta()"),
         phi = cms.string("phi()"),
 
+        # charge of PFTau
+        # (sum of charges of charged particles within signal cone)
+        charge = cms.string("charge()"),
+
         # transverse momentum of leading charged/neutral particle within signal cone
         leadChargedParticlePt = cms.string("? leadPFChargedHadrCand().isNonnull() ? leadPFChargedHadrCand().pt() : 0."),
         leadNeutralParticlePt = cms.string("? leadPFNeutralCand().isNonnull() ? leadPFNeutralCand().pt() : 0."),
