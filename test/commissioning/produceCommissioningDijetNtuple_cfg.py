@@ -17,27 +17,29 @@ process.GlobalTag.globaltag = cms.string('MC_36Y_V7A::All')
 #--------------------------------------------------------------------------------
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
-        'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/run135528sdJetMETTau_noTriggerSel/qcdDiJetSkim_1_1.root',
-        'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/run135528sdJetMETTau_noTriggerSel/qcdDiJetSkim_2_1.root',
-        'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/run135528sdJetMETTau_noTriggerSel/qcdDiJetSkim_4_1.root',
-        'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/run135528sdJetMETTau_noTriggerSel/qcdDiJetSkim_5_1.root',
-        'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/run135528sdJetMETTau_noTriggerSel/qcdDiJetSkim_6_1.root',
-        'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/run135528sdJetMETTau_noTriggerSel/qcdDiJetSkim_7_1.root',
-        'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/run135528sdJetMETTau_noTriggerSel/qcdDiJetSkim_8_1.root',
-        'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/run135528sdJetMETTau_noTriggerSel/qcdDiJetSkim_9_1.root',
-        'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/run135528sdJetMETTau_noTriggerSel/qcdDiJetSkim_10_1.root',
-        'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/run135528sdJetMETTau_noTriggerSel/qcdDiJetSkim_11_1.root',
-        'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/run135528sdJetMETTau_noTriggerSel/qcdDiJetSkim_12_1.root',
-        'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/run135528sdJetMETTau_noTriggerSel/qcdDiJetSkim_13_1.root',
-        'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/run135528sdJetMETTau_noTriggerSel/qcdDiJetSkim_14_1.root',
-        'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/run135528sdJetMETTau_noTriggerSel/qcdDiJetSkim_15_1.root',
-        'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/run135528sdJetMETTau_noTriggerSel/qcdDiJetSkim_16_1.root',
-        'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/run135528sdJetMETTau_noTriggerSel/qcdDiJetSkim_17_1.root',
-        'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/run135528sdJetMETTau_noTriggerSel/qcdDiJetSkim_18_1.root',
-        'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/run135528sdJetMETTau_noTriggerSel/qcdDiJetSkim_19_1.root',
-        'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/run135528sdJetMETTau_noTriggerSel/qcdDiJetSkim_20_1.root',
-        'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/run135528sdJetMETTau_noTriggerSel/qcdDiJetSkim_21_1.root',
-        'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/run135528sdJetMETTau_noTriggerSel/qcdDiJetSkim_22_1.root'
+        '/store/relval/CMSSW_3_6_1/RelValZTT/GEN-SIM-RECO/START36_V7-v1/0021/F405BC9A-525D-DF11-AB96-002618943811.root',
+        '/store/relval/CMSSW_3_6_1/RelValZTT/GEN-SIM-RECO/START36_V7-v1/0020/EE3E8F74-365D-DF11-AE3D-002618FDA211.root'
+        #'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/run135528sdJetMETTau_noTriggerSel/qcdDiJetSkim_1_1.root',
+        #'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/run135528sdJetMETTau_noTriggerSel/qcdDiJetSkim_2_1.root',
+        #'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/run135528sdJetMETTau_noTriggerSel/qcdDiJetSkim_4_1.root',
+        #'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/run135528sdJetMETTau_noTriggerSel/qcdDiJetSkim_5_1.root',
+        #'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/run135528sdJetMETTau_noTriggerSel/qcdDiJetSkim_6_1.root',
+        #'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/run135528sdJetMETTau_noTriggerSel/qcdDiJetSkim_7_1.root',
+        #'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/run135528sdJetMETTau_noTriggerSel/qcdDiJetSkim_8_1.root',
+        #'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/run135528sdJetMETTau_noTriggerSel/qcdDiJetSkim_9_1.root',
+        #'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/run135528sdJetMETTau_noTriggerSel/qcdDiJetSkim_10_1.root',
+        #'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/run135528sdJetMETTau_noTriggerSel/qcdDiJetSkim_11_1.root',
+        #'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/run135528sdJetMETTau_noTriggerSel/qcdDiJetSkim_12_1.root',
+        #'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/run135528sdJetMETTau_noTriggerSel/qcdDiJetSkim_13_1.root',
+        #'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/run135528sdJetMETTau_noTriggerSel/qcdDiJetSkim_14_1.root',
+        #'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/run135528sdJetMETTau_noTriggerSel/qcdDiJetSkim_15_1.root',
+        #'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/run135528sdJetMETTau_noTriggerSel/qcdDiJetSkim_16_1.root',
+        #'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/run135528sdJetMETTau_noTriggerSel/qcdDiJetSkim_17_1.root',
+        #'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/run135528sdJetMETTau_noTriggerSel/qcdDiJetSkim_18_1.root',
+        #'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/run135528sdJetMETTau_noTriggerSel/qcdDiJetSkim_19_1.root',
+        #'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/run135528sdJetMETTau_noTriggerSel/qcdDiJetSkim_20_1.root',
+        #'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/run135528sdJetMETTau_noTriggerSel/qcdDiJetSkim_21_1.root',
+        #'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/run135528sdJetMETTau_noTriggerSel/qcdDiJetSkim_22_1.root'
     ),
     skipEvents = cms.untracked.uint32(0)            
 )
@@ -57,8 +59,18 @@ process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(1000)
 )
 
-##addGenInfo = True # use for MC
-addGenInfo = False # use for Data
+isMC = True # use for MC
+##isMC = False # use for Data
+#--------------------------------------------------------------------------------
+
+#--------------------------------------------------------------------------------
+# define skimming criteria
+# (in order to be able to produce Tau Ntuple directly from unskimmed Monte Carlo/datasets;
+#  HLT single jet trigger passed && either two CaloJets or two PFJets of Pt > 10 GeV within |eta| < 2.5)
+process.load('TauAnalysis.TauIdEfficiency.filterQCDdiJet_cfi')
+if isMC:
+    process.dataQualityFilters.remove(process.hltPhysicsDeclared)
+    process.dataQualityFilters.remove(process.dcsstatus)
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
@@ -67,7 +79,7 @@ addGenInfo = False # use for Data
 #
 from TauAnalysis.TauIdEfficiency.tools.configurePatTupleProduction import configurePatTupleProduction
 
-configurePatTupleProduction(process, addGenInfo = addGenInfo)
+configurePatTupleProduction(process, addGenInfo = isMC)
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
@@ -108,7 +120,7 @@ process.ntupleProducer = cms.EDAnalyzer("ObjValEDNtupleProducer",
     )
 )
 
-if addGenInfo:
+if isMC:
     setattr(process.ntupleProducer.sources, "caloTaus_part02", process.caloTaus_genInfo)
     setattr(process.ntupleProducer.sources, "pfTausFixedCone_part02", process.pfTausFixedCone_genInfo)
     setattr(process.ntupleProducer.sources, "pfTausShrinkingCone_part02", process.pfTausShrinkingCone_genInfo)
@@ -119,11 +131,14 @@ if addGenInfo:
 #
 # Save ntuple
 #
-process.out = cms.OutputModule("PoolOutputModule",
-    outputCommands = cms.untracked.vstring(
-        "drop *",
-        "keep *_*ntupleProducer*_*_*"
+process.ntupleOutputModule = cms.OutputModule("PoolOutputModule",
+    cms.PSet(
+        outputCommands = cms.untracked.vstring(
+            "drop *",
+            "keep *_*ntupleProducer*_*_*"
+        )                               
     ),
+    process.qcdDiJetEventSelection, # comment-out to disable filtering of events put in Tau Ntuple                         
     verbose = cms.untracked.bool(False),
     fileName = cms.untracked.string("tauIdEff_ntuple.root")      
 )
@@ -140,7 +155,11 @@ process.p = cms.Path(
    + process.ntupleProducer
 )
 
-process.end = cms.EndPath(process.out)
+process.options = cms.untracked.PSet(
+    wantSummary = cms.untracked.bool(True)
+)
+
+process.o = cms.EndPath(process.ntupleOutputModule)
 
 # print-out all python configuration parameter information
 #print process.dumpPython()
