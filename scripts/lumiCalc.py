@@ -13,7 +13,7 @@ prescales for those runs.
 Author: Matthias Edelhoff (Aachen)
 Contributors: Evan K. Friis (UC Davis)
 
-$Id: $
+$Id: lumiCalc.py,v 1.2 2010/05/27 19:11:34 friis Exp $
 
 Takes as input: 
     
@@ -43,8 +43,13 @@ def saveUpdate(dictA, dictB):
 
 def readMask(path):
     " Load a LumiSel (CRAB-style) JSON file "
+    parse_result = None
     with open(path, "r") as maskFile:
-        result = json.load(maskFile)
+        parse_result = json.load(maskFile)
+    # convert all strings to ints
+    result = {}
+    for parse_key, parse_value in parse_result.iteritems():
+        result[int(parse_key)] = parse_value
     return result
 
 def readNTuples(path):
@@ -96,7 +101,7 @@ def readPrescaleCSV(prescaleFilePath):
 def checkPrescales(prescaleTable, mask):
     lastGiven = 1.0
     result = {}
-    for run in [ int(i) for i in mask.keys()]:
+    for run in mask.keys():
         if not run in prescaleTable:
             given = raw_input("missing prescale for run %s (empty line = %s):"
                               %(run, lastGiven))
@@ -116,7 +121,9 @@ def calcLumi(lumiTable, prescaleTable, mask, formula = "vtxLumi", maxRelDelta=1.
                 key = (run,lumisec)
                 if key in lumiTable:
                     lumisecLumi = eval(formula, lumiTable[key])
-                    relDelta = fabs(lumiTable[key]["vtxLumi"]-lumiTable[key]["hfLumi"])/lumisecLumi if lumisecLumi != 0.0 else 0.0
+                    relDelta = (
+                        fabs(lumiTable[key]["vtxLumi"]-lumiTable[key]["hfLumi"]) 
+                        /lumisecLumi) if lumisecLumi != 0.0 else 0.0
                     if relDelta > maxRelDelta:
                         print "WARNING: large (%.2f) diffenrece in measured lumis detected in %s: vtx = %.2f hf = %.2f"%(relDelta,key,lumiTable[key]["vtxLumi"],lumiTable[key]["hfLumi"])
                     lumi_i+= lumisecLumi
@@ -157,6 +164,7 @@ def main(argv=None):
     prescaleTableAdditions = {}
     lumiMap = {}
     for datasetName in opts.datasetNames:
+        print "Building lumi map for %s dataset" % datasetName
         mask = readMask("%s_JSON.txt"%datasetName)
         nTuples = readNTuples("%s.list"%datasetName)
         additions = checkPrescales(prescaleTable, mask)
