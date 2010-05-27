@@ -31,19 +31,19 @@ caloTaus_recInfo = cms.PSet(
         jetEta = cms.string("caloTauTagInfoRef().calojetRef().eta()"),
         jetPhi = cms.string("caloTauTagInfoRef().calojetRef().phi()"),
 
-        #momentum of leading charged/neutral particle within signal cone
+        # momentum of leading charged/neutral particle within signal cone
         leadTrackPt = cms.string("? leadTrack().isNonnull() ? leadTrack().pt() : 0."),
 
-        #InvariantMass of Signal Tracks
+        # invariant mass of tracks within signal cone
         invariantMassSignalTracks = cms.string("signalTracksInvariantMass()"),
 
-        #multiplicity of Signal and Isolation Tracks
+        # multiplicity of tracks within signal/isolations cones
         numSignalTracks = cms.string("signalTracks().size()"),
         numIsolationTracks = cms.string("isolationTracks().size()"),
 
-        #pt of Tracks and et of ECAL clusters in Isolation Cone          
-        etSumIsolationECAL = cms.string("isolationECALhitsEtSum()"),
+        # Pt sum of tracks/Et sum of ECAL energy deposits within isolation cone
         ptSumIsolationTracks = cms.string("isolationTracksPtSum()"),
+        etSumIsolationECAL = cms.string("isolationECALhitsEtSum()"),
 
         # flags for tag/probe and Pt_index for distinguishing between
         # highest Pt, second highest Pt and third highest Pt jet
