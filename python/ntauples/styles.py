@@ -15,12 +15,13 @@ Author: Evan K. Friis (UC Davis)
 DEFAULT_STYLE = {
     'draw_option' : "",
     'marker_color' : ROOT.EColor.kBlack,
-    'marker_size' : 1.0,
-    'marker_style': 22,
+    'marker_size' : 2.0,
+    'marker_style': 20,
     'fill_color': ROOT.EColor.kWhite,
     'fill_style': 0,
     'line_width': 1,
     'line_color': ROOT.EColor.kBlack,
+    'title' : "CMS Preliminary",
 }
 
 HISTO_METHOD_MAP = {
@@ -34,11 +35,24 @@ HISTO_METHOD_MAP = {
     'line_color': lambda histo: histo.SetLineColor,
     'x_axis_title' : lambda histo: histo.GetXaxis().SetTitle,
     'y_axis_title' : lambda histo: histo.GetYaxis().SetTitle,
+    'title' : lambda histo: histo.SetTitle,
 }
 
 
 def update_histo_style(histo, style_dict):
     " Update a histograms style, given style dict "
     for style_item, value in style_dict.iteritems():
-        HISTO_METHOD_MAP[style_item](histo)(value)
+        if style_item in HISTO_METHOD_MAP:
+            HISTO_METHOD_MAP[style_item](histo)(value)
+        else:
+            print "Warning: Unrecognized style option %s" % style_item
+
+def remove_x_error_bars(tgraph):
+    " Remove horizontal error bars from graph "
+    for point in range(tgraph.GetN()):
+        tgraph.SetPointEXhigh(point, 0)
+        tgraph.SetPointEXlow(point, 0)
+
+
+
 

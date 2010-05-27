@@ -42,7 +42,7 @@ def draw(events, expression, selection="", output_name="", binning=(), options="
         event_source.Draw(str(draw_command), str(selection_with_weight), options)
     return ROOT.gDirectory.Get(output_name)
 
-def efficiency(events, expression, numerator="", output_name="", denominator="", **kwargs):
+def efficiency(events, expression, numerator="", denominator="", output_name="", **kwargs):
     ''' Compute the efficiency versus expression
 
     Returns a tuple containing a background TH1F (used to draw the axis)
@@ -62,6 +62,7 @@ def efficiency(events, expression, numerator="", output_name="", denominator="",
     histogram_background.GetYaxis().SetRangeUser(1e-4, 1)
     histogram_background.Reset()
     histogram_background.SetTitle("%s/%s" % (numerator, denominator))
+    histogram_background.SetStats(False)
     # Compute efficiency
     efficiency = ROOT.TGraphAsymmErrors(numerator_h, denominator_h)
     efficiency.SetName(output_name)
