@@ -10,7 +10,7 @@
  *
  * \version $Revision: 1.1 $
  *
- * $Id: ObjValEDNtupleProducer.h,v 1.1  Fri Apr 30 17:36:00 friis Exp $
+ * $Id: ObjValEDNtupleProducer.h,v 1.1 2010/05/03 14:27:40 friis Exp $
  *
  */
 
@@ -65,7 +65,7 @@ class ObjValEDNtupleProducer : public edm::EDProducer
   std::vector<ntupleEntryType*> ntupleEntries_;
   std::vector<ntupleVectorEntryType*> ntupleVectorEntries_;
 
-  long numEvents_filled_;
+  long numEvents_processed_;
 };
 
 #endif  

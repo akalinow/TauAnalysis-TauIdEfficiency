@@ -115,7 +115,7 @@ ObjValEDNtupleProducer::ObjValEDNtupleProducer(const edm::ParameterSet& cfg)
     produces<std::vector<double> >(name).setBranchAlias(name);
   }
   
-  numEvents_filled_ = 0;
+  numEvents_processed_ = 0;
   
   std::cout << "done." << std::endl;
 }
@@ -123,7 +123,7 @@ ObjValEDNtupleProducer::ObjValEDNtupleProducer(const edm::ParameterSet& cfg)
 ObjValEDNtupleProducer::~ObjValEDNtupleProducer()
 {
   std::cout << "<ObjValEDNtupleProducer::~ObjValEDNtupleProducer>:" << std::endl;
-  std::cout << " numEvents filled into EDMNtuples = " << numEvents_filled_ << std::endl;
+  std::cout << " numEvents processed = " << numEvents_processed_ << std::endl;
   
   std::cout << "done." << std::endl;
 }
@@ -162,7 +162,7 @@ void ObjValEDNtupleProducer::produce(edm::Event& evt, const edm::EventSetup& es)
     evt.put(toPut, (*ntupleEntry)->ntupleName_);
   }
   
-  ++numEvents_filled_;
+  ++numEvents_processed_;
 }
 
 #include "FWCore/Framework/interface/MakerMacros.h"
