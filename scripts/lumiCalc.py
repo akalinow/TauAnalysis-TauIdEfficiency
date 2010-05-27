@@ -13,7 +13,7 @@ prescales for those runs.
 Author: Matthias Edelhoff (Aachen)
 Contributors: Evan K. Friis (UC Davis)
 
-$Id: lumiCalc.py,v 1.2 2010/05/27 19:11:34 friis Exp $
+$Id: lumiCalc.py,v 1.3 2010/05/27 19:27:05 friis Exp $
 
 Takes as input: 
     
@@ -21,8 +21,7 @@ Takes as input:
     luminsoities
 
     o A json file containing the mask that maps runs to good lumisection ranges
-    corresponding to a dataset. (i.e. the CRAB json mask used to produce the
-    dataset)
+    corresponding to a dataset. (i.e. the file produced crab -report)
 
     o A text file containing the list of ROOT files associated with this
     dataset
