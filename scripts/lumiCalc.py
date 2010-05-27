@@ -1,52 +1,96 @@
 #!/usr/bin/env python
 import sys, os
+import json
+import csv
+
+'''
+
+lumiCalc.py
+
+Compute the effective luminosity of a dataset, given the selected runs and
+prescales for those runs.
+
+Author: Matthias Edelhoff (Aachen)
+Contributors: Evan K. Friis (UC Davis)
+
+$Id: $
+
+Takes as input: 
+    
+    o CSV file mapping lumi sections to their corresponding integrated
+    luminsoities
+
+    o A json file containing the mask that maps runs to good lumisection ranges
+    corresponding to a dataset. (i.e. the CRAB json mask used to produce the
+    dataset)
+
+    o A text file containing the list of ROOT files associated with this
+    dataset
+
+    o A CSV file mapping a run to the prescale applied to the triggers used to
+    select the dataset.
+
+'''
+
 
 def saveUpdate(dictA, dictB):
     for key in dictB:
             if key in dictA and not dictB[key] == dictA[key]:
-                raise StandardError, "there are overlaping and divergent data for %s"%( key)
+                raise StandardError, \
+                        "there are overlaping and divergent data for %s"%(key)
     dictA.update( dictB )
     return dictA
 
 def readMask(path):
-    maskFile = open(path,"r")
-    result = eval(maskFile.read())
-    maskFile.close()
+    " Load a LumiSel (CRAB-style) JSON file "
+    with open(path, "r") as maskFile:
+        result = json.load(maskFile)
     return result
 
 def readNTuples(path):
-    maskFile = open(path,"r")
-    result = [i.strip() for i in maskFile.read().splitlines()]
-    maskFile.close()
+    " Read a list of input Ntuple root files "
+    with open(path, "r") as fileList:
+        result = [i.strip() for i in fileList.read().splitlines()]
     return result
 
-def readLumiCSV(path, skipHead = 5):
-    #todo: add some validity checks
-    row= { "run": 0, "lumisec":1, "hfLumi": 4, "vtxLumi":5} 
-    lumiCSVFile=open(path,"r")
-    lumiCSV = lumiCSVFile.read().splitlines()
-    lumiCSVFile.close()
+def readCSV(pathToFile, skipHeader = 0):
+    ''' Yields dictionaries for each row of a CSV file
+
+    The field names (keys) for each column are taken from the header line
+    (after skip header) of the file.
+    '''
+    with open(pathToFile, 'r') as csvFile:
+        # Skip header lines
+        for skipper in range(skipHeader):
+            csvFile.readline()
+        reader = csv.DictReader(csvFile)
+        # Strip any whitespace from the field names
+        reader.fieldnames[:] = [field.strip() for field in reader.fieldnames]
+        for row in reader:
+            yield row
+
+def readLumiCSV(lumiCSVPath, skipHead = 4):
+    " Populate (run/lumisec) -> int. luminosity map "
     result = {}
-    for line in lumiCSV[skipHead:]:
-        run = int(line.split(",")[row["run"]])
-        lumisec = int(line.split(",")[row["lumisec"]])
-        hfLumi = float(line.split(",")[row["hfLumi"]])
-        vtxLumi = float(line.split(",")[row["vtxLumi"]])
-        result["%s:%s"%(run,lumisec)] = {"hfLumi": hfLumi, "vtxLumi":vtxLumi}
+    for row in readCSV(lumiCSVPath, skipHead):
+        run_lumi_key = (int(row['Run']), int(row['LS']))
+        # Double check this has't been inserted already
+        if run_lumi_key in result:
+            raise KeyError, "duplicated Run/Lumi key in file %s"%lumiCSVPath
+        result[run_lumi_key] = {
+            'hfLumi': float(row['HF Lumi']),
+            'vtxLumi': float(row['Vtx Lumi'])
+        }
     return result
 
-def readPrescaleCSV(path, skipHead = 0):
-    #todo: add some validity checks
-    #todo: avoid duplication from readLumiCSV
-    row = {"run":0, "prescale":1}
-    prescaleCSVFile=open(path,"r")
-    prescaleCSV = prescaleCSVFile.read().splitlines()
-    prescaleCSVFile.close()
+def readPrescaleCSV(prescaleFilePath):
+    " Populate (run) -> prescale map "
     result = {}
-    for line in prescaleCSV[skipHead:]:
-        run = int(line.split(",")[row["run"]])
-        prescale = float(line.split(",")[row["prescale"]])
-        result[run]= {"prescale":prescale}
+    for row in readCSV(prescaleFilePath, 0):
+        run_key = int(row['Run'])
+        if run_key in result:
+            raise KeyError, "duplicated Run key in file %s"%prescaleFilePath
+        result[run_key] = {'prescale': row['Prescale']}
     return result
 
 def checkPrescales(prescaleTable, mask):
@@ -54,7 +98,8 @@ def checkPrescales(prescaleTable, mask):
     result = {}
     for run in [ int(i) for i in mask.keys()]:
         if not run in prescaleTable:
-            given = raw_input("missing prescale for run %s (empty line = %s):"%(run, lastGiven))
+            given = raw_input("missing prescale for run %s (empty line = %s):"
+                              %(run, lastGiven))
             if given == "": given = lastGiven
             else: lastGiven = given
             result[run]= {"prescale":float(given)}
@@ -68,7 +113,7 @@ def calcLumi(lumiTable, prescaleTable, mask, formula = "vtxLumi", maxRelDelta=1.
         lumi_i = 0.0
         for lumisecRange in mask[run]:
             for lumisec in range(lumisecRange[0], lumisecRange[1]+1):
-                key = "%s:%s"%(run,lumisec)
+                key = (run,lumisec)
                 if key in lumiTable:
                     lumisecLumi = eval(formula, lumiTable[key])
                     relDelta = fabs(lumiTable[key]["vtxLumi"]-lumiTable[key]["hfLumi"])/lumisecLumi if lumisecLumi != 0.0 else 0.0
@@ -80,7 +125,6 @@ def calcLumi(lumiTable, prescaleTable, mask, formula = "vtxLumi", maxRelDelta=1.
 
 def main(argv=None):
     from optparse import OptionParser
-    from pprint import pformat
     if argv == None:
         argv = sys.argv[1:]
     parser = OptionParser()
@@ -121,19 +165,21 @@ def main(argv=None):
         intLumi = calcLumi(lumiTable, prescaleTable, mask)
         lumiMap[datasetName] = [nTuples, intLumi]
 
+    # Write output to json file
+    with open(opts.outPath, 'w') as outputFile:
+        json.dump(lumiMap, outputFile)
     
-    outFile = open(opts.outPath,"w")
-    outFile.write(pformat(lumiMap))
-    outFile.close()
-    
-    if not prescaleTableAdditions == {}:
-        prescaleAddionString = ""
-        for run in prescaleTableAdditions:
-            prescaleAddionString +="%s, %f\n"%(run, prescaleTableAdditions[run]["prescale"])
-        prescaleAddionFile = open(opts.outPath.replace(".json","_prescaleAdditions.csv"),"w")
-        prescaleAddionFile.write(prescaleAddionString)
-        prescaleAddionFile.close()
-
+    # Write out any prescales that were entered by hand
+    if prescaleTableAdditions:
+        prescaleAddonPath=opts.outPath.replace(".json","_prescaleAdditions.csv")
+        with open(prescaleAddonPath, 'w') as prescaleAddonFile:
+            fieldnames = ('Run', 'Prescale')
+            writer = csv.DictWriter(prescaleAddonFile, 
+                                    fieldnames=fieldnames)
+            # write header
+            writer.writerow(dict((n, n) for n in fieldnames))
+            for run, run_dict in prescaleTableAdditions.iteritems():
+                writer.writerow({'Run': run, 'Prescale': run_dict['prescale']})
         
 if __name__ == '__main__':
     main()
