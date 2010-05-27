@@ -12,11 +12,11 @@ trigger_template = cms.PSet(
     src = cms.InputTag("TriggerResults::HLT"),
 
     columns = cms.PSet(
-        hltL1Jet6U         = cms.string("HLT_L1Jet6U"),
-        hltJet15U          = cms.string("HLT_Jet15U"),
-        hltJet30U          = cms.string("HLT_Jet30U"),
-        hltJet50U          = cms.string("HLT_Jet50U"),
-        hltMinBiasBSC      = cms.string("HLT_MinBiasBSC"),
-        hltMinBiasBSCNoBPTX= cms.string("HLT_MinBiasBSC_NoBPTX")
+        hltL1Jet6U          = cms.string("HLT_L1Jet6U"),
+        hltJet15U           = cms.string("HLT_Jet15U"),
+        hltJet30U           = cms.string("HLT_Jet30U"),
+        hltJet50U           = cms.string("HLT_Jet50U"),
+        hltMinBiasBSC       = cms.string("HLT_MinBiasBSC"),
+        hltMinBiasBSCnoBPTX = cms.string("HLT_MinBiasBSC_NoBPTX")
     )
 )    
