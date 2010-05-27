@@ -1,0 +1,20 @@
+{
+    "data_week_1": {
+        "files": [
+            "tauIdEff_ntuple.root"
+        ], 
+        "int_lumi": 1.0
+    },
+    "data_week_2": {
+        "files": [
+            "tauIdEff_ntuple.root" 
+        ], 
+        "int_lumi": 2.0
+    },
+    "data_week_3": {
+        "files": [
+            "tauIdEff_ntuple.root" 
+        ], 
+        "int_lumi": 3.0
+    }
+}
