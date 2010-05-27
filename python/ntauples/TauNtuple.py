@@ -7,12 +7,11 @@ class TauNtuple(object):
         self.variables = list(variables)
         # Build
         self.mapping_dict = dict(
-            (var, 
-             "%(ntuple_name)s#%(collection_name)s#%(var)s" % {
+            (var, "%(ntuple_name)s#%(collection_name)s#%(var)s" % {
                  'ntuple_name':ntuple_name, 
                  'collection_name':collection_name, 
-                 'var':var} )
-            for var in variables)
+                 'var':var } 
+            ) for var in variables)
 
     def substitute(self, expr):
         " Retrive the correct TTree draw()-type string for a given variable "
