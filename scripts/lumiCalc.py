@@ -13,7 +13,7 @@ prescales for those runs.
 Author: Matthias Edelhoff (Aachen)
 Contributors: Evan K. Friis (UC Davis)
 
-$Id: lumiCalc.py,v 1.3 2010/05/27 19:27:05 friis Exp $
+$Id: lumiCalc.py,v 1.4 2010/05/27 19:59:08 friis Exp $
 
 Takes as input: 
     
@@ -170,11 +170,11 @@ def main(argv=None):
         saveUpdate(prescaleTable, additions)
         prescaleTableAdditions.update(additions)
         intLumi = calcLumi(lumiTable, prescaleTable, mask)
-        lumiMap[datasetName] = [nTuples, intLumi]
+        lumiMap[datasetName] = {'files': nTuples, 'int_lumi': intLumi}
 
     # Write output to json file
     with open(opts.outPath, 'w') as outputFile:
-        json.dump(lumiMap, outputFile)
+        json.dump(lumiMap, outputFile, sort_keys=True, indent=4)
     
     # Write out any prescales that were entered by hand
     if prescaleTableAdditions:
