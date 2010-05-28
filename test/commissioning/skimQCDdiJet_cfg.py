@@ -12,7 +12,6 @@ process.load('Configuration/StandardSequences/GeometryIdeal_cff')
 process.load('Configuration/StandardSequences/MagneticField_cff')
 process.load('Configuration/StandardSequences/Reconstruction_cff')
 process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
-process.GlobalTag.globaltag = cms.string('MC_36Y_V7A::All')
 
 #--------------------------------------------------------------------------------
 process.source = cms.Source("PoolSource",
@@ -33,6 +32,15 @@ process.maxEvents = cms.untracked.PSet(
 isMC = True # use for MC
 ##isMC = False # use for Data
 #--------------------------------------------------------------------------------
+
+#--------------------------------------------------------------------------------
+# define GlobalTag to be used for event reconstruction
+# (only relevant for HPS tau reconstruction algorithm)
+if isMC:
+    process.GlobalTag.globaltag = cms.string('MC_36Y_V7A::All')
+else:
+    process.GlobalTag.globaltag = cms.string('GR_R_36X_V11A::All')
+#--------------------------------------------------------------------------------  
 
 #--------------------------------------------------------------------------------
 # define skimming criteria
