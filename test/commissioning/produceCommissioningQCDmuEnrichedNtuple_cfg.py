@@ -204,9 +204,18 @@ process.ntupleOutputModule = cms.OutputModule("PoolOutputModule",
 # produce collections of PFTaus reconstructed by hadron + strips (HPS) algorithm
 # "on-the-fly", as it is not contained in data taken with CMSSW_3_5_x
 process.load("RecoTauTag.Configuration.HPSPFTaus_cfi")
+process.prePatProductionSequence = cms.Sequence(process.produceAndDiscriminateHPSPFTaus)
+
+# if running on Monte Carlo, produce ak5GenJets collection "on-the-fly",
+# as it is needed for matching reconstructed particles to generator level information by PAT,
+# but not contained in Monte Carlo samples produced with CMSSW_3_5_x
+if isMC:
+    process.load("RecoJets.Configuration.GenJetParticles_cff")
+    process.load("RecoJets.JetProducers.ak5GenJets_cfi")
+    process.prePatProductionSequence += cms.Sequence(process.genParticlesForJets + process.ak5GenJets)
 
 process.p = cms.Path(
-    process.produceAndDiscriminateHPSPFTaus
+    process.prePatProductionSequence
    + process.patTupleProductionSequence
    #+ process.printEventContent
    + process.ntupleProducer

@@ -16,8 +16,10 @@ process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
 #--------------------------------------------------------------------------------
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
-        '/store/relval/CMSSW_3_6_1/RelValZTT/GEN-SIM-RECO/START36_V7-v1/0021/F405BC9A-525D-DF11-AB96-002618943811.root',
-        '/store/relval/CMSSW_3_6_1/RelValZTT/GEN-SIM-RECO/START36_V7-v1/0020/EE3E8F74-365D-DF11-AE3D-002618FDA211.root'
+        #'/store/relval/CMSSW_3_6_1/RelValZTT/GEN-SIM-RECO/START36_V7-v1/0021/F405BC9A-525D-DF11-AB96-002618943811.root',
+        #'/store/relval/CMSSW_3_6_1/RelValZTT/GEN-SIM-RECO/START36_V7-v1/0020/EE3E8F74-365D-DF11-AE3D-002618FDA211.root'
+        '/store/relval/CMSSW_3_5_4/RelValZTT/GEN-SIM-RECO/START3X_V24-v1/0004/020492F1-2C2C-DF11-AF77-002618943826.root',
+        '/store/relval/CMSSW_3_5_4/RelValZTT/GEN-SIM-RECO/START3X_V24-v1/0003/C00F5E4C-972B-DF11-99BB-001A92971AA8.root'
         #'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/run135528sdJetMETTau_noTriggerSel/qcdDiJetSkim_1_1.root',
         #'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/run135528sdJetMETTau_noTriggerSel/qcdDiJetSkim_2_1.root',
         #'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/run135528sdJetMETTau_noTriggerSel/qcdDiJetSkim_4_1.root',
@@ -178,9 +180,18 @@ process.ntupleOutputModule = cms.OutputModule("PoolOutputModule",
 # produce collections of PFTaus reconstructed by hadron + strips (HPS) algorithm
 # "on-the-fly", as it is not contained in data taken with CMSSW_3_5_x
 process.load("RecoTauTag.Configuration.HPSPFTaus_cfi")
+process.prePatProductionSequence = cms.Sequence(process.produceAndDiscriminateHPSPFTaus)
+
+# if running on Monte Carlo, produce ak5GenJets collection "on-the-fly",
+# as it is needed for matching reconstructed particles to generator level information by PAT,
+# but not contained in Monte Carlo samples produced with CMSSW_3_5_x
+if isMC:
+    process.load("RecoJets.Configuration.GenJetParticles_cff")
+    process.load("RecoJets.JetProducers.ak5GenJets_cfi")
+    process.prePatProductionSequence += cms.Sequence(process.genParticlesForJets + process.ak5GenJets)
 
 process.p = cms.Path(
-    process.produceAndDiscriminateHPSPFTaus
+    process.prePatProductionSequence
    + process.patTupleProductionSequence
    #+ process.printEventContent
    + process.ntupleProducer
