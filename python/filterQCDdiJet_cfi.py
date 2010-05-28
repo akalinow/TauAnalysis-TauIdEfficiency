@@ -50,8 +50,8 @@ selectedCaloTauPairs = cms.EDFilter("DiCandidatePairSelector",
 )
 
 caloTauSkimPath = cms.Path(
-    hltJet15U
-   + selectedCaloTaus + caloTauPairs + selectedCaloTauPairs
+    #hltJet15U
+    selectedCaloTaus + caloTauPairs + selectedCaloTauPairs
    + dataQualityFilters
 )
 #--------------------------------------------------------------------------------
@@ -85,8 +85,8 @@ selectedPFTauPairs = cms.EDFilter("DiCandidatePairSelector",
 )
 
 pfTauSkimPath = cms.Path(    
-    hltJet15U
-   + selectedPFTaus + pfTauPairs + selectedPFTauPairs
+    #hltJet15U
+    selectedPFTaus + pfTauPairs + selectedPFTauPairs
    + dataQualityFilters
 )
 #--------------------------------------------------------------------------------
