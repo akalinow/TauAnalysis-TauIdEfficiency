@@ -89,14 +89,24 @@ if isMC:
 from TauAnalysis.TauIdEfficiency.tools.configurePatTupleProduction import configurePatTupleProduction
 from TauAnalysis.TauIdEfficiency.tools.sequenceBuilder import buildQCDmuEnrichedTauSequence
 
-from PhysicsTools.PatAlgos.cleaningLayer1.tauCleaner_cfi import *
-patTauCleanerPrototype = cleanPatTaus.clone(
+# define muon selection criteria
+# (used for "cleaning" of CaloTau/PFTau collection)
+#
+# NOTE: only muons passing selection will be written to Tau Ntuple
+#
+##process.load("PhysicsTools.PatAlgos.selectionLayer1.muonSelector_cfi")
+##process.selectedPatMuons.cut = cms.string("isGlobalMuon & pt > 3 & abs(eta) < 2.5")
+
+# "clean" CaloTau/PFTau collections
+# (i.e. remove CaloTaus/PFTaus overlapping with muons)
+process.load("PhysicsTools.PatAlgos.cleaningLayer1.tauCleaner_cfi")
+process.patTauCleanerPrototype = process.cleanPatTaus.clone(
     preselection = cms.string(''),
     checkOverlaps = cms.PSet(
         muons = cms.PSet(
-           src                 = cms.InputTag("cleanPatMuons"),
+           src                 = cms.InputTag("selectedPatMuons"),
            algorithm           = cms.string("byDeltaR"),
-           preselection        = cms.string(""),
+           preselection        = cms.string("isGlobalMuon & pt > 3 & abs(eta) < 2.5"),
            deltaR              = cms.double(0.7),
            checkRecoComponents = cms.bool(False),
            pairCut             = cms.string(""),
@@ -107,7 +117,8 @@ patTauCleanerPrototype = cleanPatTaus.clone(
 )
 
 retVal = configurePatTupleProduction(process,
-                                     patSequenceBuilder = buildQCDmuEnrichedTauSequence, patTauCleanerPrototype = patTauCleanerPrototype,
+                                     patSequenceBuilder = buildQCDmuEnrichedTauSequence,
+                                     patTauCleanerPrototype = process.patTauCleanerPrototype,
                                      addGenInfo = isMC)
 #--------------------------------------------------------------------------------
 
@@ -208,4 +219,11 @@ process.options = cms.untracked.PSet(
 process.o = cms.EndPath(process.ntupleOutputModule)
 
 # print-out all python configuration parameter information
+#
+# NOTE: need to delete empty sequence produced by call to "switchJetCollection"
+#       in order to avoid error when calling "process.dumpPython"
+#      ( cf. https://hypernews.cern.ch/HyperNews/CMS/get/physTools/1688/1/1/1/1/1.html )
+#
+#del process.patJetMETCorrections
 #print process.dumpPython()
+

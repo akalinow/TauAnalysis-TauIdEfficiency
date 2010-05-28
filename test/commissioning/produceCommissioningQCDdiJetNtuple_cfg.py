@@ -88,15 +88,16 @@ if isMC:
 from TauAnalysis.TauIdEfficiency.tools.configurePatTupleProduction import configurePatTupleProduction
 from TauAnalysis.TauIdEfficiency.tools.sequenceBuilder import buildQCDdiJetTauSequence
 
-from PhysicsTools.PatAlgos.cleaningLayer1.tauCleaner_cfi import *
-patTauCleanerPrototype = cleanPatTaus.clone(
+process.load("PhysicsTools.PatAlgos.cleaningLayer1.tauCleaner_cfi")
+process.patTauCleanerPrototype = process.cleanPatTaus.clone(
     preselection = cms.string(''),
     checkOverlaps = cms.PSet(),
     finalCut = cms.string('')
 )
 
 retVal = configurePatTupleProduction(process,
-                                     patSequenceBuilder = buildQCDdiJetTauSequence, patTauCleanerPrototype = patTauCleanerPrototype,
+                                     patSequenceBuilder = buildQCDdiJetTauSequence,
+                                     patTauCleanerPrototype = process.patTauCleanerPrototype,
                                      addGenInfo = isMC)
 #--------------------------------------------------------------------------------
 
@@ -147,13 +148,13 @@ process.ntupleProducer = cms.EDAnalyzer("ObjValEDNtupleProducer",
 )
 
 if isMC:
-    process.caloTaus_genInfo.src = process.caloTaus_recInfo.src
+    process.caloTaus_genInfo.src = cms.InputTag(retVal["caloTauCollection"])
     setattr(process.ntupleProducer.sources, "caloTaus_part02", process.caloTaus_genInfo)
-    process.pfTausFixedCone_genInfo.src = process.pfTausFixedCone_recInfo.src
+    process.pfTausFixedCone_genInfo.src = cms.InputTag(retVal["pfTauCollectionFixedCone"])
     setattr(process.ntupleProducer.sources, "pfTausFixedCone_part02", process.pfTausFixedCone_genInfo)
-    process.pfTausShrinkingCone_genInfo.src = process.pfTausShrinkingCone_recInfo.src
+    process.pfTausShrinkingCone_genInfo.src = cms.InputTag(retVal["pfTauCollectionShrinkingCone"])
     setattr(process.ntupleProducer.sources, "pfTausShrinkingCone_part02", process.pfTausShrinkingCone_genInfo)
-    process.pfTausHPS_genInfo.src = process.pfTausHPS_recInfo.src
+    process.pfTausHPS_genInfo.src = cms.InputTag(retVal["pfTauCollectionHPS"])
     setattr(process.ntupleProducer.sources, "pfTausHPS_part02", process.pfTausHPS_genInfo)
 #--------------------------------------------------------------------------------
 
@@ -192,4 +193,11 @@ process.options = cms.untracked.PSet(
 process.o = cms.EndPath(process.ntupleOutputModule)
 
 # print-out all python configuration parameter information
+#
+# NOTE: need to delete empty sequence produced by call to "switchJetCollection"
+#       in order to avoid error when calling "process.dumpPython"
+#      ( cf. https://hypernews.cern.ch/HyperNews/CMS/get/physTools/1688/1/1/1/1/1.html )
+#
+#del process.patJetMETCorrections
 #print process.dumpPython()
+

@@ -13,9 +13,6 @@ Author: Evan K. Friis, Christian Veelken (UC Davis)
 
 '''
 
-##import TauAnalysis.TauIdEfficiency.patConfiguration.tauProductionPrototypes as tauProto
-##import TauAnalysis.TauIdEfficiency.patConfiguration.matchingPrototypes as matchProto
-
 def buildTauSequence(
     process, 
     collectionName = [ "patTaus", "" ],
@@ -71,14 +68,14 @@ def buildTauSequence(
     )
     patTauTriggerMatchName = collectionName[0]  + "TriggerMatched" + collectionName[1]
     setattr(process, patTauTriggerMatchName, patTauTriggerMatch)
-    outputSequence += patTauTriggerMatch
+    outputSequence += getattr(process, patTauTriggerMatchName)
 
     patTauTriggerEvent = process.patTriggerEvent.clone(
         patTriggerMatches = cms.VInputTag(patTauTriggerMatchName)
     )
     patTauTriggerEventName = collectionName[0] + "TriggerEvent" + collectionName[1]
     setattr(process, patTauTriggerEventName, patTauTriggerEvent)
-    outputSequence += patTauTriggerEvent
+    outputSequence += getattr(process, patTauTriggerEventName)
 
     patTauTriggerEmbedder = cms.EDProducer("PATTriggerMatchTauEmbedder",
         src     = cms.InputTag(patTauProducerName),
@@ -86,7 +83,7 @@ def buildTauSequence(
     )
     patTauTriggerEmbedderName = collectionName[0] + "TriggerEmbedder" + collectionName[1]
     setattr(process, patTauTriggerEmbedderName, patTauTriggerEmbedder)
-    outputSequence += patTauTriggerEmbedder
+    outputSequence += getattr(process, patTauTriggerEmbedderName)
 
     # configure PATTauCleaner module
     # for removal of tau-jet candidates "overlapping" with electrons or muons
@@ -94,8 +91,8 @@ def buildTauSequence(
     patTauCleaner.src = cms.InputTag(patTauTriggerEmbedderName)
     patTauCleanerName = collectionName[0] + "Cleaned" + collectionName[1]
     setattr(process, patTauCleanerName, patTauCleaner)
-    outputSequence += patTauCleaner
-    
+    outputSequence += getattr(process, patTauCleanerName)
+
     # return sequence for production of basic tau collection,
     # generator level particle and jet matches and trigger primitives embedded;
     # together with name of "cleaned" tau collection
@@ -140,7 +137,7 @@ def buildQCDdiJetTauSequence(
     )
     patTauDijetTagAndProbeName = collectionName[0] + "DijetTagAndProbe" + collectionName[1]
     setattr(process, patTauDijetTagAndProbeName, patTauDijetTagAndProbe)
-    outputSequence += cms.Sequence(patTauDijetTagAndProbe)
+    outputSequence += getattr(process, patTauDijetTagAndProbeName)
 
     # return full sequence for production of basic tau collection,
     # generator level particle and jet matches, trigger matches,

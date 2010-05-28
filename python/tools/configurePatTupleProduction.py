@@ -12,9 +12,13 @@ from TauAnalysis.Configuration.tools.metTools import *
 from RecoTauTag.TauTagTools.PFTauMVAInputDiscriminatorTranslator_cfi import \
         loadMVAInputsIntoPatTauDiscriminants
 
-##from TauAnalysis.TauIdEfficiency.tools.sequenceBuilder import buildDijetTauSequence
-
 def configurePatTupleProduction(process, patSequenceBuilder = None, patTauCleanerPrototype = None, addGenInfo = False):
+
+    # check that patSequenceBuilder and patTauCleanerPrototype are defined and non-null
+    if patSequenceBuilder is None:
+        raise ValueError("Undefined patSequenceBuilder Parameter !!")
+    if patTauCleanerPrototype is None:
+        raise ValueError("Undefined patTauCleanerPrototype Parameter !!")
 
     #--------------------------------------------------------------------------------
     # produce PAT objects
@@ -26,17 +30,6 @@ def configurePatTupleProduction(process, patSequenceBuilder = None, patTauCleane
     process.load("PhysicsTools.PatAlgos.producersLayer1.metProducer_cff")
     process.load("TauAnalysis.CandidateTools.muTauPairProduction_cff")
 
-    process.load("TauAnalysis.TauIdEfficiency.patConfiguration.matchingPrototypes")
-    patCaloTauMatchProtoType = copy.deepcopy(process.dijetCleanerPrototype)
-    patCaloTauMatchProtoType.checkOverlaps.TagJet.src = cms.InputTag("caloJetsTagAndProbes", "tagObject")
-    patCaloTauMatchProtoType.checkOverlaps.HighestPtProbeJet.src = cms.InputTag("caloJetsTagAndProbes", "highestPtProbe")
-    patCaloTauMatchProtoType.checkOverlaps.SecondHighestPtProbe.src = cms.InputTag("caloJetsTagAndProbes", "secondHighestPtProbe")
-
-    patPFTauMatchProtoType = copy.deepcopy(process.dijetCleanerPrototype)
-    patPFTauMatchProtoType.checkOverlaps.TagJet.src = cms.InputTag("pfJetsTagAndProbes", "tagObject")
-    patPFTauMatchProtoType.checkOverlaps.HighestPtProbeJet.src = cms.InputTag("pfJetsTagAndProbes", "highestPtProbe")
-    patPFTauMatchProtoType.checkOverlaps.SecondHighestPtProbe.src = cms.InputTag("pfJetsTagAndProbes", "secondHighestPtProbe")
-
     if not addGenInfo:
         removeMCMatching(process)
 
@@ -44,7 +37,7 @@ def configurePatTupleProduction(process, patSequenceBuilder = None, patTauCleane
     # configure PAT trigger matching
     process.load("PhysicsTools.PatAlgos.triggerLayer1.triggerProducer_cff")
     
-    patTauTriggerMatchHLTsingleJet15UprotoType = cms.EDFilter("PATTriggerMatcherDRDPtLessByR",
+    process.patTauTriggerMatchHLTsingleJet15UprotoType = cms.EDFilter("PATTriggerMatcherDRDPtLessByR",
         src                   = cms.InputTag("cleanLayer1Taus"),
         matched               = cms.InputTag("patTrigger"),
         andOr                 = cms.bool(False),
@@ -66,14 +59,14 @@ def configurePatTupleProduction(process, patSequenceBuilder = None, patTauCleane
     # for collection of pat::Tau objects representing CaloTaus 
     #
     switchToCaloTau(process)    
-    patCaloTauProducer = copy.deepcopy(process.patTaus)
+    process.patCaloTauProducer = copy.deepcopy(process.patTaus)
 
     retVal_caloTau = patSequenceBuilder(
         process,
         collectionName = [ "patCaloTaus", "" ],
-        patTauProducerPrototype = patCaloTauProducer,
-        patTauCleanerPrototype = patTauCleanerPrototype,
-        triggerMatcherProtoType = patTauTriggerMatchHLTsingleJet15UprotoType,
+        patTauProducerPrototype = process.patCaloTauProducer,
+        patTauCleanerPrototype = process.patTauCleanerPrototype,
+        triggerMatcherProtoType = process.patTauTriggerMatchHLTsingleJet15UprotoType,
         addGenInfo = addGenInfo
     )
     process.caloTauSequence = retVal_caloTau["sequence"]
@@ -94,14 +87,14 @@ def configurePatTupleProduction(process, patSequenceBuilder = None, patTauCleane
     # (plus combinations of muon + tau-jet pairs)
     #
     switchToPFTauFixedCone(process)
-    patPFTauProducerFixedCone = copy.deepcopy(process.patTaus)
+    process.patPFTauProducerFixedCone = copy.deepcopy(process.patTaus)
 
     retVal_pfTauFixedCone = patSequenceBuilder(
         process,
         collectionName = [ "patPFTaus", "FixedCone" ],
-        patTauProducerPrototype = patPFTauProducerFixedCone,
-        patTauCleanerPrototype = patTauCleanerPrototype,
-        triggerMatcherProtoType = patTauTriggerMatchHLTsingleJet15UprotoType,
+        patTauProducerPrototype = process.patPFTauProducerFixedCone,
+        patTauCleanerPrototype = process.patTauCleanerPrototype,
+        triggerMatcherProtoType = process.patTauTriggerMatchHLTsingleJet15UprotoType,
         addGenInfo = addGenInfo
     )
     process.pfTauSequenceFixedCone = retVal_pfTauFixedCone["sequence"]
@@ -122,21 +115,21 @@ def configurePatTupleProduction(process, patSequenceBuilder = None, patTauCleane
     # (plus combinations of muon + tau-jet pairs) 
     #
     switchToPFTauShrinkingCone(process)
-    patPFTauProducerShrinkingCone = copy.deepcopy(process.patTaus)
+    process.patPFTauProducerShrinkingCone = copy.deepcopy(process.patTaus)
 
     # Load TaNC inputs into pat::Tau
     process.load("RecoTauTag.Configuration.ShrinkingConePFTaus_cfi")
     process.load("RecoTauTag.TauTagTools.PFTauMVAInputDiscriminatorTranslator_cfi")
-    loadMVAInputsIntoPatTauDiscriminants(patPFTauProducerShrinkingCone)
+    loadMVAInputsIntoPatTauDiscriminants(process.patPFTauProducerShrinkingCone)
     # Enable embedding of decay mode from PFT Decay Mode data format
-    patPFTauProducerShrinkingCone.addDecayMode = cms.bool(True)
+    process.patPFTauProducerShrinkingCone.addDecayMode = cms.bool(True)
 
     retVal_pfTauShrinkingCone = patSequenceBuilder(
         process,
         collectionName = [ "patPFTaus", "ShrinkingCone" ],
-        patTauProducerPrototype = patPFTauProducerShrinkingCone,
-        patTauCleanerPrototype = patTauCleanerPrototype,
-        triggerMatcherProtoType = patTauTriggerMatchHLTsingleJet15UprotoType,
+        patTauProducerPrototype = process.patPFTauProducerShrinkingCone,
+        patTauCleanerPrototype = process.patTauCleanerPrototype,
+        triggerMatcherProtoType = process.patTauTriggerMatchHLTsingleJet15UprotoType,
         addGenInfo = addGenInfo
     )
     process.pfTauSequenceShrinkingCone = retVal_pfTauShrinkingCone["sequence"]
@@ -157,14 +150,14 @@ def configurePatTupleProduction(process, patSequenceBuilder = None, patTauCleane
     # (plus combinations of muon + tau-jet pairs) 
     #
     switchToPFTauHPS(process)
-    patPFTauProducerHPS = copy.deepcopy(process.patTaus)
+    process.patPFTauProducerHPS = copy.deepcopy(process.patTaus)
 
     retVal_pfTauHPS = patSequenceBuilder(
         process,
         collectionName = [ "patPFTaus", "HPS" ],
-        patTauProducerPrototype = patPFTauProducerHPS,
-        patTauCleanerPrototype = patTauCleanerPrototype,
-        triggerMatcherProtoType = patTauTriggerMatchHLTsingleJet15UprotoType,
+        patTauProducerPrototype = process.patPFTauProducerHPS,
+        patTauCleanerPrototype = process.patTauCleanerPrototype,
+        triggerMatcherProtoType = process.patTauTriggerMatchHLTsingleJet15UprotoType,
         addGenInfo = addGenInfo
     )
     process.pfTauSequenceHPS = retVal_pfTauHPS["sequence"]
@@ -197,8 +190,8 @@ def configurePatTupleProduction(process, patSequenceBuilder = None, patTauCleane
        + process.shrinkingConePFTauDecayModeProducer               
        + process.produceTancMVAInputDiscriminators
        + process.pfTauSequenceFixedCone + process.pfTauSequenceShrinkingCone + process.pfTauSequenceHPS
-       + process.patMuonCaloTauPairs
-       + process.patMuonPFTauPairsFixedCone + process.patMuonPFTauPairsShrinkingCone + process.patMuonPFTauPairsHPS
+       ##+ process.patMuonCaloTauPairs
+       ##+ process.patMuonPFTauPairsFixedCone + process.patMuonPFTauPairsShrinkingCone + process.patMuonPFTauPairsHPS
     )
 
     # return names of "final" collections of CaloTaus/different types of PFTaus
