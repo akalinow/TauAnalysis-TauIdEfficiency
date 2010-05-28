@@ -1,6 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 
-process = cms.Process("prodCommissioningDijetNtuple")
+process = cms.Process("prodCommissioningQDCdiJetNtuple")
 
 # import of standard configurations for RECOnstruction
 # of electrons, muons and tau-jets with non-standard isolation cones
@@ -86,8 +86,18 @@ if isMC:
 # produce PAT objects
 #
 from TauAnalysis.TauIdEfficiency.tools.configurePatTupleProduction import configurePatTupleProduction
+from TauAnalysis.TauIdEfficiency.tools.sequenceBuilder import buildQCDdiJetTauSequence
 
-configurePatTupleProduction(process, addGenInfo = isMC)
+from PhysicsTools.PatAlgos.cleaningLayer1.tauCleaner_cfi import *
+patTauCleanerPrototype = cleanPatTaus.clone(
+    preselection = cms.string(''),
+    checkOverlaps = cms.PSet(),
+    finalCut = cms.string('')
+)
+
+retVal = configurePatTupleProduction(process,
+                                     patSequenceBuilder = buildQCDdiJetTauSequence, patTauCleanerPrototype = patTauCleanerPrototype,
+                                     addGenInfo = isMC)
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
@@ -115,23 +125,35 @@ process.ntupleProducer = cms.EDAnalyzer("ObjValEDNtupleProducer",
         vertex = process.vertex_template,                   
 
         # variables specific to CaloTaus                                            
-        caloTaus_part01 = process.caloTaus_recInfo,
+        caloTaus_part01 = process.caloTaus_recInfo.clone(
+            src = cms.InputTag(retVal["caloTauCollection"])                       
+        ),
 
         # variables specific to fixed cone PFTaus                                            
-        pfTausFixedCone_part01 = process.pfTausFixedCone_recInfo,
+        pfTausFixedCone_part01 = process.pfTausFixedCone_recInfo.clone(
+            src = cms.InputTag(retVal["pfTauCollectionFixedCone"])                       
+        ),
 
         # variables specific to shrinking cone PFTaus                                            
-        pfTausShrinkingCone_part01 = process.pfTausShrinkingCone_recInfo,
+        pfTausShrinkingCone_part01 = process.pfTausShrinkingCone_recInfo.clone(
+            src = cms.InputTag(retVal["pfTauCollectionShrinkingCone"])                       
+        ),
 
         # variables specific to PFTaus reconstructed by hadron + strips (HPS) algorithm                                           
-        pfTausHPS_part01 = process.pfTausHPS_recInfo,
+        pfTausHPS_part01 = process.pfTausHPS_recInfo.clone(
+            src = cms.InputTag(retVal["pfTauCollectionHPS"])                       
+        )
     )
 )
 
 if isMC:
+    process.caloTaus_genInfo.src = process.caloTaus_recInfo.src
     setattr(process.ntupleProducer.sources, "caloTaus_part02", process.caloTaus_genInfo)
+    process.pfTausFixedCone_genInfo.src = process.pfTausFixedCone_recInfo.src
     setattr(process.ntupleProducer.sources, "pfTausFixedCone_part02", process.pfTausFixedCone_genInfo)
+    process.pfTausShrinkingCone_genInfo.src = process.pfTausShrinkingCone_recInfo.src
     setattr(process.ntupleProducer.sources, "pfTausShrinkingCone_part02", process.pfTausShrinkingCone_genInfo)
+    process.pfTausHPS_genInfo.src = process.pfTausHPS_recInfo.src
     setattr(process.ntupleProducer.sources, "pfTausHPS_part02", process.pfTausHPS_genInfo)
 #--------------------------------------------------------------------------------
 
@@ -148,7 +170,7 @@ process.ntupleOutputModule = cms.OutputModule("PoolOutputModule",
     ),
     process.qcdDiJetEventSelection, # comment-out to disable filtering of events put in Tau Ntuple                         
     verbose = cms.untracked.bool(False),
-    fileName = cms.untracked.string("tauIdEff_ntuple.root")      
+    fileName = cms.untracked.string("tauIdEffEDNtuple_qcdDiJet.root")      
 )
 #--------------------------------------------------------------------------------
 
