@@ -12,9 +12,9 @@ from TauAnalysis.Configuration.tools.metTools import *
 from RecoTauTag.TauTagTools.PFTauMVAInputDiscriminatorTranslator_cfi import \
         loadMVAInputsIntoPatTauDiscriminants
 
-from TauAnalysis.TauIdEfficiency.tools.sequenceBuilder import buildDijetTauSequence
+##from TauAnalysis.TauIdEfficiency.tools.sequenceBuilder import buildDijetTauSequence
 
-def configurePatTupleProduction(process, addGenInfo = False):
+def configurePatTupleProduction(process, patSequenceBuilder = None, patTauCleanerPrototype = None, addGenInfo = False):
 
     #--------------------------------------------------------------------------------
     # produce PAT objects
@@ -68,17 +68,19 @@ def configurePatTupleProduction(process, addGenInfo = False):
     switchToCaloTau(process)    
     patCaloTauProducer = copy.deepcopy(process.patTaus)
 
-    process.caloTauSequence = buildDijetTauSequence(
+    retVal_caloTau = patSequenceBuilder(
         process,
         collectionName = [ "patCaloTaus", "" ],
         patTauProducerPrototype = patCaloTauProducer,
+        patTauCleanerPrototype = patTauCleanerPrototype,
         triggerMatcherProtoType = patTauTriggerMatchHLTsingleJet15UprotoType,
         addGenInfo = addGenInfo
     )
+    process.caloTauSequence = retVal_caloTau["sequence"]
 
     process.patMuonCaloTauPairs = process.allMuTauPairs.clone(
         srcLeg1 = cms.InputTag('patMuons'),
-        srcLeg2 = cms.InputTag('patCaloTausDijetTagAndProbe'),
+        srcLeg2 = cms.InputTag(retVal_caloTau["collection"]),
         srcMET = cms.InputTag('patMETs'),
         srcGenParticles = cms.InputTag(''),
         doSVreco = cms.bool(False)
@@ -94,17 +96,19 @@ def configurePatTupleProduction(process, addGenInfo = False):
     switchToPFTauFixedCone(process)
     patPFTauProducerFixedCone = copy.deepcopy(process.patTaus)
 
-    process.pfTauSequenceFixedCone = buildDijetTauSequence(
+    retVal_pfTauFixedCone = patSequenceBuilder(
         process,
         collectionName = [ "patPFTaus", "FixedCone" ],
         patTauProducerPrototype = patPFTauProducerFixedCone,
+        patTauCleanerPrototype = patTauCleanerPrototype,
         triggerMatcherProtoType = patTauTriggerMatchHLTsingleJet15UprotoType,
         addGenInfo = addGenInfo
     )
+    process.pfTauSequenceFixedCone = retVal_pfTauFixedCone["sequence"]
 
     process.patMuonPFTauPairsFixedCone = process.allMuTauPairs.clone(
         srcLeg1 = cms.InputTag('patMuons'),
-        srcLeg2 = cms.InputTag('patPFTausDijetTagAndProbeFixedCone'),
+        srcLeg2 = cms.InputTag(retVal_pfTauFixedCone["collection"]),
         srcMET = cms.InputTag('patPFMETs'),
         srcGenParticles = cms.InputTag(''),
         doSVreco = cms.bool(False)
@@ -127,17 +131,19 @@ def configurePatTupleProduction(process, addGenInfo = False):
     # Enable embedding of decay mode from PFT Decay Mode data format
     patPFTauProducerShrinkingCone.addDecayMode = cms.bool(True)
 
-    process.pfTauSequenceShrinkingCone = buildDijetTauSequence(
+    retVal_pfTauShrinkingCone = patSequenceBuilder(
         process,
         collectionName = [ "patPFTaus", "ShrinkingCone" ],
         patTauProducerPrototype = patPFTauProducerShrinkingCone,
+        patTauCleanerPrototype = patTauCleanerPrototype,
         triggerMatcherProtoType = patTauTriggerMatchHLTsingleJet15UprotoType,
         addGenInfo = addGenInfo
     )
+    process.pfTauSequenceShrinkingCone = retVal_pfTauShrinkingCone["sequence"]
 
     process.patMuonPFTauPairsShrinkingCone = process.allMuTauPairs.clone(
         srcLeg1 = cms.InputTag('patMuons'),
-        srcLeg2 = cms.InputTag('patPFTausDijetTagAndProbeShrinkingCone'),
+        srcLeg2 = cms.InputTag(retVal_pfTauShrinkingCone["collection"]),
         srcMET = cms.InputTag('patPFMETs'),
         srcGenParticles = cms.InputTag(''),
         doSVreco = cms.bool(False)
@@ -153,17 +159,19 @@ def configurePatTupleProduction(process, addGenInfo = False):
     switchToPFTauHPS(process)
     patPFTauProducerHPS = copy.deepcopy(process.patTaus)
 
-    process.pfTauSequenceHPS = buildDijetTauSequence(
+    retVal_pfTauHPS = patSequenceBuilder(
         process,
         collectionName = [ "patPFTaus", "HPS" ],
         patTauProducerPrototype = patPFTauProducerHPS,
+        patTauCleanerPrototype = patTauCleanerPrototype,
         triggerMatcherProtoType = patTauTriggerMatchHLTsingleJet15UprotoType,
         addGenInfo = addGenInfo
     )
+    process.pfTauSequenceHPS = retVal_pfTauHPS["sequence"]
 
     process.patMuonPFTauPairsHPS = process.allMuTauPairs.clone(
         srcLeg1 = cms.InputTag('patMuons'),
-        srcLeg2 = cms.InputTag('patPFTausDijetTagAndProbeHPS'),
+        srcLeg2 = cms.InputTag(retVal_pfTauHPS["collection"]),
         srcMET = cms.InputTag('patPFMETs'),
         srcGenParticles = cms.InputTag(''),
         doSVreco = cms.bool(False)
@@ -185,11 +193,19 @@ def configurePatTupleProduction(process, addGenInfo = False):
         process.patDefaultSequence
        + process.patTrigger
        + process.caloTauSequence
-       # Recomputed decay modes and embed TaNC inputs
+       # recompute decay modes and embed TaNC inputs
        + process.shrinkingConePFTauDecayModeProducer               
        + process.produceTancMVAInputDiscriminators
        + process.pfTauSequenceFixedCone + process.pfTauSequenceShrinkingCone + process.pfTauSequenceHPS
-       # EKF temporarily turning off, breaks runtime
-       #+ process.patMuonCaloTauPairs
-       #+ process.patMuonPFTauPairsFixedCone + process.patMuonPFTauPairsShrinkingCone + process.patMuonPFTauPairsHPS
+       + process.patMuonCaloTauPairs
+       + process.patMuonPFTauPairsFixedCone + process.patMuonPFTauPairsShrinkingCone + process.patMuonPFTauPairsHPS
     )
+
+    # return names of "final" collections of CaloTaus/different types of PFTaus
+    # to be used as InputTag for further processing
+    retVal = {}
+    retVal["caloTauCollection"] = retVal_caloTau["collection"]
+    retVal["pfTauCollectionFixedCone"] = retVal_pfTauFixedCone["collection"]
+    retVal["pfTauCollectionShrinkingCone"] = retVal_pfTauShrinkingCone["collection"]
+    retVal["pfTauCollectionHPS"] = retVal_pfTauHPS["collection"]
+    return retVal
