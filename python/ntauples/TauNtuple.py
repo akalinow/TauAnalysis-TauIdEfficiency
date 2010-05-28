@@ -51,6 +51,13 @@ class TauNtupleExpression(object):
     def __div__(self, other):
         self.check_other(other)
         return TauNtupleExpression("(%s)/(%s)" % (self.value, other))
+    def __pow__(self, other):
+        if not isinstance(other, int) or other < 2:
+            raise ValueError
+        output = self
+        for i in range(other-1):
+            output = output*output
+        return output
     def __and__(self, other):
         self.check_other(other)
         return TauNtupleExpression("(%s) && (%s)" % (self.value, other))
