@@ -50,7 +50,7 @@ if __name__ == "__main__":
     cmssw_base = os.environ['CMSSW_BASE']
     example_file = os.path.join(
         cmssw_base, 'src', 'TauAnalysis/TauIdEfficiency/test/example_ntuple.root')
-    file = ROOT.TFile(example_file, "READ")
+    file = ROOT.TFile.Open(example_file, "READ")
     events = file.Get("Events")
 
     manager = TauNtupleManager(events, "exampleNtuple")

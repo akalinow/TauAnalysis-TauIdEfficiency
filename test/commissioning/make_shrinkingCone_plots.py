@@ -14,7 +14,7 @@ if __name__ == "__main__":
 
     # Pull out the defintion of the ntuple (this should be improved)
     # Don't ever access this file directly, just use it to parse event content...
-    dummy_file = ROOT.TFile("tauIdEff_ntuple.root")
+    dummy_file = ROOT.TFile.Open("tauIdEff_ntuple.root", "READ")
     ntuple_manager = TauNtupleManager(dummy_file.Get("Events"), "tauIdEffNtuple")
 
     # Get the shrinking ntuple

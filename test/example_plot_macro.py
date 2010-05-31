@@ -13,7 +13,7 @@ import TauAnalysis.TauIdEfficiency.ntauples.plotting as plot
 
 if __name__ == "__main__":
     ROOT.gROOT.SetBatch(True)
-    file = ROOT.TFile("example_ntuple.root", "READ")
+    file = ROOT.TFile.Open("example_ntuple.root", "READ")
     
     # Get the events tree (this can also be a TChain)
     events = file.Get("Events")
