@@ -86,7 +86,7 @@ pfTausShrinkingCone_recInfo = cms.PSet(
         
         # discriminators against electrons/muons
         againstElectron = cms.string("tauID('againstElectron')"),
-        againstMuon = cms.string("tauID('againstMuon')"),
+        againstMuon = cms.string("tauID('againstMuon')")
     )
 )
 
