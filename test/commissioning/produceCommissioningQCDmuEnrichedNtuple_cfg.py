@@ -106,7 +106,7 @@ process.patTauCleanerPrototype = process.cleanPatTaus.clone(
         muons = cms.PSet(
            src                 = cms.InputTag("selectedPatMuons"),
            algorithm           = cms.string("byDeltaR"),
-           preselection        = cms.string("isGlobalMuon & pt > 3 & abs(eta) < 2.5"),
+           preselection        = cms.string("isGlobalMuon"),
            deltaR              = cms.double(0.7),
            checkRecoComponents = cms.bool(False),
            pairCut             = cms.string(""),
@@ -214,10 +214,43 @@ if isMC:
     process.load("RecoJets.JetProducers.ak5GenJets_cfi")
     process.prePatProductionSequence += cms.Sequence(process.genParticlesForJets + process.ak5GenJets)
 
+##process.muTauEventDump = cms.EDAnalyzer("EventDumpAnalyzer",
+##    plugin = cms.PSet(
+##        pluginType = cms.string('MuTauEventDump'),                                    
+##                                            
+##        l1GtReadoutRecordSource = cms.InputTag(''),
+##        l1GtObjectMapRecordSource = cms.InputTag(''),
+##        l1BitsToPrint = cms.vstring('L1_SingleMu3', 'L1_SingleMu5'),
+##    
+##        hltResultsSource = cms.InputTag('TriggerResults::HLT'),
+##        hltPathsToPrint = cms.vstring('HLT_Mu3', 'HLT_Mu5'),
+##        
+##        genParticleSource = cms.InputTag('genParticles'),
+##        genJetSource = cms.InputTag('iterativeCone5GenJets'),
+##        genTauJetSource = cms.InputTag('tauGenJets'),
+##        genEventInfoSource = cms.InputTag('generator'),
+##    
+##        electronSource = cms.InputTag('cleanPatElectrons'),
+##        muonSource = cms.InputTag('cleanPatMuons'),
+##        tauSource = cms.InputTag('patPFTausCleanedShrinkingCone'),
+##        printTauIdEfficiencies = cms.bool(False),
+##        diTauCandidateSource = cms.InputTag('patMuonPFTauPairsShrinkingCone'),
+##        muTauZmumuHypothesisSource = cms.InputTag(''),
+##        diMuZmumuHypothesisSource = cms.InputTag(''),
+##        jetSource = cms.InputTag('patJets'),
+##        caloMEtSource = cms.InputTag('patMETs'),
+##        pfMEtSource = cms.InputTag('patPFMETs'),
+##        genMEtSource = cms.InputTag('genMetTrue'),
+##    
+##        output = cms.string("std::cout")
+##    )
+##)
+
 process.p = cms.Path(
     process.prePatProductionSequence
    + process.patTupleProductionSequence
    #+ process.printEventContent
+   ##+ process.muTauEventDump
    + process.ntupleProducer
 )
 
