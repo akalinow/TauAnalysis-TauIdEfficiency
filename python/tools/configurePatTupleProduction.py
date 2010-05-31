@@ -190,8 +190,8 @@ def configurePatTupleProduction(process, patSequenceBuilder = None, patTauCleane
        + process.shrinkingConePFTauDecayModeProducer               
        + process.produceTancMVAInputDiscriminators
        + process.pfTauSequenceFixedCone + process.pfTauSequenceShrinkingCone + process.pfTauSequenceHPS
-       ##+ process.patMuonCaloTauPairs
-       ##+ process.patMuonPFTauPairsFixedCone + process.patMuonPFTauPairsShrinkingCone + process.patMuonPFTauPairsHPS
+       + process.patMuonCaloTauPairs
+       + process.patMuonPFTauPairsFixedCone + process.patMuonPFTauPairsShrinkingCone + process.patMuonPFTauPairsHPS
     )
 
     # return names of "final" collections of CaloTaus/different types of PFTaus
