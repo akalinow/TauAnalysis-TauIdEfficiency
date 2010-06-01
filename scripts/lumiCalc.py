@@ -2,6 +2,8 @@
 import sys, os
 import json
 import csv
+import itertools
+from TauAnalysis.TauIdEfficiency.tools.prescales import RunRegistry
 
 '''
 
@@ -13,7 +15,7 @@ prescales for those runs.
 Author: Matthias Edelhoff (Aachen)
 Contributors: Evan K. Friis (UC Davis)
 
-$Id: lumiCalc.py,v 1.4 2010/05/27 19:59:08 friis Exp $
+$Id: lumiCalc.py,v 1.5 2010/05/27 20:08:28 friis Exp $
 
 Takes as input: 
     
@@ -25,9 +27,6 @@ Takes as input:
 
     o A text file containing the list of ROOT files associated with this
     dataset
-
-    o A CSV file mapping a run to the prescale applied to the triggers used to
-    select the dataset.
 
 '''
 
@@ -52,10 +51,17 @@ def readMask(path):
     return result
 
 def readNTuples(path):
-    " Read a list of input Ntuple root files "
+    """ Read a list of input Ntuple root files and their trigger path
+
+    The file must have the trigger path on the first line, followed by the
+    associated root files (one per line)
+    
+    Returns (HLTPath, fileList)
+    
+    """
     with open(path, "r") as fileList:
         result = [i.strip() for i in fileList.read().splitlines()]
-    return result
+    return (result[0], result[1:])
 
 def readCSV(pathToFile, skipHeader = 0):
     ''' Yields dictionaries for each row of a CSV file
@@ -87,29 +93,7 @@ def readLumiCSV(lumiCSVPath, skipHead = 4):
         }
     return result
 
-def readPrescaleCSV(prescaleFilePath):
-    " Populate (run) -> prescale map "
-    result = {}
-    for row in readCSV(prescaleFilePath, 0):
-        run_key = int(row['Run'])
-        if run_key in result:
-            raise KeyError, "duplicated Run key in file %s"%prescaleFilePath
-        result[run_key] = {'prescale': row['Prescale']}
-    return result
-
-def checkPrescales(prescaleTable, mask):
-    lastGiven = 1.0
-    result = {}
-    for run in mask.keys():
-        if not run in prescaleTable:
-            given = raw_input("missing prescale for run %s (empty line = %s):"
-                              %(run, lastGiven))
-            if given == "": given = lastGiven
-            else: lastGiven = given
-            result[run]= {"prescale":float(given)}
-    return result
-
-def calcLumi(lumiTable, prescaleTable, mask, formula = "vtxLumi", maxRelDelta=1.):
+def calcLumi(lumiTable, mask, run_registry, path, formula = "vtxLumi", maxRelDelta=1.):
     #does the lumisec list inclusive? think so...
     from math import fabs
     result = 0.0
@@ -126,7 +110,10 @@ def calcLumi(lumiTable, prescaleTable, mask, formula = "vtxLumi", maxRelDelta=1.
                     if relDelta > maxRelDelta:
                         print "WARNING: large (%.2f) diffenrece in measured lumis detected in %s: vtx = %.2f hf = %.2f"%(relDelta,key,lumiTable[key]["vtxLumi"],lumiTable[key]["hfLumi"])
                     lumi_i+= lumisecLumi
-        result += lumi_i/prescaleTable[int(run)]["prescale"]
+        prescale = 1
+        if path:
+            prescale = run_registry.get_prescale(run, path)
+        result += lumi_i/prescale
     return result
 
 def main(argv=None):
@@ -138,15 +125,12 @@ def main(argv=None):
                       help="appendable list of dataset names. Expects DATASETNAME_JSON.txt for used mask and DATASETNAME.list for a list if paths to nTuple Files")
     parser.add_option("-l", "--lumi", dest="lumiCSVs", action="append", default=[], 
                       help="appendable list of luminosity by lumisection csv files to use")
-    parser.add_option("-p", "--prescale", dest="prescaleCSVs", action="append", default=[], 
-                      help="appendable list of prescales by runnumber csv files to use")
     parser.add_option("-o", "--output", dest="outPath", default="lumiMap.json", 
                       help="path to output file")
     (opts, args) = parser.parse_args(argv)
 
     if opts.datasetNames == []: raise StandardError, "it makes no sense not to specify at least on dataset name"
     if opts.lumiCSVs == []: opts.lumiCSVs = ["lumi_by_LS.csv"]
-    if opts.prescaleCSVs == []: opts.prescaleCSVs = ["prescales_by_RUN.csv"]
     
     if os.path.exists(opts.outPath): raise StandardError, "Output file '%s' exists. Please move it out of the way!"%opts.outPath
 
@@ -155,38 +139,36 @@ def main(argv=None):
         newLumis = readLumiCSV(lumiCSV)
         lumiTable = saveUpdate(lumiTable, newLumis)
 
-    prescaleTable = {}
-    for prescaleCSV in opts.prescaleCSVs:
-        newPrescales = readPrescaleCSV(prescaleCSV)
-        prescaleTable = saveUpdate(prescaleTable, newPrescales)
+    # Load masks for the datasets
+    masks = {}
+    for datasetName in opts.datasetNames:
+        masks[datasetName] = readMask("%s_JSON.txt"%datasetName)
 
-    prescaleTableAdditions = {}
+    def loop_over_runs():
+        for dataset, mask in masks.iteritems():
+            for run in mask.keys():
+                yield run
+
+    min_run_number = min(loop_over_runs())
+    max_run_number = max(loop_over_runs())
+    print min_run_number
+    print max_run_number
+
+    # Build our run registry to access prescale info from DB
+    run_registry = RunRegistry(firstRun=min_run_number, lastRun=max_run_number, 
+                               groupName="Collisions%")
+
     lumiMap = {}
     for datasetName in opts.datasetNames:
         print "Building lumi map for %s dataset" % datasetName
-        mask = readMask("%s_JSON.txt"%datasetName)
-        nTuples = readNTuples("%s.list"%datasetName)
-        additions = checkPrescales(prescaleTable, mask)
-        saveUpdate(prescaleTable, additions)
-        prescaleTableAdditions.update(additions)
-        intLumi = calcLumi(lumiTable, prescaleTable, mask)
+        mask = masks[datasetName]
+        triggerPath, nTuples = readNTuples("%s.list"%datasetName)
+        intLumi = calcLumi(lumiTable, mask, run_registry, triggerPath)
         lumiMap[datasetName] = {'files': nTuples, 'int_lumi': intLumi}
 
     # Write output to json file
     with open(opts.outPath, 'w') as outputFile:
         json.dump(lumiMap, outputFile, sort_keys=True, indent=4)
-    
-    # Write out any prescales that were entered by hand
-    if prescaleTableAdditions:
-        prescaleAddonPath=opts.outPath.replace(".json","_prescaleAdditions.csv")
-        with open(prescaleAddonPath, 'w') as prescaleAddonFile:
-            fieldnames = ('Run', 'Prescale')
-            writer = csv.DictWriter(prescaleAddonFile, 
-                                    fieldnames=fieldnames)
-            # write header
-            writer.writerow(dict((n, n) for n in fieldnames))
-            for run, run_dict in prescaleTableAdditions.iteritems():
-                writer.writerow({'Run': run, 'Prescale': run_dict['prescale']})
         
 if __name__ == '__main__':
     main()

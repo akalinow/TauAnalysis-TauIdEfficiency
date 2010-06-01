@@ -40,14 +40,16 @@ class RunRegistry(object):
         # Associate information about HLT to each RUN
         self.runs = {}
         for xml_run in xml_runs:
-            self.runs[
-                xml_run.getElementsByTagName("RUN_NUMBER")[0].firstChild.nodeValue
-            ] = xml_run.getElementsByTagName("RUN_HLTKEY")[0].firstChild.nodeValue
+            run = xml_run.getElementsByTagName("RUN_NUMBER")[0].firstChild.nodeValue
+            content = xml_run.getElementsByTagName("RUN_HLTKEY")[0].firstChild.nodeValue
+            self.runs[int(run)] = content
+            #print "Registered run: ", run, content
 
     def get_prescale(self, run, path):
         # get appropriate HLT config
         matcher = re.compile(r'\|\s*%s\s*\|\s*(?P<prescale>\d+)\s*\|' % path.strip())
         config = self.runs[run]
+        #print "Got run", run, config
         cmd = [
             'edmConfigFromDB',
             '--orcoff',
