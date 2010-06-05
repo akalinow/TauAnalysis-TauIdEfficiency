@@ -9,7 +9,28 @@
 
 #include <string>
 
-PATTauVectorGenJetValExtractor::PATTauVectorGenJetValExtractor(const edm::ParameterSet& cfg)
+namespace {
+   // Forward declaration
+   template<typename T> const reco::GenJet* getGenJet(edm::Ptr<T> input);
+
+   // Getter for when input collection is pat::taus
+   template<> const reco::GenJet* getGenJet<pat::Tau>(edm::Ptr<pat::Tau> input) 
+   { 
+      return input->genJet();
+   }
+
+   // Getter for when input collection is already a collection of
+   // GenJets.
+   template<> const reco::GenJet* getGenJet<reco::GenJet>(edm::Ptr<reco::GenJet> input) 
+   {
+      return input.get();
+   }
+}
+  
+
+
+template<typename T>
+VectorGenJetValExtractor<T>::VectorGenJetValExtractor(const edm::ParameterSet& cfg)
 {
   src_ = cfg.getParameter<edm::InputTag>("src");
   
@@ -20,38 +41,37 @@ PATTauVectorGenJetValExtractor::PATTauVectorGenJetValExtractor(const edm::Parame
   else if ( value_string == "genPhi"       ) value_ = kGenPhi;
   else if ( value_string == "genDecayMode" ) value_ = kGenDecayMode;
   else {
-    edm::LogError ("PATTauVectorGenJetValExtractor") << " Invalid configuration parameter value = " << value_string << " !!";
+    edm::LogError ("VectorGenJetValExtractor") << " Invalid configuration parameter value = " << value_string << " !!";
     value_ = -1;
   }
 }
 
-PATTauVectorGenJetValExtractor::~PATTauVectorGenJetValExtractor()
-{
-//--- nothing to be done yet...
-}
-
-std::vector<double> PATTauVectorGenJetValExtractor::operator()(const edm::Event& evt) const
+template<typename T>
+std::vector<double> VectorGenJetValExtractor<T>::operator()(const edm::Event& evt) const
 {
   std::vector<double> vec;
-  typedef edm::View<pat::Tau> patTauCollectionType;
-  edm::Handle<patTauCollectionType> patTaus;
-  evt.getByLabel(src_, patTaus);
+  typedef edm::View<T> inputCollectionType;
+  edm::Handle<inputCollectionType> input;
+  evt.getByLabel(src_, input);
 
-  unsigned numPatTaus = patTaus->size();
-  for ( unsigned i = 0; i < numPatTaus; ++i ) {
-    edm::Ptr<pat::Tau> patTauPtr = patTaus->ptrAt(i);
+  unsigned nInput = input->size();
+  for ( unsigned i = 0; i < nInput; ++i ) {
+    edm::Ptr<T> inputPtr = input->ptrAt(i);
 
     double vec_i = -1.;
 
-    bool isMatched = ( patTauPtr->genJet() != 0 ) ? true : false;
+    // get the associated GenJet
+    const reco::GenJet* genJet = getGenJet<T>(inputPtr);
+
+    bool isMatched = ( genJet != NULL ) ? true : false;
     
     if      ( value_ == kGenMatch ) vec_i = isMatched;
     else if ( isMatched ) {
-      if      ( value_ == kGenPt        ) vec_i = patTauPtr->genJet()->pt();
-      else if ( value_ == kGenEta       ) vec_i = patTauPtr->genJet()->eta();
-      else if ( value_ == kGenPhi       ) vec_i = patTauPtr->genJet()->phi();
+      if      ( value_ == kGenPt        ) vec_i = genJet->pt();
+      else if ( value_ == kGenEta       ) vec_i = genJet->eta();
+      else if ( value_ == kGenPhi       ) vec_i = genJet->phi();
       else if ( value_ == kGenDecayMode ) {	
-	std::string genDecayMode_string = JetMCTagUtils::genTauDecayMode(*patTauPtr->genJet());
+	std::string genDecayMode_string = JetMCTagUtils::genTauDecayMode(*genJet);
 //--- decode generated tau decay mode
 //    ( as defined in PhysicsTools/JetMCUtils/src/JetMCTag.cc )
 	if      ( genDecayMode_string == "electron"        ) vec_i = 0;
@@ -75,4 +95,8 @@ std::vector<double> PATTauVectorGenJetValExtractor::operator()(const edm::Event&
 
 #include "FWCore/Framework/interface/MakerMacros.h"
 
+typedef VectorGenJetValExtractor<pat::Tau> PATTauVectorGenJetValExtractor;
+typedef VectorGenJetValExtractor<reco::GenJet> GenJetVectorValExtractor;
+
+DEFINE_EDM_PLUGIN(ObjValVectorExtractorPluginFactory, GenJetVectorValExtractor, "GenJetVectorValExtractor");
 DEFINE_EDM_PLUGIN(ObjValVectorExtractorPluginFactory, PATTauVectorGenJetValExtractor, "PATTauVectorGenJetValExtractor");

@@ -133,6 +133,7 @@ process.load("TauAnalysis.TauIdEfficiency.ntupleConfigCaloTau_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigPFTauFixedCone_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigPFTauShrinkingCone_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigPFTauHPS_cfi")
+process.load("TauAnalysis.TauIdEfficiency.ntupleConfigGenJets_cfi")
 
 process.ntupleProducer = cms.EDAnalyzer("ObjValEDNtupleProducer",
                                         
@@ -182,6 +183,9 @@ if isMC:
     setattr(process.ntupleProducer.sources, "pfTausShrinkingCone_part02", process.pfTausShrinkingCone_genInfo)
     process.pfTausHPS_genInfo.src = cms.InputTag(retVal["pfTauCollectionHPS"])
     setattr(process.ntupleProducer.sources, "pfTausHPS_part02", process.pfTausHPS_genInfo)
+    # Add in information about generator level visible taus and all generator level jets
+    setattr(process.ntupleProducer.sources, "tauGenJets", process.tauGenJets_genInfo)
+    setattr(process.ntupleProducer.sources, "genJets", process.genJets_genInfo)
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------

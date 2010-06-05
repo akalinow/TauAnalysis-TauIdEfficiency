@@ -15,7 +15,7 @@ if __name__ == "__main__":
     ROOT.gROOT.SetBatch(True)
     ROOT.gROOT.SetStyle("Plain")
     ROOT.gStyle.SetOptStat(0)
-    file = ROOT.TFile.Open("tauIdEff_ntuple.root", "READ")
+    file = ROOT.TFile.Open("tauIdEffEDNtuple_qcdDiJet.root", "READ")
     
     # Get the events tree (this can also be a TChain)
     events = file.Get("Events")
@@ -26,7 +26,7 @@ if __name__ == "__main__":
     # Get the list of collections availabe for our ntuple
     print manager
 
-    # So lets use selectedPatTaus
+    # Lets use selectedPatTaus
     selectedPatTaus = manager.get_ntuple("patPFTausDijetTagAndProbeShrinkingCone")
 
     # All this helper funciton does it makes it easy for use
@@ -68,6 +68,17 @@ if __name__ == "__main__":
 
     decay_mode_hist.Draw()
     canvas.SaveAs("decay_mode_hist.png")
+
+    # We also have access to the generator level (w/ no reco matching required) in a seperate ntuple
+    true_taus = manager.get_ntuple("tauGenJets")
+
+    true_tau_pt = plot.draw(events, expression=true_taus.expr('$genPt'),
+                            selection=(true_taus.expr('abs($genEta) < 2.5')),
+                            binning=(20, 0, 100)
+                           )
+    true_tau_pt.Draw()
+    canvas.SaveAs("true_tau_pt.png")
+
 
     # We can easily make an efficiency plot as well
     # Let's compute the TaNC eff w.r.t Leading Piont for taus with Pt > 5 

@@ -1,7 +1,7 @@
-#ifndef TauAnalysis_TauIdEfficiency_PATTauVectorGenJetValExtractor_h  
-#define TauAnalysis_TauIdEfficiency_PATTauVectorGenJetValExtractor_h
+#ifndef TauAnalysis_TauIdEfficiency_VectorGenJetValExtractor_h  
+#define TauAnalysis_TauIdEfficiency_VectorGenJetValExtractor_h
 
-/** \class PATTauVectorGenJetValExtractor
+/** \class VectorGenJetValExtractor
  *
  * Auxiliary class for extracting generator level information
  * matching reconstructed PAT tau objects
@@ -15,9 +15,9 @@
  * 
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.1 $
+ * \version $Revision: 1.2 $
  *
- * $Id: PATTauVectorGenJetValExtractor.h,v 1.1 2010/05/20 17:34:34 veelken Exp $
+ * $Id: VectorGenJetValExtractor.h,v 1.2 2010/05/22 16:47:50 veelken Exp $
  *
  */
 
@@ -28,12 +28,13 @@
 
 #include "TauAnalysis/BgEstimationTools/interface/ObjValVectorExtractorBase.h"
 
-class PATTauVectorGenJetValExtractor : public ObjValVectorExtractorBase
+template<class T>
+class VectorGenJetValExtractor : public ObjValVectorExtractorBase
 {
  public:
   
-  explicit PATTauVectorGenJetValExtractor(const edm::ParameterSet&);
-  ~PATTauVectorGenJetValExtractor();
+  explicit VectorGenJetValExtractor(const edm::ParameterSet&);
+  ~VectorGenJetValExtractor(){};
     
   std::vector<double> operator()(const edm::Event&) const;
 
