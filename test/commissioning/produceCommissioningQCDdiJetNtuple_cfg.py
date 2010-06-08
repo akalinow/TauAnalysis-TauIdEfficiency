@@ -159,7 +159,7 @@ if isMC:
     setattr(process.ntupleProducer.sources, "pfTausShrinkingCone_part02", process.pfTausShrinkingCone_genInfo)
     process.pfTausHPS_genInfo.src = cms.InputTag(retVal["pfTauCollectionHPS"])
     setattr(process.ntupleProducer.sources, "pfTausHPS_part02", process.pfTausHPS_genInfo)
-    # Add in information about generator level visible taus and all generator level jets
+    # add in information about generator level visible taus and all generator level jets
     setattr(process.ntupleProducer.sources, "tauGenJets", process.tauGenJets_genInfo)
     setattr(process.ntupleProducer.sources, "genJets", process.genJets_genInfo)
 #--------------------------------------------------------------------------------
@@ -181,10 +181,15 @@ process.ntupleOutputModule = cms.OutputModule("PoolOutputModule",
 )
 #--------------------------------------------------------------------------------
 
-# produce collections of PFTaus reconstructed by hadron + strips (HPS) algorithm
+# recreate collection of CaloTaus
+# with four-momenta determined by TCTau instead of (regular) CaloTau algorithm
+process.load("RecoTauTag.Configuration.RecoTCTauTag_cff")
+process.prePatProductionSequence = cms.Sequence(process.tautagging)
+
+# produce collection of PFTaus reconstructed by hadron + strips (HPS) algorithm
 # "on-the-fly", as it is not contained in data taken with CMSSW_3_5_x
 process.load("RecoTauTag.Configuration.HPSPFTaus_cfi")
-process.prePatProductionSequence = cms.Sequence(process.produceAndDiscriminateHPSPFTaus)
+process.prePatProductionSequence += process.produceAndDiscriminateHPSPFTaus
 
 # if running on Monte Carlo, produce ak5GenJets collection "on-the-fly",
 # as it is needed for matching reconstructed particles to generator level information by PAT,
@@ -192,7 +197,8 @@ process.prePatProductionSequence = cms.Sequence(process.produceAndDiscriminateHP
 if isMC:
     process.load("RecoJets.Configuration.GenJetParticles_cff")
     process.load("RecoJets.JetProducers.ak5GenJets_cfi")
-    process.prePatProductionSequence += cms.Sequence(process.genParticlesForJets + process.ak5GenJets)
+    process.prePatProductionSequenceGen = cms.Sequence(process.genParticlesForJets * process.ak5GenJets)
+    process.prePatProductionSequence += process.prePatProductionSequenceGen
 
 process.p = cms.Path(
     process.prePatProductionSequence
@@ -207,12 +213,14 @@ process.options = cms.untracked.PSet(
 
 process.o = cms.EndPath(process.ntupleOutputModule)
 
+# define order in which different paths are run
+process.schedule = cms.Schedule(
+   process.p,
+   process.caloTauSkimPath,
+   process.pfTauSkimPath,
+   process.o
+)
+
 # print-out all python configuration parameter information
-#
-# NOTE: need to delete empty sequence produced by call to "switchJetCollection"
-#       in order to avoid error when calling "process.dumpPython"
-#      ( cf. https://hypernews.cern.ch/HyperNews/CMS/get/physTools/1688/1/1/1/1/1.html )
-#
-#del process.patJetMETCorrections
 #print process.dumpPython()
 
