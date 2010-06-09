@@ -17,14 +17,15 @@ class NtupleSample(object):
     Holds a set of root files corresponding to a known luminosity.
 
     '''
-    def __init__(self, name, int_lumi, prescale=1.0, files=[]):
+    def __init__(self, name, int_lumi, scaleFactor=1.0, prescale=1.0, files=[], directory=""):
         self.name = name
         self.int_lumi = int_lumi
+        self.scaleFactor = scaleFactor
         self.prescale = prescale
         # Build TChain of events
         self.events = ROOT.TChain("Events")
         for file in files:
-            self.events.AddFile(file)
+            self.events.AddFile("".join([directory, file]))
 
     def effective_luminosity(self):
         ''' Effective integrated luminosity, given prescale
@@ -35,7 +36,7 @@ class NtupleSample(object):
 
     def norm_factor_for_lumi(self, target_int_lumi):
         ''' Return weight need to scale sample to target luminosity '''
-        return target_int_lumi*1.0/self.effective_luminosity()
+        return target_int_lumi*self.scaleFactor/self.effective_luminosity()
 
 
 class NtupleSampleCollection(object):

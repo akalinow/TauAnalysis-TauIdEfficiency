@@ -12,7 +12,7 @@ of files and corresponding integrated luminsoity.
 
 Author: Evan K. Friis (UC Davis)
 
-$Id: $
+$Id: sample_builder.py,v 1.1 2010/05/27 21:10:23 friis Exp $
 
 '''
 
@@ -37,9 +37,11 @@ def build_sample(lumifile, sample_name, mode, *datasets):
                         % dataset
             dataset_info = lumi_map[dataset]
             # Add this sample
-            datasets_to_add.append( 
-                NtupleSample(dataset, int_lumi=dataset_info['int_lumi'],
-                             files=dataset_info['files'], prescale=1.0)
+            scaleFactor = 1.0
+            if dataset_info.get('scaleFactor') is not None: scaleFactor = dataset_info['scaleFactor']
+            datasets_to_add.append(
+                NtupleSample(dataset, int_lumi=dataset_info['int_lumi'], scaleFactor=scaleFactor,
+                             files=dataset_info['files'], directory=dataset_info['directory'], prescale=1.0)
             )
         # Create the merged dataset
         output = NtupleSampleCollection(sample_name, subsamples=datasets_to_add, 
