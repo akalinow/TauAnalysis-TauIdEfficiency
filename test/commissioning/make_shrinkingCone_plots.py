@@ -24,7 +24,7 @@ if __name__ == "__main__":
     # Build the plot manager.  The plot manager keeps track of all the samples
     # and ensures they are correctly normalized w.r.t. luminosity.  See 
     # samples.py for available samples.
-    data_sample = samples.data_first_two_weeks
+    data_sample = samples.data
     mc_sample = samples.qcd_mc
    
     plotter = PlotManager()
