@@ -15,9 +15,9 @@
  * 
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.2 $
+ * \version $Revision: 1.1 $
  *
- * $Id: PATTauVectorExtraValExtractor.h,v 1.2 2010/05/22 16:47:50 veelken Exp $
+ * $Id: PATTauVectorExtraValExtractor.h,v 1.1 2010/06/09 14:43:22 dbodin Exp $
  *
  */
 
@@ -43,13 +43,15 @@ class PATTauVectorExtraValExtractor : public ObjValVectorExtractorBase
 
 //--- configuration parameters
   edm::InputTag src_;
+
   edm::InputTag pfCandsSrc_;
   edm::InputTag jetSrc_;
+
   double jetMinPt_;
   double jetMaxAbsEta_;
 
-
-  enum { kTracksOut, kChargedHadrOut, kPhotonsOut, kClosestJetDeltaR, kClosestJetPt, kClosestJetEta, kClosestJetPhi, kClosestJetJetWidth };
+  enum { kNumTracksOut, kNumChargedHadrOut, kNumPhotonsOut, 
+	 kNearestJetDeltaR, kNearestJetPt, kNearestJetEta, kNearestJetPhi, kNearestJetJetWidth };
 
   int value_;
 };

@@ -109,6 +109,7 @@ retVal = configurePatTupleProduction(process,
 #
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigTrigger_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigVertex_cfi")
+process.load("TauAnalysis.TauIdEfficiency.ntupleConfigGlobalVariables_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigCaloTau_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigPFTauFixedCone_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigPFTauShrinkingCone_cfi")
@@ -128,6 +129,11 @@ process.ntupleProducer = cms.EDAnalyzer("ObjValEDNtupleProducer",
         # variables specifying x,y,z coordinates of primary event vertex
         vertex = process.vertex_template,                   
 
+        # global variables describing the underlying event/
+        # amount of hadronic activity                                            
+        jets = process.jets_template,
+        met = process.met_template,                                    
+
         # variables specific to CaloTaus                                            
         caloTaus_part01 = process.caloTaus_recInfo.clone(
             src = cms.InputTag(retVal["caloTauCollection"])                       
@@ -137,11 +143,17 @@ process.ntupleProducer = cms.EDAnalyzer("ObjValEDNtupleProducer",
         pfTausFixedCone_part01 = process.pfTausFixedCone_recInfo.clone(
             src = cms.InputTag(retVal["pfTauCollectionFixedCone"])                       
         ),
+        pfTausFixedCone_part02 = process.extraTauCandVariables_template.clone(
+            src = cms.InputTag(retVal["pfTauCollectionFixedCone"])                       
+        ),                                   
 
         # variables specific to shrinking cone PFTaus                                            
         pfTausShrinkingCone_part01 = process.pfTausShrinkingCone_recInfo.clone(
             src = cms.InputTag(retVal["pfTauCollectionShrinkingCone"])                       
         ),
+        pfTausShrinkingCone_part02 = process.extraTauCandVariables_template.clone(
+            src = cms.InputTag(retVal["pfTauCollectionShrinkingCone"])                       
+        ),                                
 
         # variables specific to PFTaus reconstructed by hadron + strips (HPS) algorithm                                           
         pfTausHPS_part01 = process.pfTausHPS_recInfo.clone(

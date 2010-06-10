@@ -4,6 +4,7 @@
 
 #include "DataFormats/Common/interface/View.h"
 #include "DataFormats/PatCandidates/interface/Tau.h"
+#include "DataFormats/ParticleFlowCandidate/interface/PFCandidate.h"
 
 #include "Math/GenVector/VectorUtil.h"
 
@@ -18,14 +19,14 @@ PATTauVectorExtraValExtractor::PATTauVectorExtraValExtractor(const edm::Paramete
   jetMaxAbsEta_ = cfg.getParameter<double>("jetMaxAbsEta");
   
   std::string value_string = cfg.getParameter<std::string>("value");
-  if      ( value_string == "nTracksOut"      ) value_ = kTracksOut;
-  else if ( value_string == "nChargedHadrOut" ) value_ = kChargedHadrOut;
-  else if ( value_string == "nPhotonsOut"     ) value_ = kPhotonsOut;
-  else if ( value_string == "ClosestJetDR"    ) value_ = kClosestJetDeltaR;
-  else if ( value_string == "ClosestJetPt"    ) value_ = kClosestJetPt;
-  else if ( value_string == "ClosestJetEta"   ) value_ = kClosestJetEta;
-  else if ( value_string == "ClosestJetPhi"   ) value_ = kClosestJetPhi;
-  else if ( value_string == "ClosestJetJWidth") value_ = kClosestJetJetWidth;
+  if      ( value_string == "numTracksOut"      ) value_ = kNumTracksOut;
+  else if ( value_string == "numChargedHadrOut" ) value_ = kNumChargedHadrOut;
+  else if ( value_string == "numPhotonsOut"     ) value_ = kNumPhotonsOut;
+  else if ( value_string == "nearestJetDR"      ) value_ = kNearestJetDeltaR;
+  else if ( value_string == "nearestJetPt"      ) value_ = kNearestJetPt;
+  else if ( value_string == "nearestJetEta"     ) value_ = kNearestJetEta;
+  else if ( value_string == "nearestJetPhi"     ) value_ = kNearestJetPhi;
+  else if ( value_string == "nearestJetJWidth"  ) value_ = kNearestJetJetWidth;
   else {
     edm::LogError ("PATTauVectorExtraValExtractor") << " Invalid configuration parameter value = " << value_string << " !!";
     value_ = -1;
@@ -47,45 +48,67 @@ std::vector<double> PATTauVectorExtraValExtractor::operator()(const edm::Event& 
   edm::Handle<reco::PFCandidateCollection> pfCandidates;
   evt.getByLabel(pfCandsSrc_, pfCandidates);
 
-  std::vector<reco::PFCandidate> PFChargedCands;
-  std::vector<reco::PFCandidate> PFChargedHadrCands;
-  std::vector<reco::PFCandidate> PFLeptonCands; 
-  std::vector<reco::PFCandidate> PFGammaCands; 
+  std::vector<reco::PFCandidate> pfChargedCands;
+  std::vector<reco::PFCandidate> pfChargedHadrCands;
+  std::vector<reco::PFCandidate> pfLeptonCands; 
+  std::vector<reco::PFCandidate> pfGammaCands; 
     
-  for(reco::PFCandidateCollection::const_iterator iCand = pfCandidates->begin(); iCand != pfCandidates->end(); iCand++){
-    if((*iCand).particleId() == 1){PFChargedCands.push_back(*iCand); PFChargedHadrCands.push_back(*iCand);}
-    if((*iCand).particleId() == 2 || (*iCand).particleId() == 2){PFChargedCands.push_back(*iCand); PFLeptonCands.push_back(*iCand);}
-    if((*iCand).particleId() == 4)PFGammaCands.push_back(*iCand);
+  for ( reco::PFCandidateCollection::const_iterator pfCandidate = pfCandidates->begin(); 
+	pfCandidate != pfCandidates->end(); ++pfCandidate ) {
+    switch ( pfCandidate->particleId() ) {
+    case reco::PFCandidate::h :
+      pfChargedCands.push_back(*pfCandidate); 
+      pfChargedHadrCands.push_back(*pfCandidate);
+      break;
+    case reco::PFCandidate::e  :
+    case reco::PFCandidate::mu :
+      pfChargedCands.push_back(*pfCandidate); 
+      pfLeptonCands.push_back(*pfCandidate);
+      break;
+    case reco::PFCandidate::gamma :
+      pfGammaCands.push_back(*pfCandidate);
+      break;
+    default :
+      break;
+    }
   }
 
   edm::Handle<reco::PFJetCollection> jets;
   evt.getByLabel(jetSrc_, jets); 
 
   unsigned numPatTaus = patTaus->size();
-  for ( unsigned i = 0; i < numPatTaus; ++i ) {
-    edm::Ptr<pat::Tau> patTauPtr = patTaus->ptrAt(i);
+  for ( unsigned iTau = 0; iTau < numPatTaus; ++iTau ) {
+    edm::Ptr<pat::Tau> patTauPtr = patTaus->ptrAt(iTau);
     double vec_i = -1.;
     
-    if(      value_ == kTracksOut      ) vec_i = PFChargedCands.size() - patTauPtr->signalTracks().size() - patTauPtr->isolationTracks().size();
-    else if (value_ == kChargedHadrOut ) vec_i = PFChargedCands.size() - patTauPtr->signalPFChargedHadrCands().size() - patTauPtr->isolationPFChargedHadrCands().size();
-    else if (value_ == kPhotonsOut     ) vec_i = PFChargedCands.size() - patTauPtr->signalPFGammaCands().size() - patTauPtr->isolationPFGammaCands().size();
+    if(      value_ == kNumTracksOut      ) 
+      vec_i = pfChargedCands.size() - patTauPtr->signalTracks().size() - patTauPtr->isolationTracks().size();
+    else if (value_ == kNumChargedHadrOut ) 
+      vec_i = pfChargedHadrCands.size() - patTauPtr->signalPFChargedHadrCands().size() - patTauPtr->isolationPFChargedHadrCands().size();
+    else if (value_ == kNumPhotonsOut     ) 
+      vec_i = pfGammaCands.size() - patTauPtr->signalPFGammaCands().size() - patTauPtr->isolationPFGammaCands().size();
 
-    if(value_ == kClosestJetDeltaR || value_ == kClosestJetPt || value_ == kClosestJetEta || value_ == kClosestJetPhi || value_ == kClosestJetJetWidth){
-      float MinDR = 99.;
-      int jClosest = -1;
-      for (size_t j = 0; j < jets->size(); ++j) {
-	float DRtemp = ROOT::Math::VectorUtil::DeltaR((*jets)[j].p4(),patTauPtr->p4());
-	if(DRtemp < MinDR && DRtemp > 0.5 && (*jets)[j].p4().Pt() >= jetMinPt_ && fabs((*jets)[j].p4().Eta()) <= jetMaxAbsEta_){
-	  jClosest = (int)j;
-	  MinDR = DRtemp;
+    if ( value_ == kNearestJetDeltaR  || 
+	 value_ == kNearestJetPt      || 
+	 value_ == kNearestJetEta     || 
+	 value_ == kNearestJetPhi     || 
+	 value_ == kNearestJetJetWidth ){
+      float dRmin = 99.;
+      int nearestJet_index = -1;
+      for ( size_t iJet = 0; iJet < jets->size(); ++iJet ) {
+	float dR = ROOT::Math::VectorUtil::DeltaR((*jets)[iJet].p4(), patTauPtr->p4());
+	if ( dR > 0.5 && dR < dRmin && (*jets)[iJet].p4().Pt() >= jetMinPt_ && fabs((*jets)[iJet].p4().Eta()) <= jetMaxAbsEta_ ){
+	  nearestJet_index = (int)iJet;
+	  dRmin = dR;
 	}
       }
-      if(jClosest != -1){
-	if(value_ == kClosestJetDeltaR       ) vec_i = MinDR;
-	else if(value_ == kClosestJetPt      ) vec_i = (*jets)[jClosest].p4().Pt();
-	else if(value_ == kClosestJetEta     ) vec_i = (*jets)[jClosest].p4().Eta();
-	else if(value_ == kClosestJetPhi     ) vec_i = (*jets)[jClosest].p4().Phi();
-	else if(value_ == kClosestJetJetWidth) vec_i = sqrt((*jets)[jClosest].etaetaMoment() + (*jets)[jClosest].phiphiMoment());
+      if ( nearestJet_index != -1 ){
+	if      ( value_ == kNearestJetDeltaR   ) vec_i = dRmin;
+	else if ( value_ == kNearestJetPt       ) vec_i = (*jets)[nearestJet_index].p4().Pt();
+	else if ( value_ == kNearestJetEta      ) vec_i = (*jets)[nearestJet_index].p4().Eta();
+	else if ( value_ == kNearestJetPhi      ) vec_i = (*jets)[nearestJet_index].p4().Phi();
+	else if ( value_ == kNearestJetJetWidth ) 
+	  vec_i = sqrt((*jets)[nearestJet_index].etaetaMoment() + (*jets)[nearestJet_index].phiphiMoment());
       }
     }
 

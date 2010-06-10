@@ -1,6 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 
-extraVarforTauCands_template =  cms.PSet(
+extraTauCandVariables_template = cms.PSet(
     vector = cms.bool(True),
 
     pluginType = cms.string("PATTauVectorExtraValExtractor"),
@@ -12,15 +12,15 @@ extraVarforTauCands_template =  cms.PSet(
     jetMaxAbsEta = cms.double(2.5),
     
     columns = cms.PSet(
-    nTracksOther = cms.string("nTracksOut"),
-    nChargedHadrOther = cms.string("nChargedHadrOut"),
-    nGammaOther = cms.string("nGammaOut"),
+        numTracksOther = cms.string("numTracksOut"),
+        numChargedHadrOther = cms.string("numChargedHadrOut"),
+        numGammaOther = cms.string("numGammaOut"),
     
-    closestJetDR = cms.string("ClosestJetDR"),
-    closestJetPt = cms.string("ClosestJetPt"),
-    closestJetEta = cms.string("ClosestJetEta"),
-    closestJetPhi = cms.string("ClosestJetPhi"),
-    closestJetJetWidth = cms.string("ClosestJetJetWidth"),
+        nearestJetDR = cms.string("nearestJetDR"),
+        nearestJetPt = cms.string("nearestJetPt"),
+        nearestJetEta = cms.string("nearestJetEta"),
+        nearestJetPhi = cms.string("nearestJetPhi"),
+        nearestJetJetWidth = cms.string("nearestJetJetWidth"),
     )
 )
 
@@ -31,7 +31,7 @@ jets_template = cms.PSet(
     src = cms.InputTag("patJets"),
 
     columns = cms.PSet(
-    nJets = cms.string("JetsMultiplicity")
+        numJets = cms.string("JetsMultiplicity")
     )  
 )
 
@@ -44,8 +44,7 @@ met_template = cms.PSet(
     src = cms.InputTag("patPFMETs"),
 
     columns = cms.PSet(
-    Met = cms.string("p4().Et()"),
-    sumEt = cms.string("sumEt()")
+        MEt = cms.string("p4().Et()"),
+        sumEt = cms.string("sumEt()")
     )
-
 )
