@@ -1,6 +1,8 @@
 from ROOT import gROOT
 gROOT.SetBatch(True)
 import ROOT
+from TauAnalysis.TauIdEfficiency.ntauples.TauNtupleManager \
+        import TauNtupleManager
 
 '''
 Classes to support managing different samples with 
@@ -22,10 +24,8 @@ class NtupleSample(object):
         self.int_lumi = int_lumi
         self.scaleFactor = scaleFactor
         self.prescale = prescale
-        # Build TChain of events
-        self.events = ROOT.TChain("Events")
-        for file in files:
-            self.events.AddFile("".join([directory, file]))
+        self.files = ["".join([directory, file]) for file in files]
+        self.events = None
 
     def effective_luminosity(self):
         ''' Effective integrated luminosity, given prescale
@@ -34,10 +34,24 @@ class NtupleSample(object):
         '''
         return float(self.int_lumi)/float(self.prescale)
 
+    def build_events(self):
+        # Build TChain of events
+        self.events = ROOT.TChain("Events")
+        for file in self.files:
+            self.events.AddFile(file)
+
+    def get_events(self):
+        if not self.events:
+            self.build_events()
+        return self.events
+
     def norm_factor_for_lumi(self, target_int_lumi):
         ''' Return weight need to scale sample to target luminosity '''
         return target_int_lumi*self.scaleFactor/self.effective_luminosity()
 
+    def build_ntuple_manager(self, name):
+        ''' Build an ntuple manager corresponding to [name] in the associated files'''
+        return TauNtupleManager(self.get_events(), name)
 
 class NtupleSampleCollection(object):
     '''
@@ -55,6 +69,12 @@ class NtupleSampleCollection(object):
         self.name = name
         self.subsamples = subsamples
         self.mode = mode
+
+    def build_ntuple_manager(self, name):
+        ''' Build an ntuple manager corresponding to [name] in the associated files'''
+        if not self.subsamples:
+            raise ValueError, "cannot retrieve ntuple, no subsamples defined"
+        return self.subsamples[0].build_ntuple_manager(name)  
 
     def effective_luminosity(self):
         ''' Get effective int. luminosity for this sample colleciton '''
@@ -91,7 +111,7 @@ class NtupleSampleCollection(object):
         # luminosity of the whole sample, then apply the correction factor.
         elif self.mode=='merge':
             for subsample in self.subsamples:
-                yield (subsample.events, 
+                yield (subsample.get_events(), 
                        subsample.norm_factor_for_lumi(self.effective_luminosity())*
                        overall_norm_factor)
 

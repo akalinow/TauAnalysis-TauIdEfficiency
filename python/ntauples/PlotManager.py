@@ -23,7 +23,7 @@ class LegendMaker(object):
         self.output = None
     def add_object(self, object, name, option="lpf"):
         self.entries.append((object, name, option))
-    def make_legend(self, x_low=0.15, y_low=0.7, x_high=0.5, y_high=0.85):
+    def make_legend(self, x_low=0.70, y_low=0.8, x_high=0.95, y_high=0.95):
         self.output = ROOT.TLegend(x_low, y_low, x_high, y_high, "", "NDC")
         # Turn off all the stupid defaults
         self.output.SetFillColor(0)
@@ -130,6 +130,10 @@ class PlotManager(object):
 
         # Now draw the total stack to current pad
         result_dict['result'].Draw("nostack")
+        # Apply any canvas style options
+        canvas_style = copy.deepcopy(style.DEFAULT_STYLE)
+        canvas_style.update(options)
+        style.update_canvas_style(ROOT.gPad, canvas_style)
         # Apply any style overrides
         style.update_histo_style(result_dict['result'], options)
         # and return all the crap we have generated in case the user is interested
@@ -181,4 +185,8 @@ class PlotManager(object):
             # Build legend
             result_dict['legend'].add_object(
                 my_eff, sample_info['nice_name'], 'p')
+        # Apply any canvas style updates
+        canvas_style = copy.deepcopy(style.DEFAULT_STYLE)
+        canvas_style.update(options)
+        style.update_canvas_style(ROOT.gPad, canvas_style)
         return result_dict

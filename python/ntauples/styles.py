@@ -3,6 +3,10 @@ from ROOT import gROOT
 gROOT.SetBatch(True)
 import ROOT
 
+# Setup common styles
+ROOT.gROOT.SetStyle("Plain")
+ROOT.gStyle.SetTitleBorderSize(0)
+
 '''
 
 Defintion of style objects used by 
@@ -22,6 +26,9 @@ DEFAULT_STYLE = {
     'line_width': 1,
     'line_color': ROOT.EColor.kBlack,
     'title' : "CMS Preliminary",
+    'y_axis_title' : "Fake Rate",
+    'horizontal_grid' : 0,
+    'vertical_grid' : 1,
 }
 
 HISTO_METHOD_MAP = {
@@ -35,15 +42,30 @@ HISTO_METHOD_MAP = {
     'line_color': lambda histo: histo.SetLineColor,
     'x_axis_title' : lambda histo: histo.GetXaxis().SetTitle,
     'y_axis_title' : lambda histo: histo.GetYaxis().SetTitle,
+    'y_min' : lambda histo: histo.SetMinimum,
+    'y_max' : lambda histo: histo.SetMaximum,
     'title' : lambda histo: histo.SetTitle,
 }
 
+CANVAS_METHOD_MAP = {
+    'horizontal_grid' : lambda pad: pad.SetGridx,
+    'vertical_grid' : lambda pad: pad.SetGridy,
+    'logy' : lambda pad: pad.SetLogy,
+}
+
+def update_canvas_style(pad, style_dict):
+    " Update any canvas level options "
+    for style_item, value in style_dict.iteritems():
+        if style_item in CANVAS_METHOD_MAP:
+            CANVAS_METHOD_MAP[style_item](pad)(value)
 
 def update_histo_style(histo, style_dict):
     " Update a histograms style, given style dict "
     for style_item, value in style_dict.iteritems():
         if style_item in HISTO_METHOD_MAP:
             HISTO_METHOD_MAP[style_item](histo)(value)
+        elif style_item in CANVAS_METHOD_MAP:
+            pass # ignore
         else:
             print "Warning: Unrecognized style option %s" % style_item
 
