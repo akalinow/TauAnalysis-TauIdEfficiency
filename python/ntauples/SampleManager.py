@@ -39,6 +39,13 @@ class NtupleSample(object):
         self.events = ROOT.TChain("Events")
         for file in self.files:
             self.events.AddFile(file)
+        # Turn on read-ahead caching, described in
+        # http://root.cern.ch/drupal/content/spin-little-disk-spin
+        # (adds ~100 MB memory consumption)
+        if ROOT.gROOT.GetVersionCode() >= 334336:
+            print "Enabling TTree Cache"
+            self.events.SetCacheSize(10000000)
+            self.events.AddBranchToCache("*")
 
     def get_events(self):
         if not self.events:

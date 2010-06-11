@@ -1,6 +1,7 @@
-import json
+from __future__ import with_statement
 from TauAnalysis.TauIdEfficiency.ntauples.SampleManager \
         import NtupleSample, NtupleSampleCollection
+import sys
 
 '''
 
@@ -12,7 +13,7 @@ of files and corresponding integrated luminsoity.
 
 Author: Evan K. Friis (UC Davis)
 
-$Id: sample_builder.py,v 1.1 2010/05/27 21:10:23 friis Exp $
+$Id: sample_builder.py,v 1.2 2010/06/09 14:10:25 veelken Exp $
 
 '''
 
@@ -28,7 +29,12 @@ def build_sample(lumifile, sample_name, mode, *datasets):
     output=None
     with open(lumifile, 'r') as lumi_map_file:
         # Retrive information about the different sub-samples
-        lumi_map = json.load(lumi_map_file)
+        lumi_map = None
+        if sys.version_info >= (2, 6):
+            import json
+            lumi_map = json.load(lumi_map_file)
+        else:
+            lumi_map = eval(lumi_map_file.read())
         # Retrieve all the desired datasets
         datasets_to_add = []
         for dataset in datasets:
