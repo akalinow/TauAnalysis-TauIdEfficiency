@@ -219,11 +219,11 @@
     },
     "minBias": {
         "files": [
-	    "rfio:tauIdEff_ntuple_7_1.root",
-	    "rfio:tauIdEff_ntuple_14_1.root",
-	    "rfio:tauIdEff_ntuple_22_1.root",
-	    "rfio:tauIdEff_ntuple_29_1.root",
-	    "rfio:tauIdEff_ntuple_36_1.root"
+	    "tauIdEff_ntuple_7_1.root",
+	    "tauIdEff_ntuple_14_1.root",
+	    "tauIdEff_ntuple_22_1.root",
+	    "tauIdEff_ntuple_29_1.root",
+	    "tauIdEff_ntuple_36_1.root"
         ], 
 	"directory": "rfio:/castor/cern.ch/user/e/edelhoff/TauIdCommissioning/qcdDiJet/v1_1/minBias/",
         "int_lumi": 4.48,
