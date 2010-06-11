@@ -32,7 +32,8 @@ def filter_aliases(aliases, *match_to):
 
 def make_unique_name(*args):
     " Make a unique hash using the concatenation of str(args) "
-    return hashlib.md5(''.join(str(arg) for arg in args)).digest()
+    return hashlib.md5(''.join(str(arg) for arg in args)).hexdigest()
+    #return "adfasdfsdafasdf"
 
 
 
