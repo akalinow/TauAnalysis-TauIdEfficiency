@@ -1,12 +1,11 @@
 import TauAnalysis.TauIdEfficiency.tools.castor_mirror as mirror
-import itertools
 
 # Import the samples into this namespace
 from samples import qcd_mc, minbias_mc, ztautau_mc, data
 
 mirror.LOCAL_DIRECTORY = "/tmp/tau_commissioning"
 
-_sample_list = [qcd_mc, minbias_mc, ztautau_mc, data]
+_sample_list = [data, minbias_mc, qcd_mc, ztautau_mc, ]
 
 # Update the samples to use any existing local files
 for sample in _sample_list:
