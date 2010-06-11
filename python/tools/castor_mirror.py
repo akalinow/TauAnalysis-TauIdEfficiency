@@ -127,14 +127,11 @@ def mirror_files(castor_files, max_jobs=20):
         # Wait for all jobs to finish up
         print "All jobs submitted.  Wait for final ones to finsh."
         wait_for_completion(current_jobs, finished_jobs, 0)
-    except IOError as (errno, strerror):
-        print "Caught exception!"
-        print strerror
     finally:
         # terminate any running jobs
         for pid, proc in current_jobs.iteritems():
             print "Terminating %s => %s" % (proc['source'], proc['dest'])
-            if proc['proc'].poll() is not None:
+            if proc['proc'].poll() is None:
                 proc['proc'].terminate()
             proc['ret'] = proc['proc'].returncode
             finished_jobs[pid] = proc
