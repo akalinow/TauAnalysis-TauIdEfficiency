@@ -88,8 +88,10 @@ class PlotManager(object):
         self.int_lumi = target_int_lumi
 
     def distribution(self, expression, selection, binning=(), 
-                     title="CMS Preliminary", **options):
+                     title="CMS Preliminary", verbose=True, **options):
         " Compare a distribution from the different samples "
+        if verbose:
+            print "Plotting", str(expression), str(selection)
         # Get a unique name for the ROOT name
         unique_name = helpers.make_unique_name(expression, selection)
         result_dict = {}
@@ -98,6 +100,7 @@ class PlotManager(object):
         result_dict['samples'] = {}
         result_dict['legend'] = LegendMaker()
         for sample_name in self.sample_order:
+            if verbose: print " * Sample: ", sample_name
             sample_info = self.samples[sample_name]
             # Keep track of relevant info for each sample
             plot_dict = {}
@@ -109,6 +112,7 @@ class PlotManager(object):
                 output_name="%s%s" % (sample_name,unique_name),
                 binning=binning
             )
+            if verbose: print " * * - got plot", my_plot, "integral:", my_plot.Integral()
             plot_dict['plot'] = my_plot
             # Get some handy stats
             plot_dict['rms'] = my_plot.GetRMS()
@@ -181,7 +185,7 @@ class PlotManager(object):
                 style.remove_x_error_bars(my_eff)
             # Store and draw efficiency
             result_dict['samples'][sample_name] = my_eff
-            my_eff.Draw('p, same')
+            my_eff.Draw('e1p, same')
             # Build legend
             result_dict['legend'].add_object(
                 my_eff, sample_info['nice_name'], 'p')

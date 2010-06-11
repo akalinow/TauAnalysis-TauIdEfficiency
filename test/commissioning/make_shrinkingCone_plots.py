@@ -1,13 +1,12 @@
 import ROOT
 
-from TauAnalysis.TauIdEfficiency.ntauples.TauNtupleManager \
-        import TauNtupleManager
-from TauAnalysis.TauIdEfficiency.ntauples.PlotManager \
-        import PlotManager
+from TauAnalysis.TauIdEfficiency.ntauples.PlotManager import PlotManager
+import TauAnalysis.TauIdEfficiency.ntauples.styles as style
 
 # Defintion of input files.
 import samples_cache as samples
 import os
+import sys
 
 if __name__ == "__main__":
     ROOT.gROOT.SetBatch(True)
@@ -22,16 +21,11 @@ if __name__ == "__main__":
 
     # Add each sample we want to plot/compare
     # Uncomment to add QCD
-    #plotter.add_sample(samples.qcd_mc, "QCD MC", 
-    #                   fill_color=ROOT.EColor.kBlue-5, draw_option="hist",
-    #                   line_color=ROOT.EColor.kBlue, fill_style=1)
+    plotter.add_sample(samples.qcd_mc, "QCD MC", **style.QCD_MC_STYLE_HIST)
 
-    plotter.add_sample(samples.minbias_mc, "Minbias MC", 
-                       fill_color=ROOT.EColor.kGreen-5, draw_option="pe",
-                       marker_size=2, line_color=ROOT.EColor.kBlue, fill_style=0)
+    plotter.add_sample(samples.minbias_mc, "Minbias MC", **style.MINBIAS_MC_STYLE)
 
-    plotter.add_sample(samples.data, "Data (7 TeV)", marker_size=2,
-                       marker_color=ROOT.EColor.kRed, draw_option="pe")
+    plotter.add_sample(samples.data, "Data (7 TeV)", **style.DATA_STYLE)
 
 
     # Normalize everything to the data luminosity
@@ -44,13 +38,36 @@ if __name__ == "__main__":
     shrinking_ntuple = ntuple_manager.get_ntuple(
         "patPFTausDijetTagAndProbeShrinkingCone")
 
+    hlt = ntuple_manager.get_ntuple("TriggerResults")
+
     # Make some plots
     canvas = ROOT.TCanvas("blah", "blah", 500, 500)
+
+    # Plot # different triggers
+    trigger_results_expr =  hlt.expr('$hltJet15U')
+
+    trigger_results = plotter.distribution(
+        expression=hlt.expr('$hltJet15U'),
+        selection=hlt.expr('1'), # no selection
+        binning = (5, -2.5, 2.5),
+        x_axis_title = "HLT_Jet15U Result",
+        y_min = 1, logy=True
+    )
+    canvas.SaveAs("plots/hltJet15U_result.png")
+    canvas.SaveAs("plots/hltJet15U_result.pdf")
+
+    sys.exit(0)
+
+
+    # Basic requirement HLT + Probe object
+    # N.B. currently disabled, no HLT info in ntuples!
+    # base_selection = shrinking_ntuple.expr('$probe > 0.5') & hlt.expr('$hltJet15U > 0.5')
+    base_selection = shrinking_ntuple.expr('1')
 
     # Compare basic distributions
     jetpt_result = plotter.distribution(
         expression=shrinking_ntuple.expr('$jetPt'),
-        selection=shrinking_ntuple.expr('abs($jetEta) < 2.5'),
+        selection=shrinking_ntuple.expr('abs($jetEta) < 2.5') & base_selection,
         binning = (50, 0, 100),
         x_axis_title = "Jet P_{T} [GeV/c]",
         y_min = 1e-2, logy=True
@@ -64,7 +81,7 @@ if __name__ == "__main__":
 
     jeteta_result = plotter.distribution(
         expression=shrinking_ntuple.expr('$jetEta'),
-        selection=shrinking_ntuple.expr('abs($jetPt) > 5'),
+        selection=shrinking_ntuple.expr('abs($jetPt) > 5') & base_selection,
         binning = (50, -2.5, 2.5),
         x_axis_title = "Jet #eta"
     )
@@ -75,8 +92,8 @@ if __name__ == "__main__":
 
     jeteta_result = plotter.distribution(
         expression=shrinking_ntuple.expr('$jetPhi'),
-        selection=shrinking_ntuple.expr('abs($jetPt) > 5'),
-        binning = (50, 0, 2*3.14),
+        selection=shrinking_ntuple.expr('abs($jetPt) > 5') & base_selection,
+        binning = (50, -3.14, 3.14),
         x_axis_title = "Jet #phi"
     )
     jeteta_result['legend'].make_legend().Draw()
@@ -84,33 +101,34 @@ if __name__ == "__main__":
     canvas.SaveAs("plots/shrinkingCone_jetPhi.png")
     canvas.SaveAs("plots/shrinkingCone_jetPhi.pdf")
 
-    denominator = shrinking_ntuple.expr('abs($jetEta) < 2.5 & $jetPt > 5')
-    numerator = shrinking_ntuple.expr('$byTaNCfrHalfPercent') & denominator
-
-    eta_eff_result = plotter.efficiency(
-        expression=shrinking_ntuple.expr('abs($jetEta)'),
-        denominator = denominator,
-        numerator = numerator,
-        binning = (50, 0, 2.5),
-        x_axis_title = "Jet |#eta|",
-        y_min = 1e-4, y_max = 5, logy = True,
-    )
-
-    # Add a legend
-    eta_eff_result['legend'].make_legend().Draw()
-
-    canvas.SaveAs("plots/shrinkingCone_TaNCHalf_eff_jetPt.png")
-    canvas.SaveAs("plots/shrinkingCone_TaNCHalf_eff_jetPt.pdf")
-
-    eta_eff_result = plotter.efficiency(
-        expression=shrinking_ntuple.expr('$jetPt'),
-        denominator = denominator,
-        numerator = numerator,
-        binning = (100, 0, 100),
-        x_axis_title = "Jet P_{T} [GeV/c]",
-        y_min = 1e-4, y_max = 5, logy = True,
-    )
-
-    # Add a legend
-    eta_eff_result['legend'].make_legend().Draw()
-
+#    denominator = shrinking_ntuple.expr(
+#        'abs($jetEta) < 2.5 & $jetPt > 5') & base_selection
+#    numerator = shrinking_ntuple.expr('$byTaNCfrHalfPercent') & denominator
+#
+#    eta_eff_result = plotter.efficiency(
+#        expression=shrinking_ntuple.expr('abs($jetEta)'),
+#        denominator = denominator,
+#        numerator = numerator,
+#        binning = (50, 0, 2.5),
+#        x_axis_title = "Jet |#eta|",
+#        y_min = 1e-4, y_max = 5, logy = True,
+#    )
+#
+#    # Add a legend
+#    eta_eff_result['legend'].make_legend().Draw()
+#
+#    canvas.SaveAs("plots/shrinkingCone_TaNCHalf_eff_jetPt.png")
+#    canvas.SaveAs("plots/shrinkingCone_TaNCHalf_eff_jetPt.pdf")
+#
+#    eta_eff_result = plotter.efficiency(
+#        expression=shrinking_ntuple.expr('$jetPt'),
+#        denominator = denominator,
+#        numerator = numerator,
+#        binning = (100, 0, 100),
+#        x_axis_title = "Jet P_{T} [GeV/c]",
+#        y_min = 1e-4, y_max = 5, logy = True,
+#    )
+#
+#    # Add a legend
+#    eta_eff_result['legend'].make_legend().Draw()
+#
