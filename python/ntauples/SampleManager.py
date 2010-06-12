@@ -26,6 +26,10 @@ class NtupleSample(object):
         self.prescale = prescale
         self.files = ["".join([directory, file]) for file in files]
         self.events = None
+        # Check if root supports ttree caching
+        self.ttree_cache = False
+        if ROOT.gROOT.GetVersionCode() >= 334336:
+            self.ttree_cache = True
 
     def effective_luminosity(self):
         ''' Effective integrated luminosity, given prescale
@@ -42,7 +46,7 @@ class NtupleSample(object):
         # Turn on read-ahead caching, described in
         # http://root.cern.ch/drupal/content/spin-little-disk-spin
         # (adds ~100 MB memory consumption)
-        if ROOT.gROOT.GetVersionCode() >= 334336:
+        if self.ttree_cache:
             print "Enabling TTree Cache"
             self.events.SetCacheSize(10000000)
             self.events.AddBranchToCache("*")
@@ -50,6 +54,12 @@ class NtupleSample(object):
     def get_events(self):
         if not self.events:
             self.build_events()
+        # If we can, restart the cache learning phase
+        if self.ttree_cache:
+            pass
+            #self.events.SetCacheSize(0) # reset
+            #self.events.SetCacheSize(10000000)
+            #self.events.AddBranchToCache("*")
         return self.events
 
     def norm_factor_for_lumi(self, target_int_lumi):
@@ -113,7 +123,7 @@ class NtupleSampleCollection(object):
         # factor of the collection
         if self.mode=='add':
             for subsample in self.subsamples:
-                yield (subsample.events, overall_norm_factor)
+                yield (subsample.get_events(), overall_norm_factor)
         # Otherwise, scale each subsample to the corresponding integrated
         # luminosity of the whole sample, then apply the correction factor.
         elif self.mode=='merge':

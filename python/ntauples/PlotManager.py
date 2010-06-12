@@ -22,6 +22,9 @@ class LegendMaker(object):
         self.entries = []
         self.output = None
     def add_object(self, object, name, option="lpf"):
+        # Correctly deal with filled histograms
+        if option.find("hist") != -1:
+            option = "lf"
         self.entries.append((object, name, option))
     def make_legend(self, x_low=0.70, y_low=0.8, x_high=0.95, y_high=0.95):
         self.output = ROOT.TLegend(x_low, y_low, x_high, y_high, "", "NDC")
@@ -87,15 +90,15 @@ class PlotManager(object):
         """
         self.int_lumi = target_int_lumi
 
-    def distribution(self, expression, selection, binning=(), 
-                     title="CMS Preliminary", verbose=True, **options):
+    def distribution(self, expression, selection, binning=(), verbose=True, **options):
         " Compare a distribution from the different samples "
         if verbose:
             print "Plotting", str(expression), str(selection)
         # Get a unique name for the ROOT name
         unique_name = helpers.make_unique_name(expression, selection)
         result_dict = {}
-        result_dict['result'] = ROOT.THStack(unique_name, title)
+        result_dict['result'] = ROOT.THStack(unique_name, "")
+        result_dict['keep'] = []
         # Keep track of all the plots we make
         result_dict['samples'] = {}
         result_dict['legend'] = LegendMaker()
@@ -104,6 +107,8 @@ class PlotManager(object):
             sample_info = self.samples[sample_name]
             # Keep track of relevant info for each sample
             plot_dict = {}
+            # List to prevent garbage collection
+            plot_dict['keep'] = []
             result_dict['samples'][sample_name] = plot_dict
             my_plot = plot.draw(
                 # events for this sample
@@ -124,7 +129,8 @@ class PlotManager(object):
             plot_dict['overflow'] = my_plot.GetBinContent(
                 my_plot.GetNbinsX()+1)
             # Update the styles for this histogram
-            style.update_histo_style(my_plot, sample_info['style'])
+            plot_dict['keep'].append(
+                style.update_histo_style(my_plot, sample_info['style']))
             # Add this histogram to the stack (will be plotted using 
             # nostack option)
             result_dict['result'].Add(my_plot, sample_info['style']['draw_option'])
@@ -134,12 +140,19 @@ class PlotManager(object):
 
         # Now draw the total stack to current pad
         result_dict['result'].Draw("nostack")
+        # Give us some breathing room on top of the plot to put our labels and stuff
+        if 'logy' in options and options['logy']:
+            result_dict['result'].SetMaximum(result_dict['result'].GetMaximum()*5)
+        else:
+            result_dict['result'].SetMaximum(result_dict['result'].GetMaximum()*1.1)
         # Apply any canvas style options
         canvas_style = copy.deepcopy(style.DEFAULT_STYLE)
         canvas_style.update(options)
-        style.update_canvas_style(ROOT.gPad, canvas_style)
+        result_dict['keep'].append(
+            style.update_canvas_style(ROOT.gPad, canvas_style))
         # Apply any style overrides
-        style.update_histo_style(result_dict['result'], options)
+        result_dict['keep'].append(
+            style.update_histo_style(result_dict['result'], options))
         # and return all the crap we have generated in case the user is interested
         return result_dict
 
@@ -159,6 +172,7 @@ class PlotManager(object):
         # store the background histogram
         result_dict = {}
         result_dict['background'] = None
+        result_dict['keep'] = []
         result_dict['samples'] = {}
         result_dict['legend'] = LegendMaker()
         # Loop over each sample
@@ -179,7 +193,8 @@ class PlotManager(object):
                 result_dict['background'] = my_bkg_hist
                 my_bkg_hist.Draw()
             # Update style off efficiency curve
-            style.update_histo_style(my_eff, sample_info['style'])
+            result_dict['keep'].append(
+                style.update_histo_style(my_eff, sample_info['style']))
             # Check if we want to remove the horizontal error bars
             if not x_error_bars:
                 style.remove_x_error_bars(my_eff)
@@ -192,5 +207,6 @@ class PlotManager(object):
         # Apply any canvas style updates
         canvas_style = copy.deepcopy(style.DEFAULT_STYLE)
         canvas_style.update(options)
-        style.update_canvas_style(ROOT.gPad, canvas_style)
+        result_dict['keep'].append(
+            style.update_canvas_style(ROOT.gPad, canvas_style))
         return result_dict

@@ -51,13 +51,16 @@ if __name__ == "__main__":
         selection=hlt.expr('1'), # no selection
         binning = (5, -2.5, 2.5),
         x_axis_title = "HLT_Jet15U Result",
-        y_min = 1, logy=True
+        y_min = 1, logy=True,
+        # Can pass a list of TPaveTexts to draw on the plot
+        # CMS preliminary in the upper left is the default
+        #labels = [styles.CMS_PRELIMINARY_UPPER_LEFT]  
     )
+
+    trigger_results['legend'].make_legend().Draw()
+
     canvas.SaveAs("plots/hltJet15U_result.png")
     canvas.SaveAs("plots/hltJet15U_result.pdf")
-
-    sys.exit(0)
-
 
     # Basic requirement HLT + Probe object
     # N.B. currently disabled, no HLT info in ntuples!
@@ -101,34 +104,48 @@ if __name__ == "__main__":
     canvas.SaveAs("plots/shrinkingCone_jetPhi.png")
     canvas.SaveAs("plots/shrinkingCone_jetPhi.pdf")
 
-#    denominator = shrinking_ntuple.expr(
-#        'abs($jetEta) < 2.5 & $jetPt > 5') & base_selection
-#    numerator = shrinking_ntuple.expr('$byTaNCfrHalfPercent') & denominator
-#
-#    eta_eff_result = plotter.efficiency(
-#        expression=shrinking_ntuple.expr('abs($jetEta)'),
-#        denominator = denominator,
-#        numerator = numerator,
-#        binning = (50, 0, 2.5),
-#        x_axis_title = "Jet |#eta|",
-#        y_min = 1e-4, y_max = 5, logy = True,
-#    )
-#
-#    # Add a legend
-#    eta_eff_result['legend'].make_legend().Draw()
-#
-#    canvas.SaveAs("plots/shrinkingCone_TaNCHalf_eff_jetPt.png")
-#    canvas.SaveAs("plots/shrinkingCone_TaNCHalf_eff_jetPt.pdf")
-#
-#    eta_eff_result = plotter.efficiency(
-#        expression=shrinking_ntuple.expr('$jetPt'),
-#        denominator = denominator,
-#        numerator = numerator,
-#        binning = (100, 0, 100),
-#        x_axis_title = "Jet P_{T} [GeV/c]",
-#        y_min = 1e-4, y_max = 5, logy = True,
-#    )
-#
-#    # Add a legend
-#    eta_eff_result['legend'].make_legend().Draw()
-#
+
+    ######################################################
+    ####      Plot efficiencies                       ####
+    ######################################################
+
+    # Change the style of the QCD from filled histogram to dots
+    # name mc_qcd is defined in samples.py
+    plotter.update_style("mc_qcd", **style.QCD_MC_STYLE_DOTS)
+
+
+
+    denominator = shrinking_ntuple.expr(
+        'abs($jetEta) < 2.5 & $jetPt > 5') & base_selection
+    numerator = shrinking_ntuple.expr('$byTaNCfrHalfPercent') & denominator
+
+    eta_eff_result = plotter.efficiency(
+        expression=shrinking_ntuple.expr('abs($jetEta)'),
+        denominator = denominator,
+        numerator = numerator,
+        binning = (25, 0, 2.5),
+        x_axis_title = "Jet |#eta|",
+        y_min = 1e-4, y_max = 5, logy = True,
+    )
+
+    # Add a legend
+    eta_eff_result['legend'].make_legend().Draw()
+
+    canvas.SaveAs("plots/shrinkingCone_TaNCHalf_eff_jetEta.png")
+    canvas.SaveAs("plots/shrinkingCone_TaNCHalf_eff_jetEta.pdf")
+
+    pt_eff_result = plotter.efficiency(
+        expression=shrinking_ntuple.expr('$jetPt'),
+        denominator = denominator,
+        numerator = numerator,
+        binning = (20, 0, 100),
+        x_axis_title = "Jet P_{T} [GeV/c]",
+        y_min = 1e-4, y_max = 5, logy = True,
+    )
+
+    # Add a legend
+    pt_eff_result['legend'].make_legend().Draw()
+
+    canvas.SaveAs("plots/shrinkingCone_TaNCHalf_eff_jetPt.png")
+    canvas.SaveAs("plots/shrinkingCone_TaNCHalf_eff_jetPt.pdf")
+

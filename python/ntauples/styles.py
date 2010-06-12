@@ -17,7 +17,12 @@ Author: Evan K. Friis (UC Davis)
 '''
 
 # Define the CMS preliminary labels
-#CMS_PRELIMINARY_UPPER_LEFT = ROOT.TPaveText(
+CMS_PRELIMINARY_UPPER_LEFT = ROOT.TPaveText(0.10, 0.85, 0.45, 0.92, "NDC")
+CMS_PRELIMINARY_UPPER_LEFT.AddText("CMS Preliminary 7 TeV")
+CMS_PRELIMINARY_UPPER_LEFT.SetTextAlign(13)
+CMS_PRELIMINARY_UPPER_LEFT.SetTextSize(0.04)
+CMS_PRELIMINARY_UPPER_LEFT.SetFillStyle(0)
+CMS_PRELIMINARY_UPPER_LEFT.SetBorderSize(0)
 
 DEFAULT_STYLE = {
     'draw_option' : "",
@@ -28,11 +33,11 @@ DEFAULT_STYLE = {
     'fill_style': 0,
     #'line_width': 1.0,
     'line_color': ROOT.EColor.kBlack,
-    'title' : "CMS Preliminary",
+    'title' : "",
     'y_axis_title' : "Fake Rate",
     'horizontal_grid' : 0,
     'vertical_grid' : 1,
-    'labels' : []
+    'labels' : [CMS_PRELIMINARY_UPPER_LEFT]
 }
 
 DATA_STYLE = {
@@ -94,8 +99,12 @@ def draw_labels(pad):
     '''
     def apply_labels(labels):
         pad.cd()
+        to_keep = []
         for label in labels:
             label.Draw()
+            # Prevent garbage collection
+            to_keep.append(label)
+        return to_keep
     return apply_labels
 
 CANVAS_METHOD_MAP = {
@@ -107,19 +116,28 @@ CANVAS_METHOD_MAP = {
 
 def update_canvas_style(pad, style_dict):
     " Update any canvas level options "
+    to_keep = [] # prevent GC
     for style_item, value in style_dict.iteritems():
         if style_item in CANVAS_METHOD_MAP:
-            CANVAS_METHOD_MAP[style_item](pad)(value)
+            # Keep the item if necessary
+            item = CANVAS_METHOD_MAP[style_item](pad)(value)
+            if item is not None:
+                to_keep.append(item)
+    return to_keep 
 
 def update_histo_style(histo, style_dict):
     " Update a histograms style, given style dict "
+    to_keep = []
     for style_item, value in style_dict.iteritems():
         if style_item in HISTO_METHOD_MAP:
-            HISTO_METHOD_MAP[style_item](histo)(value)
+            item = HISTO_METHOD_MAP[style_item](histo)(value)
+            if item is not None:
+                to_keep.append(item)
         elif style_item in CANVAS_METHOD_MAP:
             pass # ignore
         else:
             print "Warning: Unrecognized style option %s" % style_item
+    return to_keep
 
 def remove_x_error_bars(tgraph):
     " Remove horizontal error bars from graph "
