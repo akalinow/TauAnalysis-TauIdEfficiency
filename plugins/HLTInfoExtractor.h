@@ -8,7 +8,7 @@
  *
  * \author Michail Bachtis, U.Wisconsin
  *
- * \version $Revision: 1.1 $
+ * \version $Revision: 1.2 $
  */
 
 #include "FWCore/Framework/interface/Event.h"
@@ -30,6 +30,9 @@ class HLTInfoExtractor : public ObjValExtractorBase
   //--- configuration parameters
   edm::InputTag src_;
   std::string value_;
+
+  int maxWarnings_;
+  mutable int numWarnings_;
 };
 
 #endif  

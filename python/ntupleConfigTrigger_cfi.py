@@ -9,7 +9,7 @@ trigger_template = cms.PSet(
     
     pluginType = cms.string("HLTInfoExtractor"),
 
-    src = cms.InputTag("TriggerResults::HLT"),
+    src = cms.InputTag('TriggerResults::HLT'),
 
     columns = cms.PSet(
         hltL1Jet6U          = cms.string("HLT_L1Jet6U"),
@@ -18,5 +18,7 @@ trigger_template = cms.PSet(
         hltJet50U           = cms.string("HLT_Jet50U"),
         hltMinBiasBSC       = cms.string("HLT_MinBiasBSC"),
         hltMinBiasBSCnoBPTX = cms.string("HLT_MinBiasBSC_NoBPTX")
-    )
+    ),
+
+    maxWarnings = cms.int32(1)
 )    
