@@ -13,7 +13,7 @@
 PATTauVectorExtraValExtractor::PATTauVectorExtraValExtractor(const edm::ParameterSet& cfg)
 {
   src_ = cfg.getParameter<edm::InputTag>("src");
-  pfCandsSrc_ = cfg.getParameter<edm::InputTag>("pfCandsSrc");
+  pfCandSrc_ = cfg.getParameter<edm::InputTag>("pfCandSrc");
   jetSrc_ = cfg.getParameter<edm::InputTag>("jetSrc");
   jetMinPt_ = cfg.getParameter<double>("jetMinPt");
   jetMaxAbsEta_ = cfg.getParameter<double>("jetMaxAbsEta");
@@ -26,7 +26,7 @@ PATTauVectorExtraValExtractor::PATTauVectorExtraValExtractor(const edm::Paramete
   else if ( value_string == "nearestJetPt"      ) value_ = kNearestJetPt;
   else if ( value_string == "nearestJetEta"     ) value_ = kNearestJetEta;
   else if ( value_string == "nearestJetPhi"     ) value_ = kNearestJetPhi;
-  else if ( value_string == "nearestJetJWidth"  ) value_ = kNearestJetJetWidth;
+  else if ( value_string == "nearestJetWidth"   ) value_ = kNearestJetWidth;
   else {
     edm::LogError ("PATTauVectorExtraValExtractor") << " Invalid configuration parameter value = " << value_string << " !!";
     value_ = -1;
@@ -46,7 +46,7 @@ std::vector<double> PATTauVectorExtraValExtractor::operator()(const edm::Event& 
   evt.getByLabel(src_, patTaus);
 
   edm::Handle<reco::PFCandidateCollection> pfCandidates;
-  evt.getByLabel(pfCandsSrc_, pfCandidates);
+  evt.getByLabel(pfCandSrc_, pfCandidates);
 
   std::vector<reco::PFCandidate> pfChargedCands;
   std::vector<reco::PFCandidate> pfChargedHadrCands;
@@ -88,11 +88,11 @@ std::vector<double> PATTauVectorExtraValExtractor::operator()(const edm::Event& 
     else if (value_ == kNumPhotonsOut     ) 
       vec_i = pfGammaCands.size() - patTauPtr->signalPFGammaCands().size() - patTauPtr->isolationPFGammaCands().size();
 
-    if ( value_ == kNearestJetDeltaR  || 
-	 value_ == kNearestJetPt      || 
-	 value_ == kNearestJetEta     || 
-	 value_ == kNearestJetPhi     || 
-	 value_ == kNearestJetJetWidth ){
+    if ( value_ == kNearestJetDeltaR || 
+	 value_ == kNearestJetPt     || 
+	 value_ == kNearestJetEta    || 
+	 value_ == kNearestJetPhi    || 
+	 value_ == kNearestJetWidth ){
       float dRmin = 99.;
       int nearestJet_index = -1;
       for ( size_t iJet = 0; iJet < jets->size(); ++iJet ) {
@@ -107,7 +107,7 @@ std::vector<double> PATTauVectorExtraValExtractor::operator()(const edm::Event& 
 	else if ( value_ == kNearestJetPt       ) vec_i = (*jets)[nearestJet_index].p4().Pt();
 	else if ( value_ == kNearestJetEta      ) vec_i = (*jets)[nearestJet_index].p4().Eta();
 	else if ( value_ == kNearestJetPhi      ) vec_i = (*jets)[nearestJet_index].p4().Phi();
-	else if ( value_ == kNearestJetJetWidth ) 
+	else if ( value_ == kNearestJetWidth ) 
 	  vec_i = sqrt((*jets)[nearestJet_index].etaetaMoment() + (*jets)[nearestJet_index].phiphiMoment());
       }
     }

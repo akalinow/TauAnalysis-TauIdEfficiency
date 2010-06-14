@@ -6,7 +6,7 @@ extraTauCandVariables_template = cms.PSet(
     pluginType = cms.string("PATTauVectorExtraValExtractor"),
 
     src = cms.InputTag("patPFTausDijetTagAndProbeShrinkingCone"),
-    pfCandSrc = cms.InputTag("pfCandidates"),
+    pfCandSrc = cms.InputTag("particleFlow"),
     jetSrc = cms.InputTag("ak5PFJets"),
     jetMinPt = cms.double(10.),
     jetMaxAbsEta = cms.double(2.5),
@@ -14,13 +14,13 @@ extraTauCandVariables_template = cms.PSet(
     columns = cms.PSet(
         numTracksOther = cms.string("numTracksOut"),
         numChargedHadrOther = cms.string("numChargedHadrOut"),
-        numGammaOther = cms.string("numGammaOut"),
+        numGammaOther = cms.string("numPhotonsOut"),
     
         nearestJetDR = cms.string("nearestJetDR"),
         nearestJetPt = cms.string("nearestJetPt"),
         nearestJetEta = cms.string("nearestJetEta"),
         nearestJetPhi = cms.string("nearestJetPhi"),
-        nearestJetJetWidth = cms.string("nearestJetJetWidth"),
+        nearestJetWidth = cms.string("nearestJetWidth"),
     )
 )
 
