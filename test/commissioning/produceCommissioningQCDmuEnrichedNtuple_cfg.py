@@ -116,10 +116,22 @@ process.ntupleProducer = cms.EDAnalyzer("ObjValEDNtupleProducer",
         # Grouping of sources is for convenience of specifying pluginTypes, etc
 
         # variables indicating decision of HLT trigger paths
-        trigger = process.trigger_template,                                    
+        trigger = process.trigger_template.clone(
+            columns = cms.PSet(
+                hltL1Jet6U          = cms.string("HLT_L1Jet6U"),
+                hltJet15U           = cms.string("HLT_Jet15U"),
+                hltJet30U           = cms.string("HLT_Jet30U"),
+                hltJet50U           = cms.string("HLT_Jet50U"),
+                hltMinBiasBSC       = cms.string("HLT_MinBiasBSC"),
+                hltMinBiasBSCnoBPTX = cms.string("HLT_MinBiasBSC_NoBPTX"),
+                hltMu3              = cms.string("HLT_Mu3"),
+                hltMu5              = cms.string("HLT_Mu5"),                                    
+                hltMu9              = cms.string("HLT_Mu9")
+            )
+        ),                                              
 
         # variables specifying x,y,z coordinates of primary event vertex
-        vertex = process.vertex_template,                   
+        vertex = process.vertex_template,
 
         # variables specific to Muons
         muons_part01 = process.muons_recInfo,              
