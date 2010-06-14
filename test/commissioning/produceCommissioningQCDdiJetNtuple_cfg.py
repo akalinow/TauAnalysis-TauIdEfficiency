@@ -16,31 +16,10 @@ process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
 #--------------------------------------------------------------------------------
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
-        '/store/relval/CMSSW_3_6_1/RelValZTT/GEN-SIM-RECO/START36_V7-v1/0021/F405BC9A-525D-DF11-AB96-002618943811.root',
+        #'/store/relval/CMSSW_3_6_1/RelValZTT/GEN-SIM-RECO/START36_V7-v1/0021/F405BC9A-525D-DF11-AB96-002618943811.root',
         #'/store/relval/CMSSW_3_6_1/RelValZTT/GEN-SIM-RECO/START36_V7-v1/0020/EE3E8F74-365D-DF11-AE3D-002618FDA211.root'
-        #'/store/relval/CMSSW_3_5_4/RelValZTT/GEN-SIM-RECO/START3X_V24-v1/0004/020492F1-2C2C-DF11-AF77-002618943826.root',
-        #'/store/relval/CMSSW_3_5_4/RelValZTT/GEN-SIM-RECO/START3X_V24-v1/0003/C00F5E4C-972B-DF11-99BB-001A92971AA8.root'
-        #'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/run135528sdJetMETTau_noTriggerSel/qcdDiJetSkim_1_1.root',
-        #'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/run135528sdJetMETTau_noTriggerSel/qcdDiJetSkim_2_1.root',
-        #'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/run135528sdJetMETTau_noTriggerSel/qcdDiJetSkim_4_1.root',
-        #'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/run135528sdJetMETTau_noTriggerSel/qcdDiJetSkim_5_1.root',
-        #'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/run135528sdJetMETTau_noTriggerSel/qcdDiJetSkim_6_1.root',
-        #'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/run135528sdJetMETTau_noTriggerSel/qcdDiJetSkim_7_1.root',
-        #'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/run135528sdJetMETTau_noTriggerSel/qcdDiJetSkim_8_1.root',
-        #'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/run135528sdJetMETTau_noTriggerSel/qcdDiJetSkim_9_1.root',
-        #'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/run135528sdJetMETTau_noTriggerSel/qcdDiJetSkim_10_1.root',
-        #'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/run135528sdJetMETTau_noTriggerSel/qcdDiJetSkim_11_1.root',
-        #'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/run135528sdJetMETTau_noTriggerSel/qcdDiJetSkim_12_1.root',
-        #'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/run135528sdJetMETTau_noTriggerSel/qcdDiJetSkim_13_1.root',
-        #'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/run135528sdJetMETTau_noTriggerSel/qcdDiJetSkim_14_1.root',
-        #'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/run135528sdJetMETTau_noTriggerSel/qcdDiJetSkim_15_1.root',
-        #'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/run135528sdJetMETTau_noTriggerSel/qcdDiJetSkim_16_1.root',
-        #'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/run135528sdJetMETTau_noTriggerSel/qcdDiJetSkim_17_1.root',
-        #'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/run135528sdJetMETTau_noTriggerSel/qcdDiJetSkim_18_1.root',
-        #'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/run135528sdJetMETTau_noTriggerSel/qcdDiJetSkim_19_1.root',
-        #'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/run135528sdJetMETTau_noTriggerSel/qcdDiJetSkim_20_1.root',
-        #'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/run135528sdJetMETTau_noTriggerSel/qcdDiJetSkim_21_1.root',
-        #'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/run135528sdJetMETTau_noTriggerSel/qcdDiJetSkim_22_1.root'
+        ##'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/data/muTauSkim_1_1.root'
+        'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/mcMinBias/muTauSkim_1_1.root'           
     ),
     skipEvents = cms.untracked.uint32(0)            
 )
@@ -175,6 +154,20 @@ if isMC:
     setattr(process.ntupleProducer.sources, "tauGenJets", process.tauGenJets_genInfo)
     setattr(process.ntupleProducer.sources, "genJets", process.genJets_genInfo)
 #--------------------------------------------------------------------------------
+
+#--------------------------------------------------------------------------------
+#
+# updated InputTags for HLT trigger result object
+# in case running on reprocessed Spring'10 Monte Carlo samples
+if isMC:
+    process.hltJet15U.selector.src = cms.InputTag('TriggerResults::REDIGI')
+    process.patTrigger.processName = cms.string('REDIGI')
+    process.patCaloTausTriggerEvent.processName = cms.string('REDIGI')
+    process.patPFTausTriggerEventFixedCone.processName = cms.string('REDIGI')
+    process.patPFTausTriggerEventShrinkingCone.processName = cms.string('REDIGI')
+    process.patPFTausTriggerEventHPS.processName = cms.string('REDIGI')    
+    process.ntupleProducer.sources.trigger.src = cms.InputTag('TriggerResults::REDIGI')
+#--------------------------------------------------------------------------------    
 
 #--------------------------------------------------------------------------------
 #

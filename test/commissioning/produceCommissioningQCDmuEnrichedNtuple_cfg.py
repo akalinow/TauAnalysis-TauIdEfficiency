@@ -161,6 +161,20 @@ if isMC:
 
 #--------------------------------------------------------------------------------
 #
+# updated InputTags for HLT trigger result object
+# in case running on reprocessed Spring'10 Monte Carlo samples
+if isMC:
+    process.hltMu3.selector.src = cms.InputTag('TriggerResults::REDIGI')
+    process.patTrigger.processName = cms.string('REDIGI')
+    process.patCaloTausTriggerEvent.processName = cms.string('REDIGI')
+    process.patPFTausTriggerEventFixedCone.processName = cms.string('REDIGI')
+    process.patPFTausTriggerEventShrinkingCone.processName = cms.string('REDIGI')
+    process.patPFTausTriggerEventHPS.processName = cms.string('REDIGI')    
+    process.ntupleProducer.sources.trigger.src = cms.InputTag('TriggerResults::REDIGI')
+#--------------------------------------------------------------------------------    
+
+#--------------------------------------------------------------------------------
+#
 # Save ntuple
 #
 process.ntupleOutputModule = cms.OutputModule("PoolOutputModule",
