@@ -166,9 +166,9 @@ if isMC:
     process.caloTaus_genInfo.src = cms.InputTag(retVal["caloTauCollection"])
     setattr(process.ntupleProducer.sources, "caloTaus_part02", process.caloTaus_genInfo)
     process.pfTausFixedCone_genInfo.src = cms.InputTag(retVal["pfTauCollectionFixedCone"])
-    setattr(process.ntupleProducer.sources, "pfTausFixedCone_part02", process.pfTausFixedCone_genInfo)
+    setattr(process.ntupleProducer.sources, "pfTausFixedCone_part03", process.pfTausFixedCone_genInfo)
     process.pfTausShrinkingCone_genInfo.src = cms.InputTag(retVal["pfTauCollectionShrinkingCone"])
-    setattr(process.ntupleProducer.sources, "pfTausShrinkingCone_part02", process.pfTausShrinkingCone_genInfo)
+    setattr(process.ntupleProducer.sources, "pfTausShrinkingCone_part03", process.pfTausShrinkingCone_genInfo)
     process.pfTausHPS_genInfo.src = cms.InputTag(retVal["pfTauCollectionHPS"])
     setattr(process.ntupleProducer.sources, "pfTausHPS_part02", process.pfTausHPS_genInfo)
     # add in information about generator level visible taus and all generator level jets
