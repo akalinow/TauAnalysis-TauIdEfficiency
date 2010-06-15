@@ -5,7 +5,7 @@ from samples import qcd_mc, minbias_mc, ztautau_mc, data
 
 mirror.LOCAL_DIRECTORY = "/tmp/tau_commissioning"
 
-_sample_list = [data, minbias_mc, qcd_mc, ztautau_mc, ]
+_sample_list = [ data, minbias_mc, qcd_mc, ztautau_mc, ]
 
 # Update the samples to use any existing local files
 for sample in _sample_list:
