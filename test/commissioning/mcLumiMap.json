@@ -29,6 +29,15 @@
         "scaleFactor": 1.05
 
     },
+
+    #---------------------------------------------------------------------------- 
+    # NOTE: Different parts of QCD di-jet sample have been produced 
+    #       with PtHat > PtThreshold cuts
+    #       As a result, the higher PtHat bins overlap with lower PtHat bins 
+    #       in part of the phase-space and the simulated luminosities 
+    #       of all PtHat bins up to a certain PtThreshold have to be summed !!
+    #---------------------------------------------------------------------------- 
+
     "QCD_Pt15": {
         "files": [
 	    "tauIdEff_ntuple_1_1.root",
@@ -156,7 +165,7 @@
             "tauIdEff_ntuple_54_1.root"
         ], 
 	"directory": "rfio:/castor/cern.ch/user/d/dbodin/TauIdCommissioning/qcdDiJet/v1_1/qcdPt30/",
-        "int_lumi": 82.3,
+        "int_lumi": 89.4,
         "scaleFactor": 1.02
     },
     "QCD_Pt80": {
@@ -179,7 +188,7 @@
 	    "tauIdEff_ntuple_36_1.root"
         ], 
 	"directory": "rfio:/castor/cern.ch/user/d/dbodin/TauIdCommissioning/qcdDiJet/v1_1/qcdPt80/",	
-        "int_lumi": 3.49e+3,
+        "int_lumi": 3.58e+3,
         "scaleFactor": 2.4
     },
     "QCD_Pt170": {
@@ -214,9 +223,10 @@
 	    "tauIdEff_ntuple_33_1.root"
         ], 
 	"directory": "rfio:/castor/cern.ch/user/d/dbodin/TauIdCommissioning/qcdDiJet/v1_1/qcdPt170/",
-        "int_lumi": 1.25e+5,
+        "int_lumi": 1.29e+5,
         "scaleFactor": 1.18
     },
+
     "minBias": {
         "files": [
 	    "tauIdEff_ntuple_100_2.root",
