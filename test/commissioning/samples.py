@@ -7,7 +7,7 @@ samples.py
 
 Central defintion of data sources for commissioning.
 
-$Id: samples.py,v 1.3 2010/06/09 14:10:44 veelken Exp $
+$Id: samples.py,v 1.4 2010/06/12 00:39:01 friis Exp $
 
 '''
 
@@ -27,9 +27,12 @@ print "loading definition of Ztautau signal Monte Carlo samples..."
 ztautau_mc = build_sample(_MC_LUMI_MAP_FILE, "mc_ztt", "merge", "Ztautau")
 
 # Merge multiple pt hat bins
+#
+# CV: restrict analysis to first pt hat bin for now...
+#
 print "loading definition of QCD background Monte Carlo samples..."
-qcd_mc = build_sample(_MC_LUMI_MAP_FILE, "mc_qcd", "merge", "QCD_Pt15", "QCD_Pt30", "QCD_Pt80", "QCD_Pt170")
-#qcd_mc = build_sample(_MC_LUMI_MAP_FILE, "mc_qcd", "merge", "QCD_Pt15")
+##qcd_mc = build_sample(_MC_LUMI_MAP_FILE, "mc_qcd", "merge", "QCD_Pt15", "QCD_Pt30", "QCD_Pt80", "QCD_Pt170")
+qcd_mc = build_sample(_MC_LUMI_MAP_FILE, "mc_qcd", "merge", "QCD_Pt15")
 
 print "loading definition of min. Bias background Monte Carlo samples..."
 minbias_mc = build_sample(_MC_LUMI_MAP_FILE, "mc_minbias", "merge", "minBias")
