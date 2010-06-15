@@ -29,15 +29,6 @@
         "scaleFactor": 1.05
 
     },
-
-    #---------------------------------------------------------------------------- 
-    # NOTE: Different parts of QCD di-jet sample have been produced 
-    #       with PtHat > PtThreshold cuts
-    #       As a result, the higher PtHat bins overlap with lower PtHat bins 
-    #       in part of the phase-space and the simulated luminosities 
-    #       of all PtHat bins up to a certain PtThreshold have to be summed !!
-    #---------------------------------------------------------------------------- 
-
     "QCD_Pt15": {
         "files": [
 	    "tauIdEff_ntuple_1_1.root",
@@ -226,7 +217,6 @@
         "int_lumi": 1.29e+5,
         "scaleFactor": 1.18
     },
-
     "minBias": {
         "files": [
 	    "tauIdEff_ntuple_100_2.root",
