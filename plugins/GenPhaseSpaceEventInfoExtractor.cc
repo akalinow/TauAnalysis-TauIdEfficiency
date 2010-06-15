@@ -24,11 +24,14 @@ GenPhaseSpaceEventInfoExtractor::~GenPhaseSpaceEventInfoExtractor()
 double  
 GenPhaseSpaceEventInfoExtractor::operator()(const edm::Event& evt) const
 {
+  //std::cout << "<GenPhaseSpaceEventInfoExtractor::operator()>:" << std::endl;
+
   edm::Handle<GenEventInfoProduct> genEventInfo;
   evt.getByLabel(src_, genEventInfo);
 
   double val = -1.;
   if ( genEventInfo.isValid() && genEventInfo->hasBinningValues() ) {
+    //std::cout << " ptHat = " << genEventInfo->binningValues()[0] << std::endl;
     val = genEventInfo->binningValues()[0];
   }
   
