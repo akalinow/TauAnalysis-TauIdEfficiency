@@ -29,7 +29,7 @@ if __name__ == "__main__":
     #file = ROOT.TFile("/tmp/anayak/my_tauIdEff_ntuple.root", "READ")
     #multiple files
     events = TChain("Events")
-    events.Add("rfio:/castor/cern.ch/user/a/abdollah/TauIdCommissioning/qcdDiJet/v2_1/tauIdEffEDNtuple_qcdDiJet_*.root")
+    events.Add("rfio:/castor/cern.ch/user/a/abdollah/TauIdCommissioning/qcdDiJet/v2_1_2/tauIdEffEDNtuple_qcdDiJet_*.root")
     #events.Add("/tmp/anayak/Z2TauTau/tauIdEffEDNtuple_qcdDiJet_*.root")
         
     # Get the events tree (this can also be a TChain)
