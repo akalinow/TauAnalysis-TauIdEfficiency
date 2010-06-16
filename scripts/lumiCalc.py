@@ -1,8 +1,8 @@
 #!/usr/bin/env python
+from __future__ import with_statement
 import sys, os
 import json
 import csv
-import itertools
 from TauAnalysis.TauIdEfficiency.tools.prescales import RunRegistry
 
 '''
@@ -15,7 +15,7 @@ prescales for those runs.
 Author: Matthias Edelhoff (Aachen)
 Contributors: Evan K. Friis (UC Davis)
 
-$Id: lumiCalc.py,v 1.5 2010/05/27 20:08:28 friis Exp $
+$Id: lumiCalc.py,v 1.6 2010/06/01 23:04:04 friis Exp $
 
 Takes as input: 
     
