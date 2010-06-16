@@ -64,8 +64,8 @@ if __name__ == "__main__":
 
     # Basic requirement HLT + Probe object
     # N.B. currently disabled, no HLT info in ntuples!
-    # base_selection = shrinking_ntuple.expr('$probe > 0.5') & hlt.expr('$hltJet15U > 0.5')
-    base_selection = shrinking_ntuple.expr('1')
+    base_selection = shrinking_ntuple.expr('$probe > 0.5') & hlt.expr('$hltJet15U > 0.5')
+    #base_selection = shrinking_ntuple.expr('1')
 
     # Compare basic distributions
     jetpt_result = plotter.distribution(
