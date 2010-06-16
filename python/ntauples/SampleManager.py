@@ -57,9 +57,9 @@ class NtupleSample(object):
         # If we can, restart the cache learning phase
         if self.ttree_cache:
             pass
-            #self.events.SetCacheSize(0) # reset
-            #self.events.SetCacheSize(10000000)
-            #self.events.AddBranchToCache("*")
+            self.events.SetCacheSize(0) # reset
+            self.events.SetCacheSize(10000000)
+            self.events.AddBranchToCache("*")
         return self.events
 
     def norm_factor_for_lumi(self, target_int_lumi):
