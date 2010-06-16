@@ -56,6 +56,7 @@ QCD_MC_STYLE_HIST = {
     #'line_width' : 1.5,
     'fill_color' :  ROOT.EColor.kAzure-4,
     'fill_style' : 3003,
+    'marker_color' : ROOT.EColor.kAzure,
 }
 
 QCD_MC_STYLE_DOTS = {
