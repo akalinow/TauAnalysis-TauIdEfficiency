@@ -1,155 +1,315 @@
-import ROOT
+#!/usr/bin/env python
 
+import ROOT
 from TauAnalysis.TauIdEfficiency.ntauples.PlotManager import PlotManager
 import TauAnalysis.TauIdEfficiency.ntauples.styles as style
 
 # Defintion of input files.
 import samples_cache as samples
 import os
+import sys
+from optparse import OptionParser
+
+# Build the plot manager.  The plot manager keeps track of all the samples
+# and ensures they are correctly normalized w.r.t. luminosity.  See 
+# samples.py for available samples.
+plotter = PlotManager()
+
+# Add each sample we want to plot/compare
+# Uncomment to add QCD
+plotter.add_sample(samples.qcd_mc, "QCD MC", **style.QCD_MC_STYLE_HIST)
+
+plotter.add_sample(samples.minbias_mc, "Minbias MC", **style.MINBIAS_MC_STYLE)
+
+plotter.add_sample(samples.data, "Data (7 TeV)", **style.DATA_STYLE)
+
+
+# Normalize everything to the data luminosity
+plotter.set_integrated_lumi(samples.data.effective_luminosity())
+
+# Build the ntuple maanger
+ntuple_manager = samples.data.build_ntuple_manager("tauIdEffNtuple")
+
+shrinking_ntuple = ntuple_manager.get_ntuple(
+    "patPFTausDijetTagAndProbeShrinkingCone")
+
+hlt = ntuple_manager.get_ntuple("TriggerResults")
+
+# Make some plots
+canvas = ROOT.TCanvas("blah", "blah", 500, 500)
+
+# Plot # different triggers
+#    trigger_results_expr =  hlt.expr('$hltJet15U')
+#
+#    trigger_results = plotter.distribution(
+#        expression=hlt.expr('$hltJet15U'),
+#        selection=hlt.expr('1'), # no selection
+#        binning = (5, -2.5, 2.5),
+#        x_axis_title = "HLT_Jet15U Result",
+#        y_min = 1, logy=True
+#    )
+#    canvas.SaveAs("plots/hltJet15U_result.png")
+#    canvas.SaveAs("plots/hltJet15U_result.pdf")
+
+
+# Basic requirement HLT + Probe object
+# N.B. currently disabled, no HLT info in ntuples!
+base_selection = hlt.expr('$hltJet15U > 0.5') & shrinking_ntuple.expr('$probe > 0.5') 
+#base_selection = shrinking_ntuple.expr('1')
+
+# Define some common expressions
+expr_jetPt = shrinking_ntuple.expr('$jetPt')
+expr_jetEta = shrinking_ntuple.expr('$jetEta')
+expr_abs_jetEta = shrinking_ntuple.expr('abs($jetEta)')
+
+
+# Define some common binnings
+pt_binning_fine = (50, 0, 100)
+eta_binning_fine = (50, -2.5, 2.5)
+phi_binning_fine = (50, -3.14, 3.14)
+decay_mode_binning = (15, -0.5, 14.5)
+discriminator_binning = (200, -0.5, 1.5)
+
+eta_acceptance_cut = (expr_abs_jetEta < 2.5)
+min_pt_cut = (expr_jetPt > 5)
+basic_kinematic_cut = eta_acceptance_cut & min_pt_cut
+lead_pion_selection = shrinking_ntuple.expr('$byLeadPionPtCut')
+lead_track_finding = shrinking_ntuple.expr('$byLeadTrackFinding')
+
+distributions = {
+    # Trigger result
+    'hltJet15U' : {
+        'expression': hlt.expr('$hltJet15U'),
+        'selection': hlt.expr('1'), 
+        'binning': (5, -2.5, 2.5),
+        'x_axis_title': "HLT_Jet15U Result",
+        'y_min': 1, 'logy': True
+    },
+    'jetPt' : {
+        'expression': expr_jetPt,
+        'selection': base_selection & eta_acceptance_cut,
+        'binning': pt_binning_fine, 'y_min': 1e2, 'logy': True,
+        'x_axis_title': "Jet P_{T} [GeV/c]",
+    },
+    'jetEta' : {
+        'expression': expr_jetEta,
+        'selection': base_selection & min_pt_cut,
+        'binning': eta_binning_fine, 'logy': True,
+        'y_min': 1e3, 'x_axis_title': "Jet |#eta|",
+    },
+    'jetPhi' : {
+        'expression': shrinking_ntuple.expr('$jetPhi'),
+        'selection': base_selection & eta_acceptance_cut,
+        'binning': phi_binning_fine, 'logy': False,
+        'x_axis_title': "Jet #phi",
+    },
+    'decayMode' : {
+        'expression': shrinking_ntuple.expr('$decayMode'),
+        'selection':base_selection & basic_kinematic_cut & lead_pion_selection,
+        'binning': decay_mode_binning, 'logy': False,
+        'x_axis_title': "Decay Mode",
+    },
+    'byTaNC' : {
+        'expression': shrinking_ntuple.expr('$byTaNC'),
+        'selection': base_selection & basic_kinematic_cut & lead_pion_selection,
+        'binning': discriminator_binning, 'logy': True, 'y_min': 1e2,
+        'x_axis_title': 'TaNC output',
+    },
+
+    'leadChargedParticlePt' : {
+        'expression': shrinking_ntuple.expr('$leadChargedParticlePt'),
+        'selection' : base_selection & basic_kinematic_cut & \
+        shrinking_ntuple.expr('$byLeadTrackFinding'),
+        'binning': (50, 0, 50), 'logy': True, 'y_min': 1e-1,
+        'x_axis_title' : "P_{T} of leading charged particle"
+    },
+
+    'ptSumChargedParticlesIsoCone' : { 
+        'expression' : shrinking_ntuple.expr('$ptSumChargedParticlesIsoCone'),
+        # Require lead pion selection to ensure iso cone is built
+        'selection' : base_selection & basic_kinematic_cut & lead_track_finding, 
+        'binning': (50, 0, 50), 'logy': True, 'y_min': 1e-1,
+        'x_axis_title' : "Isolation charged sum P_{T} [GeV/c]"
+    },
+
+    'ptSumPhotonsIsoCone' : { 
+        'expression' : shrinking_ntuple.expr('$ptSumPhotonsIsoCone'),
+        # Require lead pion selection to ensure iso cone is built
+        'selection' : base_selection & basic_kinematic_cut & lead_track_finding, 
+        'binning': (50, 0, 50), 'logy': True, 'y_min': 1e-1,
+        'x_axis_title' : "Isolation photons sum P_{T} [GeV/c]"
+    },
+
+    'numChargedParticlesIsoCone' : { 
+        'expression' : shrinking_ntuple.expr('$numChargedParticlesIsoCone'),
+        # Require lead pion selection to ensure iso cone is built
+        'selection' : base_selection & basic_kinematic_cut & lead_track_finding, 
+        'binning': (21, -0.5, 20.5), 'logy': True, 'y_min': 1e-1,
+        'x_axis_title' : "Number of tracks in isolation annulus"
+    },
+
+    'numPhotonsIsoCone' : { 
+        'expression' : shrinking_ntuple.expr('$numPhotonsIsoCone'),
+        # Require lead pion selection to ensure iso cone is built
+        'selection' : base_selection & basic_kinematic_cut & lead_track_finding, 
+        'binning': (21, -0.5, 20.5), 'logy': True, 'y_min': 1e-1,
+        'x_axis_title' : "Number of photons in isolation annulus"
+    },
+}
+
+######################################################
+####      Plot efficiencies                       ####
+######################################################
+
+denominator = base_selection & basic_kinematic_cut
+
+efficiencies = {
+    'LeadTrackFinding': {
+        'numerator': shrinking_ntuple.expr('$byLeadTrackFinding'),
+        'denominator': denominator, 'logy': True
+    },
+    'LeadTrackPtCut': {
+        'numerator': shrinking_ntuple.expr('$byLeadTrackPtCut'),
+        'denominator': denominator, 'logy': True
+    },
+    'LeadPionPtCut': {
+        'numerator': shrinking_ntuple.expr('$byLeadPionPtCut'),
+        'denominator': denominator, 'logy': True
+    },
+    'EcalIso': {
+        'numerator': shrinking_ntuple.expr('$byEcalIsolationUsingLeadingPion'),
+        'denominator': denominator & lead_pion_selection, 'logy': True
+    },
+    'TrackIso': {
+        'numerator': shrinking_ntuple.expr('$byTrackIsolationUsingLeadingPion'),
+        'denominator': denominator & lead_pion_selection, 'logy': True
+    },
+    'CombinedIso': {
+        'numerator': shrinking_ntuple.expr('$byIsolationUsingLeadingPion'),
+        'denominator': denominator & lead_pion_selection, 'logy': True
+    },
+    'TaNCTenth': {
+        'numerator': shrinking_ntuple.expr('$byTaNCfrQuarterPercent'),
+        'denominator': denominator & lead_pion_selection, 'logy': True
+    },
+    'TaNCQuarter': {
+        'numerator': shrinking_ntuple.expr('$byTaNCfrQuarterPercent'),
+        'denominator': denominator & lead_pion_selection, 'logy': True
+    },
+    'TaNCHalf': {
+        'numerator': shrinking_ntuple.expr('$byTaNCfrHalfPercent'),
+        'denominator': denominator & lead_pion_selection, 'logy': True
+    },
+    'TaNCOne': {
+        'numerator': shrinking_ntuple.expr('$byTaNCfrOnePercent'),
+        'denominator': denominator & lead_pion_selection, 'logy': True
+    },
+}
+
+# Update the numerator for each efficiency to ensure it is a subset of the
+# denominator
+for eff_name, eff_info in efficiencies.iteritems(): 
+    eff_info['numerator'] = eff_info['numerator'] & eff_info['denominator']
+
+# Define quantities to parameterize efficiency
+efficiency_versus = {
+    'Pt' : {
+        'expression' : expr_jetPt,
+        'x_axis_title': "Jet P_{T} [GeV/c]",
+        'binning': pt_binning_fine,
+        'y_min' : 1e-4, 'y_max' : 5,
+    },
+    'Eta' : {
+        'expression' : expr_jetEta,
+        'x_axis_title': "Jet #eta",
+        'binning': eta_binning_fine,
+        'y_min' : 1e-4, 'y_max' : 5,
+    },
+    'Width' : {
+        'expression' : shrinking_ntuple.expr('$jetWidth'),
+        'x_axis_title': "Jet width",
+        'binning': (50, 0, 0.5),
+        'y_min' : 1e-4, 'y_max' : 5,
+    },
+    'Phi' : {
+        'expression' : shrinking_ntuple.expr('$jetPhi'),
+        'x_axis_title': "Jet #phi",
+        'binning': phi_binning_fine,
+        'y_min' : 1e-4, 'y_max' : 5,
+    },
+}
 
 if __name__ == "__main__":
     ROOT.gROOT.SetBatch(True)
 
     if not os.path.isdir('plots'):
         os.mkdir('plots')
+        
+    parser = OptionParser()
 
-    # Build the plot manager.  The plot manager keeps track of all the samples
-    # and ensures they are correctly normalized w.r.t. luminosity.  See 
-    # samples.py for available samples.
-    plotter = PlotManager()
+    parser.add_option("-p", "--plot", dest="to_plot", 
+                      action="append", default=[], 
+                      help="Appendable list of distributions to plot")
+    parser.add_option("-v", "--versus", dest="versus", 
+                      action="append", default=[], 
+                      help="Appendable list of dependent variables for the efficiencies.  Default is all")
+    parser.add_option("-a", "--all", default=False, action="store_true")
+    
+    (opts, args) = parser.parse_args()
 
-    # Add each sample we want to plot/compare
-    # Uncomment to add QCD
-    plotter.add_sample(samples.qcd_mc, "QCD MC", **style.QCD_MC_STYLE_HIST)
+    if not opts.versus:
+        opts.versus = ["Pt", "Eta", "Width", "Phi"]
 
-    plotter.add_sample(samples.minbias_mc, "Minbias MC", **style.MINBIAS_MC_STYLE)
+    print "Building distributions:", " ".join(opts.to_plot)
+    print "For efficiencies, dependent variables are:", " ".join(opts.versus)
 
-    plotter.add_sample(samples.data, "Data (7 TeV)", **style.DATA_STYLE)
-
-
-    # Normalize everything to the data luminosity
-    plotter.set_integrated_lumi(samples.data.effective_luminosity())
-
-    # Build the ntuple maanger
-    ntuple_manager = samples.data.build_ntuple_manager("tauIdEffNtuple")
-
-    # Get the shrinking ntuple
-    shrinking_ntuple = ntuple_manager.get_ntuple(
-        "patPFTausDijetTagAndProbeShrinkingCone")
-
-    hlt = ntuple_manager.get_ntuple("TriggerResults")
-
-    # Make some plots
-    canvas = ROOT.TCanvas("blah", "blah", 500, 500)
-
-    # Plot # different triggers
-    trigger_results_expr =  hlt.expr('$hltJet15U')
-
-    trigger_results = plotter.distribution(
-        expression=hlt.expr('$hltJet15U'),
-        selection=hlt.expr('1'), # no selection
-        binning = (5, -2.5, 2.5),
-        x_axis_title = "HLT_Jet15U Result",
-        y_min = 1, logy=True
-    )
-    canvas.SaveAs("plots/hltJet15U_result.png")
-    canvas.SaveAs("plots/hltJet15U_result.pdf")
+    # Print available plots
+    if not opts.to_plot and not opts.all:
+        print " Available distributions:"
+        dists = distributions.keys()
+        dists.sort()
+        for distribution in dists:
+            print " *", distribution
+        print " Available efficiencies:"
+        dists = efficiencies.keys()
+        dists.sort()
+        for distribution in dists:
+            print " *", distribution
+        sys.exit(0)
 
 
-    # Basic requirement HLT + Probe object
-    # N.B. currently disabled, no HLT info in ntuples!
-    # base_selection = shrinking_ntuple.expr('$probe > 0.5') & hlt.expr('$hltJet15U > 0.5')
-    base_selection = shrinking_ntuple.expr('1')
-
-    # Define some common stuff
-    expr_jetPt = shrinking_ntuple.expr('$jetPt')
-    pt_binning_fine = (50, 0, 100)
-
-    eta_binning_fine = (50, -2.5, 2.5)
-    expr_jetEta = shrinking_ntuple.expr('$jetEta')
-    expr_abs_jetEta = shrinking_ntuple.expr('abs($jetEta)')
-    basic_kinematic_cut = (expr_abs_jetEta < 2.5) & (expr_jetPt > 5)
-
-    distributions = {
-        'jetPt' : {
-            'expression': expr_jetPt,
-            'selection': (expr_abs_jetEta < 2.5) & base_selection,
-            'binning': pt_binning_fine, 'y_min': 1e-2, 'logy': True,
-            'x_axis_title': "Jet P_{T} [GeV/c]",
-        },
-        'jetEta' : {
-            'expression': expr_jetEta,
-            'selection': (expr_jetPt > 5) & base_selection,
-            'binning': eta_binning_fine, 'logy': True,
-            'y_min': 1e-2, 'x_axis_title': "Jet |#eta|",
-        },
-        'jetPhi' : {
-            'expression': shrinking_ntuple.expr('$jetPhi'),
-            'selection': (expr_abs_jetEta < 2.5) & base_selection,
-            'binning': (50, -3.14, 3.14), 'logy': False,
-            'x_axis_title': "Jet #phi",
-        },
-        'decayMode' : {
-            'expression': shrinking_ntuple.expr('$decayMode'),
-            'selection': basic_kinematic_cut & base_selection & \
-            shrinking_ntuple.expr('$byLeadPionPtCut'),
-            'binning': (15, -0.5, 14.5), 'logy': False,
-            'x_axis_title': "Decay Mode",
-        },
-        'byTaNC' : {
-            'expression': shrinking_ntuple.expr('$byTaNC'),
-            'selection' : basic_kinematic_cut & base_selection & \
-            shrinking_ntuple.expr('$byLeadPionPtCut'),
-            'binning': (300, -1, 2), 'logy': True, 'y_min': 1e-1
-        },
-    }
-
+    # Plot all distributions
     for dist_name, dist_info in distributions.iteritems():
+        if dist_name not in opts.to_plot and not opts.all:
+            continue
         result = plotter.distribution(**dist_info)
         result['legend'].make_legend().Draw()
         canvas.SaveAs("plots/shrinkingCone_dist_%s.png" % dist_name)
         canvas.SaveAs("plots/shrinkingCone_dist_%s.pdf" % dist_name)
 
-
-    ######################################################
-    ####      Plot efficiencies                       ####
-    ######################################################
-
     # Change the style of the QCD from filled histogram to dots
     # name mc_qcd is defined in samples.py
     plotter.update_style("mc_qcd", **style.QCD_MC_STYLE_DOTS)
 
-    denominator = shrinking_ntuple.expr(
-        'abs($jetEta) < 2.5 & $jetPt > 5') & base_selection
-    numerator = shrinking_ntuple.expr('$byTaNCfrHalfPercent') & denominator
-
-    eta_eff_result = plotter.efficiency(
-        expression=shrinking_ntuple.expr('abs($jetEta)'),
-        denominator = denominator,
-        numerator = numerator,
-        binning = (50, 0, 2.5),
-        x_axis_title = "Jet |#eta|",
-        y_min = 1e-4, y_max = 5, logy = True,
-    )
-
-    # Add a legend
-    eta_eff_result['legend'].make_legend().Draw()
-
-    canvas.SaveAs("plots/shrinkingCone_TaNCHalf_eff_jetEta.png")
-    canvas.SaveAs("plots/shrinkingCone_TaNCHalf_eff_jetEta.pdf")
-
-    pt_eff_result = plotter.efficiency(
-        expression=shrinking_ntuple.expr('$jetPt'),
-        denominator = denominator,
-        numerator = numerator,
-        binning = (100, 0, 100),
-        x_axis_title = "Jet P_{T} [GeV/c]",
-        y_min = 1e-4, y_max = 5, logy = True,
-    )
-
-    # Add a legend
-    pt_eff_result['legend'].make_legend().Draw()
-
-    canvas.SaveAs("plots/shrinkingCone_TaNCHalf_eff_jetPt.png")
-    canvas.SaveAs("plots/shrinkingCone_TaNCHalf_eff_jetPt.pdf")
+    # Plot all efficiencies
+    for eff_vs, eff_vs_info in efficiency_versus.iteritems():
+        if eff_vs not in opts.versus and not opts.all:
+            continue
+        for eff_name, eff_info in efficiencies.iteritems():
+            if eff_name not in opts.to_plot and not opts.all:
+                continue
+            # Combine the information about the x_axis and the
+            # numerator and denominator selections
+            plot_info_dict = {}
+            plot_info_dict.update(eff_vs_info)
+            plot_info_dict.update(eff_info)
+            # Make the plot
+            eff_result = plotter.efficiency(**plot_info_dict)
+            # Add a legend
+            eff_result['legend'].make_legend().Draw()
+            # Save plots
+            canvas.SaveAs("plots/shrinkingCone_%s_eff_vs_%s.png" 
+                          % (eff_name, eff_vs))
+            canvas.SaveAs("plots/shrinkingCone_%s_eff_vs_%s.pdf" 
+                          % (eff_name, eff_vs))
 
