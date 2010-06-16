@@ -97,6 +97,16 @@ def wait_for_completion(current_jobs, finished_jobs, max_running_jobs):
                 # Remove from running jobs list
                 del current_jobs[pid]
 
+def stage_files(castor_files):
+    ''' Request that castor stage the relevant files '''
+    for castor_file in castor_files:
+        # Don't care about keeping track of output
+        stager = subprocess.Popen(['stager_get', '-M', castor_file], 
+                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        stager.wait()
+
+    
+
 def mirror_files(castor_files, max_jobs=20):
     ''' Copy [castor_files] to local disk.
 
@@ -108,10 +118,7 @@ def mirror_files(castor_files, max_jobs=20):
         return
     print "About to copy %i files" % len(castor_files)
     print "Requesting that CASTOR stage the files about to be copied."
-    for castor_file in castor_files:
-        # Don't care about keeping track of output
-        subprocess.Popen(['stager_get', '-M', castor_file], 
-                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    stage_files(castor_files)
 
     current_jobs = {}
     finished_jobs = {}
@@ -184,6 +191,9 @@ def update_sample_to_use_local_files(sample, tiny_mode=False):
                 if local_version_current(clean_file):
                     local_count += 1
                     input_file = "file:%s" % local_version(clean_file)
+                else:
+                    # Request CASTOR stage this file
+                    stage_files([clean_file])
             new_file_list.append(input_file)
         # Update the files for this sample
         subsample.files = new_file_list
