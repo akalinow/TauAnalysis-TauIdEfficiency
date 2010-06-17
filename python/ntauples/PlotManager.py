@@ -92,12 +92,11 @@ class PlotManager(object):
 
     def distribution(self, expression, selection, binning=(), verbose=True, **options):
         " Compare a distribution from the different samples "
-        if verbose:
-            print "Plotting", str(expression), str(selection)
+        if verbose: print "Plotting", str(expression), str(selection)
         # Get a unique name for the ROOT name
         unique_name = helpers.make_unique_name(expression, selection)
         result_dict = {}
-        result_dict['result'] = ROOT.THStack(unique_name, "")
+        result_dict['result'] = ROOT.THStack("thStack"+unique_name, "")
         result_dict['keep'] = []
         # Keep track of all the plots we make
         result_dict['samples'] = {}
@@ -158,7 +157,7 @@ class PlotManager(object):
         return result_dict
 
     def efficiency(self, expression, numerator, denominator,
-                   binning=(), x_error_bars=False, **options):
+                   binning=(), verbose=True, x_error_bars=False, **options):
         ''' Compare efficiencies for different samples 
 
         Compute the efficiency of the [numerator] selection with respect
@@ -177,14 +176,26 @@ class PlotManager(object):
         result_dict['samples'] = {}
         result_dict['legend'] = LegendMaker()
         # Loop over each sample
+        if verbose: print "Plotting", str(expression), str(numerator), str(denominator)
         for sample_name in self.sample_order:
+            if verbose: print "  *  Sample:", sample_name
             sample_info = self.samples[sample_name]
             # Build a background histogram and efficiency curve for this sample
+            # Nota Bene: TGraphAsymmErrors cannot handle non-unit weights.  For
+            # non-merged samples (i.e. no pt hat bins), we can just set the target
+            # luminosity to None, and each sample will get unit scaling.  Since we 
+            # only care about the ratio, this is fine.  However, pt-hat binned samples
+            # the errors will be overestimated in regions of phase space where high-lumi
+            # samples are the only contribution.  (i.e. it will think that there are a few
+            # events for QCD jets of PT = 100, when actually the QCD_80 sample contributes
+            # a lot.
             my_bkg_hist, my_eff = plot.efficiency(
-                list(sample_info['sample'].events_and_weights(self.int_lumi)),
+                #list(sample_info['sample'].events_and_weights(self.int_lumi)),
+                list(sample_info['sample'].events_and_weights(None)),
                 expression, numerator, denominator, binning=binning,
                 output_name="%s%s"%(sample_name, unique_name))
 
+            # If this is the first histogram drawn, add the background
             if result_dict['background'] is None:
                 # Apply style to background histo
                 background_style = copy.copy(style.DEFAULT_STYLE)
@@ -205,6 +216,7 @@ class PlotManager(object):
             # Build legend
             result_dict['legend'].add_object(
                 my_eff, sample_info['nice_name'], 'p')
+
         # Apply any canvas style updates
         canvas_style = copy.deepcopy(style.DEFAULT_STYLE)
         canvas_style.update(options)
