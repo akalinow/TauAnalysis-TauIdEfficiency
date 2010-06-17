@@ -263,7 +263,7 @@ efficiencies = {
         'denominator': denominator, 'logy': True
     },
     'TaNCTenth': {
-        'numerator': shrinking_ntuple.expr('$byTaNCfrQuarterPercent') & lead_pion_selection,
+        'numerator': shrinking_ntuple.expr('$byTaNCfrTenthPercent') & lead_pion_selection,
         'denominator': denominator, 'logy': True
     },
     'TaNCQuarter': {
