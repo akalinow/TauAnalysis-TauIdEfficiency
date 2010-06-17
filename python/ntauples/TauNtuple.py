@@ -1,4 +1,5 @@
 import string
+import hashlib
 
 class TauNtuple(object):
     " Class that maps user-friendly variable names to complicated TTree branches "
@@ -31,6 +32,12 @@ class TauNtuple(object):
 class TauNtupleExpression(object):
     def __init__(self, value):
         self.value = value
+    def hash_string(self):
+        " Return a hash string corresponding to this expression " 
+        return hashlib.md5(self.value).hexdigest()
+    def __hash__(self):
+        " Return a hash integer corresponding to this expression " 
+        return int(self.hash_string(), 16)
     def check_other(self, other):
         # To be implemented if needed later
         pass
