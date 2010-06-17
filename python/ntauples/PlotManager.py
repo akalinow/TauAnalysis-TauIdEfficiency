@@ -143,9 +143,9 @@ class PlotManager(object):
         result_dict['result'].Draw("nostack")
         # Give us some breathing room on top of the plot to put our labels and stuff
         if 'logy' in options and options['logy']:
-            result_dict['result'].SetMaximum(result_dict['result'].GetMaximum()*5)
+            result_dict['result'].SetMaximum(result_dict['result'].GetMaximum()*10)
         else:
-            result_dict['result'].SetMaximum(result_dict['result'].GetMaximum()*1.1)
+            result_dict['result'].SetMaximum(result_dict['result'].GetMaximum()*1.2)
         # Apply any canvas style options
         canvas_style = copy.deepcopy(style.DEFAULT_STYLE)
         canvas_style.update(options)
