@@ -1,4 +1,5 @@
 import ROOT
+import array
 
 '''
 Functions to produce plots using TauNtuples
@@ -21,25 +22,39 @@ def draw(events, expression, selection="", output_name="", binning=(), options="
         events = [ (events, 1.0) ]
     if not output_name:
         output_name = "htemp"
-    # Build binning string if desired
-    binning_str = ""
-    if binning:
-        binning_str = "(%s)" % ','.join(str(x) for x in binning)
+
+    options = "e, %s" % options
+
     # Sum the histogram from each group of events
     for event_source_index, (event_source, weight) in enumerate(events):
         # Build the draw string
-        draw_command = expression.value + ">>"
-        # Check if we are appending to an existing histogram
-        if event_source_index > 0:
-            draw_command += "+"
-        draw_command += output_name
-        # On the first round of drawing, specificy the binning if desired
-        if event_source_index == 0:
-            draw_command += binning_str
-        # Apply the weight by using the selection string
+        expression_str = str(expression.value)
         selection_with_weight = str(selection*weight)
-        # Draw the histogram
-        event_source.Draw(str(draw_command), str(selection_with_weight), "e,%s" % options)
+
+        # Check if this is the first event
+        if event_source_index == 0:
+            # Determine how to build the histogram
+            if not binning:
+                # If no binning information is provided
+                event_source.Draw(expression_str + ">>" + output_name, 
+                                  selection_with_weight, options)
+            elif len(binning) == 3: 
+                # Fixed bins
+                event_source.Draw(expression_str + ">>" + output_name + "(" + 
+                                  ','.join(str(x) for x in binning) + ")",
+                                  selection_with_weight, options)
+            else: 
+                # Variable bin sizes, must pre-build histo
+                histogram = ROOT.TH1F(output_name, output_name, "", 
+                                      len(binning)-1, array.array('d', binning))
+                # Append to histogram
+                event_source.Draw(expression_str + ">>+" + output_name, 
+                                  selection_with_weight, options)
+        else:
+            # Otherwise we are appending to an existing histogram
+            event_source.Draw(expression_str+">>+">>output_name, 
+                              selection_with_weight, options)
+            
     return ROOT.gDirectory.Get(output_name)
 
 def efficiency(events, expression, numerator="", denominator="", output_name="", **kwargs):
