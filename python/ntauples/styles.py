@@ -24,6 +24,13 @@ CMS_PRELIMINARY_UPPER_LEFT.SetTextSize(0.04)
 CMS_PRELIMINARY_UPPER_LEFT.SetFillStyle(0)
 CMS_PRELIMINARY_UPPER_LEFT.SetBorderSize(0)
 
+# Define the luminosity labels
+LUMI_LABEL_UPPER_LEFT = ROOT.TPaveText(0.10, 0.75, 0.45, 0.83, "NDC")
+LUMI_LABEL_UPPER_LEFT.AddText("#int L = 8.19nb^{-1}")
+LUMI_LABEL_UPPER_LEFT.SetTextSize(0.04)
+LUMI_LABEL_UPPER_LEFT.SetFillStyle(0)
+LUMI_LABEL_UPPER_LEFT.SetBorderSize(0)
+
 DEFAULT_STYLE = {
     'draw_option' : "",
     'marker_color' : ROOT.EColor.kBlack,
@@ -37,7 +44,7 @@ DEFAULT_STYLE = {
     'y_axis_title' : "Fake Rate",
     'horizontal_grid' : 0,
     'vertical_grid' : 1,
-    'labels' : [CMS_PRELIMINARY_UPPER_LEFT]
+    'labels' : [CMS_PRELIMINARY_UPPER_LEFT, LUMI_LABEL_UPPER_LEFT]
 }
 
 DATA_STYLE = {
