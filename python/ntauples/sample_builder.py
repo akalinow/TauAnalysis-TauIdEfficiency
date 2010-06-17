@@ -13,16 +13,20 @@ of files and corresponding integrated luminsoity.
 
 Author: Evan K. Friis (UC Davis)
 
-$Id: sample_builder.py,v 1.2 2010/06/09 14:10:25 veelken Exp $
+$Id: sample_builder.py,v 1.3 2010/06/11 21:43:07 friis Exp $
 
 '''
 
-def build_sample(lumifile, sample_name, mode, *datasets):
+def build_sample(lumifile, sample_name, mode, take_every=1, datasets=[]):
     ''' Combine [datasets] into a NtupleSampleCollection
 
     The combine method ([mode]) can be either "add" (i.e.  concatenate weeks of
     data) or "merge" (i.e. merge pt hat bins of MC QCD).  The [lumifile] should
     be a JSON file produced by the scripts/lumiCalc.py utility.
+
+    The take_every parameter indicates what subset of files to take (for 
+    prototyping).  take_every=10 would take every tenth file.  The scaleFactor 
+    is increased to account for the missing files.
 
     '''
 
@@ -45,9 +49,18 @@ def build_sample(lumifile, sample_name, mode, *datasets):
             # Add this sample
             scaleFactor = 1.0
             if dataset_info.get('scaleFactor') is not None: scaleFactor = dataset_info['scaleFactor']
+
+            # Add every nth file
+            files_to_add = [ 
+                file for index, file in enumerate(dataset_info['files']) 
+                if index % take_every == 0]
+
+            # Calculate the take_every scale factor
+            scaleFactor *= float(len(dataset_info['files']))/len(files_to_add)
+
             datasets_to_add.append(
                 NtupleSample(dataset, int_lumi=dataset_info['int_lumi'], scaleFactor=scaleFactor,
-                             files=dataset_info['files'], directory=dataset_info['directory'], prescale=1.0)
+                             files=files_to_add, directory=dataset_info['directory'], prescale=1.0)
             )
         # Create the merged dataset
         output = NtupleSampleCollection(sample_name, subsamples=datasets_to_add, 

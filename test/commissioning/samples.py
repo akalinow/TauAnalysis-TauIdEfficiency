@@ -7,7 +7,7 @@ samples.py
 
 Central defintion of data sources for commissioning.
 
-$Id: samples.py,v 1.4 2010/06/12 00:39:01 friis Exp $
+$Id: samples.py,v 1.5 2010/06/15 15:21:22 veelken Exp $
 
 '''
 
@@ -24,7 +24,7 @@ _MC_LUMI_MAP_FILE = os.path.join(
 # Arugments: lumi map file, name of output collection, merge/add, list of samples
 # to take from the JSON file
 print "loading definition of Ztautau signal Monte Carlo samples..."
-ztautau_mc = build_sample(_MC_LUMI_MAP_FILE, "mc_ztt", "merge", "Ztautau")
+ztautau_mc = build_sample(_MC_LUMI_MAP_FILE, "mc_ztt", "merge", datasets = ["Ztautau"])
 
 # Merge multiple pt hat bins
 #
@@ -32,11 +32,11 @@ ztautau_mc = build_sample(_MC_LUMI_MAP_FILE, "mc_ztt", "merge", "Ztautau")
 #
 print "loading definition of QCD background Monte Carlo samples..."
 ##qcd_mc = build_sample(_MC_LUMI_MAP_FILE, "mc_qcd", "merge", "QCD_Pt15", "QCD_Pt30", "QCD_Pt80", "QCD_Pt170")
-qcd_mc = build_sample(_MC_LUMI_MAP_FILE, "mc_qcd", "merge", "QCD_Pt15")
+qcd_mc = build_sample(_MC_LUMI_MAP_FILE, "mc_qcd", "merge", datasets = ["QCD_Pt15"])
 
 print "loading definition of min. Bias background Monte Carlo samples..."
-minbias_mc = build_sample(_MC_LUMI_MAP_FILE, "mc_minbias", "merge", "minBias")
+minbias_mc = build_sample(_MC_LUMI_MAP_FILE, "mc_minbias", "merge", datasets = ["minBias"])
 
 # For data, we use the add mode, to concatenate data
 print "loading definition of Data samples..."
-data = build_sample(_DATA_LUMI_MAP_FILE, "data", "add", "Data_part01")
+data = build_sample(_DATA_LUMI_MAP_FILE, "data", "add", datasets = ["Data_part01"])
