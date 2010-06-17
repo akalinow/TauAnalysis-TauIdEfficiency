@@ -13,7 +13,7 @@ of files and corresponding integrated luminsoity.
 
 Author: Evan K. Friis (UC Davis)
 
-$Id: sample_builder.py,v 1.5 2010/06/17 19:38:08 edelhoff Exp $
+$Id: sample_builder.py,v 1.6 2010/06/17 20:52:44 friis Exp $
 
 '''
 
@@ -58,7 +58,7 @@ def build_sample(lumifile, sample_name, mode, take_every=1, datasets=[]):
 
             datasets_to_add.append(
                 NtupleSample(dataset, int_lumi=dataset_info['int_lumi'], allEvents=allEvents,
-                             files=dataset_info['files'], directory=dataset_info['directory'], prescale=1.0)
+                             files=files_to_add, directory=dataset_info['directory'], prescale=1.0)
             )
         # Create the merged dataset
         output = NtupleSampleCollection(sample_name, subsamples=datasets_to_add, 
