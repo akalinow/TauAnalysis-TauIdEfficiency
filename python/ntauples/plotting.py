@@ -45,7 +45,7 @@ def draw(events, expression, selection="", output_name="", binning=(), options="
                                   selection_with_weight, options)
             else: 
                 # Variable bin sizes, must pre-build histo
-                histogram = ROOT.TH1F(output_name, output_name, "", 
+                histogram = ROOT.TH1F(output_name, output_name, 
                                       len(binning)-1, array.array('d', binning))
                 # Append to histogram
                 event_source.Draw(expression_str + ">>+" + output_name, 
