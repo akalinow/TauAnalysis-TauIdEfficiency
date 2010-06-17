@@ -7,6 +7,7 @@ import TauAnalysis.TauIdEfficiency.ntauples.styles as style
 # Defintion of input files.
 import samples_cache as samples
 import os
+import copy
 import sys
 from optparse import OptionParser
 
@@ -22,7 +23,6 @@ plotter.add_sample(samples.qcd_mc, "QCD MC", **style.QCD_MC_STYLE_HIST)
 plotter.add_sample(samples.minbias_mc, "Minbias MC", **style.MINBIAS_MC_STYLE)
 
 plotter.add_sample(samples.data, "Data (7 TeV)", **style.DATA_STYLE)
-
 
 # Normalize everything to the data luminosity
 plotter.set_integrated_lumi(samples.data.effective_luminosity())
@@ -57,6 +57,11 @@ canvas = ROOT.TCanvas("blah", "blah", 500, 500)
 base_selection = hlt.expr('$hltJet15U > 0.5') & shrinking_ntuple.expr('$probe > 0.5') 
 #base_selection = shrinking_ntuple.expr('1')
 
+# this actually, slows things down.  Lame!
+#samples.data.set_selection( hlt.expr('$hltJet15U > 0.5'), "/afs/cern.ch/user/f/friis/entrylists.root")
+#samples.qcd_mc.set_selection( hlt.expr('$hltJet15U > 0.5'), "/afs/cern.ch/user/f/friis/entrylists.root")
+#samples.minbias_mc.set_selection( hlt.expr('$hltJet15U > 0.5'), "/afs/cern.ch/user/f/friis/entrylists.root")
+
 # Define some common expressions
 expr_jetPt = shrinking_ntuple.expr('$jetPt')
 expr_jetEta = shrinking_ntuple.expr('$jetEta')
@@ -67,12 +72,12 @@ expr_abs_jetEta = shrinking_ntuple.expr('abs($jetEta)')
 pt_binning_fine = (50, 0, 100)
 eta_binning_fine = (50, -2.5, 2.5)
 phi_binning_fine = (50, -3.14, 3.14)
-decay_mode_binning = (15, -0.5, 14.5)
+decay_mode_binning = (25, -0.5, 24.5)
 discriminator_binning = (200, -0.5, 1.5)
 
 eta_acceptance_cut = (expr_abs_jetEta < 2.5)
-min_pt_cut = (expr_jetPt > 5)
-basic_kinematic_cut = eta_acceptance_cut & min_pt_cut
+min_pt_cut = (expr_jetPt > 10)
+basic_kinematic_cut = min_pt_cut & eta_acceptance_cut 
 lead_pion_selection = shrinking_ntuple.expr('$byLeadPionPtCut')
 lead_track_finding = shrinking_ntuple.expr('$byLeadTrackFinding')
 
@@ -80,7 +85,7 @@ distributions = {
     # Trigger result
     'hltJet15U' : {
         'expression': hlt.expr('$hltJet15U'),
-        'selection': hlt.expr('1'), 
+        'selection': hlt.expr("$hltJet15U > -1000"),  # ?
         'binning': (5, -2.5, 2.5),
         'x_axis_title': "HLT_Jet15U Result",
         'y_min': 1, 'logy': True
@@ -91,11 +96,31 @@ distributions = {
         'binning': pt_binning_fine, 'y_min': 1e2, 'logy': True,
         'x_axis_title': "Jet P_{T} [GeV/c]",
     },
+    'jetPt_dm0' : {
+        'expression': expr_jetPt,
+        'selection': base_selection & eta_acceptance_cut & shrinking_ntuple.expr('$decayMode == 0'),
+        'binning': pt_binning_fine, 'y_min': 1, 'logy': True,
+        'x_axis_title': "Jet P_{T} for Decay Mode 0 [GeV/c]",
+    },
+    'jetPt_dm0_leadingPion' : {
+        'expression': expr_jetPt,
+        'selection': base_selection & eta_acceptance_cut & shrinking_ntuple.expr('$decayMode == 0') &\
+        shrinking_ntuple.expr('$byLeadPionPtCut'),
+        'binning': pt_binning_fine, 'y_min': 1, 'logy': True,
+        'x_axis_title': "Jet P_{T} for Decay Mode 0 [GeV/c]",
+    },
     'jetEta' : {
         'expression': expr_jetEta,
         'selection': base_selection & min_pt_cut,
-        'binning': eta_binning_fine, 'logy': True,
-        'y_min': 1e3, 'x_axis_title': "Jet |#eta|",
+        'binning': eta_binning_fine, 'logy': False,
+        #'y_min': 1e3, 
+        'x_axis_title': "Jet |#eta|",
+    },
+    'jetWidth' : {
+        'expression': shrinking_ntuple.expr('$jetWidth'),
+        'selection' : base_selection & basic_kinematic_cut,
+        'binning' : (50, 0, 0.5), 'logy':True,
+        'x_axis_title': "Jet Width"
     },
     'jetPhi' : {
         'expression': shrinking_ntuple.expr('$jetPhi'),
@@ -109,10 +134,35 @@ distributions = {
         'binning': decay_mode_binning, 'logy': False,
         'x_axis_title': "Decay Mode",
     },
+
+    'decayMode_pt20' : {
+        'expression': shrinking_ntuple.expr('$decayMode'),
+        'selection':base_selection & basic_kinematic_cut & lead_pion_selection &\
+        shrinking_ntuple.expr('$jetPt > 20'),
+        'binning': decay_mode_binning, 'logy': False,
+        'x_axis_title': "Decay Mode",
+    },
+
+    'decayMode_pt40' : {
+        'expression': shrinking_ntuple.expr('$decayMode'),
+        'selection':base_selection & basic_kinematic_cut & lead_pion_selection &\
+        shrinking_ntuple.expr('$jetPt > 40'),
+        'binning': decay_mode_binning, 'logy': False,
+        'x_axis_title': "Decay Mode",
+    },
+
     'byTaNC' : {
         'expression': shrinking_ntuple.expr('$byTaNC'),
         'selection': base_selection & basic_kinematic_cut & lead_pion_selection,
-        'binning': discriminator_binning, 'logy': True, 'y_min': 1e2,
+        'binning': discriminator_binning, 'logy': True, 'y_min': 1,
+        'x_axis_title': 'TaNC output',
+    },
+
+    'byTaNC_pt40' : {
+        'expression': shrinking_ntuple.expr('$byTaNC'),
+        'selection': base_selection & basic_kinematic_cut & lead_pion_selection &\
+        shrinking_ntuple.expr('$jetPt > 40'),
+        'binning': discriminator_binning, 'logy': True, 'y_min': 1,
         'x_axis_title': 'TaNC output',
     },
 
@@ -120,7 +170,7 @@ distributions = {
         'expression': shrinking_ntuple.expr('$leadChargedParticlePt'),
         'selection' : base_selection & basic_kinematic_cut & \
         shrinking_ntuple.expr('$byLeadTrackFinding'),
-        'binning': (50, 0, 50), 'logy': True, 'y_min': 1e-1,
+        'binning': (50, 0, 50), 'logy': True, 'y_min': 1,
         'x_axis_title' : "P_{T} of leading charged particle"
     },
 
@@ -144,7 +194,7 @@ distributions = {
         'expression' : shrinking_ntuple.expr('$numChargedParticlesIsoCone'),
         # Require lead pion selection to ensure iso cone is built
         'selection' : base_selection & basic_kinematic_cut & lead_track_finding, 
-        'binning': (21, -0.5, 20.5), 'logy': True, 'y_min': 1e-1,
+        'binning': (21, -0.5, 20.5), 'logy': True, 'y_min': 1,
         'x_axis_title' : "Number of tracks in isolation annulus"
     },
 
@@ -152,10 +202,34 @@ distributions = {
         'expression' : shrinking_ntuple.expr('$numPhotonsIsoCone'),
         # Require lead pion selection to ensure iso cone is built
         'selection' : base_selection & basic_kinematic_cut & lead_track_finding, 
-        'binning': (21, -0.5, 20.5), 'logy': True, 'y_min': 1e-1,
+        'binning': (21, -0.5, 20.5), 'logy': True, 'y_min': 1,
         'x_axis_title' : "Number of photons in isolation annulus"
     },
+
+    'numChargedParticlesSignalCone' : { 
+        'expression' : shrinking_ntuple.expr('$numChargedParticlesSignalCone'),
+        # Require lead pion selection to ensure iso cone is built
+        'selection' : base_selection & basic_kinematic_cut & lead_track_finding, 
+        'binning': (21, -0.5, 20.5), 'logy': True, 'y_min': 1,
+        'x_axis_title' : "Number of tracks in signal cone"
+    },
+
+    'numPhotonsSignalCone' : { 
+        'expression' : shrinking_ntuple.expr('$numPhotonsSignalCone'),
+        # Require lead pion selection to ensure iso cone is built
+        'selection' : base_selection & basic_kinematic_cut & lead_track_finding, 
+        'binning': (21, -0.5, 20.5), 'logy': True, 'y_min': 1,
+        'x_axis_title' : "Number of photons in signal cone"
+    },
 }
+
+# Add in TaNC distributions for each neural net
+for decay_mode in [0, 1, 2, 10, 11]:
+    dist_name = 'byTaNC_dm%i' % decay_mode
+    distributions[dist_name] = copy.deepcopy(distributions['byTaNC'])
+    new_selection = distributions[dist_name]['selection'] & \
+            shrinking_ntuple.expr('$decayMode == %i' % decay_mode)
+    distributions[dist_name]['selection'] = new_selection
 
 ######################################################
 ####      Plot efficiencies                       ####
@@ -177,32 +251,32 @@ efficiencies = {
         'denominator': denominator, 'logy': True
     },
     'EcalIso': {
-        'numerator': shrinking_ntuple.expr('$byEcalIsolationUsingLeadingPion'),
-        'denominator': denominator & lead_pion_selection, 'logy': True
+        'numerator': shrinking_ntuple.expr('$byEcalIsolationUsingLeadingPion') & lead_pion_selection,
+        'denominator': denominator, 'logy': True
     },
     'TrackIso': {
-        'numerator': shrinking_ntuple.expr('$byTrackIsolationUsingLeadingPion'),
-        'denominator': denominator & lead_pion_selection, 'logy': True
+        'numerator': shrinking_ntuple.expr('$byTrackIsolationUsingLeadingPion') & lead_pion_selection,
+        'denominator': denominator, 'logy': True
     },
     'CombinedIso': {
-        'numerator': shrinking_ntuple.expr('$byIsolationUsingLeadingPion'),
-        'denominator': denominator & lead_pion_selection, 'logy': True
+        'numerator': shrinking_ntuple.expr('$byIsolationUsingLeadingPion') & lead_pion_selection,
+        'denominator': denominator, 'logy': True
     },
     'TaNCTenth': {
-        'numerator': shrinking_ntuple.expr('$byTaNCfrQuarterPercent'),
-        'denominator': denominator & lead_pion_selection, 'logy': True
+        'numerator': shrinking_ntuple.expr('$byTaNCfrQuarterPercent') & lead_pion_selection,
+        'denominator': denominator, 'logy': True
     },
     'TaNCQuarter': {
-        'numerator': shrinking_ntuple.expr('$byTaNCfrQuarterPercent'),
-        'denominator': denominator & lead_pion_selection, 'logy': True
+        'numerator': shrinking_ntuple.expr('$byTaNCfrQuarterPercent') & lead_pion_selection,
+        'denominator': denominator, 'logy': True
     },
     'TaNCHalf': {
-        'numerator': shrinking_ntuple.expr('$byTaNCfrHalfPercent'),
-        'denominator': denominator & lead_pion_selection, 'logy': True
+        'numerator': shrinking_ntuple.expr('$byTaNCfrHalfPercent') & lead_pion_selection,
+        'denominator': denominator, 'logy': True
     },
     'TaNCOne': {
-        'numerator': shrinking_ntuple.expr('$byTaNCfrOnePercent'),
-        'denominator': denominator & lead_pion_selection, 'logy': True
+        'numerator': shrinking_ntuple.expr('$byTaNCfrOnePercent') & lead_pion_selection,
+        'denominator': denominator, 'logy': True
     },
 }
 
@@ -228,7 +302,7 @@ efficiency_versus = {
     'Width' : {
         'expression' : shrinking_ntuple.expr('$jetWidth'),
         'x_axis_title': "Jet width",
-        'binning': (50, 0, 0.5),
+        'binning': (50, 0, 0.3),
         'y_min' : 1e-4, 'y_max' : 5,
     },
     'Phi' : {
