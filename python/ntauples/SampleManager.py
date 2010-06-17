@@ -19,10 +19,11 @@ class NtupleSample(object):
     Holds a set of root files corresponding to a known luminosity.
 
     '''
-    def __init__(self, name, int_lumi, scaleFactor=1.0, prescale=1.0, files=[], directory=""):
+    def __init__(self, name, int_lumi, allEvents=-1, prescale=1.0, files=[], directory=""):
         self.name = name
         self.int_lumi = int_lumi
-        self.scaleFactor = scaleFactor
+        self.allEvents = allEvents
+        self.scaleFactor = None
         self.prescale = prescale
         self.files = ["".join([directory, file]) for file in files]
         self.events = None
@@ -50,6 +51,10 @@ class NtupleSample(object):
             print "Enabling TTree Cache"
             self.events.SetCacheSize(10000000)
             self.events.AddBranchToCache("*")
+        if self.allEvents == -1:
+            self.scaleFactor = 1.
+        else:
+            self.scaleFactor = float(self.allEvents)/self.events.GetEntries()
 
     def get_events(self):
         if not self.events:
@@ -94,6 +99,8 @@ class NtupleSample(object):
 
     def norm_factor_for_lumi(self, target_int_lumi):
         ''' Return weight need to scale sample to target luminosity '''
+        if self.scaleFactor == None:
+            raise StandardError, "scaleFactor not computed yet. Youe have to call build_events() first!"
         return target_int_lumi*self.scaleFactor/self.effective_luminosity()
 
     def build_ntuple_manager(self, name):

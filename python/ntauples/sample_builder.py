@@ -13,7 +13,7 @@ of files and corresponding integrated luminsoity.
 
 Author: Evan K. Friis (UC Davis)
 
-$Id: sample_builder.py,v 1.3 2010/06/11 21:43:07 friis Exp $
+$Id: sample_builder.py,v 1.4 2010/06/17 00:41:41 friis Exp $
 
 '''
 
@@ -47,8 +47,9 @@ def build_sample(lumifile, sample_name, mode, take_every=1, datasets=[]):
                         % dataset
             dataset_info = lumi_map[dataset]
             # Add this sample
-            scaleFactor = 1.0
-            if dataset_info.get('scaleFactor') is not None: scaleFactor = dataset_info['scaleFactor']
+
+            allEvents = -1 # allEvents not set will default to scaleFactor == 1
+            if dataset_info.get('allEvents') is not None: allEvents = dataset_info['allEvents']
 
             # Add every nth file
             files_to_add = [ 
@@ -56,11 +57,11 @@ def build_sample(lumifile, sample_name, mode, take_every=1, datasets=[]):
                 if index % take_every == 0]
 
             # Calculate the take_every scale factor
-            scaleFactor *= float(len(dataset_info['files']))/len(files_to_add)
+            allEvents *= float(len(dataset_info['files']))/len(files_to_add)
 
             datasets_to_add.append(
-                NtupleSample(dataset, int_lumi=dataset_info['int_lumi'], scaleFactor=scaleFactor,
-                             files=files_to_add, directory=dataset_info['directory'], prescale=1.0)
+                NtupleSample(dataset, int_lumi=dataset_info['int_lumi'], allEvents=allEvents,
+                             files=dataset_info['files'], directory=dataset_info['directory'], prescale=1.0)
             )
         # Create the merged dataset
         output = NtupleSampleCollection(sample_name, subsamples=datasets_to_add, 
