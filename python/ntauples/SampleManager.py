@@ -62,6 +62,36 @@ class NtupleSample(object):
             self.events.AddBranchToCache("*")
         return self.events
 
+    def set_selection(self, selection=None, selection_file=None):
+        ''' Retrive a TEntryList from the given file if it exists '''
+
+        # Save old path
+        old_path = ROOT.gDirectory.GetPath()
+
+        if selection is None:
+            self.get_events().SetEntryList(None)
+            return
+
+        # Check if we already got it
+        print "Setting %s as selection for %s" % (selection, self.name)
+        name_in_file = "%s_%s" % (self.name, selection.hash_string())
+        file = ROOT.TFile.Open(selection_file, "UPDATE")
+        file.cd()
+        entry_list = file.Get(name_in_file)
+        # Build if necessary
+        if not entry_list:
+            # Build entry list
+            print "Selection list not found in file, building..."
+            self.get_events().Draw(">>%s" % name_in_file, str(selection), 
+                                   "entrylist")
+            entry_list = ROOT.gDirectory.Get(name_in_file)
+            entry_list.Write()
+
+        print "Got entry list with %i entries" % entry_list.GetN()
+        self.get_events().SetEntryList(entry_list)
+        #file.Close()
+        ROOT.gDirectory.cd(old_path)
+
     def norm_factor_for_lumi(self, target_int_lumi):
         ''' Return weight need to scale sample to target luminosity '''
         return target_int_lumi*self.scaleFactor/self.effective_luminosity()
@@ -86,6 +116,11 @@ class NtupleSampleCollection(object):
         self.name = name
         self.subsamples = subsamples
         self.mode = mode
+
+    def set_selection(self, selection=None, selection_file=None):
+        ''' Set a static selection on this sample using a TEntrylists '''
+        for subsample in self.subsamples:
+            subsample.set_selection(selection, selection_file)
 
     def build_ntuple_manager(self, name):
         ''' Build an ntuple manager corresponding to [name] in the associated files'''
