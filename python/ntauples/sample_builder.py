@@ -13,7 +13,7 @@ of files and corresponding integrated luminsoity.
 
 Author: Evan K. Friis (UC Davis)
 
-$Id: sample_builder.py,v 1.4 2010/06/17 00:41:41 friis Exp $
+$Id: sample_builder.py,v 1.5 2010/06/17 19:38:08 edelhoff Exp $
 
 '''
 
@@ -55,9 +55,6 @@ def build_sample(lumifile, sample_name, mode, take_every=1, datasets=[]):
             files_to_add = [ 
                 file for index, file in enumerate(dataset_info['files']) 
                 if index % take_every == 0]
-
-            # Calculate the take_every scale factor
-            allEvents *= float(len(dataset_info['files']))/len(files_to_add)
 
             datasets_to_add.append(
                 NtupleSample(dataset, int_lumi=dataset_info['int_lumi'], allEvents=allEvents,
