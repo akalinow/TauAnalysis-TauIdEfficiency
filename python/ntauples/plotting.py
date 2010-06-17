@@ -37,9 +37,9 @@ def draw(events, expression, selection="", output_name="", binning=(), options="
         if event_source_index == 0:
             draw_command += binning_str
         # Apply the weight by using the selection string
-        selection_with_weight = selection*weight
+        selection_with_weight = str(selection*weight)
         # Draw the histogram
-        event_source.Draw(str(draw_command), str(selection_with_weight), options)
+        event_source.Draw(str(draw_command), str(selection_with_weight), "e,%s" % options)
     return ROOT.gDirectory.Get(output_name)
 
 def efficiency(events, expression, numerator="", denominator="", output_name="", **kwargs):
