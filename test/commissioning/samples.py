@@ -7,7 +7,7 @@ samples.py
 
 Central defintion of data sources for commissioning.
 
-$Id: samples.py,v 1.6 2010/06/17 00:41:43 friis Exp $
+$Id: samples.py,v 1.7 2010/06/18 00:38:47 friis Exp $
 
 '''
 
@@ -32,11 +32,11 @@ ztautau_mc = build_sample(_MC_LUMI_MAP_FILE, "mc_ztt", "merge", datasets = ["Zta
 #
 print "loading definition of QCD background Monte Carlo samples..."
 ##qcd_mc = build_sample(_MC_LUMI_MAP_FILE, "mc_qcd", "merge", "QCD_Pt15", "QCD_Pt30", "QCD_Pt80", "QCD_Pt170")
-qcd_mc = build_sample(_MC_LUMI_MAP_FILE, "mc_qcd", "merge", take_every=10, datasets = ["QCD_Pt15"])
+qcd_mc = build_sample(_MC_LUMI_MAP_FILE, "mc_qcd", "merge", take_every=1, datasets = ["QCD_Pt15"])
 
 print "loading definition of min. Bias background Monte Carlo samples..."
-minbias_mc = build_sample(_MC_LUMI_MAP_FILE, "mc_minbias", "merge", take_every=5, datasets = ["minBias"])
+minbias_mc = build_sample(_MC_LUMI_MAP_FILE, "mc_minbias", "merge", take_every=1, datasets = ["minBias"])
 
 # For data, we use the add mode, to concatenate data
 print "loading definition of Data samples..."
-data = build_sample(_DATA_LUMI_MAP_FILE, "data", "add", datasets = ["Data_part01"])
+data = build_sample(_DATA_LUMI_MAP_FILE, "data", "add", take_every=1, datasets = ["Data_part01"])
