@@ -74,7 +74,9 @@ from TauAnalysis.TauIdEfficiency.tools.sequenceBuilder import buildQCDmuEnriched
 # "clean" CaloTau/PFTau collections
 # (i.e. remove CaloTaus/PFTaus overlapping with muons)
 process.load("PhysicsTools.PatAlgos.cleaningLayer1.tauCleaner_cfi")
-process.patTauCleanerPrototype = process.cleanPatTaus.clone(
+
+# Remove all the low pt and forward junk
+patCaloTauCleanerPrototype = process.cleanPatTaus.clone(
     preselection = cms.string(''),
     checkOverlaps = cms.PSet(
         muons = cms.PSet(
@@ -87,13 +89,21 @@ process.patTauCleanerPrototype = process.cleanPatTaus.clone(
            requireNoOverlaps   = cms.bool(True)
         )
     ),        
-    finalCut = cms.string('')
+    finalCut = cms.string(
+        'caloTauTagInfoRef().calojetRef().pt() > 5 & abs(caloTauTagInfoRef().calojetRef().eta()) < 2.5')
 )
 
-retVal = configurePatTupleProduction(process,
-                                     patSequenceBuilder = buildQCDmuEnrichedTauSequence,
-                                     patTauCleanerPrototype = process.patTauCleanerPrototype,
-                                     addGenInfo = isMC)
+patPFTauCleanerPrototype = patCaloTauCleanerPrototype.clone(
+    finalCut = cms.string(
+        'pfTauTagInfoRef().pfjetRef().pt() > 5 & abs(pfTauTagInfoRef().pfjetRef().eta()) < 2.5')
+)
+
+
+retVal = configurePatTupleProduction(
+    process, patSequenceBuilder = buildQCDmuEnrichedTauSequence,
+    patPFTauCleanerPrototype = patPFTauCleanerPrototype,
+    patCaloTauCleanerPrototype = patCaloTauCleanerPrototype,
+    addGenInfo = isMC)
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
@@ -211,7 +221,6 @@ process.ntupleOutputModule = cms.OutputModule("PoolOutputModule",
 # with four-momenta determined by TCTau instead of (regular) CaloTau algorithm
 process.load("RecoTauTag.Configuration.RecoTCTauTag_cff")
 process.prePatProductionSequence = cms.Sequence(process.tautagging)
-
 # Rerun tau identification sequence for all PF based taus
 process.load("RecoTauTag.Configuration.RecoPFTauTag_cff")
 process.prePatProductionSequence += process.PFTau

@@ -71,16 +71,27 @@ from TauAnalysis.TauIdEfficiency.tools.configurePatTupleProduction import config
 from TauAnalysis.TauIdEfficiency.tools.sequenceBuilder import buildQCDdiJetTauSequence
 
 process.load("PhysicsTools.PatAlgos.cleaningLayer1.tauCleaner_cfi")
-process.patTauCleanerPrototype = process.cleanPatTaus.clone(
+
+# Remove all the low pt and forward junk
+patCaloTauCleanerPrototype = process.cleanPatTaus.clone(
     preselection = cms.string(''),
     checkOverlaps = cms.PSet(),
-    finalCut = cms.string('')
+    finalCut = cms.string(
+        'caloTauTagInfoRef().calojetRef().pt() > 5 & abs(caloTauTagInfoRef().calojetRef().eta()) < 2.5')
 )
 
-retVal = configurePatTupleProduction(process,
-                                     patSequenceBuilder = buildQCDdiJetTauSequence,
-                                     patTauCleanerPrototype = process.patTauCleanerPrototype,
-                                     addGenInfo = isMC)
+patPFTauCleanerPrototype = process.cleanPatTaus.clone(
+    preselection = cms.string(''),
+    checkOverlaps = cms.PSet(),
+    finalCut = cms.string(
+        'pfTauTagInfoRef().pfjetRef().pt() > 5 & abs(pfTauTagInfoRef().pfjetRef().eta()) < 2.5')
+)
+
+retVal = configurePatTupleProduction(
+    process, patSequenceBuilder = buildQCDdiJetTauSequence,
+    patPFTauCleanerPrototype = patPFTauCleanerPrototype,
+    patCaloTauCleanerPrototype = patCaloTauCleanerPrototype,
+    addGenInfo = isMC)
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
