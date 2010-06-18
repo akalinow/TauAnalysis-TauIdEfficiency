@@ -51,7 +51,7 @@ class NtupleSample(object):
             print "Enabling TTree Cache"
             self.events.SetCacheSize(10000000)
             self.events.AddBranchToCache("*")
-        if self.allEvents == -1:
+        if self.allEvents < 0:
             self.scaleFactor = 1.
         else:
             self.scaleFactor = float(self.allEvents)/self.events.GetEntries()

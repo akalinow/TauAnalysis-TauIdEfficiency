@@ -20,7 +20,7 @@ plotter = PlotManager()
 # Uncomment to add QCD
 plotter.add_sample(samples.qcd_mc, "QCD MC", **style.QCD_MC_STYLE_HIST)
 
-plotter.add_sample(samples.minbias_mc, "Minbias MC", **style.MINBIAS_MC_STYLE)
+#plotter.add_sample(samples.minbias_mc, "Minbias MC", **style.MINBIAS_MC_STYLE)
 
 plotter.add_sample(samples.data, "Data (7 TeV)", **style.DATA_STYLE)
 
@@ -32,6 +32,8 @@ ntuple_manager = samples.data.build_ntuple_manager("tauIdEffNtuple")
 
 shrinking_ntuple = ntuple_manager.get_ntuple(
     "patPFTausDijetTagAndProbeShrinkingCone")
+fixed_ntuple = ntuple_manager.get_ntuple(
+    "patPFTausDijetTagAndProbeFixedCone")
 
 hlt = ntuple_manager.get_ntuple("TriggerResults")
 
@@ -69,7 +71,8 @@ expr_abs_jetEta = shrinking_ntuple.expr('abs($jetEta)')
 
 
 # Define some common binnings
-pt_binning_fine = (50, 0, 100)
+#pt_binning_fine = (50, 0, 100)
+pt_binning_fine = (0, 5, 10, 15, 20, 25, 35, 45, 60, 80, 100)
 eta_binning_fine = (50, -2.5, 2.5)
 phi_binning_fine = (50, -3.14, 3.14)
 decay_mode_binning = (25, -0.5, 24.5)
@@ -90,16 +93,59 @@ distributions = {
         'x_axis_title': "HLT_Jet15U Result",
         'y_min': 1, 'logy': True
     },
+    'testLeadTrackCorner': {
+        'expression': shrinking_ntuple.expr('$leadChargedParticlePt'),
+        'selection' : lead_track_finding & \
+        shrinking_ntuple.expr('$numChargedParticlesIsoCone == 1') & \
+        shrinking_ntuple.expr('$numChargedParticlesSignalCone == 0') & \
+        shrinking_ntuple.expr('$leadChargedParticlePt > 0') &\
+        (lead_pion_selection < 1),
+        'binning': (100, 0, 25),
+        'x_axis_title': "Difference between lead track pt and iso sum charged",
+    },
+    'testLeadTrackCornerFixedDiff': {
+        'expression': fixed_ntuple.expr('$leadChargedParticlePt') -\
+        fixed_ntuple.expr('$ptSumChargedParticlesIsoCone'),
+        'selection' : lead_track_finding & \
+        fixed_ntuple.expr('$numChargedParticlesIsoCone == 1') & \
+        fixed_ntuple.expr('$numChargedParticlesSignalCone == 0') & \
+        fixed_ntuple.expr('$leadChargedParticlePt > 0') &\
+        lead_pion_selection,
+        'binning': (150, -15, 15),
+        'x_axis_title': "Difference between lead track pt and iso sum charged",
+    },
+    'testLeadTrackCornerFixed': {
+        'expression': fixed_ntuple.expr('$leadChargedParticlePt'),
+        'selection' : lead_track_finding & \
+        fixed_ntuple.expr('$numChargedParticlesIsoCone == 1') & \
+        fixed_ntuple.expr('$numChargedParticlesSignalCone == 0') & \
+        fixed_ntuple.expr('$leadChargedParticlePt > 0') &\
+        lead_pion_selection,
+        'binning': (150, 0, 15),
+        'x_axis_title': "Difference between lead track pt and iso sum charged",
+    },
+    'testLeadTrackCornerFixedNoLeadPion': {
+        'expression': fixed_ntuple.expr('$leadChargedParticlePt'),
+        'selection' : lead_track_finding & \
+        fixed_ntuple.expr('$numChargedParticlesIsoCone == 1') & \
+        fixed_ntuple.expr('$numChargedParticlesSignalCone == 0') & \
+        (lead_pion_selection < 1) &\
+        fixed_ntuple.expr('$leadChargedParticlePt > 0'),
+        'binning': (150, 0, 15),
+        'x_axis_title': "Difference between lead track pt and iso sum charged",
+    },
     'jetPt' : {
         'expression': expr_jetPt,
         'selection': base_selection & eta_acceptance_cut,
         'binning': pt_binning_fine, 'y_min': 1e2, 'logy': True,
+        'extra_labels': [style.ETA_CUT_LABEL_UPPER_LEFT],
         'x_axis_title': "Jet P_{T} [GeV/c]",
     },
     'jetPt_dm0' : {
         'expression': expr_jetPt,
         'selection': base_selection & eta_acceptance_cut & shrinking_ntuple.expr('$decayMode == 0'),
         'binning': pt_binning_fine, 'y_min': 1, 'logy': True,
+        'extra_labels': [style.ETA_CUT_LABEL_UPPER_LEFT],
         'x_axis_title': "Jet P_{T} for Decay Mode 0 [GeV/c]",
     },
     'jetPt_dm0_leadingPion' : {
@@ -107,30 +153,36 @@ distributions = {
         'selection': base_selection & eta_acceptance_cut & shrinking_ntuple.expr('$decayMode == 0') &\
         shrinking_ntuple.expr('$byLeadPionPtCut'),
         'binning': pt_binning_fine, 'y_min': 1, 'logy': True,
+        'extra_labels': [style.ETA_CUT_LABEL_UPPER_LEFT],
         'x_axis_title': "Jet P_{T} for Decay Mode 0 [GeV/c]",
     },
     'jetEta' : {
         'expression': expr_jetEta,
         'selection': base_selection & min_pt_cut,
         'binning': eta_binning_fine, 'logy': False,
+        'extra_labels': [style.PT_CUT_LABEL_UPPER_LEFT],
         #'y_min': 1e3, 
-        'x_axis_title': "Jet |#eta|",
+        'x_axis_title': "Jet #eta",
     },
     'jetWidth' : {
         'expression': shrinking_ntuple.expr('$jetWidth'),
         'selection' : base_selection & basic_kinematic_cut,
         'binning' : (50, 0, 0.5), 'logy':True,
+        'extra_labels': [style.PT_ETA_CUT_LABEL_UPPER_LEFT],
         'x_axis_title': "Jet Width"
     },
     'jetPhi' : {
         'expression': shrinking_ntuple.expr('$jetPhi'),
-        'selection': base_selection & eta_acceptance_cut,
+        'selection': base_selection & basic_kinematic_cut,
+        'extra_labels': [style.PT_ETA_CUT_LABEL_UPPER_LEFT],
         'binning': phi_binning_fine, 'logy': False,
         'x_axis_title': "Jet #phi",
     },
     'decayMode' : {
         'expression': shrinking_ntuple.expr('$decayMode'),
-        'selection':base_selection & basic_kinematic_cut & lead_pion_selection,
+        #'selection':base_selection & basic_kinematic_cut & lead_pion_selection,
+        'selection':base_selection & basic_kinematic_cut & shrinking_ntuple.expr('$byLeadTrackPtCut'),
+        'extra_labels': [style.PT_ETA_CUT_LABEL_UPPER_LEFT],
         'binning': decay_mode_binning, 'logy': False,
         'x_axis_title': "Decay Mode",
     },
@@ -139,6 +191,7 @@ distributions = {
         'expression': shrinking_ntuple.expr('$decayMode'),
         'selection':base_selection & basic_kinematic_cut & lead_pion_selection &\
         shrinking_ntuple.expr('$jetPt > 20'),
+        'extra_labels': [style.PT_20_ETA_CUT_LABEL_UPPER_LEFT],
         'binning': decay_mode_binning, 'logy': False,
         'x_axis_title': "Decay Mode",
     },
@@ -147,6 +200,7 @@ distributions = {
         'expression': shrinking_ntuple.expr('$decayMode'),
         'selection':base_selection & basic_kinematic_cut & lead_pion_selection &\
         shrinking_ntuple.expr('$jetPt > 40'),
+        'extra_labels': [style.PT_40_ETA_CUT_LABEL_UPPER_LEFT],
         'binning': decay_mode_binning, 'logy': False,
         'x_axis_title': "Decay Mode",
     },
@@ -155,6 +209,7 @@ distributions = {
         'expression': shrinking_ntuple.expr('$byTaNC'),
         'selection': base_selection & basic_kinematic_cut & lead_pion_selection,
         'binning': discriminator_binning, 'logy': True, 'y_min': 1,
+        'extra_labels': [style.PT_ETA_CUT_LABEL_UPPER_LEFT],
         'x_axis_title': 'TaNC output',
     },
 
@@ -162,6 +217,7 @@ distributions = {
         'expression': shrinking_ntuple.expr('$byTaNC'),
         'selection': base_selection & basic_kinematic_cut & lead_pion_selection &\
         shrinking_ntuple.expr('$jetPt > 40'),
+        'extra_labels': [style.PT_40_ETA_CUT_LABEL_UPPER_LEFT],
         'binning': discriminator_binning, 'logy': True, 'y_min': 1,
         'x_axis_title': 'TaNC output',
     },
@@ -170,6 +226,7 @@ distributions = {
         'expression': shrinking_ntuple.expr('$leadChargedParticlePt'),
         'selection' : base_selection & basic_kinematic_cut & \
         shrinking_ntuple.expr('$byLeadTrackFinding'),
+        'extra_labels': [style.PT_ETA_CUT_LABEL_UPPER_LEFT],
         'binning': (50, 0, 50), 'logy': True, 'y_min': 1,
         'x_axis_title' : "P_{T} of leading charged particle"
     },
@@ -178,6 +235,7 @@ distributions = {
         'expression' : shrinking_ntuple.expr('$ptSumChargedParticlesIsoCone'),
         # Require lead pion selection to ensure iso cone is built
         'selection' : base_selection & basic_kinematic_cut & lead_track_finding, 
+        'extra_labels': [style.PT_ETA_CUT_LABEL_UPPER_LEFT],
         'binning': (50, 0, 50), 'logy': True, 'y_min': 1e-1,
         'x_axis_title' : "Isolation charged sum P_{T} [GeV/c]"
     },
@@ -186,6 +244,7 @@ distributions = {
         'expression' : shrinking_ntuple.expr('$ptSumPhotonsIsoCone'),
         # Require lead pion selection to ensure iso cone is built
         'selection' : base_selection & basic_kinematic_cut & lead_track_finding, 
+        'extra_labels': [style.PT_ETA_CUT_LABEL_UPPER_LEFT],
         'binning': (50, 0, 50), 'logy': True, 'y_min': 1e-1,
         'x_axis_title' : "Isolation photons sum P_{T} [GeV/c]"
     },
@@ -194,14 +253,16 @@ distributions = {
         'expression' : shrinking_ntuple.expr('$numChargedParticlesIsoCone'),
         # Require lead pion selection to ensure iso cone is built
         'selection' : base_selection & basic_kinematic_cut & lead_track_finding, 
+        'extra_labels': [style.PT_ETA_CUT_LABEL_UPPER_LEFT],
         'binning': (21, -0.5, 20.5), 'logy': True, 'y_min': 1,
-        'x_axis_title' : "Number of tracks in isolation annulus"
+        'x_axis_title' : "Number of charged hadrons in isolation annulus"
     },
 
     'numPhotonsIsoCone' : { 
         'expression' : shrinking_ntuple.expr('$numPhotonsIsoCone'),
         # Require lead pion selection to ensure iso cone is built
         'selection' : base_selection & basic_kinematic_cut & lead_track_finding, 
+        'extra_labels': [style.PT_ETA_CUT_LABEL_UPPER_LEFT],
         'binning': (21, -0.5, 20.5), 'logy': True, 'y_min': 1,
         'x_axis_title' : "Number of photons in isolation annulus"
     },
@@ -209,15 +270,26 @@ distributions = {
     'numChargedParticlesSignalCone' : { 
         'expression' : shrinking_ntuple.expr('$numChargedParticlesSignalCone'),
         # Require lead pion selection to ensure iso cone is built
-        'selection' : base_selection & basic_kinematic_cut & lead_track_finding, 
+        'selection' : base_selection & basic_kinematic_cut & shrinking_ntuple.expr('$byLeadTrackPtCut'), 
+        'extra_labels': [style.PT_ETA_CUT_LABEL_UPPER_LEFT],
         'binning': (21, -0.5, 20.5), 'logy': True, 'y_min': 1,
-        'x_axis_title' : "Number of tracks in signal cone"
+        'x_axis_title' : "Number of charged hadrons in signal cone"
+    },
+
+    'numChargedParticlesSignalConeFixed' : { 
+        'expression' : fixed_ntuple.expr('$numChargedParticlesSignalCone'),
+        # Require lead pion selection to ensure iso cone is built
+        'selection' : base_selection & basic_kinematic_cut & fixed_ntuple.expr('$byLeadTrackPtCut'), 
+        'extra_labels': [style.PT_ETA_CUT_LABEL_UPPER_LEFT],
+        'binning': (21, -0.5, 20.5), 'logy': True, 'y_min': 1,
+        'x_axis_title' : "Number of charged hadrons in signal cone"
     },
 
     'numPhotonsSignalCone' : { 
         'expression' : shrinking_ntuple.expr('$numPhotonsSignalCone'),
         # Require lead pion selection to ensure iso cone is built
         'selection' : base_selection & basic_kinematic_cut & lead_track_finding, 
+        'extra_labels': [style.PT_ETA_CUT_LABEL_UPPER_LEFT],
         'binning': (21, -0.5, 20.5), 'logy': True, 'y_min': 1,
         'x_axis_title' : "Number of photons in signal cone"
     },
@@ -292,24 +364,28 @@ efficiency_versus = {
         'x_axis_title': "Jet P_{T} [GeV/c]",
         'binning': pt_binning_fine,
         'y_min' : 1e-4, 'y_max' : 5,
+        'extra_labels': [style.PT_ETA_CUT_LABEL_UPPER_LEFT],
     },
     'Eta' : {
         'expression' : expr_jetEta,
         'x_axis_title': "Jet #eta",
         'binning': eta_binning_fine,
         'y_min' : 1e-4, 'y_max' : 5,
+        'extra_labels': [style.PT_ETA_CUT_LABEL_UPPER_LEFT],
     },
     'Width' : {
         'expression' : shrinking_ntuple.expr('$jetWidth'),
         'x_axis_title': "Jet width",
         'binning': (50, 0, 0.3),
         'y_min' : 1e-4, 'y_max' : 5,
+        'extra_labels': [style.PT_ETA_CUT_LABEL_UPPER_LEFT],
     },
     'Phi' : {
         'expression' : shrinking_ntuple.expr('$jetPhi'),
         'x_axis_title': "Jet #phi",
         'binning': phi_binning_fine,
         'y_min' : 1e-4, 'y_max' : 5,
+        'extra_labels': [style.PT_ETA_CUT_LABEL_UPPER_LEFT],
     },
 }
 

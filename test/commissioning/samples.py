@@ -7,7 +7,7 @@ samples.py
 
 Central defintion of data sources for commissioning.
 
-$Id: samples.py,v 1.5 2010/06/15 15:21:22 veelken Exp $
+$Id: samples.py,v 1.6 2010/06/17 00:41:43 friis Exp $
 
 '''
 
@@ -32,10 +32,10 @@ ztautau_mc = build_sample(_MC_LUMI_MAP_FILE, "mc_ztt", "merge", datasets = ["Zta
 #
 print "loading definition of QCD background Monte Carlo samples..."
 ##qcd_mc = build_sample(_MC_LUMI_MAP_FILE, "mc_qcd", "merge", "QCD_Pt15", "QCD_Pt30", "QCD_Pt80", "QCD_Pt170")
-qcd_mc = build_sample(_MC_LUMI_MAP_FILE, "mc_qcd", "merge", datasets = ["QCD_Pt15"])
+qcd_mc = build_sample(_MC_LUMI_MAP_FILE, "mc_qcd", "merge", take_every=10, datasets = ["QCD_Pt15"])
 
 print "loading definition of min. Bias background Monte Carlo samples..."
-minbias_mc = build_sample(_MC_LUMI_MAP_FILE, "mc_minbias", "merge", datasets = ["minBias"])
+minbias_mc = build_sample(_MC_LUMI_MAP_FILE, "mc_minbias", "merge", take_every=5, datasets = ["minBias"])
 
 # For data, we use the add mode, to concatenate data
 print "loading definition of Data samples..."

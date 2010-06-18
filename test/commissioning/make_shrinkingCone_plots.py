@@ -71,6 +71,7 @@ if __name__ == "__main__":
     jetpt_result = plotter.distribution(
         expression=shrinking_ntuple.expr('$jetPt'),
         selection=shrinking_ntuple.expr('abs($jetEta) < 2.5') & base_selection,
+        extra_labels = [style.ETA_CUT_LABEL_UPPER_LEFT],
         binning = (50, 0, 100),
         x_axis_title = "Jet P_{T} [GeV/c]",
         y_min = 1e-2, logy=True
@@ -84,7 +85,8 @@ if __name__ == "__main__":
 
     jeteta_result = plotter.distribution(
         expression=shrinking_ntuple.expr('$jetEta'),
-        selection=shrinking_ntuple.expr('abs($jetPt) > 5') & base_selection,
+        selection=shrinking_ntuple.expr('abs($jetPt) > 10') & base_selection,
+        extra_labels = [style.PT_CUT_LABEL_UPPER_LEFT],
         binning = (50, -2.5, 2.5),
         x_axis_title = "Jet #eta"
     )
@@ -95,7 +97,8 @@ if __name__ == "__main__":
 
     jeteta_result = plotter.distribution(
         expression=shrinking_ntuple.expr('$jetPhi'),
-        selection=shrinking_ntuple.expr('abs($jetPt) > 5') & base_selection,
+        selection=shrinking_ntuple.expr('abs($jetPt) > 10') & base_selection,
+        extra_labels = [style.PT_CUT_LABEL_UPPER_LEFT],
         binning = (50, -3.14, 3.14),
         x_axis_title = "Jet #phi"
     )
@@ -116,13 +119,14 @@ if __name__ == "__main__":
 
 
     denominator = shrinking_ntuple.expr(
-        'abs($jetEta) < 2.5 & $jetPt > 5') & base_selection
+        'abs($jetEta) < 2.5 & $jetPt > 10') & base_selection
     numerator = shrinking_ntuple.expr('$byTaNCfrHalfPercent') & denominator
 
     eta_eff_result = plotter.efficiency(
         expression=shrinking_ntuple.expr('abs($jetEta)'),
         denominator = denominator,
         numerator = numerator,
+        extra_labels = [style.PT_ETA_CUT_LABEL_UPPER_LEFT],
         binning = (25, 0, 2.5),
         x_axis_title = "Jet |#eta|",
         y_min = 1e-4, y_max = 5, logy = True,
@@ -138,6 +142,7 @@ if __name__ == "__main__":
         expression=shrinking_ntuple.expr('$jetPt'),
         denominator = denominator,
         numerator = numerator,
+        extra_labels = [style.PT_ETA_CUT_LABEL_UPPER_LEFT],
         binning = (20, 0, 100),
         x_axis_title = "Jet P_{T} [GeV/c]",
         y_min = 1e-4, y_max = 5, logy = True,
