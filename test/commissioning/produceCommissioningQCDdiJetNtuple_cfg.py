@@ -194,10 +194,15 @@ process.ntupleOutputModule = cms.OutputModule("PoolOutputModule",
 process.load("RecoTauTag.Configuration.RecoTCTauTag_cff")
 process.prePatProductionSequence = cms.Sequence(process.tautagging)
 
+# Rerun tau identification sequence for all PF based taus
+process.load("RecoTauTag.Configuration.RecoPFTauTag_cff")
+process.prePatProductionSequence += process.PFTau
+
 # produce collection of PFTaus reconstructed by hadron + strips (HPS) algorithm
 # "on-the-fly", as it is not contained in data taken with CMSSW_3_5_x
-process.load("RecoTauTag.Configuration.HPSPFTaus_cfi")
-process.prePatProductionSequence += process.produceAndDiscriminateHPSPFTaus
+# EK: no longer necessary, runs in PFTau sequence
+#process.load("RecoTauTag.Configuration.HPSPFTaus_cfi")
+#process.prePatProductionSequence += process.produceAndDiscriminateHPSPFTaus
 
 # if running on Monte Carlo, produce ak5GenJets collection "on-the-fly",
 # as it is needed for matching reconstructed particles to generator level information by PAT,
