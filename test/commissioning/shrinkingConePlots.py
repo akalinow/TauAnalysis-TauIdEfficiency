@@ -93,47 +93,47 @@ distributions = {
         'x_axis_title': "HLT_Jet15U Result",
         'y_min': 1, 'logy': True
     },
-    'testLeadTrackCorner': {
-        'expression': shrinking_ntuple.expr('$leadChargedParticlePt'),
-        'selection' : lead_track_finding & \
-        shrinking_ntuple.expr('$numChargedParticlesIsoCone == 1') & \
-        shrinking_ntuple.expr('$numChargedParticlesSignalCone == 0') & \
-        shrinking_ntuple.expr('$leadChargedParticlePt > 0') &\
-        (lead_pion_selection < 1),
-        'binning': (100, 0, 25),
-        'x_axis_title': "Difference between lead track pt and iso sum charged",
-    },
-    'testLeadTrackCornerFixedDiff': {
-        'expression': fixed_ntuple.expr('$leadChargedParticlePt') -\
-        fixed_ntuple.expr('$ptSumChargedParticlesIsoCone'),
-        'selection' : lead_track_finding & \
-        fixed_ntuple.expr('$numChargedParticlesIsoCone == 1') & \
-        fixed_ntuple.expr('$numChargedParticlesSignalCone == 0') & \
-        fixed_ntuple.expr('$leadChargedParticlePt > 0') &\
-        lead_pion_selection,
-        'binning': (150, -15, 15),
-        'x_axis_title': "Difference between lead track pt and iso sum charged",
-    },
-    'testLeadTrackCornerFixed': {
-        'expression': fixed_ntuple.expr('$leadChargedParticlePt'),
-        'selection' : lead_track_finding & \
-        fixed_ntuple.expr('$numChargedParticlesIsoCone == 1') & \
-        fixed_ntuple.expr('$numChargedParticlesSignalCone == 0') & \
-        fixed_ntuple.expr('$leadChargedParticlePt > 0') &\
-        lead_pion_selection,
-        'binning': (150, 0, 15),
-        'x_axis_title': "Difference between lead track pt and iso sum charged",
-    },
-    'testLeadTrackCornerFixedNoLeadPion': {
-        'expression': fixed_ntuple.expr('$leadChargedParticlePt'),
-        'selection' : lead_track_finding & \
-        fixed_ntuple.expr('$numChargedParticlesIsoCone == 1') & \
-        fixed_ntuple.expr('$numChargedParticlesSignalCone == 0') & \
-        (lead_pion_selection < 1) &\
-        fixed_ntuple.expr('$leadChargedParticlePt > 0'),
-        'binning': (150, 0, 15),
-        'x_axis_title': "Difference between lead track pt and iso sum charged",
-    },
+#    'testLeadTrackCorner': {
+#        'expression': shrinking_ntuple.expr('$leadChargedParticlePt'),
+#        'selection' : lead_track_finding & \
+#        shrinking_ntuple.expr('$numChargedParticlesIsoCone == 1') & \
+#        shrinking_ntuple.expr('$numChargedParticlesSignalCone == 0') & \
+#        shrinking_ntuple.expr('$leadChargedParticlePt > 0') &\
+#        (lead_pion_selection < 1),
+#        'binning': (100, 0, 25),
+#        'x_axis_title': "Difference between lead track pt and iso sum charged",
+#    },
+#    'testLeadTrackCornerFixedDiff': {
+#        'expression': fixed_ntuple.expr('$leadChargedParticlePt') -\
+#        fixed_ntuple.expr('$ptSumChargedParticlesIsoCone'),
+#        'selection' : lead_track_finding & \
+#        fixed_ntuple.expr('$numChargedParticlesIsoCone == 1') & \
+#        fixed_ntuple.expr('$numChargedParticlesSignalCone == 0') & \
+#        fixed_ntuple.expr('$leadChargedParticlePt > 0') &\
+#        lead_pion_selection,
+#        'binning': (150, -15, 15),
+#        'x_axis_title': "Difference between lead track pt and iso sum charged",
+#    },
+#    'testLeadTrackCornerFixed': {
+#        'expression': fixed_ntuple.expr('$leadChargedParticlePt'),
+#        'selection' : lead_track_finding & \
+#        fixed_ntuple.expr('$numChargedParticlesIsoCone == 1') & \
+#        fixed_ntuple.expr('$numChargedParticlesSignalCone == 0') & \
+#        fixed_ntuple.expr('$leadChargedParticlePt > 0') &\
+#        lead_pion_selection,
+#        'binning': (150, 0, 15),
+#        'x_axis_title': "Difference between lead track pt and iso sum charged",
+#    },
+#    'testLeadTrackCornerFixedNoLeadPion': {
+#        'expression': fixed_ntuple.expr('$leadChargedParticlePt'),
+#        'selection' : lead_track_finding & \
+#        fixed_ntuple.expr('$numChargedParticlesIsoCone == 1') & \
+#        fixed_ntuple.expr('$numChargedParticlesSignalCone == 0') & \
+#        (lead_pion_selection < 1) &\
+#        fixed_ntuple.expr('$leadChargedParticlePt > 0'),
+#        'binning': (150, 0, 15),
+#        'x_axis_title': "Difference between lead track pt and iso sum charged",
+#    },
     'jetPt' : {
         'expression': expr_jetPt,
         'selection': base_selection & eta_acceptance_cut,
