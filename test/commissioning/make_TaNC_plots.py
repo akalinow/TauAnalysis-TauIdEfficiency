@@ -17,10 +17,11 @@ def makePtPlots( canvas, name = "Charged", objects ="Outlier" , count = 4, selec
         try:
             result["%s%sPt%s"%(name,objects,number)] = plotter.distribution(
                 expression=shrinking_ntuple.expr("$TaNC%s%sPt%s"%(name,objects,number)),
-                selection=shrinking_ntuple.expr(selection),
+                selection=selection,
                 binning = (100, 0, 16),
                 x_axis_title = "p_t of %s %s No. %s [GeV/c]"%(name,objects,number),
-                y_min = 1e-2, logy=True
+                #y_min = 1e-2,
+                logy=True
                 )
             # Draw the legend - you can pass NDC xl, yl, xh, yh coords to make_legend(...)
             result["%s%sPt%s"%(name,objects,number)]['legend'].make_legend().Draw()
@@ -39,10 +40,11 @@ def makeAnglePlots( canvas, name = "Charged", objects ="Outlier" , count = 4, se
         try:
             result["%s%sAngle%s"%(name,objects,number)] = plotter.distribution(
                 expression=shrinking_ntuple.expr("$TaNC%s%sAngle%s"%(name,objects,number)),
-                selection=shrinking_ntuple.expr(selection),
+                selection=selection,
                 binning = (100, 0, 1.5),
                 x_axis_title = "#DeltaR %s %s No. %s"%(name,objects,number),
-                y_min = 1e-2, logy=True
+                #y_min = 1e-2,
+                logy=True
                 )
             
             # Draw the legend - you can pass NDC xl, yl, xh, yh coords to make_legend(...)
@@ -57,10 +59,11 @@ def makeAnglePlots( canvas, name = "Charged", objects ="Outlier" , count = 4, se
 def makeKiniticPlots(canvas, selection = "abs($jetEta) < 2.5 & $jetPt > 5", formats = ["png","pdf"], subdir="plots"):
     result["Pt"] = plotter.distribution(
         expression=shrinking_ntuple.expr('$TaNCPt'),
-        selection=shrinking_ntuple.expr(selection),
+        selection=selection,
         binning = (100, 0, 70),
         x_axis_title = "#tau p_{T} [GeV/c]",
-        y_min = 1e-2, logy=True
+        #y_min = 1e-2,
+        logy=True
         )
     
     # Draw the legend - you can pass NDC xl, yl, xh, yh coords to make_legend(...)
@@ -71,10 +74,10 @@ def makeKiniticPlots(canvas, selection = "abs($jetEta) < 2.5 & $jetPt > 5", form
     
     result["Eta"] = plotter.distribution(
         expression=shrinking_ntuple.expr('$TaNCEta'),
-        selection=shrinking_ntuple.expr(selection),
+        selection=selection,
         binning = (100, 0, 2.5),
         x_axis_title = "|#eta|",
-        y_min = 1e-2, logy=True
+        #y_min = 1e-2, logy=True
         )
     
     # Draw the legend - you can pass NDC xl, yl, xh, yh coords to make_legend(...)
@@ -85,10 +88,10 @@ def makeKiniticPlots(canvas, selection = "abs($jetEta) < 2.5 & $jetPt > 5", form
 
     result["MainTrackAngle"] = plotter.distribution(
         expression=shrinking_ntuple.expr('$TaNCMainTrackAngle'),
-        selection=shrinking_ntuple.expr(selection),
+        selection=selection,
         binning = (100, 0, 1),
         x_axis_title = "#DeltaR of main Track",
-        y_min = 1e-2, logy=True
+#        y_min = 1e-2, logy=True
         )
     
     # Draw the legend - you can pass NDC xl, yl, xh, yh coords to make_legend(...)
@@ -99,10 +102,11 @@ def makeKiniticPlots(canvas, selection = "abs($jetEta) < 2.5 & $jetPt > 5", form
 
     result["MainTrackPt"] = plotter.distribution(
         expression=shrinking_ntuple.expr('$TaNCMainTrackPt'),
-        selection=shrinking_ntuple.expr(selection),
+        selection=selection,
         binning = (100, 0, 70),
         x_axis_title = "p_{T} of main Track",
-        y_min = 1e-2, logy=True
+ #       y_min = 1e-2,
+        logy=True
         )
     
     # Draw the legend - you can pass NDC xl, yl, xh, yh coords to make_legend(...)
@@ -113,10 +117,10 @@ def makeKiniticPlots(canvas, selection = "abs($jetEta) < 2.5 & $jetPt > 5", form
 
     result["InvariantMassOfSignal"] = plotter.distribution(
         expression=shrinking_ntuple.expr('$TaNCInvariantMassOfSignal'),
-        selection=shrinking_ntuple.expr(selection),
+        selection=selection,
         binning = (100, 0, 2.5),
         x_axis_title = "inv. mass of signal particles",
-        y_min = 1e-2, logy=True
+        #y_min = 1e-2, logy=True
         )
     
     # Draw the legend - you can pass NDC xl, yl, xh, yh coords to make_legend(...)
@@ -130,10 +134,10 @@ def makeKiniticPlots(canvas, selection = "abs($jetEta) < 2.5 & $jetPt > 5", form
     for dalitz in range(2):
         result["Dalitz%s"%dalitz] = plotter.distribution(
             expression=shrinking_ntuple.expr("$TaNCDalitz%s"%dalitz),
-            selection=shrinking_ntuple.expr(selection),
+            selection=selection,
             binning = (100, 0, 4),
             x_axis_title = "Dalitz%s"%dalitz,
-            y_min = 1e-2, logy=True
+            #y_min = 1e-2, logy=True
             )
         
         # Draw the legend - you can pass NDC xl, yl, xh, yh coords to make_legend(...)
@@ -154,10 +158,11 @@ def makeOutlierPlots(canvas, selection = "abs($jetEta) < 2.5 & $jetPt > 5", form
         # Compare basic distributions
         result["%sOutlierSumPt"%charge] = plotter.distribution(
             expression=shrinking_ntuple.expr('$TaNC%sOutlierSumPt'%(charge)),
-            selection=shrinking_ntuple.expr(selection),
+            selection=selection,
             binning = (100, 0, 70),
             x_axis_title = "Sum %s Outlier P_{T} [GeV/c]"%(charge),
-            y_min = 1e-2, logy=True
+            #y_min = 1e-2,
+            logy=True
             )
         
         # Draw the legend - you can pass NDC xl, yl, xh, yh coords to make_legend(...)
@@ -170,10 +175,10 @@ def makeOutlierPlots(canvas, selection = "abs($jetEta) < 2.5 & $jetPt > 5", form
         # Compare basic distributions
         result["OutlierN%s"%charge] = plotter.distribution(
             expression=shrinking_ntuple.expr('$TaNCOutlierN%s'%(charge)),
-            selection=shrinking_ntuple.expr(selection),
+            selection=selection,
             binning = (101, -0.5, 100.5),
             x_axis_title = "%s Outlier Count"%(charge),
-            y_min = 1e-2, logy=True
+            #y_min = 1e-2, logy=True
             )
         
         # Draw the legend - you can pass NDC xl, yl, xh, yh coords to make_legend(...)
@@ -183,10 +188,10 @@ def makeOutlierPlots(canvas, selection = "abs($jetEta) < 2.5 & $jetPt > 5", form
             canvas.SaveAs("%s/shrinkingCone_OutlierN%s.%s"%(subdir,charge,format))
     result["OutlierMass"] = plotter.distribution(
         expression=shrinking_ntuple.expr('$TaNCOutlierMass'),
-        selection=shrinking_ntuple.expr(selection),
+        selection=selection,
         binning = (100, 0, 70),
         x_axis_title = "Inv. Mass of Outliers [GeV/c]",
-        y_min = 1e-2, logy=True
+        #y_min = 1e-2, logy=True
         )
     
     # Draw the legend - you can pass NDC xl, yl, xh, yh coords to make_legend(...)
@@ -197,11 +202,49 @@ def makeOutlierPlots(canvas, selection = "abs($jetEta) < 2.5 & $jetPt > 5", form
         
     return result
 
+def getSession(shrinking, hlt, name = None):
+    """ a bit clunky menu to coose the kind of plots to make """
+    base_selection = hlt.expr('$hltJet15U > 0.5') & shrinking_ntuple.expr("abs($jetEta) < 2.5 & $jetPt > 5 & $probe > 0.5")
+    sessions = {
+        "all":{"selection": base_selection,
+               "subdir":"plots/combined/",
+               "description":"All Combinded"
+               },
+        "tanc":{"selection": base_selection & shrinking_ntuple.expr("$byTaNCfrHalfPercent"),
+                "subdir":"plots/TaNCHalfPercent/combined/",
+                "description":"TaNC HalfPercent Combinded",
+                },
+        "tanc0":{"selection": base_selection & shrinking_ntuple.expr("$byTaNCfrHalfPercent & $TaNCDecayMode == 0"),
+                 "subdir":"plots/TaNCHalfPercent/oneProngNoPi0/",
+                 "description":"TaNC HalfPercent OneProngNoPi0",
+                 },
+        "tancNot0":{"selection": base_selection & shrinking_ntuple.expr("$byTaNCfrHalfPercent & $TaNCDecayMode != 0"),
+                    "subdir":"plots/TaNCHalfPercent/NotOneProngNoPi0/",
+                    "description":"TaNC HalfPercent Not OneProngNoPi0",
+                    },
+        "tan0noLL":{"selection": base_selection & shrinking_ntuple.expr("$byTaNCfrHalfPercent & $TaNCDecayMode == 0 & $againstElectron > 0.5& $againstMuon > 0.5"),
+                 "subdir":"plots/TaNCHalfPercent/oneProngNoPi0NoLightLeptons/",
+                 "description":"TaNC HalfPercent OneProngNoPi0 no light leptons",
+                 },
+        }
+    if name == None:
+        menuMap = {}
+        i = 0
+        for sessionName in sessions:
+            print "%s: (%s) %s"%(i,sessionName ,sessions[sessionName]["description"])
+            menuMap[i] = sessionName
+            i+=1
+        item = raw_input("choose session name (0-%s)"%(i-1))
+        if not int(item) in menuMap:
+            sys.exit(1)
+        name = menuMap[int(item)]
+    
+    if not os.path.isdir(sessions[name]["subdir"]):
+        os.makedirs(sessions[name]["subdir"])
+    return (sessions[name]["selection"], sessions[name]["subdir"])
+        
 if __name__ == "__main__":
     ROOT.gROOT.SetBatch(True)
-
-    if not os.path.isdir('plots'):
-        os.mkdir('plots')
 
     # Build the plot manager.  The plot manager keeps track of all the samples
     # and ensures they are correctly normalized w.r.t. luminosity.  See 
@@ -210,15 +253,15 @@ if __name__ == "__main__":
 
     # Add each sample we want to plot/compare
     # Uncomment to add QCD
-    #plotter.add_sample(samples.qcd_mc, "QCD MC", 
-    #                   fill_color=ROOT.EColor.kBlue-5, draw_option="hist",
-    #                   line_color=ROOT.EColor.kBlue, fill_style=1)
+    plotter.add_sample(samples.qcd_mc, "QCD MC", 
+                       fill_color=ROOT.EColor.kBlue-5, draw_option="hist",
+                       line_color=ROOT.EColor.kBlue, fill_style=1)
 
     plotter.add_sample(samples.minbias_mc, "Minbias MC", 
                        fill_color=ROOT.EColor.kGreen-5, draw_option="pe",
-                       marker_size=2, line_color=ROOT.EColor.kBlue, fill_style=0)
-
-    plotter.add_sample(samples.data, "Data (7 TeV)", marker_size=2,
+                       marker_size=1, line_color=ROOT.EColor.kBlue, fill_style=0)
+  
+    plotter.add_sample(samples.data, "Data (7 TeV)", marker_size=1,
                        marker_color=ROOT.EColor.kRed, draw_option="pe")
 
 
@@ -231,22 +274,25 @@ if __name__ == "__main__":
     # Get the shrinking ntuple
     shrinking_ntuple = ntuple_manager.get_ntuple(
         "patPFTausDijetTagAndProbeShrinkingCone")
+    hlt = ntuple_manager.get_ntuple("TriggerResults")
 
+    (selection, subdir) = getSession( shrinking = shrinking_ntuple, hlt=hlt)
     # Make some plots
     canvas = ROOT.TCanvas("blah", "blah", 500, 500)
 
     result = {}
 
-    selection = "abs($jetEta) < 2.5 & $jetPt > 5"
     formats = ["png","pdf"]
-    subdir="plots/combined"
+
+#    selection = hlt.expr('$hltJet15U > 0.5') & shrinking_ntuple.expr("abs($jetEta) < 2.5 & $jetPt > 5 & $probe > 0.5& $byTaNCfrHalfPercent")
+#    subdir="plots/TaNCHalfPercent/combined/"
 
     result["DecayMode"] = plotter.distribution(
-        expression=shrinking_ntuple.expr('$TaNCPt'),
-        selection=shrinking_ntuple.expr(selection),
+        expression=shrinking_ntuple.expr('$TaNCDecayMode'),
+        selection= selection,
         binning = (21, -0.5, 20.5),
         x_axis_title = "#tau decay mode",
-        y_min = 1e-2, logy=True
+        #y_min = 1e-2, logy=True
         )
     result["DecayMode"]['legend'].make_legend().Draw()
     
