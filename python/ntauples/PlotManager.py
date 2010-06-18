@@ -26,7 +26,7 @@ class LegendMaker(object):
         if option.find("hist") != -1:
             option = "lf"
         self.entries.append((object, name, option))
-    def make_legend(self, x_low=0.70, y_low=0.8, x_high=0.95, y_high=0.95):
+    def make_legend(self, x_low=0.64, y_low=0.74, x_high=0.89, y_high=0.89):
         self.output = ROOT.TLegend(x_low, y_low, x_high, y_high, "", "NDC")
         # Turn off all the stupid defaults
         self.output.SetFillColor(0)
