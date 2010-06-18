@@ -4,6 +4,7 @@
 #include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "DataFormats/PatCandidates/interface/Tau.h"
+#include "FWCore/MessageLogger/interface/MessageLogger.h"
 
 
 /*
@@ -44,11 +45,28 @@ TauIdTagAndProbeProducer::TauIdTagAndProbeProducer(const ParameterSet& pset)
 }
 
 namespace {
+
+   // Get underlying jet Pt of tau
+   double ptOfJet(const pat::Tau& tau)
+   {
+      if(tau.isPFTau())
+      {
+         return tau.pfTauTagInfoRef()->pfjetRef()->pt();
+      } 
+      else if (tau.isCaloTau())
+      {
+         return tau.caloTauTagInfoRef()->calojetRef()->pt();
+      }
+      edm::LogError("Invalid Tau Type")  << "pat::Tau is neither PF nor Calo! Returning -1";
+      return -1;
+   }
+
    // Sorting predicate
    bool tauInfoDescendingPt(const TauIdTagAndProbeProducer::TauInfo &a, 
          const TauIdTagAndProbeProducer::TauInfo &b)
    {
-      return (a.tau.pt() > b.tau.pt());
+      //return (a.tau.pt() > b.tau.pt());
+      return (ptOfJet(a.tau) > ptOfJet(b.tau));
    }
 }
 
