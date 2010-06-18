@@ -1,309 +1,338 @@
 import ROOT
 
-from TauAnalysis.TauIdEfficiency.ntauples.TauNtupleManager \
-        import TauNtupleManager
-from TauAnalysis.TauIdEfficiency.ntauples.PlotManager \
-        import PlotManager
+from TauAnalysis.TauIdEfficiency.ntauples.PlotManager import PlotManager
+import TauAnalysis.TauIdEfficiency.ntauples.styles as style
 
 # Defintion of input files.
 import samples_cache as samples
-import os
+import os, sys
 
-#do not like the code replication but other options are just to involved
-def makePtPlots( canvas, name = "Charged", objects ="Outlier" , count = 4, selection = "abs($jetEta) < 2.5 & $jetPt > 5", formats = ["png","pdf"], subdir="plots" ):
-    result = {}
-    for number in range(count):
-        # Compare basic distributions
+class PlotSession:
+    def __init__( self, samplesToPlot=["data","mc"], name = None, baseDir = "plots",
+                  formats = ["png", "pdf"] ):
+        self.formats = formats     
+
+        self.__initSamples(samplesToPlot)
+        
+        sessions = self.__possibleSessions(baseDir)
+        while not (name in sessions):
+            print "(Unkown) name. Please Choose:"
+            name = self.__makeMenu(sessions)
+
+        self.selection = sessions[name]["selection"]
+        self.subdir = sessions[name]["subdir"]
+        self.description = sessions[name]["description"]
+        self.labels=[style.CMS_PRELIMINARY_UPPER_LEFT, style.LUMI_LABEL_UPPER_LEFT,
+                     style.PT_ETA_CUT_LABEL_UPPER_LEFT, sessions[name]["label"]]
+        
+        if not os.path.isdir(self.subdir):
+            os.makedirs(self.subdir)
+            
+        self.plots = {}
+        self.canvas = ROOT.TCanvas("blah", "blah", 500, 500)
+
+    def drawDecayMode(self):
+        plotName = "DecayMode"
+        self.plots[plotName] = self.plotter.distribution(
+            expression=self.main.expr('$TaNCDecayMode'),
+            selection= self.selection,
+            binning = (21, -0.5, 20.5),
+            x_axis_title = "#tau decay mode",
+            #y_min = 1e-2,
+            logy=False,
+            labels = self.labels
+            )
+        self.__printPlots(plotName)
+
+    def drawKineticPlots(self):
+        plotName = "TauPt"
+        self.plots[plotName] = self.plotter.distribution(
+            expression=self.main.expr('$TaNCPt'),
+            selection= self.selection & self.__getDecayModeSelection(plotName),
+            binning = (100, 0, 75),
+            x_axis_title = "#tau p_{T} [GeV/c]",
+            #y_min = 1e-2,
+            logy=True,
+            labels = self.labels
+            )
+        self.__printPlots(plotName)
+        
+        plotName = "TauEta"
+        self.plots[plotName] = self.plotter.distribution(
+            expression=self.main.expr('$TaNCEta'),
+            selection= self.selection & self.__getDecayModeSelection(plotName),
+            binning = (100, 0, 2.6),
+            x_axis_title = "|#eta|",
+            #y_min = 1e-2,
+            logy=False,
+            labels = self.labels
+            )            
+        self.__printPlots(plotName)
+
+    def drawMainTrackPlots(self):
+        plotName = "MainTrackPt"
+        self.plots[plotName] = self.plotter.distribution(
+            expression=self.main.expr('$TaNCMainTrackPt'),
+            selection= self.selection & self.__getDecayModeSelection(plotName),            
+            binning = (100, 0, 70),
+            x_axis_title = "p_{T} of main Track",
+            #       y_min = 1e-2,
+            logy=True,
+            labels = self.labels
+            )
+        self.__printPlots(plotName)
+        
+        plotName = "MainTrackAngle"
+        self.plots[plotName] = self.plotter.distribution(
+            expression=self.main.expr('$TaNCMainTrackAngle'),
+            selection= self.selection & self.__getDecayModeSelection(plotName),
+            binning = (100, 0, 0.3),
+            x_axis_title = "#DeltaR of main Track",
+            #        y_min = 1e-2,
+            logy=False,
+            labels = self.labels
+            )                
+        self.__printPlots(plotName)       
+
+    def drawMassPlots(self):
+        plotName = "InvariantMassOfSignal"
+        self.plots[plotName] = self.plotter.distribution(
+            expression=self.main.expr('$TaNCInvariantMassOfSignal'),
+            selection= self.selection & self.__getDecayModeSelection(plotName),
+            binning = (100, 0, 4.0),
+            x_axis_title = "inv. mass of signal particles",
+            #y_min = 1e-2,
+            logy=False,
+            labels = self.labels
+            )
+        self.__printPlots(plotName)
+
+        for dalitz in range(1,3):
+            plotName = "Dalitz%s"%dalitz
+            self.plots[plotName] = self.plotter.distribution(
+                expression=self.main.expr("$TaNCDalitz%s"%(dalitz-1)),
+                selection= self.selection & self.__getDecayModeSelection(plotName),
+                binning = (100, 0, 4),
+                x_axis_title = "Dalitz%s"%dalitz,
+                #y_min = 1e-2,
+                logy=False,
+                labels = self.labels
+                )
+            self.__printPlots(plotName)
+            
+    def drawOutlierSumKineticPlots(self):
+        for charge in ["","Charged","Neutral"]:
+            plotName = "%sOutlierSumPt"%charge
+            self.plots[plotName] = self.plotter.distribution(
+                expression=self.main.expr('$TaNC%sOutlierSumPt'%(charge)),
+                selection= self.selection & self.__getDecayModeSelection(plotName),
+                binning = (100, 0, 70),
+                x_axis_title = "Sum %s Outlier P_{T} [GeV/c]"%(charge),
+                #y_min = 1e-2,
+                logy=True,
+                labels = self.labels
+                )
+            self.__printPlots(plotName)
+                
+    def drawOutlierCountPlots(self):
+        for charge in ["","Charged"]:
+            plotName = "OutlierN%s"%charge
+            self.plots[plotName] = self.plotter.distribution(
+                expression=self.main.expr('$TaNCOutlierN%s'%(charge)),
+                selection= self.selection & self.__getDecayModeSelection(plotName),
+                binning = (101, -0.5, 100.5),
+                x_axis_title = "%s Outlier Count"%(charge),
+                #y_min = 1e-2,
+                logy=False,
+                labels = self.labels
+                )
+            self.__printPlots(plotName)
+            
+    def drawOutlierMassPlots(self):
+        plotName = "OutlierMass"
+        self.plots[plotName] = self.plotter.distribution(
+            expression=self.main.expr('$TaNCOutlierMass'),
+            selection= self.selection & self.__getDecayModeSelection(plotName),
+            binning = (100, 0, 70),
+            x_axis_title = "Inv. Mass of Outliers [GeV/c]",
+            #y_min = 1e-2,
+            logy=False,
+            labels = self.labels
+            )
+        self.__printPlots(plotName)
+                
+    def drawOutlierSingleKineticPlots(self):
+        for charge in ["","Charged","Neutral"]:
+            for i in range(1,5):
+                self.__drawPt(charge, "Outlier", i)
+                self.__drawAngle(charge, "Outlier", i)
+                
+    def drawPi0KineticPlots(self):
+        for i in range(1,3):
+            self.__drawPt("","PiZero", i)
+            self.__drawAngle("","PiZero", i)
+            
+    def drawTrackKineticPlots(self):
+        for i in range(1,3):
+            self.__drawPt("","Track", i)
+            self.__drawAngle("","Track", i)
+            
+    def __drawPt(self, name, objects, number):
+        plotName = "%s%sPt%s"%(name,objects,number)
         try:
-            result["%s%sPt%s"%(name,objects,number)] = plotter.distribution(
-                expression=shrinking_ntuple.expr("$TaNC%s%sPt%s"%(name,objects,number)),
-                selection=selection,
-                binning = (100, 0, 16),
+            self.plots[plotName] = self.plotter.distribution(
+            expression=self.main.expr("$TaNC%s%sPt%s"%(name,objects,(number-1))),
+                selection= self.selection & self.__getDecayModeSelection(plotName),
+                binning = (100, 0, 20),
                 x_axis_title = "p_t of %s %s No. %s [GeV/c]"%(name,objects,number),
                 #y_min = 1e-2,
-                logy=True
-                )
-            # Draw the legend - you can pass NDC xl, yl, xh, yh coords to make_legend(...)
-            result["%s%sPt%s"%(name,objects,number)]['legend'].make_legend().Draw()
-            
-            for format in formats:
-                canvas.SaveAs("plots/shrinkingCone_%sOutlierPt%s.%s"%(name,number,format))
+                logy=True,
+                labels = self.labels
+                )            
+            self.__printPlots(plotName)
         except StandardError, err:
             print "TaNC%s%sPt%s not found: %s"%(name,objects,number,err)
-    
-    return result
-
-def makeAnglePlots( canvas, name = "Charged", objects ="Outlier" , count = 4, selection = "abs($jetEta) < 2.5 & $jetPt > 5", formats = ["png","pdf"], subdir="plots"):
-    result = {}    
-    for number in range(count):
-        # Compare basic distributions
+            
+    def __drawAngle(self, name, objects, number):
+        plotName = "%s%sAngle%s"%(name,objects,number)
         try:
-            result["%s%sAngle%s"%(name,objects,number)] = plotter.distribution(
-                expression=shrinking_ntuple.expr("$TaNC%s%sAngle%s"%(name,objects,number)),
-                selection=selection,
+            self.plots[plotName] = self.plotter.distribution(
+            expression=self.main.expr("$TaNC%s%sAngle%s"%(name,objects,(number-1))),
+                selection= self.selection & self.__getDecayModeSelection(plotName),
                 binning = (100, 0, 1.5),
                 x_axis_title = "#DeltaR %s %s No. %s"%(name,objects,number),
                 #y_min = 1e-2,
-                logy=True
-                )
-            
-            # Draw the legend - you can pass NDC xl, yl, xh, yh coords to make_legend(...)
-            result["%s%sAngle%s"%(name,objects,number)]['legend'].make_legend().Draw()
-            
-            for format in formats:
-                canvas.SaveAs("%s/shrinkingCone_%s%sAngle%s.%s"%(subdir,name,objects,number,format))
+                #logy=True,
+                labels = self.labels
+                )            
+            self.__printPlots(plotName)
         except StandardError, err:
             print "TaNC%s%sAngle%s not found: %s"%(name,objects,number,err)
-    return result
-
-def makeKiniticPlots(canvas, selection = "abs($jetEta) < 2.5 & $jetPt > 5", formats = ["png","pdf"], subdir="plots"):
-    result["Pt"] = plotter.distribution(
-        expression=shrinking_ntuple.expr('$TaNCPt'),
-        selection=selection,
-        binning = (100, 0, 70),
-        x_axis_title = "#tau p_{T} [GeV/c]",
-        #y_min = 1e-2,
-        logy=True
-        )
-    
-    # Draw the legend - you can pass NDC xl, yl, xh, yh coords to make_legend(...)
-    result["Pt"]['legend'].make_legend().Draw()
-    
-    for format in formats:
-        canvas.SaveAs("%s/shrinkingCone_Pt.%s"%(subdir,format))
-    
-    result["Eta"] = plotter.distribution(
-        expression=shrinking_ntuple.expr('$TaNCEta'),
-        selection=selection,
-        binning = (100, 0, 2.5),
-        x_axis_title = "|#eta|",
-        #y_min = 1e-2, logy=True
-        )
-    
-    # Draw the legend - you can pass NDC xl, yl, xh, yh coords to make_legend(...)
-    result["Eta"]['legend'].make_legend().Draw()
-    
-    for format in formats:
-        canvas.SaveAs("%s/shrinkingCone_Eta.%s"%(subdir,format))
-
-    result["MainTrackAngle"] = plotter.distribution(
-        expression=shrinking_ntuple.expr('$TaNCMainTrackAngle'),
-        selection=selection,
-        binning = (100, 0, 1),
-        x_axis_title = "#DeltaR of main Track",
-#        y_min = 1e-2, logy=True
-        )
-    
-    # Draw the legend - you can pass NDC xl, yl, xh, yh coords to make_legend(...)
-    result["MainTrackAngle"]['legend'].make_legend().Draw()
-    
-    for format in formats:
-        canvas.SaveAs("%s/shrinkingCone_MainTrackAngle.%s"%(subdir,format))
-
-    result["MainTrackPt"] = plotter.distribution(
-        expression=shrinking_ntuple.expr('$TaNCMainTrackPt'),
-        selection=selection,
-        binning = (100, 0, 70),
-        x_axis_title = "p_{T} of main Track",
- #       y_min = 1e-2,
-        logy=True
-        )
-    
-    # Draw the legend - you can pass NDC xl, yl, xh, yh coords to make_legend(...)
-    result["MainTrackPt"]['legend'].make_legend().Draw()
-    
-    for format in formats:
-        canvas.SaveAs("%s/shrinkingCone_MainTrackPt.%s"%(subdir,format))
-
-    result["InvariantMassOfSignal"] = plotter.distribution(
-        expression=shrinking_ntuple.expr('$TaNCInvariantMassOfSignal'),
-        selection=selection,
-        binning = (100, 0, 2.5),
-        x_axis_title = "inv. mass of signal particles",
-        #y_min = 1e-2, logy=True
-        )
-    
-    # Draw the legend - you can pass NDC xl, yl, xh, yh coords to make_legend(...)
-    result["InvariantMassOfSignal"]['legend'].make_legend().Draw()
-    
-    for format in formats:
-        canvas.SaveAs("%s/shrinkingCone_InvariantMassOfSignal.%s"%(subdir,format))
-
         
+    def __printPlots(self, name):
+        self.plots[name]['legend'].make_legend().Draw() 
+        for format in self.formats:
+            self.canvas.SaveAs("%s/%s.%s"%(self.subdir, name, format))
 
-    for dalitz in range(2):
-        result["Dalitz%s"%dalitz] = plotter.distribution(
-            expression=shrinking_ntuple.expr("$TaNCDalitz%s"%dalitz),
-            selection=selection,
-            binning = (100, 0, 4),
-            x_axis_title = "Dalitz%s"%dalitz,
-            #y_min = 1e-2, logy=True
-            )
+    def __getDecayModeSelection(self, plotName):
+        modes =[]
+        allPlots = ["TauPt","TauEta","DecayMode", "MainTrackPt","OutlierMass"]
+        for charge in ["","Charged","Neutral"]:
+            for i in range(1,5):
+                allPlots.append("%sOutlierPt%s"%(charge, i))
+                allPlots.append("%sOutlierAngle%s"%(charge, i))
+                allPlots.append("%sOutlierSumPt"%(charge))
+                allPlots.append("OutlierN%s"%(charge))
+        selectedPlots = {
+            "MainTrackAngle":  [1,2,10,11],
+            "InvariantMassOfSignal":  [1,2,10,11],
+            "Dalitz1": [2,10,11],
+            "Dalitz2": [2,10,11],
+            "PiZeroPt1":[1,2,11],
+            "PiZeroPt2":[2],
+            "PiZeroAngle1":[1,2,11],
+            "PiZeroAngle2":[2],
+            "TrackPt1":[10,11],
+            "TrackPt2":[10,11],
+            "TrackAngle1":[10,11],
+            "TrackAngle2":[10,11],
+            }
+        if plotName in allPlots:
+            modes = [0,1,2,10,11]
+        elif plotName in selectedPlots:
+            modes = selectedPlots[plotName]
+
+        if modes == []: return self.main.expr("0")
         
-        # Draw the legend - you can pass NDC xl, yl, xh, yh coords to make_legend(...)
-        result["Dalitz%s"%dalitz]['legend'].make_legend().Draw()
-    
-        for format in formats:
-            canvas.SaveAs("%s/shrinkingCone_Dalitz%s.%s"%(subdir,dalitz,format))
+        return self.main.expr(" | ".join(["$TaNCDecayMode == %s"%mode for mode in modes]))
 
+    def __initSamples(self, samplesToPlot):
+        self.plotter = PlotManager()
+        if "data" in samplesToPlot:
+            self.plotter.add_sample(samples.data, "Data (7 TeV)", **style.DATA_STYLE)    
+        if "qcd" in samplesToPlot or "mc" in samplesToPlot:
+            self.plotter.add_sample(samples.qcd_mc, "QCD MC", **style.QCD_MC_STYLE_HIST)
+        if "minBias" in samplesToPlot:
+            self.plotter.add_sample(samples.minbias_mc, "Minbias MC", **style.MINBIAS_MC_STYLE)
+        self.plotter.set_integrated_lumi(samples.data.effective_luminosity())
+        self.manager = samples.data.build_ntuple_manager("tauIdEffNtuple")
+        self.main = self.manager.get_ntuple("patPFTausDijetTagAndProbeShrinkingCone")
+        self.hlt = self.manager.get_ntuple("TriggerResults")
 
-    return result
-
-def makeOutlierPlots(canvas, selection = "abs($jetEta) < 2.5 & $jetPt > 5", formats = ["png","pdf"], subdir="plots"):
-    result={}
-    for charge in ["","Charged","Neutral"]:
-        result.update( makePtPlots(canvas, charge,"Outlier", 4, selection, formats, subdir) )
-        result.update( makeAnglePlots(canvas, charge,"Outlier", 4, selection, formats, subdir) )
-
-        # Compare basic distributions
-        result["%sOutlierSumPt"%charge] = plotter.distribution(
-            expression=shrinking_ntuple.expr('$TaNC%sOutlierSumPt'%(charge)),
-            selection=selection,
-            binning = (100, 0, 70),
-            x_axis_title = "Sum %s Outlier P_{T} [GeV/c]"%(charge),
-            #y_min = 1e-2,
-            logy=True
-            )
-        
-        # Draw the legend - you can pass NDC xl, yl, xh, yh coords to make_legend(...)
-        result["%sOutlierSumPt"%charge]['legend'].make_legend().Draw()
-
-        for format in formats:
-            canvas.SaveAs("%s/shrinkingCone_%sOutlierSumPt.%s"%(subdir,charge,format))
-
-    for charge in ["","Charged"]:
-        # Compare basic distributions
-        result["OutlierN%s"%charge] = plotter.distribution(
-            expression=shrinking_ntuple.expr('$TaNCOutlierN%s'%(charge)),
-            selection=selection,
-            binning = (101, -0.5, 100.5),
-            x_axis_title = "%s Outlier Count"%(charge),
-            #y_min = 1e-2, logy=True
-            )
-        
-        # Draw the legend - you can pass NDC xl, yl, xh, yh coords to make_legend(...)
-        result["OutlierN%s"%charge]['legend'].make_legend().Draw()
-
-        for format in formats:
-            canvas.SaveAs("%s/shrinkingCone_OutlierN%s.%s"%(subdir,charge,format))
-    result["OutlierMass"] = plotter.distribution(
-        expression=shrinking_ntuple.expr('$TaNCOutlierMass'),
-        selection=selection,
-        binning = (100, 0, 70),
-        x_axis_title = "Inv. Mass of Outliers [GeV/c]",
-        #y_min = 1e-2, logy=True
-        )
-    
-    # Draw the legend - you can pass NDC xl, yl, xh, yh coords to make_legend(...)
-    result["OutlierMass"]['legend'].make_legend().Draw()
-    
-    for format in formats:
-        canvas.SaveAs("%s/shrinkingCone_OutlierMass.%s"%(subdir,format))
-        
-    return result
-
-def getSession(shrinking, hlt, name = None):
-    """ a bit clunky menu to coose the kind of plots to make """
-    base_selection = hlt.expr('$hltJet15U > 0.5') & shrinking_ntuple.expr("abs($jetEta) < 2.5 & $jetPt > 5 & $probe > 0.5")
-    sessions = {
-        "all":{"selection": base_selection,
-               "subdir":"plots/combined/",
-               "description":"All Combinded"
-               },
-        "tanc":{"selection": base_selection & shrinking_ntuple.expr("$byTaNCfrHalfPercent"),
-                "subdir":"plots/TaNCHalfPercent/combined/",
-                "description":"TaNC HalfPercent Combinded",
-                },
-        "tanc0":{"selection": base_selection & shrinking_ntuple.expr("$byTaNCfrHalfPercent & $TaNCDecayMode == 0"),
-                 "subdir":"plots/TaNCHalfPercent/oneProngNoPi0/",
-                 "description":"TaNC HalfPercent OneProngNoPi0",
-                 },
-        "tancNot0":{"selection": base_selection & shrinking_ntuple.expr("$byTaNCfrHalfPercent & $TaNCDecayMode != 0"),
-                    "subdir":"plots/TaNCHalfPercent/NotOneProngNoPi0/",
-                    "description":"TaNC HalfPercent Not OneProngNoPi0",
-                    },
-        "tan0noLL":{"selection": base_selection & shrinking_ntuple.expr("$byTaNCfrHalfPercent & $TaNCDecayMode == 0 & $againstElectron > 0.5& $againstMuon > 0.5"),
-                 "subdir":"plots/TaNCHalfPercent/oneProngNoPi0NoLightLeptons/",
-                 "description":"TaNC HalfPercent OneProngNoPi0 no light leptons",
-                 },
-        }
-    if name == None:
+    def __makeMenu(self, sessions):
         menuMap = {}
         i = 0
         for sessionName in sessions:
             print "%s: (%s) %s"%(i,sessionName ,sessions[sessionName]["description"])
             menuMap[i] = sessionName
             i+=1
-        item = raw_input("choose session name (0-%s)"%(i-1))
+        item = raw_input("choose session name (0-%s) "%(i-1))
         if not int(item) in menuMap:
-            sys.exit(1)
-        name = menuMap[int(item)]
-    
-    if not os.path.isdir(sessions[name]["subdir"]):
-        os.makedirs(sessions[name]["subdir"])
-    return (sessions[name]["selection"], sessions[name]["subdir"])
-        
-if __name__ == "__main__":
+            name = None
+        else:
+            name = menuMap[int(item)]
+        return name
+
+    def __makeLabel(self, text):
+        result = ROOT.TPaveText(0.12, 0.68, 0.45, 0.73, "NDC")
+        result.AddText(text)
+        result.SetTextAlign(13)
+        result.SetTextSize(0.04)
+        result.SetFillStyle(0)
+        result.SetBorderSize(0)
+        return result
+
+    def __possibleSessions(self, baseDir):
+        #possible Session definitions
+        base_selection = self.hlt.expr('$hltJet15U > 0.5')\
+                         & self.main.expr("abs($jetEta) < 2.5 & $jetPt > 10 & $probe > 0.5")
+        sessions = {
+        "all":{"selection": base_selection,
+               "subdir":"%s/combined/"%baseDir,
+               "description":"All Combinded",
+               "label": self.__makeLabel("")
+               },
+        "tanc":{"selection": base_selection & self.main.expr("$byTaNCfrHalfPercent"),
+                "subdir":"%s/TaNCHalfPercent/combined/"%baseDir,
+                "description":"TaNC HalfPercent Combinded",
+                "label": self.__makeLabel("TaNC 0.5% tune"),
+                },
+        "tanc0":{"selection": base_selection & self.main.expr("$byTaNCfrHalfPercent & $TaNCDecayMode == 0"),
+                 "subdir":"%s/TaNCHalfPercent/oneProngNoPi0/"%baseDir,
+                 "description":"TaNC HalfPercent OneProngNoPi0",
+                 "label": self.__makeLabel("TaNC 0.5% tune, #pi^{-}#nu_{#tau}"),
+                 },
+        "tancNot0":{"selection": base_selection & self.main.expr("$byTaNCfrHalfPercent & $TaNCDecayMode != 0"),
+                    "subdir":"%s/TaNCHalfPercent/NotOneProngNoPi0/"%baseDir,
+                    "description":"TaNC HalfPercent Not OneProngNoPi0",
+                    "label": self.__makeLabel("TaNC 0.5% tune, not #pi^{-}#nu_{#tau}"),
+                    },
+        "tan0noLL":{"selection": base_selection & self.main.expr("$byTaNCfrHalfPercent & $TaNCDecayMode == 0 & $againstElectron > 0.5& $againstMuon > 0.5"),
+                    "subdir":"%s/TaNCHalfPercent/oneProngNoPi0NoLightLeptons/"%baseDir,
+                    "description":"TaNC HalfPercent OneProngNoPi0 no light leptons",
+                    "label": self.__makeLabel("TaNC 0.5% tune, #pi^{-}#nu_{#tau}, no e, #mu"),
+                 },
+        }
+        return sessions
+
+def main():
     ROOT.gROOT.SetBatch(True)
+    mySession = PlotSession(name = None, baseDir="testPlots")
 
-    # Build the plot manager.  The plot manager keeps track of all the samples
-    # and ensures they are correctly normalized w.r.t. luminosity.  See 
-    # samples.py for available samples.
-    plotter = PlotManager()
-
-    # Add each sample we want to plot/compare
-    # Uncomment to add QCD
-    plotter.add_sample(samples.qcd_mc, "QCD MC", 
-                       fill_color=ROOT.EColor.kBlue-5, draw_option="hist",
-                       line_color=ROOT.EColor.kBlue, fill_style=1)
-
-    plotter.add_sample(samples.minbias_mc, "Minbias MC", 
-                       fill_color=ROOT.EColor.kGreen-5, draw_option="pe",
-                       marker_size=1, line_color=ROOT.EColor.kBlue, fill_style=0)
-  
-    plotter.add_sample(samples.data, "Data (7 TeV)", marker_size=1,
-                       marker_color=ROOT.EColor.kRed, draw_option="pe")
-
-
-    # Normalize everything to the data luminosity
-    plotter.set_integrated_lumi(samples.data.effective_luminosity())
-
-    # Build the ntuple maanger
-    ntuple_manager = samples.data.build_ntuple_manager("tauIdEffNtuple")
-
-    # Get the shrinking ntuple
-    shrinking_ntuple = ntuple_manager.get_ntuple(
-        "patPFTausDijetTagAndProbeShrinkingCone")
-    hlt = ntuple_manager.get_ntuple("TriggerResults")
-
-    (selection, subdir) = getSession( shrinking = shrinking_ntuple, hlt=hlt)
-    # Make some plots
-    canvas = ROOT.TCanvas("blah", "blah", 500, 500)
-
-    result = {}
-
-    formats = ["png","pdf"]
-
-#    selection = hlt.expr('$hltJet15U > 0.5') & shrinking_ntuple.expr("abs($jetEta) < 2.5 & $jetPt > 5 & $probe > 0.5& $byTaNCfrHalfPercent")
-#    subdir="plots/TaNCHalfPercent/combined/"
-
-    result["DecayMode"] = plotter.distribution(
-        expression=shrinking_ntuple.expr('$TaNCDecayMode'),
-        selection= selection,
-        binning = (21, -0.5, 20.5),
-        x_axis_title = "#tau decay mode",
-        #y_min = 1e-2, logy=True
-        )
-    result["DecayMode"]['legend'].make_legend().Draw()
+    mySession.drawDecayMode()
+    mySession.drawKineticPlots()
+    mySession.drawMainTrackPlots()
+    mySession.drawMassPlots()
+    mySession.drawOutlierSumKineticPlots()
+    mySession.drawOutlierCountPlots()
+    mySession.drawOutlierMassPlots()
+    mySession.drawOutlierSingleKineticPlots()
+    mySession.drawPi0KineticPlots()
+    mySession.drawTrackKineticPlots()
     
-    for format in formats:
-        canvas.SaveAs("%s/shrinkingCone_DecayMode.%s"%(subdir,format))
-
-    result.update(makeKiniticPlots(canvas, selection=selection, formats=formats, subdir=subdir))
-    result.update(makeOutlierPlots(canvas, selection=selection, formats=formats, subdir=subdir))
-    result.update( makePtPlots(canvas, "","PiZero",2, selection=selection, formats=formats, subdir=subdir) )
-    result.update( makePtPlots(canvas, "","Track",2, selection=selection, formats=formats, subdir=subdir) )
-    result.update( makeAnglePlots(canvas, "","PiZero",2, selection=selection, formats=formats, subdir=subdir) )
-    result.update( makeAnglePlots(canvas, "","Track",2, selection=selection, formats=formats, subdir=subdir) )
+    
+if __name__ == "__main__":
+    main()
+    
 
     
