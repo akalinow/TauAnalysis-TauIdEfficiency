@@ -96,7 +96,6 @@
         "directory": "rfio:/castor/cern.ch//user/e/edelhoff/TauIdCommissioning/qcdDiJet/v2_1_2/qcd_15/",
         "int_lumi": 7.07,
         "allEvents": 3152697.84
-                   # 1933./100000*6190500
     },
     "QCD_Pt30": {
         "files": [
@@ -410,6 +409,5 @@
 	"directory": "rfio:/castor/cern.ch/user/e/edelhoff/TauIdCommissioning/qcdDiJet/v2_1_2/minBias/",
         "int_lumi": 0.448,
         "allEvents": 617110.25
-                   #1933./100000*31925000
     }
 }
