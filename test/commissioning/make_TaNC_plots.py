@@ -31,6 +31,23 @@ class PlotSession:
         self.plots = {}
         self.canvas = ROOT.TCanvas("blah", "blah", 500, 500)
 
+    def drawAll(self):
+        self.drawDecayMode()
+        self.drawKineticPlots()
+        self.drawMainTrackPlots()
+        self.drawMassPlots()
+        self.drawOutlierSumKineticPlots()
+        self.drawOutlierCountPlots()
+        self.drawOutlierMassPlots()
+        self.drawOutlierSingleKineticPlots()
+        self.drawPi0KineticPlots()
+        self.drawTrackKineticPlots()
+
+    def drawEssential(self):
+        self.drawDecayMode()
+        self.drawKineticPlots()
+        self.drawMainTrackPlots()
+
     def drawDecayMode(self):
         plotName = "DecayMode"
         self.plots[plotName] = self.plotter.distribution(
@@ -287,50 +304,61 @@ class PlotSession:
         base_selection = self.hlt.expr('$hltJet15U > 0.5')\
                          & self.main.expr("abs($jetEta) < 2.5 & $jetPt > 10 & $probe > 0.5")
         sessions = {
-        "all":{"selection": base_selection,
-               "subdir":"%s/combined/"%baseDir,
-               "description":"All Combinded",
-               "label": self.__makeLabel("")
-               },
-        "tanc":{"selection": base_selection & self.main.expr("$byTaNCfrHalfPercent"),
-                "subdir":"%s/TaNCHalfPercent/combined/"%baseDir,
-                "description":"TaNC HalfPercent Combinded",
-                "label": self.__makeLabel("TaNC 0.5% tune"),
-                },
-        "tanc0":{"selection": base_selection & self.main.expr("$byTaNCfrHalfPercent & $TaNCDecayMode == 0"),
-                 "subdir":"%s/TaNCHalfPercent/oneProngNoPi0/"%baseDir,
-                 "description":"TaNC HalfPercent OneProngNoPi0",
-                 "label": self.__makeLabel("TaNC 0.5% tune, #pi^{-}#nu_{#tau}"),
-                 },
-        "tancNot0":{"selection": base_selection & self.main.expr("$byTaNCfrHalfPercent & $TaNCDecayMode != 0"),
-                    "subdir":"%s/TaNCHalfPercent/NotOneProngNoPi0/"%baseDir,
-                    "description":"TaNC HalfPercent Not OneProngNoPi0",
-                    "label": self.__makeLabel("TaNC 0.5% tune, not #pi^{-}#nu_{#tau}"),
+            "all":{"selection": base_selection,
+                   "subdir":"%s/combined/"%baseDir,
+                   "description":"All Combinded",
+                   "label": self.__makeLabel("")
+                   },
+            "tanc":{"selection": base_selection & self.main.expr("$byTaNCfrHalfPercent"),
+                    "subdir":"%s/TaNCHalfPercent/combined/"%baseDir,
+                    "description":"TaNC HalfPercent Combinded",
+                    "label": self.__makeLabel("TaNC 0.5% tune"),
                     },
-        "tan0noLL":{"selection": base_selection & self.main.expr("$byTaNCfrHalfPercent & $TaNCDecayMode == 0 & $againstElectron > 0.5& $againstMuon > 0.5"),
-                    "subdir":"%s/TaNCHalfPercent/oneProngNoPi0NoLightLeptons/"%baseDir,
-                    "description":"TaNC HalfPercent OneProngNoPi0 no light leptons",
-                    "label": self.__makeLabel("TaNC 0.5% tune, #pi^{-}#nu_{#tau}, no e, #mu"),
-                 },
-        }
+            "tanc0":{"selection": base_selection & self.main.expr("$byTaNCfrHalfPercent & $TaNCDecayMode == 0"),
+                     "subdir":"%s/TaNCHalfPercent/oneProngNoPi0/"%baseDir,
+                     "description":"TaNC HalfPercent OneProngNoPi0",
+                     "label": self.__makeLabel("TaNC 0.5% tune, #pi^{-} #nu_{#tau}"),
+                     },
+            "tanc1":{"selection": base_selection & self.main.expr("$byTaNCfrHalfPercent & $TaNCDecayMode == 1"),
+                     "subdir":"%s/TaNCHalfPercent/oneProngOnePi0/"%baseDir,
+                     "description":"TaNC HalfPercent One Prong One Pi0",
+                     "label": self.__makeLabel("TaNC 0.5% tune, #pi^{-} #pi^{0} #nu_{#tau}"),
+                     },
+            "tanc2":{"selection": base_selection & self.main.expr("$byTaNCfrHalfPercent & $TaNCDecayMode == 2"),
+                     "subdir":"%s/TaNCHalfPercent/oneProngTwoPi0/"%baseDir,
+                     "description":"TaNC HalfPercent One Prong Two Pi0",
+                     "label": self.__makeLabel("TaNC 0.5% tune, #pi^{-} #pi^{0} #pi^{0} #nu_{#tau}"),
+                     },
+            "tanc10":{"selection": base_selection & self.main.expr("$byTaNCfrHalfPercent & $TaNCDecayMode == 10"),
+                      "subdir":"%s/TaNCHalfPercent/ThreeProngNoPi0/"%baseDir,
+                      "description":"TaNC HalfPercent OneProngNoPi0",
+                      "label": self.__makeLabel("TaNC 0.5% tune, #pi^{-} #pi^{+} #pi^{-} #nu_{#tau}"),
+                      },
+            "tanc11":{"selection": base_selection & self.main.expr("$byTaNCfrHalfPercent & $TaNCDecayMode == 11"),
+                      "subdir":"%s/TaNCHalfPercent/ThreeProngOnePi0/"%baseDir,
+                      "description":"TaNC HalfPercent One Prong One Pi0",
+                      "label": self.__makeLabel("TaNC 0.5% tune, #pi^{-} #pi^{+} #pi^{-} #pi^{0} #nu_{#tau}"),
+                      },
+            
+            "tancNot0":{"selection": base_selection & self.main.expr("$byTaNCfrHalfPercent & $TaNCDecayMode != 0"),
+                        "subdir":"%s/TaNCHalfPercent/NotOneProngNoPi0/"%baseDir,
+                        "description":"TaNC HalfPercent Not OneProngNoPi0",
+                        "label": self.__makeLabel("TaNC 0.5% tune, not #pi^{-}#nu_{#tau}"),
+                        },
+            "tan0noLL":{"selection": base_selection & self.main.expr("$byTaNCfrHalfPercent & $TaNCDecayMode == 0 & $againstElectron > 0.5& $againstMuon > 0.5"),
+                        "subdir":"%s/TaNCHalfPercent/oneProngNoPi0NoLightLeptons/"%baseDir,
+                        "description":"TaNC HalfPercent OneProngNoPi0 no light leptons",
+                        "label": self.__makeLabel("TaNC 0.5% tune, #pi^{-}#nu_{#tau}, no e, #mu"),
+                        },
+            }
         return sessions
 
 def main():
     ROOT.gROOT.SetBatch(True)
-    mySession = PlotSession(name = None, baseDir="testPlots")
-
-    mySession.drawDecayMode()
-    mySession.drawKineticPlots()
-    mySession.drawMainTrackPlots()
-    mySession.drawMassPlots()
-    mySession.drawOutlierSumKineticPlots()
-    mySession.drawOutlierCountPlots()
-    mySession.drawOutlierMassPlots()
-    mySession.drawOutlierSingleKineticPlots()
-    mySession.drawPi0KineticPlots()
-    mySession.drawTrackKineticPlots()
-    
-    
+    for name in ["tanc","tanc0","tanc1","tanc2","tanc10","tanc11", "all"]:
+        session = PlotSession(name = name, baseDir="essentialPlots")
+        session.drawEssential()
+        
 if __name__ == "__main__":
     main()
     
