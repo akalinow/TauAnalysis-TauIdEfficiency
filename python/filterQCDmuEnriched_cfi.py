@@ -39,7 +39,7 @@ selectedMuons = cms.EDFilter("MuonSelector",
 selectedCaloTaus = cms.EDFilter("CaloTauSelector",
     src = cms.InputTag('caloRecoTauProducer'),
     discriminators = cms.VPSet(),
-    cut = cms.string("abs(caloTauTagInfoRef().calojetRef().eta) < 2.5 & caloTauTagInfoRef().calojetRef().pt > 10."),
+    cut = cms.string("abs(caloTauTagInfoRef().jetRef().eta) < 2.5 & caloTauTagInfoRef().jetRef().pt > 10."),
     filter = cms.bool(True)
 )
 
