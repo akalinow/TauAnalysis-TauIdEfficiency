@@ -26,10 +26,17 @@ caloTaus_recInfo = cms.PSet(
         # (sum of charges of tracks within signal cone)
         charge = cms.string("charge()"),
 
+        # kinematic variables for "Jet + Tracks" (JPT) Jet associated to CaloTau
+        # (NOTE: energy of JPTJet corresponds to corrected jet energy)
+        jetPt = cms.string("caloTauTagInfoRef().jetRef().pt()"),
+        jetEta = cms.string("caloTauTagInfoRef().jetRef().eta()"),
+        jetPhi = cms.string("caloTauTagInfoRef().jetRef().phi()"),
+
         # kinematic variables for CaloJet associated to CaloTau
-        jetPt = cms.string("caloTauTagInfoRef().calojetRef().pt()"),
-        jetEta = cms.string("caloTauTagInfoRef().calojetRef().eta()"),
-        jetPhi = cms.string("caloTauTagInfoRef().calojetRef().phi()"),
+        # (NOTE: energy of CaloJet corresponds to uncorrected/"raw" calorimeter energy)
+        caloJetPt = cms.string("caloTauTagInfoRef().calojetRef().pt()"),
+        caloJetEta = cms.string("caloTauTagInfoRef().calojetRef().eta()"),
+        caloJetPhi = cms.string("caloTauTagInfoRef().calojetRef().phi()"),
 
         # momentum of leading charged/neutral particle within signal cone
         leadTrackPt = cms.string("? leadTrack().isNonnull() ? leadTrack().pt() : 0."),
