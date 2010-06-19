@@ -58,6 +58,16 @@ if isMC:
 
 #--------------------------------------------------------------------------------
 #
+# produce collections of objects needed as input for PAT-tuple production
+# (e.g. rerun reco::Tau identification algorithms with latest tags)
+#
+from TauAnalysis.TauIdEfficiency.tools.configurePrePatProduction import configurePrePatProduction
+
+configurePrePatProduction(process, addGenInfo = isMC)
+#--------------------------------------------------------------------------------
+
+#--------------------------------------------------------------------------------
+#
 # produce PAT objects
 #
 from TauAnalysis.TauIdEfficiency.tools.configurePatTupleProduction import configurePatTupleProduction
@@ -75,7 +85,8 @@ from TauAnalysis.TauIdEfficiency.tools.sequenceBuilder import buildQCDmuEnriched
 # (i.e. remove CaloTaus/PFTaus overlapping with muons)
 process.load("PhysicsTools.PatAlgos.cleaningLayer1.tauCleaner_cfi")
 
-# Remove all the low pt and forward junk
+# remove jets outside kinematic range Pt > 10 GeV && |eta| < 2.5 from Tau Ntuple
+# (in order to speed-up plotting macros)
 patCaloTauCleanerPrototype = process.cleanPatTaus.clone(
     preselection = cms.string(''),
     checkOverlaps = cms.PSet(
@@ -90,14 +101,15 @@ patCaloTauCleanerPrototype = process.cleanPatTaus.clone(
         )
     ),        
     finalCut = cms.string(
-        'caloTauTagInfoRef().calojetRef().pt() > 5 & abs(caloTauTagInfoRef().calojetRef().eta()) < 2.5')
+        'caloTauTagInfoRef().jetRef().pt() > 5 & abs(caloTauTagInfoRef().jetRef().eta()) < 2.5'
+    )
 )
 
 patPFTauCleanerPrototype = patCaloTauCleanerPrototype.clone(
     finalCut = cms.string(
-        'pfTauTagInfoRef().pfjetRef().pt() > 5 & abs(pfTauTagInfoRef().pfjetRef().eta()) < 2.5')
+        'pfTauTagInfoRef().pfjetRef().pt() > 5 & abs(pfTauTagInfoRef().pfjetRef().eta()) < 2.5'
+    )
 )
-
 
 retVal = configurePatTupleProduction(
     process, patSequenceBuilder = buildQCDmuEnrichedTauSequence,
@@ -216,29 +228,6 @@ process.ntupleOutputModule = cms.OutputModule("PoolOutputModule",
     fileName = cms.untracked.string("tauIdEffEDNtuple_qcdMuEnriched.root")      
 )
 #--------------------------------------------------------------------------------
-
-# recreate collection of CaloTaus
-# with four-momenta determined by TCTau instead of (regular) CaloTau algorithm
-process.load("RecoTauTag.Configuration.RecoTCTauTag_cff")
-process.prePatProductionSequence = cms.Sequence(process.tautagging)
-# Rerun tau identification sequence for all PF based taus
-process.load("RecoTauTag.Configuration.RecoPFTauTag_cff")
-process.prePatProductionSequence += process.PFTau
-
-# produce collection of PFTaus reconstructed by hadron + strips (HPS) algorithm
-# "on-the-fly", as it is not contained in data taken with CMSSW_3_5_x
-# EK: no longer necessary, runs in PFTau sequence
-#process.load("RecoTauTag.Configuration.HPSPFTaus_cfi")
-#process.prePatProductionSequence += process.produceAndDiscriminateHPSPFTaus
-
-# if running on Monte Carlo, produce ak5GenJets collection "on-the-fly",
-# as it is needed for matching reconstructed particles to generator level information by PAT,
-# but not contained in Monte Carlo samples produced with CMSSW_3_5_x
-if isMC:
-    process.load("RecoJets.Configuration.GenJetParticles_cff")
-    process.load("RecoJets.JetProducers.ak5GenJets_cfi")
-    process.prePatProductionSequenceGen = cms.Sequence(process.genParticlesForJets * process.ak5GenJets)
-    process.prePatProductionSequence += process.prePatProductionSequenceGen
 
 process.p = cms.Path(
     process.prePatProductionSequence
