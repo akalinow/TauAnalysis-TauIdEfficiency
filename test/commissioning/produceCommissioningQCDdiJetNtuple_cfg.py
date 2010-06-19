@@ -65,6 +65,16 @@ if isMC:
 
 #--------------------------------------------------------------------------------
 #
+# produce collections of objects needed as input for PAT-tuple production
+# (e.g. rerun reco::Tau identification algorithms with latest tags)
+#
+from TauAnalysis.TauIdEfficiency.tools.configurePrePatProduction import configurePrePatProduction
+
+configurePrePatProduction(process, addGenInfo = isMC)
+#--------------------------------------------------------------------------------
+
+#--------------------------------------------------------------------------------
+#
 # produce PAT objects
 #
 from TauAnalysis.TauIdEfficiency.tools.configurePatTupleProduction import configurePatTupleProduction
@@ -72,19 +82,22 @@ from TauAnalysis.TauIdEfficiency.tools.sequenceBuilder import buildQCDdiJetTauSe
 
 process.load("PhysicsTools.PatAlgos.cleaningLayer1.tauCleaner_cfi")
 
-# Remove all the low pt and forward junk
+# remove jets outside kinematic range Pt > 10 GeV && |eta| < 2.5 from Tau Ntuple
+# (in order to speed-up plotting macros)
 patCaloTauCleanerPrototype = process.cleanPatTaus.clone(
     preselection = cms.string(''),
     checkOverlaps = cms.PSet(),
     finalCut = cms.string(
-        'caloTauTagInfoRef().calojetRef().pt() > 5 & abs(caloTauTagInfoRef().calojetRef().eta()) < 2.5')
+        'caloTauTagInfoRef().jetRef().pt() > 5 & abs(caloTauTagInfoRef().jetRef().eta()) < 2.5'
+    )
 )
 
 patPFTauCleanerPrototype = process.cleanPatTaus.clone(
     preselection = cms.string(''),
     checkOverlaps = cms.PSet(),
     finalCut = cms.string(
-        'pfTauTagInfoRef().pfjetRef().pt() > 5 & abs(pfTauTagInfoRef().pfjetRef().eta()) < 2.5')
+        'pfTauTagInfoRef().pfjetRef().pt() > 5 & abs(pfTauTagInfoRef().pfjetRef().eta()) < 2.5'
+    )
 )
 
 retVal = configurePatTupleProduction(
@@ -100,11 +113,12 @@ retVal = configurePatTupleProduction(
 #
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigTrigger_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigVertex_cfi")
-process.load("TauAnalysis.TauIdEfficiency.ntupleConfigGlobalVariables_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigCaloTau_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigPFTauFixedCone_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigPFTauShrinkingCone_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigPFTauHPS_cfi")
+process.load("TauAnalysis.TauIdEfficiency.ntupleConfigGlobalVariables_cfi")
+process.load("TauAnalysis.TauIdEfficiency.ntupleConfigTrackVariables_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigGenJets_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigGenPhaseSpaceEventInfo_cfi")
 
@@ -130,6 +144,9 @@ process.ntupleProducer = cms.EDAnalyzer("ObjValEDNtupleProducer",
         caloTaus_part01 = process.caloTaus_recInfo.clone(
             src = cms.InputTag(retVal["caloTauCollection"])                       
         ),
+        caloTaus_part02 = process.tauTrackVariables_template.clone(
+            src = cms.InputTag(retVal["caloTauCollection"])                       
+        ),
 
         # variables specific to fixed cone PFTaus                                            
         pfTausFixedCone_part01 = process.pfTausFixedCone_recInfo.clone(
@@ -137,7 +154,10 @@ process.ntupleProducer = cms.EDAnalyzer("ObjValEDNtupleProducer",
         ),
         pfTausFixedCone_part02 = process.extraTauCandVariables_template.clone(
             src = cms.InputTag(retVal["pfTauCollectionFixedCone"])                       
-        ),                                   
+        ),
+        pfTausFixedCone_part03 = process.tauTrackVariables_template.clone(
+            src = cms.InputTag(retVal["pfTauCollectionFixedCone"])                       
+        ),
 
         # variables specific to shrinking cone PFTaus                                            
         pfTausShrinkingCone_part01 = process.pfTausShrinkingCone_recInfo.clone(
@@ -146,9 +166,15 @@ process.ntupleProducer = cms.EDAnalyzer("ObjValEDNtupleProducer",
         pfTausShrinkingCone_part02 = process.extraTauCandVariables_template.clone(
             src = cms.InputTag(retVal["pfTauCollectionShrinkingCone"])                       
         ),                                
+        pfTausShrinkingCone_part03 = process.tauTrackVariables_template.clone(
+            src = cms.InputTag(retVal["pfTauCollectionShrinkingCone"])                       
+        ),
 
         # variables specific to PFTaus reconstructed by hadron + strips (HPS) algorithm                                           
         pfTausHPS_part01 = process.pfTausHPS_recInfo.clone(
+            src = cms.InputTag(retVal["pfTauCollectionHPS"])                       
+        ),
+        pfTausHPS_part02 = process.tauTrackVariables_template.clone(
             src = cms.InputTag(retVal["pfTauCollectionHPS"])                       
         )
     )
@@ -156,13 +182,13 @@ process.ntupleProducer = cms.EDAnalyzer("ObjValEDNtupleProducer",
 
 if isMC:
     process.caloTaus_genInfo.src = cms.InputTag(retVal["caloTauCollection"])
-    setattr(process.ntupleProducer.sources, "caloTaus_part02", process.caloTaus_genInfo)
+    setattr(process.ntupleProducer.sources, "caloTaus_part03", process.caloTaus_genInfo)
     process.pfTausFixedCone_genInfo.src = cms.InputTag(retVal["pfTauCollectionFixedCone"])
-    setattr(process.ntupleProducer.sources, "pfTausFixedCone_part03", process.pfTausFixedCone_genInfo)
+    setattr(process.ntupleProducer.sources, "pfTausFixedCone_part04", process.pfTausFixedCone_genInfo)
     process.pfTausShrinkingCone_genInfo.src = cms.InputTag(retVal["pfTauCollectionShrinkingCone"])
-    setattr(process.ntupleProducer.sources, "pfTausShrinkingCone_part03", process.pfTausShrinkingCone_genInfo)
+    setattr(process.ntupleProducer.sources, "pfTausShrinkingCone_part04", process.pfTausShrinkingCone_genInfo)
     process.pfTausHPS_genInfo.src = cms.InputTag(retVal["pfTauCollectionHPS"])
-    setattr(process.ntupleProducer.sources, "pfTausHPS_part02", process.pfTausHPS_genInfo)
+    setattr(process.ntupleProducer.sources, "pfTausHPS_part03", process.pfTausHPS_genInfo)
     # add in information about generator level visible taus and all generator level jets
     setattr(process.ntupleProducer.sources, "tauGenJets", process.tauGenJets_genInfo)
     setattr(process.ntupleProducer.sources, "genJets", process.genJets_genInfo)
@@ -199,30 +225,6 @@ process.ntupleOutputModule = cms.OutputModule("PoolOutputModule",
     fileName = cms.untracked.string("tauIdEffEDNtuple_qcdDiJet.root")      
 )
 #--------------------------------------------------------------------------------
-
-# recreate collection of CaloTaus
-# with four-momenta determined by TCTau instead of (regular) CaloTau algorithm
-process.load("RecoTauTag.Configuration.RecoTCTauTag_cff")
-process.prePatProductionSequence = cms.Sequence(process.tautagging)
-
-# Rerun tau identification sequence for all PF based taus
-process.load("RecoTauTag.Configuration.RecoPFTauTag_cff")
-process.prePatProductionSequence += process.PFTau
-
-# produce collection of PFTaus reconstructed by hadron + strips (HPS) algorithm
-# "on-the-fly", as it is not contained in data taken with CMSSW_3_5_x
-# EK: no longer necessary, runs in PFTau sequence
-#process.load("RecoTauTag.Configuration.HPSPFTaus_cfi")
-#process.prePatProductionSequence += process.produceAndDiscriminateHPSPFTaus
-
-# if running on Monte Carlo, produce ak5GenJets collection "on-the-fly",
-# as it is needed for matching reconstructed particles to generator level information by PAT,
-# but not contained in Monte Carlo samples produced with CMSSW_3_5_x
-if isMC:
-    process.load("RecoJets.Configuration.GenJetParticles_cff")
-    process.load("RecoJets.JetProducers.ak5GenJets_cfi")
-    process.prePatProductionSequenceGen = cms.Sequence(process.genParticlesForJets * process.ak5GenJets)
-    process.prePatProductionSequence += process.prePatProductionSequenceGen
 
 process.p = cms.Path(
     process.prePatProductionSequence
