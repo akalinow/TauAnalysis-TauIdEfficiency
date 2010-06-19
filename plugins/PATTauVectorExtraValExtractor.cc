@@ -81,11 +81,11 @@ std::vector<double> PATTauVectorExtraValExtractor::operator()(const edm::Event& 
     edm::Ptr<pat::Tau> patTauPtr = patTaus->ptrAt(iTau);
     double vec_i = -1.;
     
-    if(      value_ == kNumTracksOut      ) 
+    if      ( value_ == kNumTracksOut      ) 
       vec_i = pfChargedCands.size() - patTauPtr->signalTracks().size() - patTauPtr->isolationTracks().size();
-    else if (value_ == kNumChargedHadrOut ) 
+    else if ( value_ == kNumChargedHadrOut ) 
       vec_i = pfChargedHadrCands.size() - patTauPtr->signalPFChargedHadrCands().size() - patTauPtr->isolationPFChargedHadrCands().size();
-    else if (value_ == kNumPhotonsOut     ) 
+    else if ( value_ == kNumPhotonsOut     ) 
       vec_i = pfGammaCands.size() - patTauPtr->signalPFGammaCands().size() - patTauPtr->isolationPFGammaCands().size();
 
     if ( value_ == kNearestJetDeltaR || 

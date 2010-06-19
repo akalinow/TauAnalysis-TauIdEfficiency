@@ -35,7 +35,6 @@ jets_template = cms.PSet(
     )  
 )
 
-
 met_template = cms.PSet(
     vector = cms.bool(False),
 
