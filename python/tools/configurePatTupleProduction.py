@@ -46,7 +46,7 @@ def configurePatTupleProduction(process, patSequenceBuilder = None,
         andOr                 = cms.bool(False),
         filterIdsEnum         = cms.vstring('*'),
         filterIds             = cms.vint32(0),
-        filterLabels          = cms.vstring('*'),
+        filterLabels          = cms.vstring('hlt1jet15U'),
         pathNames             = cms.vstring('HLT_Jet15U'),
         collectionTags        = cms.vstring('*'),
         maxDPtRel             = cms.double(0.5),
@@ -120,11 +120,15 @@ def configurePatTupleProduction(process, patSequenceBuilder = None,
     switchToPFTauShrinkingCone(process)
     process.patPFTauProducerShrinkingCone = copy.deepcopy(process.patTaus)
 
-    # Load TaNC inputs into pat::Tau
+    # add "transformed" TaNC output to pat::Tau
+    ##setattr(process.patPFTauProducerShrinkingCone.tauIDSources,
+    ##        "transformedTaNCoutput", cms.InputTag("shrinkingConePFTauTancCVTransform"))
+        
+    # load TaNC inputs into pat::Tau
     process.load("RecoTauTag.Configuration.ShrinkingConePFTaus_cfi")
     process.load("RecoTauTag.TauTagTools.PFTauMVAInputDiscriminatorTranslator_cfi")
     loadMVAInputsIntoPatTauDiscriminants(process.patPFTauProducerShrinkingCone)
-    # Enable embedding of decay mode from PFT Decay Mode data format
+    # enable embedding of decay mode from PFTauDecayMode data format
     process.patPFTauProducerShrinkingCone.addDecayMode = cms.bool(True)
 
     retVal_pfTauShrinkingCone = patSequenceBuilder(
