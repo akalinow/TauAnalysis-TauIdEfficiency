@@ -6,18 +6,12 @@
  * Auxiliary class for extracting generator level information
  * matching reconstructed PAT tau objects
  * (used for Ntuple filling)
- *
- * NOTE: the values are extracted from the PAT object
- *       specified by the "index" configuration parameter (**first** PAT object in case "index" is not specified)
- *       contained in the collection specified by the "src" configuration parameter;
- *       in case the collection of PAT objects is empty, 
- *       a substitute value of -1. is returned by operator()
  * 
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.2 $
+ * \version $Revision: 1.3 $
  *
- * $Id: PATTauVectorExtraValExtractor.h,v 1.2 2010/06/10 08:14:07 veelken Exp $
+ * $Id: PATTauVectorExtraValExtractor.h,v 1.3 2010/06/14 08:34:03 veelken Exp $
  *
  */
 
