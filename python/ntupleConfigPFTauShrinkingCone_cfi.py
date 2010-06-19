@@ -81,8 +81,9 @@ pfTausShrinkingCone_recInfo = cms.PSet(
         byTaNC = cms.string("tauID('byTaNC')"),
         byTaNCfrOnePercent = cms.string("tauID('byTaNCfrOnePercent')"),
         byTaNCfrHalfPercent = cms.string("tauID('byTaNCfrHalfPercent')"),
-        byTaNCfrQuarterPercent = cms.string("tauID('byTaNCfrQuarterPercent')"),
-        byTaNCfrTenthPercent = cms.string("tauID('byTaNCfrTenthPercent')"),                                                     
+        byTaNCfrQuarterPercent = cms.string("tauID('byTaNCfrQuarterPercent')"),        
+        byTaNCfrTenthPercent = cms.string("tauID('byTaNCfrTenthPercent')"),
+        ##transformedTaNCoutput = cms.string("tauID('transformedTaNCoutput')")
         
         # discriminators against electrons/muons
         againstElectron = cms.string("tauID('againstElectron')"),
