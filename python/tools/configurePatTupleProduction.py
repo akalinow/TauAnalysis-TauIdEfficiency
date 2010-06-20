@@ -40,7 +40,7 @@ def configurePatTupleProduction(process, patSequenceBuilder = None,
     # configure PAT trigger matching
     process.load("PhysicsTools.PatAlgos.triggerLayer1.triggerProducer_cff")
     
-    process.patTauTriggerMatchHLTsingleJet15UprotoType = cms.EDFilter("PATTriggerMatcherDRDPtLessByR",
+    process.patTauTriggerMatchHLTsingleJet15UprotoType = cms.EDFilter("PATTriggerMatcherDRLessByR",
         src                   = cms.InputTag("cleanLayer1Taus"),
         matched               = cms.InputTag("patTrigger"),
         andOr                 = cms.bool(False),
@@ -49,7 +49,6 @@ def configurePatTupleProduction(process, patSequenceBuilder = None,
         filterLabels          = cms.vstring('hlt1jet15U'),
         pathNames             = cms.vstring('HLT_Jet15U'),
         collectionTags        = cms.vstring('*'),
-        maxDPtRel             = cms.double(0.5),
         maxDeltaR             = cms.double(0.5),
         resolveAmbiguities    = cms.bool(True),
         resolveByMatchQuality = cms.bool(False)
