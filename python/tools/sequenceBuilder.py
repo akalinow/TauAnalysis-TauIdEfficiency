@@ -31,6 +31,12 @@ def buildTauSequence(
 
     # configure matching of basic pat::Tau collection
     # to generator level particles and jets
+    #
+    # NOTE: for matching generated to reconstructed tau-jets
+    #       set matching cone size to dR = 0.5
+    #       and disable requirement on transverse momentum
+    #       of generated and reconstructed tau-jets 
+    #
     outputSequence = None
     if addGenInfo:
         patTauGenParticleMatch = process.tauMatch.clone(
@@ -40,7 +46,9 @@ def buildTauSequence(
         setattr(process, patTauGenParticleMatchName, patTauGenParticleMatch)
 
         patTauGenJetMatch = process.tauGenJetMatch.clone(
-           src = patTauProducer.tauSource
+            src = patTauProducer.tauSource,
+            maxDeltaR = cms.double(0.5),
+            maxDPtRel = cms.double(999.9)
         )
         patTauGenJetMatchName = collectionName[0] + "GenJetMatch" + collectionName[1]
         setattr(process, patTauGenJetMatchName, patTauGenJetMatch)
