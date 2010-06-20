@@ -226,9 +226,36 @@ process.ntupleOutputModule = cms.OutputModule("PoolOutputModule",
 )
 #--------------------------------------------------------------------------------
 
+####--------------------------------------------------------------------------------
+###
+### Print differences between collections of pat::Taus
+### reconstructed by "regular" shrinking cone and by HPS (PF)Tau algorithm
+###
+### NOTE: to be used for debugging purposes only !!
+###
+##process.DQMStore = cms.Service("DQMStore")
+##
+##process.patTauCollectionDiffAnalyzer = cms.EDAnalyzer("PATTauCollectionDiffAnalyzer",
+##    patTauSource1 = cms.InputTag(retVal["pfTauCollectionShrinkingCone"]),
+##    patTauSource2 = cms.InputTag(retVal["pfTauCollectionHPS"]),
+##                                          
+##    patTauSelection = cms.string("abs(pfTauTagInfoRef.pfjetRef.eta) < 2.5 & pfTauTagInfoRef.pfjetRef.pt > 10. & userFloat('probe') > 0.5"),
+##
+##    dRmatch = cms.double(0.5),
+##
+##    dqmDirectory = cms.string('PATTauComparator')
+##)                                          
+##
+##process.savePatTauCollectionDiffAnalyzerPlots = cms.EDAnalyzer("DQMSimpleFileSaver",
+##    outputFileName = cms.string('plotsPatTauCollectionDiffAnalyzer.root')
+##)
+###--------------------------------------------------------------------------------
+
 process.p = cms.Path(
     process.prePatProductionSequence
    + process.patTupleProductionSequence
+   ##+ process.patTauCollectionDiffAnalyzer
+   ##+ process.savePatTauCollectionDiffAnalyzerPlots
    #+ process.printEventContent
    + process.ntupleProducer
 )
