@@ -20,7 +20,8 @@ process.source = cms.Source("PoolSource",
         #'/store/relval/CMSSW_3_6_1/RelValZTT/GEN-SIM-RECO/START36_V7-v1/0020/EE3E8F74-365D-DF11-AE3D-002618FDA211.root'
         ##'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/data/muTauSkim_1_1.root'
         ##'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/mcMinBias/muTauSkim_1_1.root'
-        'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/mcQCDpt15/muTauSkim_1_1.root'
+        ##'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/mcQCDpt15/muTauSkim_1_1.root'
+        'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/mcMinBias_pythia8/muTauSkim_1_2.root'
     ),
     skipEvents = cms.untracked.uint32(0)            
 )
@@ -40,8 +41,11 @@ process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(1000)
 )
 
-isMC = True # use for MC
+isMC = True # use for MC (except for samples from Spring'10 reprocessing)
+##isSpring10 = True # use for Spring'10 reprocessed MC
+isSpring10 = False # use for non-Spring'10 reprocessed MC
 ##isMC = False # use for Data
+
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
@@ -199,7 +203,7 @@ if isMC:
 #
 # updated InputTags for HLT trigger result object
 # in case running on reprocessed Spring'10 Monte Carlo samples
-if isMC:
+if isSpring10:
     process.hltJet15U.selector.src = cms.InputTag('TriggerResults::REDIGI')
     process.patTrigger.processName = cms.string('REDIGI')
     process.patCaloTausTriggerEvent.processName = cms.string('REDIGI')
