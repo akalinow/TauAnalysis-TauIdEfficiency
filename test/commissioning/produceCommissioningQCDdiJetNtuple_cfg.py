@@ -42,8 +42,8 @@ process.maxEvents = cms.untracked.PSet(
 )
 
 isMC = True # use for MC (except for samples from Spring'10 reprocessing)
-##isSpring10 = True # use for Spring'10 reprocessed MC
-isSpring10 = False # use for non-Spring'10 reprocessed MC
+isSpring10 = True # use for Spring'10 reprocessed MC
+##isSpring10 = False # use for non-Spring'10 reprocessed MC
 ##isMC = False # use for Data
 
 #--------------------------------------------------------------------------------
