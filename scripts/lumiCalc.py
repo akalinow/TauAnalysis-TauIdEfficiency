@@ -15,7 +15,7 @@ prescales for those runs.
 Author: Matthias Edelhoff (Aachen)
 Contributors: Evan K. Friis (UC Davis)
 
-$Id: lumiCalc.py,v 1.6 2010/06/01 23:04:04 friis Exp $
+$Id: lumiCalc.py,v 1.7 2010/06/16 00:00:02 friis Exp $
 
 Takes as input: 
     
@@ -30,7 +30,6 @@ Takes as input:
 
 '''
 
-
 def saveUpdate(dictA, dictB):
     for key in dictB:
             if key in dictA and not dictB[key] == dictA[key]:
@@ -38,6 +37,40 @@ def saveUpdate(dictA, dictB):
                         "there are overlaping and divergent data for %s"%(key)
     dictA.update( dictB )
     return dictA
+
+def cleanNTupleFiles( path ):
+    """
+    clean crab retries: take only last retry located in given path and return list of .root files
+    """
+    from TauAnalysis.TauIdEfficiency.tools.castor import nsls
+    import re
+    rawFiles = []
+    if path.startswith("rfio:/castor"):
+        expr = re.compile("(.*)_([0-9]*)_([0-9]*).root")
+        rawFiles = [ i.replace(path[5:], "") for i in nsls(path[5:])]
+    fileMap = {}
+    for fileName in rawFiles:
+        skip = False
+        try:
+            groups = expr.search(fileName).groups()
+        except AttributeError:
+            skip = True
+            print "WARNING: bad fromating for '%s'. skipping"%fileName
+        if not skip:
+            if not groups[0] in fileMap:
+                fileMap[groups[0]] = {}
+            if not int(groups[1]) in fileMap[groups[0]]:
+                fileMap[groups[0]][int(groups[1])] = int(groups[2])
+            else:
+                if fileMap[groups[0]][int(groups[1])] < int(groups[2]):
+                    fileMap[groups[0]][int(groups[1])] = int(groups[2])
+
+    result =[]
+    for name in fileMap:
+        for number in fileMap[name]:
+                result.append("%s_%s_%s.root"%(name,number,fileMap[name][number]))
+    return result
+            
 
 def readMask(path):
     " Load a LumiSel (CRAB-style) JSON file "
@@ -123,48 +156,64 @@ def main(argv=None):
     parser = OptionParser()
     parser.add_option("-d", "--datasetName", dest="datasetNames", action="append", default=[], 
                       help="appendable list of dataset names. Expects DATASETNAME_JSON.txt for used mask and DATASETNAME.list for a list if paths to nTuple Files")
+    parser.add_option("-m", "--mcDatasetName", dest="mcDatasetNames", action="append", default=[], 
+                      help="appendable list of dataset names. Name ust be key of mcLumiMap.json")
+    parser.add_option("-M", "--mcLumiMap", dest="mcLumiMapPath", default="$CMSSW_BASE/src/TauAnalysis/TauIdEfficiency/test/commissioning/mcLumiMap.json", 
+                      help="path to output file")
+
+
     parser.add_option("-l", "--lumi", dest="lumiCSVs", action="append", default=[], 
                       help="appendable list of luminosity by lumisection csv files to use")
     parser.add_option("-o", "--output", dest="outPath", default="lumiMap.json", 
                       help="path to output file")
     (opts, args) = parser.parse_args(argv)
 
-    if opts.datasetNames == []: raise StandardError, "it makes no sense not to specify at least on dataset name"
+    if opts.datasetNames == [] and opts.mcDatasetNames == []: raise StandardError, "it makes no sense not to specify at least on dataset name"
     if opts.lumiCSVs == []: opts.lumiCSVs = ["lumi_by_LS.csv"]
     
     if os.path.exists(opts.outPath): raise StandardError, "Output file '%s' exists. Please move it out of the way!"%opts.outPath
-
-    lumiTable = {}
-    for lumiCSV in opts.lumiCSVs:
-        newLumis = readLumiCSV(lumiCSV)
-        lumiTable = saveUpdate(lumiTable, newLumis)
-
-    # Load masks for the datasets
-    masks = {}
-    for datasetName in opts.datasetNames:
-        masks[datasetName] = readMask("%s_JSON.txt"%datasetName)
-
-    def loop_over_runs():
-        for dataset, mask in masks.iteritems():
-            for run in mask.keys():
-                yield run
-
-    min_run_number = min(loop_over_runs())
-    max_run_number = max(loop_over_runs())
-    print min_run_number
-    print max_run_number
-
-    # Build our run registry to access prescale info from DB
-    run_registry = RunRegistry(firstRun=min_run_number, lastRun=max_run_number, 
-                               groupName="Collisions%")
-
+    opts.mcLumiMapPath = os.path.expandvars(opts.mcLumiMapPath)
     lumiMap = {}
-    for datasetName in opts.datasetNames:
-        print "Building lumi map for %s dataset" % datasetName
-        mask = masks[datasetName]
-        triggerPath, nTuples = readNTuples("%s.list"%datasetName)
-        intLumi = calcLumi(lumiTable, mask, run_registry, triggerPath)
-        lumiMap[datasetName] = {'files': nTuples, 'int_lumi': intLumi}
+    if len(opts.datasetNames) > 0:
+        lumiTable = {}
+        for lumiCSV in opts.lumiCSVs:
+            newLumis = readLumiCSV(lumiCSV)
+            lumiTable = saveUpdate(lumiTable, newLumis)
+
+        # Load masks for the datasets
+        masks = {}
+        for datasetName in opts.datasetNames:
+            masks[datasetName] = readMask("%s_JSON.txt"%datasetName)
+
+        def loop_over_runs():
+            for dataset, mask in masks.iteritems():
+                for run in mask.keys():
+                    yield run
+
+        min_run_number = min(loop_over_runs())
+        max_run_number = max(loop_over_runs())
+        print min_run_number
+        print max_run_number
+        
+        # Build our run registry to access prescale info from DB
+        run_registry = RunRegistry(firstRun=min_run_number, lastRun=max_run_number, 
+                                       groupName="Collisions%")
+
+        for datasetName in opts.datasetNames:
+            print "Building lumi map for %s dataset" % datasetName
+            mask = masks[datasetName]
+            triggerPath, nTuples = readNTuples("%s.list"%datasetName)
+            intLumi = calcLumi(lumiTable, mask, run_registry, triggerPath)
+            lumiMap[datasetName] = {'files': nTuples, 'int_lumi': intLumi}
+
+        
+    if len(opts.mcDatasetNames) > 0:
+        for mcDatasetName in opts.mcDatasetNames:
+            lumiMap[mcDatasetName] = {}
+            with open(opts.mcLumiMapPath, "r") as mcLumiMapFile:
+                mcLumiMap = json.load(mcLumiMapFile)
+                lumiMap[mcDatasetName].update(mcLumiMap[mcDatasetName])
+                lumiMap[mcDatasetName]["files"] = cleanNTupleFiles(lumiMap[mcDatasetName]["directory"])                
 
     # Write output to json file
     with open(opts.outPath, 'w') as outputFile:
