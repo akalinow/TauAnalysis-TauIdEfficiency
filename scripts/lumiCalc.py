@@ -15,7 +15,7 @@ prescales for those runs.
 Author: Matthias Edelhoff (Aachen)
 Contributors: Evan K. Friis (UC Davis)
 
-$Id: lumiCalc.py,v 1.7 2010/06/16 00:00:02 friis Exp $
+$Id: lumiCalc.py,v 1.8 2010/06/22 15:19:17 edelhoff Exp $
 
 Takes as input: 
     
@@ -41,13 +41,19 @@ def saveUpdate(dictA, dictB):
 def cleanNTupleFiles( path ):
     """
     clean crab retries: take only last retry located in given path and return list of .root files
+    path can be:
+    o rfio:/castor... for castor use
+    o a list of strings
     """
     from TauAnalysis.TauIdEfficiency.tools.castor import nsls
     import re
     rawFiles = []
     if path.startswith("rfio:/castor"):
-        expr = re.compile("(.*)_([0-9]*)_([0-9]*).root")
         rawFiles = [ i.replace(path[5:], "") for i in nsls(path[5:])]
+    elif "__iter__" in dir(path):
+        rawFiles = [i for i in path]
+        
+    expr = re.compile("(.*)_([0-9]*)_([0-9]*).root")
     fileMap = {}
     for fileName in rawFiles:
         skip = False
@@ -172,7 +178,9 @@ def main(argv=None):
     if opts.lumiCSVs == []: opts.lumiCSVs = ["lumi_by_LS.csv"]
     
     if os.path.exists(opts.outPath): raise StandardError, "Output file '%s' exists. Please move it out of the way!"%opts.outPath
+    
     opts.mcLumiMapPath = os.path.expandvars(opts.mcLumiMapPath)
+    
     lumiMap = {}
     if len(opts.datasetNames) > 0:
         lumiTable = {}
@@ -204,6 +212,7 @@ def main(argv=None):
             mask = masks[datasetName]
             triggerPath, nTuples = readNTuples("%s.list"%datasetName)
             intLumi = calcLumi(lumiTable, mask, run_registry, triggerPath)
+            nTuples = cleanNTupleFiles(nTuples)
             lumiMap[datasetName] = {'files': nTuples, 'int_lumi': intLumi}
 
         
