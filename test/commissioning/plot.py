@@ -15,9 +15,7 @@ if __name__ == "__main__":
     ROOT.gROOT.SetBatch(True)
     ROOT.gROOT.SetStyle("Plain")
     ROOT.gStyle.SetOptStat(0)
-#    file = ROOT.TFile.Open("tauIdEffEDNtuple_qcdDiJet.root", "READ")
-#    file = ROOT.TFile.Open("tauIdEffEDNtuple_qcdDiJet_5_1.root", "READ")
-    file = ROOT.TFile("/tmp/abdollah/tauIdEffEDNtuple_qcdDiJet_5_1.root", "READ")
+    file = ROOT.TFile.Open("tauIdEffEDNtuple_qcdDiJet.root", "READ")
     
     # Get the events tree (this can also be a TChain)
     events = file.Get("Events")
