@@ -4,7 +4,7 @@ import ROOT
 from TauAnalysis.TauIdEfficiency.ntauples.PlotManager import PlotManager
 import TauAnalysis.TauIdEfficiency.ntauples.styles as style
 
-# Defintion of input files.
+# Definition of input files.
 import samples_cache as samples
 import os
 import copy
@@ -27,7 +27,7 @@ plotter.add_sample(samples.data, "Data (7 TeV)", **style.DATA_STYLE)
 # Normalize everything to the data luminosity
 plotter.set_integrated_lumi(samples.data.effective_luminosity())
 
-# Build the ntuple maanger
+# Build the ntuple manager
 ntuple_manager = samples.data.build_ntuple_manager("tauIdEffNtuple")
 
 shrinking_ntuple = ntuple_manager.get_ntuple(
@@ -160,6 +160,7 @@ distributions = {
         'expression': expr_jetEta,
         'selection': base_selection & min_pt_cut,
         'binning': eta_binning_fine, 'logy': False,
+        'y_max': 60e3,
         'extra_labels': [style.PT_CUT_LABEL_UPPER_LEFT],
         #'y_min': 1e3, 
         'x_axis_title': "Jet #eta",

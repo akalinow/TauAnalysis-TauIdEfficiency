@@ -11,14 +11,24 @@ TO_SUBMIT = {}
 CURRENT_JOBS = {}
 FINISHED_JOBS = {}
 
+desired_distributions = ['jetPt', 'jetEta', 'decayMode', 'decayMode_pt40']
+desired_efficiencies = ['TaNCOne', 'TaNCHalf', 'TaNCQuarter']
+desired_efficiencies_versus = ['Pt', 'Eta']
+
 for dist in distributions.keys():
+    if dist not in desired_distributions:
+        continue
     TO_SUBMIT[dist] = {
         'args' : ['python', 'shrinkingConePlots.py', '-p', dist],
         'ret' : -1
     }
 
 for eff in efficiencies.keys():
+    if eff not in desired_efficiencies:
+        continue
     for eff_vs in efficiency_versus.keys():
+        if eff_vs not in desired_efficiencies_versus:
+            continue
         TO_SUBMIT["%s_%s" % (eff, eff_vs)] = {
             'args' : ['python', 'shrinkingConePlots.py',  '-p', eff, '-v', eff_vs ],
             'ret' : -1

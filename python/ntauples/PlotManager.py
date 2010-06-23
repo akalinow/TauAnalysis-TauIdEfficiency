@@ -140,11 +140,13 @@ class PlotManager(object):
 
         # Now draw the total stack to current pad
         result_dict['result'].Draw("nostack")
+        # If the upper limit for y is not set, make a nice guess
         # Give us some breathing room on top of the plot to put our labels and stuff
-        if 'logy' in options and options['logy']:
-            result_dict['result'].SetMaximum(result_dict['result'].GetMaximum()*10)
-        else:
-            result_dict['result'].SetMaximum(result_dict['result'].GetMaximum()*1.2)
+        if 'y_max' not in options:
+            if 'logy' in options and options['logy']:
+                result_dict['result'].SetMaximum(result_dict['result'].GetMaximum()*20)
+            else:
+                result_dict['result'].SetMaximum(result_dict['result'].GetMaximum()*1.5)
         # Apply any canvas style options
         canvas_style = copy.deepcopy(style.DEFAULT_STYLE)
         canvas_style.update(options)
