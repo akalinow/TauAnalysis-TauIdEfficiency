@@ -43,7 +43,7 @@ if __name__ == "__main__":
     canvas = ROOT.TCanvas("example", "example", 500, 500)
     
     pt_resol = plotter.distribution(
-        expression=hps_ntuple.expr(('$jetPt'-'$genPt')/'$genPt'),
+        expression=hps_ntuple.expr(('$jetPt-$genPt)/$genPt'),
         selection=hps_ntuple.expr('abs($jetEta) < 2.5') & hps_ntuple.expr('$byLeadTrackFinding > 0.5') & hps_ntuple.expr('$genMatch > 0.5'),
         extra_labels = [style.ETA_CUT_LABEL_UPPER_LEFT],
         binning=(50, -1, 1),
