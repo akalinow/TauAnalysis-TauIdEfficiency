@@ -66,8 +66,8 @@ if __name__ == "__main__":
         'OneOrThreeProng': {
             'expr_str': '$numChargedParticlesSignalCone == 1 || $numChargedParticlesSignalCone == 3',
             'marker_style': 25,
-            'marker_color': 7,
-            'label' : "1 Or 3 Prong",
+            'marker_color': 9,
+            'label' : "1 or 3 Prong",
         },
         'byTaNCfrOnePercent': {
             'expr_str': '$byTaNCfrOnePercent',
@@ -78,13 +78,13 @@ if __name__ == "__main__":
         'byTaNCfrHalfPercent': {
             'expr_str': '$byTaNCfrHalfPercent',
             'marker_style': 24,
-            'marker_color': 7,
+            'marker_color': 2,
             'label' : "TaNC 0.50%",
         },
         'byTaNCfrQuarterPercent': {
             'expr_str': '$byTaNCfrQuarterPercent',
             'marker_style': 25,
-            'marker_color': 8,
+            'marker_color': 9,
             'label' : "TaNC 0.25%",
         },
     }
