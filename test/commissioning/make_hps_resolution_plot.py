@@ -9,7 +9,7 @@ import TauAnalysis.TauIdEfficiency.ntauples.styles as style
 
 
 # Defintion of input files.
-import samples as samples
+import samples_cache as samples
 import os
 import sys
 
@@ -52,6 +52,10 @@ if __name__ == "__main__":
         x_axis_title = "#tau p_{T} Resolution",
         logy=False
     )
+
+    # Make a pave text w/ mean rms
+    stat_label = style.make_mean_rms_pave(pt_resol['samples']['mc_ztt']['plot'])
+    stat_label.Draw()
     
     canvas.SaveAs("plots/pt_resol.png")
     canvas.SaveAs("plots/pt_resol.pdf")

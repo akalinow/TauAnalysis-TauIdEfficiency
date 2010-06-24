@@ -8,6 +8,13 @@ Author: Evan K. Friis (UC Davis)
 
 '''
 
+def make_mean_rms_pave(plot, x_low=0.6, y_low=0.85, x_high=0.99, y_high=0.99):
+    mean = plot.GetMean()
+    rms = plot.GetRMS()
+    output = ROOT.TPaveText(x_low, y_low, x_high, y_high, "brNDC")
+
+
+
 def copy_aliases(tchain):
    ''' Ensure that all TTrees in a TChain have their aliases set correctly '''
    # Get the first ttree in the chain

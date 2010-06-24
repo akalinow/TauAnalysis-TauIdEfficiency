@@ -63,6 +63,57 @@ PT_40_ETA_CUT_LABEL_UPPER_LEFT = PT_ETA_CUT_LABEL_UPPER_LEFT.Clone()
 PT_40_ETA_CUT_LABEL_UPPER_LEFT.Clear()
 PT_40_ETA_CUT_LABEL_UPPER_LEFT.AddText("P_{T} > 40 GeV/c, |#eta| < 2.5")
 
+EFFICIENCY_STYLES = {
+    'matching' : {
+        'marker_color' : ROOT.EColor.kBlack,
+        'marker_style' : 20, # closed dot
+    },
+    'byLeadTrackFinding' : {
+        'marker_color' : ROOT.EColor.kRed,
+        'marker_style' : 25, # open square
+    },
+    'byLeadTrackPtCut' : {
+        'marker_color' : ROOT.EColor.kBlue,
+        'marker_style' : 22, # closed triangle
+    },
+    'byTrackIsolation' : {
+        'marker_color' : ROOT.EColor.kGreen + 2,
+        'marker_style' : 24 # open dot
+    },
+    'byEcalIsolation' : {
+        'marker_color' : ROOT.EColor.kOrange + 7,
+        'marker_style' : 21 # closed square
+    },
+    'OneOrThreeProng' : {
+        'marker_color' : ROOT.EColor.kMagenta + 2,
+        'marker_style' : 26, # open triangle
+    },
+}
+
+# TaNC & HPS colors follow the same pattern
+for iso_type, tanc_type in zip(
+    ['byTrackIsolation', 'byEcalIsolation', 'OneOrThreeProng'],
+    ['byTaNCfrOnePercent', 'byTaNCfrHalfPercent', 'byTaNCfrQuarterPercent']):
+    EFFICIENCY_STYLES[tanc_type] = EFFICIENCY_STYLES[iso_type]
+
+for iso_type, hps_type in zip(
+    [ 'byTrackIsolation', 'byEcalIsolation', 'OneOrThreeProng'],
+    ['byIsolationLoose', 'byIsolationMedium', 'byIsolationTight']):
+    EFFICIENCY_STYLES[hps_type] = EFFICIENCY_STYLES[iso_type]
+
+# Build a pave with the mean and RMS
+def make_mean_rms_pave(plot, x_low=0.6, y_low=0.80, x_high=0.90, y_high=0.90):
+    mean = plot.GetMean()
+    rms = plot.GetRMS()
+    output = ROOT.TPaveText(x_low, y_low, x_high, y_high, "brNDC")
+    output.SetTextAlign(33) # top right alignment
+    output.SetBorderSize(0)
+    output.SetTextSize(0.04)
+    output.SetFillStyle(0)
+    output.AddText("mean = %0.2f" % mean)
+    output.AddText("rms = %0.2f" % rms)
+    return output
+
 DEFAULT_STYLE = {
     'draw_option' : "",
     'marker_color' : ROOT.EColor.kBlack,
