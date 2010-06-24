@@ -42,7 +42,9 @@ if __name__ == "__main__":
 
     # Get the shrinking ntuple
     hps_ntuple = ntuple_manager.get_ntuple(
-        "patPFTausDijetTagAndProbeHPS")
+        "patPFTausDijetTagAndProbeShrinkingCone")
+        
+    print hps_ntuple
 
     hlt = ntuple_manager.get_ntuple("TriggerResults")
 
@@ -95,7 +97,7 @@ if __name__ == "__main__":
         extra_labels = [style.PT_CUT_LABEL_UPPER_LEFT],
         binning = (50, -2.5, 2.5),
         x_axis_title = "Jet #eta",
-        y_min = 1, y_max = 180000, logy=False
+        y_min = 1, y_max = 80000, logy=False
     )
     jeteta_result['legend'].make_legend().Draw()
 
@@ -108,7 +110,7 @@ if __name__ == "__main__":
         extra_labels = [style.PT_CUT_LABEL_UPPER_LEFT],
         binning = (50, -3.14, 3.14),
         x_axis_title = "Jet #phi",
-        y_min = 1, y_max = 200000
+        y_min = 1, y_max = 80000
     )
     jeteta_result['legend'].make_legend().Draw()
 
@@ -268,6 +270,23 @@ if __name__ == "__main__":
 
     canvas.SaveAs("plots/hpsCone_decayMode_eff_jetEta.png")
     canvas.SaveAs("plots/hpsCone_decayMode_eff_jetEta.pdf")
+    
+    pt_eff_result = plotter.efficiency(
+        expression=hps_ntuple.expr('$jetPhi'),
+        denominator = denominator,
+        numerator = numerator,
+        extra_labels = [style.PT_ETA_CUT_LABEL_UPPER_LEFT],
+        binning = (31, -3.14, 3.14),
+        x_axis_title = "Jet #phi",
+        y_min = 1e-3, y_max = 10, logy = True,
+    )
+
+    # Add a legend
+    pt_eff_result['legend'].make_legend().Draw()
+
+    canvas.SaveAs("plots/hpsCone_decayMode_eff_jetPhi.png")
+    canvas.SaveAs("plots/hpsCone_decayMode_eff_jetPhi.pdf")
+
 
     numerator = hps_ntuple.expr('$byLeadTrackFinding > 0.5') & hps_ntuple.expr('$byIsolationLoose > 0.5') & denominator
  
@@ -302,6 +321,23 @@ if __name__ == "__main__":
 
     canvas.SaveAs("plots/hpsCone_decayModeWLooseIso_eff_jetEta.png")
     canvas.SaveAs("plots/hpsCone_decayModeWLooseIso_eff_jetEta.pdf")
+    
+    pt_eff_result = plotter.efficiency(
+        expression=hps_ntuple.expr('$jetPhi'),
+        denominator = denominator,
+        numerator = numerator,
+        extra_labels = [style.PT_ETA_CUT_LABEL_UPPER_LEFT],
+        binning = (31, -3.14, 3.14),
+        x_axis_title = "Jet #phi",
+        y_min = 1e-4, y_max = 5, logy = True,
+    )
+
+    # Add a legend
+    pt_eff_result['legend'].make_legend().Draw()
+
+    canvas.SaveAs("plots/hpsCone_decayModeWLooseIso_eff_jetPhi.png")
+    canvas.SaveAs("plots/hpsCone_decayModeWLooseIso_eff_jetPhi.pdf")
+
 
     numerator = hps_ntuple.expr('$byLeadTrackFinding > 0.5') & hps_ntuple.expr('$byIsolationMedium > 0.5') & denominator
  
@@ -337,6 +373,22 @@ if __name__ == "__main__":
     canvas.SaveAs("plots/hpsCone_decayModeWMediumIso_eff_jetEta.png")
     canvas.SaveAs("plots/hpsCone_decayModeWMediumIso_eff_jetEta.pdf")
     
+    pt_eff_result = plotter.efficiency(
+        expression=hps_ntuple.expr('$jetPhi'),
+        denominator = denominator,
+        numerator = numerator,
+        extra_labels = [style.PT_ETA_CUT_LABEL_UPPER_LEFT],
+        binning = (31, -3.14, 3.14),
+        x_axis_title = "Jet #phi",
+        y_min = 1e-4, y_max = 5, logy = True,
+    )
+
+    # Add a legend
+    pt_eff_result['legend'].make_legend().Draw()
+
+    canvas.SaveAs("plots/hpsCone_decayModeWMediumIso_eff_jetPhi.png")
+    canvas.SaveAs("plots/hpsCone_decayModeWMediumIso_eff_jetPhi.pdf")
+    
     numerator = hps_ntuple.expr('$byLeadTrackFinding > 0.5') & hps_ntuple.expr('$byIsolationTight > 0.5') & denominator
  
     pt_eff_result = plotter.efficiency(
@@ -370,3 +422,19 @@ if __name__ == "__main__":
 
     canvas.SaveAs("plots/hpsCone_decayModeWTightIso_eff_jetEta.png")
     canvas.SaveAs("plots/hpsCone_decayModeWTightIso_eff_jetEta.pdf")
+    
+    pt_eff_result = plotter.efficiency(
+        expression=hps_ntuple.expr('$jetPhi'),
+        denominator = denominator,
+        numerator = numerator,
+        extra_labels = [style.PT_ETA_CUT_LABEL_UPPER_LEFT],
+        binning = (31, -3.14, 3.14),
+        x_axis_title = "Jet #phi",
+        y_min = 1e-5, y_max = 1, logy = True,
+    )
+
+    # Add a legend
+    pt_eff_result['legend'].make_legend().Draw()
+
+    canvas.SaveAs("plots/hpsCone_decayModeWTightIso_eff_jetPhi.png")
+    canvas.SaveAs("plots/hpsCone_decayModeWTightIso_eff_jetPhi.pdf")
