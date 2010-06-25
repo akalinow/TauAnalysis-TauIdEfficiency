@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+from __future__ import with_statement
 import ROOT
 
 from TauAnalysis.TauIdEfficiency.ntauples.PlotManager import PlotManager
@@ -20,6 +22,7 @@ class PlotSession:
             name = self.__makeMenu(sessions)
 
         self.selection = sessions[name]["selection"]
+        self.selectionDiscription = sessions[name]["description"]
         self.subdir = sessions[name]["subdir"]
         self.description = sessions[name]["description"]
         self.labels=[style.CMS_PRELIMINARY_UPPER_LEFT, style.LUMI_LABEL_UPPER_LEFT,
@@ -48,6 +51,17 @@ class PlotSession:
         self.drawKineticPlots()
         self.drawMainTrackPlots()
 
+    def drawComplementaryPlots(self):
+        self.drawMassPlots()
+        self.drawPi0KineticPlots()
+        self.drawTrackKineticPlots()
+
+    def drawOutlierPlots(self):
+        self.drawOutlierCountPlots()
+        self.drawOutlierSumKineticPlots()
+        self.drawOutlierMassPlots()
+        self.drawOutlierSingleKineticPlots()
+
     def drawDecayMode(self):
         plotName = "DecayMode"
         self.plots[plotName] = self.plotter.distribution(
@@ -59,6 +73,23 @@ class PlotSession:
             logy=False,
             labels = self.labels
             )
+        latexTable = self.__makeDecayModeTable(plotName)
+        with open("%s/%s.tex"%(self.subdir, plotName), "w") as latexFile:
+            latexFile.write(latexTable)
+       
+        self.__printPlots(plotName)
+
+    def drawTaNCOutputPlots(self):
+        plotName = "TaNCOutput"
+        self.plots[plotName] = self.plotter.distribution(
+            expression=self.main.expr('$byTaNC'),
+            selection= self.selection,
+            binning = (100, 0.0, 1.0),
+            x_axis_title = "TaNC NN output",
+            #y_min = 1e-2,
+            logy=False,
+            labels = self.labels
+            )
         self.__printPlots(plotName)
 
     def drawKineticPlots(self):
@@ -66,7 +97,7 @@ class PlotSession:
         self.plots[plotName] = self.plotter.distribution(
             expression=self.main.expr('$TaNCPt'),
             selection= self.selection & self.__getDecayModeSelection(plotName),
-            binning = (100, 0, 75),
+            binning = (100, 0, 100),
             x_axis_title = "#tau p_{T} [GeV/c]",
             #y_min = 1e-2,
             logy=True,
@@ -78,7 +109,7 @@ class PlotSession:
         self.plots[plotName] = self.plotter.distribution(
             expression=self.main.expr('$TaNCEta'),
             selection= self.selection & self.__getDecayModeSelection(plotName),
-            binning = (100, 0, 2.6),
+            binning = (25, 0, 2.6),
             x_axis_title = "|#eta|",
             #y_min = 1e-2,
             logy=False,
@@ -144,7 +175,7 @@ class PlotSession:
                 expression=self.main.expr('$TaNC%sOutlierSumPt'%(charge)),
                 selection= self.selection & self.__getDecayModeSelection(plotName),
                 binning = (100, 0, 70),
-                x_axis_title = "Sum %s Outlier P_{T} [GeV/c]"%(charge),
+                x_axis_title = "Sum %s Outlier p_{T} [GeV/c]"%(charge),
                 #y_min = 1e-2,
                 logy=True,
                 labels = self.labels
@@ -157,10 +188,10 @@ class PlotSession:
             self.plots[plotName] = self.plotter.distribution(
                 expression=self.main.expr('$TaNCOutlierN%s'%(charge)),
                 selection= self.selection & self.__getDecayModeSelection(plotName),
-                binning = (101, -0.5, 100.5),
+                binning = (41, -0.5, 40.5),
                 x_axis_title = "%s Outlier Count"%(charge),
                 #y_min = 1e-2,
-                logy=False,
+                logy=True,
                 labels = self.labels
                 )
             self.__printPlots(plotName)
@@ -178,9 +209,9 @@ class PlotSession:
             )
         self.__printPlots(plotName)
                 
-    def drawOutlierSingleKineticPlots(self):
-        for charge in ["","Charged","Neutral"]:
-            for i in range(1,5):
+    def drawOutlierSingleKineticPlots(self, charges = ["","Charged","Neutral"], numOutlier=range(1,5)):
+        for charge in charges:
+            for i in numOutlier:
                 self.__drawPt(charge, "Outlier", i)
                 self.__drawAngle(charge, "Outlier", i)
                 
@@ -200,8 +231,8 @@ class PlotSession:
             self.plots[plotName] = self.plotter.distribution(
             expression=self.main.expr("$TaNC%s%sPt%s"%(name,objects,(number-1))),
                 selection= self.selection & self.__getDecayModeSelection(plotName),
-                binning = (100, 0, 20),
-                x_axis_title = "p_t of %s %s No. %s [GeV/c]"%(name,objects,number),
+                binning = (100, 0, 25),
+                x_axis_title = "p_{T} of %s %s No. %s [GeV/c]"%(name,objects,number),
                 #y_min = 1e-2,
                 logy=True,
                 labels = self.labels
@@ -219,17 +250,21 @@ class PlotSession:
                 binning = (100, 0, 1.5),
                 x_axis_title = "#DeltaR %s %s No. %s"%(name,objects,number),
                 #y_min = 1e-2,
-                #logy=True,
+                logy=False,
                 labels = self.labels
                 )            
             self.__printPlots(plotName)
         except StandardError, err:
             print "TaNC%s%sAngle%s not found: %s"%(name,objects,number,err)
-        
+
+    def __getFileNames(self, name):
+        for f in self.formats:
+            yield "%s/%s.%s"%(self.subdir, name, f)
+
     def __printPlots(self, name):
         self.plots[name]['legend'].make_legend().Draw() 
-        for format in self.formats:
-            self.canvas.SaveAs("%s/%s.%s"%(self.subdir, name, format))
+        for fileName in self.__getFileNames(name):
+            self.canvas.SaveAs(fileName)
 
     def __getDecayModeSelection(self, plotName):
         modes =[]
@@ -263,7 +298,43 @@ class PlotSession:
         
         return self.main.expr(" | ".join(["$TaNCDecayMode == %s"%mode for mode in modes]))
 
+    def __makeDecayModeTable(self, plotName):
+        from math import sqrt
+        latexModes={ 0 :"$\\nu_{\\tau}h^{\\pm}(\\pi^{\\pm})$",
+                     1 :"$\\nu_{\\tau}h^{\\pm}(\\pi^{\\pm}\\pi^{0})$",
+                     2 :"$\\nu_{\\tau}h^{\\pm}(\\pi^{\\pm}\\pi^{0}\\pi^{0})$",
+                     10:"$\\nu_{\\tau}h^{\\pm}h^{\\mp}h^{\\pm}(\\pi^{\\pm}\\pi^{\\mp}\\pi^{\\pm})$",
+                     11:"$\\nu_{\\tau}h^{\\pm}h^{\\mp}h^{\\pm}(\\pi^{\\pm}\\pi^{\\mp}\\pi^{\\pm}\\pi^{0})$",
+            }
+        sampleNames = [ "data", "mc_qcd"]
+        
+        result = "%%Table for selection '%s': "%self.selectionDiscription
+        rows = {}
+        for mode in latexModes:
+            rows[mode]=[ latexModes[mode]]
+        for sampleName in sampleNames:
+            result += " %s "%sampleName
+            N = 0.
+            k = {}
+            for mode in latexModes:
+                hist = self.plots[plotName]['samples'][sampleName]['plot']
+                binNr = hist.GetXaxis().FindBin(mode)
+                k[mode] = float(hist.GetBinContent(binNr))
+                N += k[mode]
+                
+            for mode in latexModes:
+                #binomial errors for now...
+                print sampleName, mode, k[mode], N
+                rows[mode].append("%.1f \pm %.2f"%(k[mode]/N*100, 1/N*sqrt(k[mode]*(1-k[mode]/N) )*100))
+            print rows
+        result +="\n"
+        for mode in rows:
+            result += " & ".join(rows[mode])+" \\\\\n"
+                
+        return result
+
     def __initSamples(self, samplesToPlot):
+        from copy import deepcopy
         self.plotter = PlotManager()
         if "data" in samplesToPlot:
             self.plotter.add_sample(samples.data, "Data (7 TeV)", **style.DATA_STYLE)    
@@ -271,6 +342,15 @@ class PlotSession:
             self.plotter.add_sample(samples.qcd_mc, "QCD MC", **style.QCD_MC_STYLE_HIST)
         if "minBias" in samplesToPlot:
             self.plotter.add_sample(samples.minbias_mc, "Minbias MC", **style.MINBIAS_MC_STYLE)
+        if "Ztautau" in samplesToPlot or "mc" in samplesToPlot:
+            ZTAUTAU_MC_STYLE_HIST = deepcopy(style.QCD_MC_STYLE_HIST)
+            ZTAUTAU_MC_STYLE_HIST["line_color"] = ROOT.EColor.kRed - 2
+            ZTAUTAU_MC_STYLE_HIST["fill_color"] = ROOT.EColor.kRed - 4
+            self.plotter.add_sample(samples.ztautau_mc, "Z#rightarrow#tau#tau MC x 10^{4}", **ZTAUTAU_MC_STYLE_HIST)
+            for sample in samples.ztautau_mc.subsamples:
+                sample.get_events()
+                sample.scaleFactor *= 1e4
+
         self.plotter.set_integrated_lumi(samples.data.effective_luminosity())
         self.manager = samples.data.build_ntuple_manager("tauIdEffNtuple")
         self.main = self.manager.get_ntuple("patPFTausDijetTagAndProbeShrinkingCone")
@@ -339,6 +419,41 @@ class PlotSession:
                       "description":"TaNC HalfPercent One Prong One Pi0",
                       "label": self.__makeLabel("TaNC 0.5% tune, #pi^{-} #pi^{+} #pi^{-} #pi^{0} #nu_{#tau}"),
                       },
+            "pre":{"selection": base_selection & self.main.expr("$byLeadTrackPtCut"),
+                    "subdir":"%s/Prediscriminant/combined/"%baseDir,
+                    "description":"After Predescriminant Combinded",
+                    "label": self.__makeLabel("Prediscriminant"),
+                    },
+            "pre0":{"selection": base_selection & self.main.expr("$byLeadTrackPtCut & $TaNCDecayMode == 0"),
+                     "subdir":"%s/Prediscriminant/oneProngNoPi0/"%baseDir,
+                     "description":"After Predescriminant OneProngNoPi0",
+                     "label": self.__makeLabel("Prediscriminant, #pi^{-} #nu_{#tau}"),
+                     },
+            "pre1":{"selection": base_selection & self.main.expr("$byLeadTrackPtCut & $TaNCDecayMode == 1"),
+                     "subdir":"%s/Prediscriminant/oneProngOnePi0/"%baseDir,
+                     "description":"After Predescriminant One Prong One Pi0",
+                     "label": self.__makeLabel("Prediscriminant, #pi^{-} #pi^{0} #nu_{#tau}"),
+                     },
+            "pre2":{"selection": base_selection & self.main.expr("$byLeadTrackPtCut & $TaNCDecayMode == 2"),
+                     "subdir":"%s/Prediscriminant/oneProngTwoPi0/"%baseDir,
+                     "description":"After Predescriminant One Prong Two Pi0",
+                     "label": self.__makeLabel("Prediscriminant, #pi^{-} #pi^{0} #pi^{0} #nu_{#tau}"),
+                     },
+            "pre10":{"selection": base_selection & self.main.expr("$byLeadTrackPtCut & $TaNCDecayMode == 10"),
+                      "subdir":"%s/Prediscriminant/ThreeProngNoPi0/"%baseDir,
+                      "description":"After Predescriminant OneProngNoPi0",
+                      "label": self.__makeLabel("Prediscriminant, #pi^{-} #pi^{+} #pi^{-} #nu_{#tau}"),
+                      },
+            "pre11":{"selection": base_selection & self.main.expr("$byLeadTrackPtCut & $TaNCDecayMode == 11"),
+                      "subdir":"%s/Prediscriminant/ThreeProngOnePi0/"%baseDir,
+                      "description":"After Predescriminant One Prong One Pi0",
+                      "label": self.__makeLabel("Prediscriminant, #pi^{-} #pi^{+} #pi^{-} #pi^{0} #nu_{#tau}"),
+                      },
+            "preNot0":{"selection": base_selection & self.main.expr("$byLeadTrackPtCut & $TaNCDecayMode == 11"),
+                      "subdir":"%s/Prediscriminant/notOneProngNoPi0/"%baseDir,
+                      "description":"After Predescriminant Not mode 0",
+                      "label": self.__makeLabel("Prediscriminant, not #pi^{-} #nu_{#tau}"),
+                      },
             
             "tancNot0":{"selection": base_selection & self.main.expr("$byTaNCfrHalfPercent & $TaNCDecayMode != 0"),
                         "subdir":"%s/TaNCHalfPercent/NotOneProngNoPi0/"%baseDir,
@@ -355,9 +470,31 @@ class PlotSession:
 
 def main():
     ROOT.gROOT.SetBatch(True)
-    for name in ["tanc","tanc0","tanc1","tanc2","tanc10","tanc11", "all"]:
-        session = PlotSession(name = name, baseDir="essentialPlots")
-        session.drawEssential()
+    #    ["tanc","tanc0","tanc1","tanc2","tanc10","tanc11", "all"]
+    #["pre0", "pre1", "pre2", "pre10",  "pre11", "pre" ]
+    sessionNames = sys.argv[1:]
+    if sessionNames == []: sessionNames=[None]
+    for name in sessionNames:
+        print "+++++++++++++++++++++++++++++++++++++"
+        print "++++++++ starting %s +++++++++++++"%name
+        print "+++++++++++++++++++++++++++++++++++++"
+        session = PlotSession(name = name, samplesToPlot = ["data","qcd"], baseDir="/afs/cern.ch/user/e/edelhoff/scratch0/pFlow/analysis/CMSSW_3_6_1/src/TauAnalysis/TauIdEfficiency/test/commissioning/plots.v2_1/")
+        session.drawDecayMode()
+        #session.drawKineticPlots() #...done
+        #session.drawMainTrackPlots() #... done
+        #session.drawMassPlots() #pre11 pre
+        #session.drawOutlierSumKineticPlots() # ... done
+        #session.drawOutlierCountPlots() # ... done
+        #session.drawOutlierMassPlots() # ... done
+        #session.drawOutlierSingleKineticPlots(charges=["Charged"]) 
+        #session.drawPi0KineticPlots() # ... done
+        #session.drawTrackKineticPlots() #... done
+        #session.drawTaNCOutputPlots()
+        
+        #session.drawEssential() 
+        #session.drawComplementaryPlots()
+        #session.drawOutlierPlots()
+        
         
 if __name__ == "__main__":
     main()
