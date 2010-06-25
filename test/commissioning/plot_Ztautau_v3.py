@@ -62,6 +62,14 @@ if __name__ == "__main__":
             'expr_str': '$numChargedParticlesSignalCone == 1 || $numChargedParticlesSignalCone == 3',
             'label' : "1 or 3 Prong",
         },
+        'byEcalIsolation_calo' : {
+            'expr_str': '$etSumIsolationECAL < 5',
+            'label' : 'EcalIsolation'
+        },
+        'OneOrThreeProng_calo': {
+            'expr_str': '$numSignalTracks ==1 || $numSignalTracks ==3',
+            'label' : "1 or 3 Prong",
+        },
         'byTaNCfrOnePercent': {
             'expr_str': '$byTaNCfrOnePercent',
             'label' : "TaNC 1.00%",
@@ -133,7 +141,9 @@ if __name__ == "__main__":
         'byLeadTrackFinding',
         'byLeadTrackPtCut',
         'byIsolation',
-    ]
+        'byEcalIsolation_calo',
+        'OneOrThreeProng_calo'
+   ]
 
     # Match up sequences to tau algos
     sequences_and_algos = [
