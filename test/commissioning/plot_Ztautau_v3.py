@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 '''
-Example of use of TauNtuple software
+Plot efficiency of different tau id algorithms for ZTT hadronic taus
 
 Authors: Aruna Nayak, Evan K. Friis
 
@@ -35,57 +35,56 @@ if __name__ == "__main__":
     numerators = {
         'matching' : {
             'expr_str': '1',
-            'marker_style': 20,
-            'marker_color': 1,
             'label' : "Matched",
         },
         'byLeadTrackFinding': {
             'expr_str': '$byLeadTrackFinding',
-            'marker_style': 21,
-            'marker_color': 2,
             'label' : "Lead Track Finding",
         },
         'byLeadTrackPtCut': {
             'expr_str': '$byLeadTrackPtCut',
-            'marker_style': 22,
-            'marker_color': 4,
             'label' : "Lead Track P_{T} Cut",
         },
         'byTrackIsolation': {
             'expr_str': '$byTrackIsolation',
-            'marker_style': 23,
-            'marker_color': 3,
             'label' : "Charged Hadron Isolation",
         },
         'byEcalIsolation': {
             'expr_str': '$byEcalIsolation',
-            'marker_style': 24,
-            'marker_color': 6,
             'label' : "Gamma Isolation",
+        },
+        # For calotau
+        'byIsolation' : {
+            'expr_str': '$byIsolation',
+            'label' : 'Isolation'
         },
         'OneOrThreeProng': {
             'expr_str': '$numChargedParticlesSignalCone == 1 || $numChargedParticlesSignalCone == 3',
-            'marker_style': 25,
-            'marker_color': 9,
             'label' : "1 or 3 Prong",
         },
         'byTaNCfrOnePercent': {
             'expr_str': '$byTaNCfrOnePercent',
-            'marker_style': 23,
-            'marker_color': 6,
             'label' : "TaNC 1.00%",
         },
         'byTaNCfrHalfPercent': {
             'expr_str': '$byTaNCfrHalfPercent',
-            'marker_style': 24,
-            'marker_color': 2,
             'label' : "TaNC 0.50%",
         },
         'byTaNCfrQuarterPercent': {
             'expr_str': '$byTaNCfrQuarterPercent',
-            'marker_style': 25,
-            'marker_color': 9,
             'label' : "TaNC 0.25%",
+        },
+        'byIsolationLoose' : {
+            'expr_str': '$byIsolationLoose',
+            'label': "Medium Isolation",
+        },
+        'byIsolationMedium' : {
+            'expr_str': '$byIsolationMedium',
+            'label': "Medium Isolation",
+        },
+        'byIsolationTight' : {
+            'expr_str': '$byIsolationTight',
+            'label': "Tight Isolation",
         },
     }
 
@@ -121,11 +120,28 @@ if __name__ == "__main__":
         'byTaNCfrQuarterPercent',
     ]
 
+    hps_sequence = [
+        'matching',
+        'byLeadTrackFinding',
+        'byIsolationLoose',
+        'byIsolationMedium',
+        'byIsolationTight'
+    ]
+
+    calo_sequence = [
+        'matching',
+        'byLeadTrackFinding',
+        'byLeadTrackPtCut',
+        'byIsolation',
+    ]
+
     # Match up sequences to tau algos
     sequences_and_algos = [
         (standard_sequence, "iso", "patPFTausDijetTagAndProbeShrinkingCone"),
         (standard_sequence, "iso", "patPFTausDijetTagAndProbeFixedCone"),
         (tanc_sequence, "tanc", "patPFTausDijetTagAndProbeShrinkingCone"),
+        (hps_sequence, "hps", "patPFTausDijetTagAndProbeHPS"),
+        (calo_sequence, "calo", "patCaloTausDijetTagAndProbe"),
     ]
 
     #denom_selection = genTaus.expr(
@@ -134,7 +150,8 @@ if __name__ == "__main__":
         '$genPt > 10 && abs($genEta) < 2.5 && $genDecayMode > 1.5')
     
     #denom_selection_from_reco_str = '$jetPt > 15 && abs($jetEta) < 2.5 && $genMatch > 0.5 && $genDecayMode > 1.5 && $genPt > 5 && abs($genEta) < 2.5'
-    denom_selection_from_reco_str = '$pt > 10 && abs($eta) < 2.5 && $genMatch > 0.5 && $genDecayMode > 1.5 && $genPt > 10 && abs($genEta) < 2.5'
+    denom_selection_from_reco_str = \
+            '$pt > 10 && abs($eta) < 2.5 && $genMatch > 0.5 && $genDecayMode > 1.5 && $genPt > 10 && abs($genEta) < 2.5'
     
 
     ztt_events = list(ztt.events_and_weights())[0][0]
@@ -184,7 +201,8 @@ if __name__ == "__main__":
 
                 my_eff = ROOT.TGraphAsymmErrors(numerator, denominator)
                 # Update style
-                style.update_histo_style(my_eff, numerator_info)
+                style.update_histo_style(
+                    my_eff, style.EFFICIENCY_STYLES[numerator_name])
                 numerator_effs.append(my_eff)
                 t1.AddEntry(my_eff, numerator_info['label'],"P")
 
