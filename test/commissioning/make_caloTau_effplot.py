@@ -121,7 +121,7 @@ if __name__ == "__main__":
     # Add a legend
     pt_eff_result['legend'].make_legend().Draw()
     canvas.SaveAs("plots/caloTau_LeadTrackPtCut_eff_jetPt.png")
-    canvas.SaveAs("plots/caloTau_LeadTrackPtCut_jetPt.pdf")
+    canvas.SaveAs("plots/caloTau_LeadTrackPtCut_eff_jetPt.pdf")
 
     #Eta#
     eta_eff_result = plotter.efficiency(
@@ -135,7 +135,7 @@ if __name__ == "__main__":
     # Add a legend
     eta_eff_result['legend'].make_legend().Draw()
     canvas.SaveAs("plots/caloTau_LeadTrackPtCut_eff_jetEta.png")
-    canvas.SaveAs("plots/caloTau_LeadTrackPtCut_jetEta.pdf")
+    canvas.SaveAs("plots/caloTau_LeadTrackPtCut_eff_jetEta.pdf")
 
 
     #Phi#
@@ -150,7 +150,7 @@ if __name__ == "__main__":
     # Add a legend
     Phi_eff_result['legend'].make_legend().Draw()
     canvas.SaveAs("plots/caloTau_LeadTrackPtCut_eff_jetPhi.png")
-    canvas.SaveAs("plots/caloTau_LeadTrackPtCut_jetPhi.pdf")
+    canvas.SaveAs("plots/caloTau_LeadTrackPtCut_eff_jetPhi.pdf")
 
 
     ######Efficiency for Discrimination byIsolation
@@ -215,7 +215,7 @@ if __name__ == "__main__":
     # Add a legend
     pt_eff_result['legend'].make_legend().Draw()
     canvas.SaveAs("plots/caloTau_ecalIsolation_eff_jetPt.png")
-    canvas.SaveAs("plots/caloTau_ecalIsolation_jetPt.pdf")
+    canvas.SaveAs("plots/caloTau_ecalIsolation_eff_jetPt.pdf")
 
     #Eta#
     eta_eff_result = plotter.efficiency(
@@ -230,7 +230,7 @@ if __name__ == "__main__":
     # Add a legend
     eta_eff_result['legend'].make_legend().Draw()
     canvas.SaveAs("plots/caloTau_ecalIsolation_eff_jetEta.png")
-    canvas.SaveAs("plots/caloTau_ecalIsolation_jetEta.pdf")
+    canvas.SaveAs("plots/caloTau_ecalIsolation_eff_jetEta.pdf")
 
 
     #Phi#
@@ -246,7 +246,7 @@ if __name__ == "__main__":
     # Add a legend
     Phi_eff_result['legend'].make_legend().Draw()
     canvas.SaveAs("plots/caloTau_ecalIsolation_eff_jetPhi.png")
-    canvas.SaveAs("plots/caloTau_ecalIsolation_jetPhi.pdf")
+    canvas.SaveAs("plots/caloTau_ecalIsolation_eff_jetPhi.pdf")
 
 
     ######Efficiency for Discrimination by number of Tracks in SignalCone
