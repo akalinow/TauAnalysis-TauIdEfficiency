@@ -9,7 +9,7 @@ import TauAnalysis.TauIdEfficiency.ntauples.styles as style
 
 
 # Defintion of input files.
-import samples_cache as samples
+import samples as samples
 import os
 import sys
 
@@ -57,6 +57,7 @@ if __name__ == "__main__":
     stat_label = style.make_mean_rms_pave(pt_resol['samples']['mc_ztt']['plot'])
     stat_label.Draw()
     
+    
     canvas.SaveAs("plots/pt_resol.png")
     canvas.SaveAs("plots/pt_resol.pdf")
     
@@ -68,6 +69,9 @@ if __name__ == "__main__":
         x_axis_title = "#tau #eta Resolution",
         logy=False
     )
+    
+    stat_label = style.make_mean_rms_pave(eta_resol['samples']['mc_ztt']['plot'])
+    stat_label.Draw()
     
     canvas.SaveAs("plots/eta_resol.png")
     canvas.SaveAs("plots/eta_resol.pdf")
@@ -81,10 +85,11 @@ if __name__ == "__main__":
         logy=False
     )
     
+    stat_label = style.make_mean_rms_pave(phi_resol['samples']['mc_ztt']['plot'])
+    stat_label.Draw()
+    
     canvas.SaveAs("plots/phi_resol.png")
     canvas.SaveAs("plots/phi_resol.pdf")
-
-
 
  
 
