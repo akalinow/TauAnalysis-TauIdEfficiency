@@ -8,6 +8,7 @@ import samples_cache as samples
 import os
 import sys
 
+
 if __name__ == "__main__":
     ROOT.gROOT.SetBatch(True)
 
@@ -21,11 +22,11 @@ if __name__ == "__main__":
 
     # Add each sample we want to plot/compare
    
-#    plotter.add_sample(samples.qcd_mc, "QCD MC", **style.QCD_MC_STYLE_HIST)
+    plotter.add_sample(samples.qcd_mc, "QCD MC", **style.QCD_MC_STYLE_HIST)
 
-    plotter.add_sample(samples.minbias_mc, "Minbias MC", **style.MINBIAS_MC_STYLE)
+#    plotter.add_sample(samples.minbias_mc, "Minbias MC", **style.MINBIAS_MC_STYLE)
 
-#    plotter.add_sample(samples.data, "Data (7 TeV)", **style.DATA_STYLE)
+    plotter.add_sample(samples.data, "Data (7 TeV)", **style.DATA_STYLE)
 
 
     # Normalize everything to the data luminosity
@@ -50,6 +51,7 @@ if __name__ == "__main__":
     # N.B. currently disabled, no HLT info in ntuples!
     binnin_pt=(20, 0, 100)
     binnin_eta=(25, -2.5, 2.5)
+    binnin_phi=(50, -3.14, 3.14)
 
     base_selection = calo_ntuple.expr('$probe > 0.5') & hlt.expr('$hltJet15U > 0.5')
 
@@ -67,7 +69,7 @@ if __name__ == "__main__":
         numerator = calo_ntuple.expr('$byLeadTrackFinding') & denominator,
         binning = binnin_pt,
         x_axis_title = "Jet P_{T} [GeV/c]",
-        y_min = 1e-4, y_max = 5, logy = True,
+        y_min = 1e-4, y_max = 10, logy = True,
     )
     # Add a legend
     pt_eff_result['legend'].make_legend().Draw()
@@ -81,12 +83,27 @@ if __name__ == "__main__":
         numerator = calo_ntuple.expr('$byLeadTrackFinding') & denominator,
         binning=binnin_eta,
         x_axis_title = "Jet Eta",
-         y_min = 1e-4, y_max = 5, logy = True
+         y_min = 1e-4, y_max = 10, logy = True
     )
     # Add a legend
     eta_eff_result['legend'].make_legend().Draw()
     canvas.SaveAs("plots/caloTau_LeadTrackFinding_eff_jetEta.png")
     canvas.SaveAs("plots/caloTau_LeadTrackFinding_eff_jetEta.pdf")
+
+
+    #Phi#
+    Phi_eff_result = plotter.efficiency(
+        expression=calo_ntuple.expr('$jetPhi'),
+        denominator = denominator,
+        numerator = calo_ntuple.expr('$byLeadTrackFinding') & denominator,
+        binning=binnin_phi,
+        x_axis_title = "Jet Phi",
+         y_min = 1e-4, y_max = 10, logy = True
+    )
+    # Add a legend
+    Phi_eff_result['legend'].make_legend().Draw()
+    canvas.SaveAs("plots/caloTau_LeadTrackFinding_eff_jetPhi.png")
+    canvas.SaveAs("plots/caloTau_LeadTrackFinding_eff_jetPhi.pdf")
 
 
 
@@ -99,7 +116,7 @@ if __name__ == "__main__":
         numerator = calo_ntuple.expr('$byLeadTrackPtCut && $byLeadTrackFinding') & denominator,
         binning = binnin_pt,
         x_axis_title = "Jet P_{T} [GeV/c]",
-        y_min = 1e-4, y_max = 5, logy = True,
+        y_min = 1e-4, y_max = 10, logy = True,
     )
     # Add a legend
     pt_eff_result['legend'].make_legend().Draw()
@@ -113,12 +130,27 @@ if __name__ == "__main__":
         numerator = calo_ntuple.expr('$byLeadTrackPtCut && $byLeadTrackFinding') & denominator,
         binning=binnin_eta,
         x_axis_title = "Jet Eta",
-        y_min = 1e-4, y_max = 5, logy = True
+        y_min = 1e-4, y_max = 10, logy = True
     )
     # Add a legend
     eta_eff_result['legend'].make_legend().Draw()
     canvas.SaveAs("plots/caloTau_LeadTrackPtCut_eff_jetEta.png")
     canvas.SaveAs("plots/caloTau_LeadTrackPtCut_jetEta.pdf")
+
+
+    #Phi#
+    Phi_eff_result = plotter.efficiency(
+        expression=calo_ntuple.expr('$jetPhi'),
+        denominator = denominator,
+        numerator = calo_ntuple.expr('$byLeadTrackPtCut && $byLeadTrackFinding') & denominator,
+        binning=binnin_phi,
+        x_axis_title = "Jet Phi",
+        y_min = 1e-4, y_max = 10, logy = True
+    )
+    # Add a legend
+    Phi_eff_result['legend'].make_legend().Draw()
+    canvas.SaveAs("plots/caloTau_LeadTrackPtCut_eff_jetPhi.png")
+    canvas.SaveAs("plots/caloTau_LeadTrackPtCut_jetPhi.pdf")
 
 
     ######Efficiency for Discrimination byIsolation
@@ -130,7 +162,7 @@ if __name__ == "__main__":
         numerator = calo_ntuple.expr('$byIsolation && $byLeadTrackPtCut &&$byLeadTrackFinding') & denominator,
         binning = binnin_pt,
         x_axis_title = "Jet P_{T} [GeV/c]",
-        y_min = 1e-4, y_max = 5, logy = True,
+        y_min = 1e-4, y_max = 10, logy = True,
     )
     # Add a legend
     pt_eff_result['legend'].make_legend().Draw()
@@ -144,12 +176,27 @@ if __name__ == "__main__":
         numerator = calo_ntuple.expr('$byIsolation && $byLeadTrackPtCut &&$byLeadTrackFinding') & denominator,
         binning=binnin_eta,
         x_axis_title = "Jet Eta",
-        y_min = 1e-4, y_max = 5, logy = True
+        y_min = 1e-4, y_max = 10, logy = True
     )
     # Add a legend
     eta_eff_result['legend'].make_legend().Draw()
     canvas.SaveAs("plots/caloTau_TrkIsolation_eff_jetEta.png")
     canvas.SaveAs("plots/caloTau_TrkIsolation_eff_jetEta.pdf")
+
+
+    #Phi#
+    Phi_eff_result = plotter.efficiency(
+        expression=calo_ntuple.expr('$jetPhi'),
+        denominator = denominator,
+        numerator = calo_ntuple.expr('$byIsolation && $byLeadTrackPtCut &&$byLeadTrackFinding') & denominator,
+        binning=binnin_phi,
+        x_axis_title = "Jet Phi",
+        y_min = 1e-4, y_max = 10, logy = True
+    )
+    # Add a legend
+    Phi_eff_result['legend'].make_legend().Draw()
+    canvas.SaveAs("plots/caloTau_TrkIsolation_eff_jetPhi.png")
+    canvas.SaveAs("plots/caloTau_TrkIsolation_eff_jetPhi.pdf")
 
 
 
@@ -163,7 +210,7 @@ if __name__ == "__main__":
         & calo_ntuple.expr('$etSumIsolationECAL < 5'),
         binning = binnin_pt,
         x_axis_title = "Jet P_{T} [GeV/c]",
-        y_min = 1e-4, y_max = 5, logy = True,
+        y_min = 1e-4, y_max = 10, logy = True,
     )
     # Add a legend
     pt_eff_result['legend'].make_legend().Draw()
@@ -178,12 +225,28 @@ if __name__ == "__main__":
         & calo_ntuple.expr('$etSumIsolationECAL < 5'),
         binning=binnin_eta,
         x_axis_title = "Jet Eta",
-        y_min = 1e-4, y_max = 5, logy = True
+        y_min = 1e-4, y_max = 10, logy = True
     )
     # Add a legend
     eta_eff_result['legend'].make_legend().Draw()
     canvas.SaveAs("plots/caloTau_ecalIsolation_eff_jetEta.png")
     canvas.SaveAs("plots/caloTau_ecalIsolation_jetEta.pdf")
+
+
+    #Phi#
+    Phi_eff_result = plotter.efficiency(
+        expression=calo_ntuple.expr('$jetPhi'),
+        denominator = denominator,
+        numerator = calo_ntuple.expr('$byIsolation && $byLeadTrackPtCut &&$byLeadTrackFinding') & denominator
+        & calo_ntuple.expr('$etSumIsolationECAL < 5'),
+        binning=binnin_phi,
+        x_axis_title = "Jet Phi",
+        y_min = 1e-4, y_max = 10, logy = True
+    )
+    # Add a legend
+    Phi_eff_result['legend'].make_legend().Draw()
+    canvas.SaveAs("plots/caloTau_ecalIsolation_eff_jetPhi.png")
+    canvas.SaveAs("plots/caloTau_ecalIsolation_jetPhi.pdf")
 
 
     ######Efficiency for Discrimination by number of Tracks in SignalCone
@@ -196,7 +259,7 @@ if __name__ == "__main__":
         & calo_ntuple.expr('$etSumIsolationECAL < 5') & calo_ntuple.expr('$numSignalTracks ==1 | $numSignalTracks ==3') ,
         binning = binnin_pt,
         x_axis_title = "Jet P_{T} [GeV/c]",
-        y_min = 1e-4, y_max = 5, logy = True,
+        y_min = 1e-4, y_max = 10, logy = True,
     )
     # Add a legend
     pt_eff_result['legend'].make_legend().Draw()
@@ -211,9 +274,25 @@ if __name__ == "__main__":
         & calo_ntuple.expr('$etSumIsolationECAL < 5') & calo_ntuple.expr('$numSignalTracks ==1 | $numSignalTracks ==3') ,
         binning=binnin_eta,
         x_axis_title = "Jet Eta",
-        y_min = 1e-4, y_max = 5, logy = True
+        y_min = 1e-4, y_max = 10, logy = True
     )
     # Add a legend
     eta_eff_result['legend'].make_legend().Draw()
     canvas.SaveAs("plots/caloTau_prong_eff_jetEta.png")
     canvas.SaveAs("plots/caloTau_prong_eff_jetEta.pdf")
+
+    #Phi#
+    Phi_eff_result = plotter.efficiency(
+        expression=calo_ntuple.expr('$jetPhi'),
+        denominator = denominator,
+        numerator = calo_ntuple.expr('$byIsolation && $byLeadTrackPtCut &&$byLeadTrackFinding') & denominator
+        & calo_ntuple.expr('$etSumIsolationECAL < 5') & calo_ntuple.expr('$numSignalTracks ==1 | $numSignalTracks ==3') ,
+        binning=binnin_phi,
+        x_axis_title = "Jet Phi",
+        y_min = 1e-4, y_max = 10, logy = True
+    )
+    # Add a legend
+    Phi_eff_result['legend'].make_legend().Draw()
+    canvas.SaveAs("plots/caloTau_prong_eff_jetPhi.png")
+    canvas.SaveAs("plots/caloTau_prong_eff_jetPhi.pdf")
+    
