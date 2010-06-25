@@ -90,126 +90,126 @@ if __name__ == "__main__":
 
     canvas.SaveAs("plots/jetPt.png")
     canvas.SaveAs("plots/jetPt.pdf")
-# 
-#     jeteta_result = plotter.distribution(
-#         expression=hps_ntuple.expr('$jetEta'),
-#         selection=hps_ntuple.expr('$jetPt > 10') & base_selection,
-#         extra_labels = [style.PT_CUT_LABEL_UPPER_LEFT],
-#         binning = (50, -2.5, 2.5),
-#         x_axis_title = "Jet #eta",
-#         y_min = 1, y_max = 80000, logy=False
-#     )
-#     jeteta_result['legend'].make_legend().Draw()
-# 
-#     canvas.SaveAs("plots/jetEta.png")
-#     canvas.SaveAs("plots/jetEta.pdf")
-# 
-#     jetphi_result = plotter.distribution(
-#         expression=hps_ntuple.expr('$jetPhi'),
-#         selection=hps_ntuple.expr('$jetPt > 10') & base_selection,
-#         extra_labels = [style.PT_CUT_LABEL_UPPER_LEFT],
-#         binning = (50, -3.14, 3.14),
-#         x_axis_title = "Jet #phi",
-#         y_min = 1, y_max = 80000
-#     )
-#     jeteta_result['legend'].make_legend().Draw()
-# 
-#     canvas.SaveAs("plots/jetPhi.png")
-#     canvas.SaveAs("plots/jetPhi.pdf")
-# 
-#     # Compare basic distributions
-#     taupt_result = plotter.distribution(
-#         expression=hps_ntuple.expr('$jetPt'),
-#         selection=hps_ntuple.expr('abs($jetEta) < 2.5') & hps_ntuple.expr('$byLeadTrackFinding > 0.5') & base_selection,
-#         extra_labels = [style.ETA_CUT_LABEL_UPPER_LEFT],
-#         binning = (50, 0, 100),
-#         x_axis_title = "Jet P_{T} [GeV/c]",
-#         y_min = 1, y_max = 12000, logy=False
-#     )
-# 
-#     # Draw the legend - you can pass NDC xl, yl, xh, yh coords to make_legend(...)
-#     taupt_result['legend'].make_legend().Draw()
-# 
-#     canvas.SaveAs("plots/hpsPt.png")
-#     canvas.SaveAs("plots/hpsPt.pdf")
-# 
-#     taueta_result = plotter.distribution(
-#         expression=hps_ntuple.expr('$jetEta'),
-#         selection=hps_ntuple.expr('$jetPt > 10') & hps_ntuple.expr('$byLeadTrackFinding > 0.5') & base_selection,
-#         extra_labels = [style.PT_CUT_LABEL_UPPER_LEFT],
-#         binning = (50, -2.5, 2.5),
-#         x_axis_title = "Jet #eta",
-#         y_min = 1, y_max = 5000
-#     )
-#     taueta_result['legend'].make_legend().Draw()
-# 
-#     canvas.SaveAs("plots/hpsEta.png")
-#     canvas.SaveAs("plots/hpsEta.pdf")
-# 
-#     tauphi_result = plotter.distribution(
-#         expression=hps_ntuple.expr('$jetPhi'),
-#         selection=hps_ntuple.expr('$jetPt > 10') & hps_ntuple.expr('$byLeadTrackFinding > 0.5') & base_selection,
-#         extra_labels = [style.PT_CUT_LABEL_UPPER_LEFT],
-#         binning = (50, -3.14, 3.14),
-#         x_axis_title = "Jet #phi",
-#         y_min = 1, y_max = 5000
-#     )
-#     taueta_result['legend'].make_legend().Draw()
-# 
-#     canvas.SaveAs("plots/hpsPhi.png")
-#     canvas.SaveAs("plots/hpsPhi.pdf")
-#     
-#     tauIsoCands_result = plotter.distribution(
-#         expression=hps_ntuple.expr('$numParticlesIsoCone'),
-#         selection=hps_ntuple.expr('$jetPt > 10') & hps_ntuple.expr('$byLeadTrackFinding > 0.5') & base_selection,
-#         extra_labels = [style.PT_CUT_LABEL_UPPER_LEFT],
-#         binning = (50, 0, 50),
-#         x_axis_title = "Num Particles Iso Cone",
-#         y_min = 1, y_max = 20000
-#     )
-#     tauIsoCands_result['legend'].make_legend().Draw()
-# 
-#     canvas.SaveAs("plots/tauIsoCands.png")
-#     canvas.SaveAs("plots/tauIsoCands.pdf")
-# 
-#     tauSigCands_result = plotter.distribution(
-#         expression=hps_ntuple.expr('$numChargedParticlesSignalCone'),
-#         selection=hps_ntuple.expr('$jetPt > 10') & hps_ntuple.expr('$byLeadTrackFinding > 0.5') & base_selection,
-#         extra_labels = [style.PT_CUT_LABEL_UPPER_LEFT],
-#         binning = (6, 0, 5),
-#         x_axis_title = "Num Charged Particles Signal Cone",
-#         y_min = 1, y_max = 120000
-#     )
-#     tauIsoCands_result['legend'].make_legend().Draw()
-# 
-#     canvas.SaveAs("plots/tauSigCands.png")
-#     canvas.SaveAs("plots/tauSigCands.pdf")
-# 
-#     mass1prongWpi0_result = plotter.distribution(
-#         expression=hps_ntuple.expr('$mass'),
-#         selection=hps_ntuple.expr('$jetPt > 10') & hps_ntuple.expr('$numChargedParticlesSignalCone == 1') & hps_ntuple.expr('$numPhotonsSignalCone > 0') & hps_ntuple.expr('$byLeadTrackFinding > 0.5') & base_selection,
-#         extra_labels = [style.PT_CUT_LABEL_UPPER_LEFT],
-#         binning = (15, 0, 1.4),
-#         x_axis_title = "One Prong + #pi0 Mass",
-#         y_min = 1, y_max = 16000
-#     )
-#     mass1prongWpi0_result['legend'].make_legend().Draw()
-# 
-#     canvas.SaveAs("plots/mass1prongWpi0.png")
-#     canvas.SaveAs("plots/mass1prongWpi0.pdf")
-# 
-#     mass3prong_result = plotter.distribution(
-#         expression=hps_ntuple.expr('$mass'),
-#         selection=hps_ntuple.expr('$jetPt > 10') & hps_ntuple.expr('$numChargedParticlesSignalCone == 3') & hps_ntuple.expr('$byLeadTrackFinding > 0.5') & base_selection,
-#         extra_labels = [style.PT_CUT_LABEL_UPPER_LEFT],
-#         binning = (11, 0.6, 1.6),
-#         x_axis_title = "Three Prong Mass",
-#         y_min = 1, y_max = 12000
-#     )
-#     mass3prong_result['legend'].make_legend().Draw()
-# 
-#     canvas.SaveAs("plots/mass3prong.png")
-#     canvas.SaveAs("plots/mass3prong.pdf")
+
+    jeteta_result = plotter.distribution(
+        expression=hps_ntuple.expr('$jetEta'),
+        selection=hps_ntuple.expr('$jetPt > 10') & base_selection,
+        extra_labels = [style.PT_CUT_LABEL_UPPER_LEFT],
+        binning = (50, -2.5, 2.5),
+        x_axis_title = "Jet #eta",
+        y_min = 1, y_max = 80000, logy=False
+    )
+    jeteta_result['legend'].make_legend().Draw()
+
+    canvas.SaveAs("plots/jetEta.png")
+    canvas.SaveAs("plots/jetEta.pdf")
+
+    jetphi_result = plotter.distribution(
+        expression=hps_ntuple.expr('$jetPhi'),
+        selection=hps_ntuple.expr('$jetPt > 10') & base_selection,
+        extra_labels = [style.PT_CUT_LABEL_UPPER_LEFT],
+        binning = (50, -3.14, 3.14),
+        x_axis_title = "Jet #phi",
+        y_min = 1, y_max = 80000
+    )
+    jeteta_result['legend'].make_legend().Draw()
+
+    canvas.SaveAs("plots/jetPhi.png")
+    canvas.SaveAs("plots/jetPhi.pdf")
+
+    # Compare basic distributions
+    taupt_result = plotter.distribution(
+        expression=hps_ntuple.expr('$jetPt'),
+        selection=hps_ntuple.expr('abs($jetEta) < 2.5') & hps_ntuple.expr('$byLeadTrackFinding > 0.5') & base_selection,
+        extra_labels = [style.ETA_CUT_LABEL_UPPER_LEFT],
+        binning = (50, 0, 100),
+        x_axis_title = "Jet P_{T} [GeV/c]",
+        y_min = 1, y_max = 12000, logy=False
+    )
+
+    # Draw the legend - you can pass NDC xl, yl, xh, yh coords to make_legend(...)
+    taupt_result['legend'].make_legend().Draw()
+
+    canvas.SaveAs("plots/hpsPt.png")
+    canvas.SaveAs("plots/hpsPt.pdf")
+
+    taueta_result = plotter.distribution(
+        expression=hps_ntuple.expr('$jetEta'),
+        selection=hps_ntuple.expr('$jetPt > 10') & hps_ntuple.expr('$byLeadTrackFinding > 0.5') & base_selection,
+        extra_labels = [style.PT_CUT_LABEL_UPPER_LEFT],
+        binning = (50, -2.5, 2.5),
+        x_axis_title = "Jet #eta",
+        y_min = 1, y_max = 5000
+    )
+    taueta_result['legend'].make_legend().Draw()
+
+    canvas.SaveAs("plots/hpsEta.png")
+    canvas.SaveAs("plots/hpsEta.pdf")
+
+    tauphi_result = plotter.distribution(
+        expression=hps_ntuple.expr('$jetPhi'),
+        selection=hps_ntuple.expr('$jetPt > 10') & hps_ntuple.expr('$byLeadTrackFinding > 0.5') & base_selection,
+        extra_labels = [style.PT_CUT_LABEL_UPPER_LEFT],
+        binning = (50, -3.14, 3.14),
+        x_axis_title = "Jet #phi",
+        y_min = 1, y_max = 5000
+    )
+    taueta_result['legend'].make_legend().Draw()
+
+    canvas.SaveAs("plots/hpsPhi.png")
+    canvas.SaveAs("plots/hpsPhi.pdf")
+    
+    tauIsoCands_result = plotter.distribution(
+        expression=hps_ntuple.expr('$numParticlesIsoCone'),
+        selection=hps_ntuple.expr('$jetPt > 10') & hps_ntuple.expr('$byLeadTrackFinding > 0.5') & base_selection,
+        extra_labels = [style.PT_CUT_LABEL_UPPER_LEFT],
+        binning = (50, 0, 50),
+        x_axis_title = "Num Particles Iso Cone",
+        y_min = 1, y_max = 20000
+    )
+    tauIsoCands_result['legend'].make_legend().Draw()
+
+    canvas.SaveAs("plots/tauIsoCands.png")
+    canvas.SaveAs("plots/tauIsoCands.pdf")
+
+    tauSigCands_result = plotter.distribution(
+        expression=hps_ntuple.expr('$numChargedParticlesSignalCone'),
+        selection=hps_ntuple.expr('$jetPt > 10') & hps_ntuple.expr('$byLeadTrackFinding > 0.5') & base_selection,
+        extra_labels = [style.PT_CUT_LABEL_UPPER_LEFT],
+        binning = (6, 0, 5),
+        x_axis_title = "Num Charged Particles Signal Cone",
+        y_min = 1, y_max = 120000
+    )
+    tauIsoCands_result['legend'].make_legend().Draw()
+
+    canvas.SaveAs("plots/tauSigCands.png")
+    canvas.SaveAs("plots/tauSigCands.pdf")
+
+    mass1prongWpi0_result = plotter.distribution(
+        expression=hps_ntuple.expr('$mass'),
+        selection=hps_ntuple.expr('$jetPt > 10') & hps_ntuple.expr('$numChargedParticlesSignalCone == 1') & hps_ntuple.expr('$numPhotonsSignalCone > 0') & hps_ntuple.expr('$byLeadTrackFinding > 0.5') & base_selection,
+        extra_labels = [style.PT_CUT_LABEL_UPPER_LEFT],
+        binning = (15, 0, 1.4),
+        x_axis_title = "One Prong + #pi0 Mass",
+        y_min = 1, y_max = 16000
+    )
+    mass1prongWpi0_result['legend'].make_legend().Draw()
+
+    canvas.SaveAs("plots/mass1prongWpi0.png")
+    canvas.SaveAs("plots/mass1prongWpi0.pdf")
+
+    mass3prong_result = plotter.distribution(
+        expression=hps_ntuple.expr('$mass'),
+        selection=hps_ntuple.expr('$jetPt > 10') & hps_ntuple.expr('$numChargedParticlesSignalCone == 3') & hps_ntuple.expr('$byLeadTrackFinding > 0.5') & base_selection,
+        extra_labels = [style.PT_CUT_LABEL_UPPER_LEFT],
+        binning = (11, 0.6, 1.6),
+        x_axis_title = "Three Prong Mass",
+        y_min = 1, y_max = 12000
+    )
+    mass3prong_result['legend'].make_legend().Draw()
+
+    canvas.SaveAs("plots/mass3prong.png")
+    canvas.SaveAs("plots/mass3prong.pdf")
 
     ######################################################
     ####      Plot efficiencies                       ####
