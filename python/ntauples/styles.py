@@ -101,6 +101,9 @@ for iso_type, hps_type in zip(
     ['byIsolationLoose', 'byIsolationMedium', 'byIsolationTight']):
     EFFICIENCY_STYLES[hps_type] = EFFICIENCY_STYLES[iso_type]
 
+# For calo taus
+EFFICIENCY_STYLES['byIsolation'] = EFFICIENCY_STYLES['byTrackIsolation']
+
 # Build a pave with the mean and RMS
 def make_mean_rms_pave(plot, x_low=0.6, y_low=0.80, x_high=0.90, y_high=0.90):
     mean = plot.GetMean()
@@ -168,8 +171,6 @@ MINBIAS_MC_STYLE = {
     'marker_color' : ROOT.EColor.kRed,
     'line_color' :  ROOT.EColor.kBlack,
 }
-
-
 
 HISTO_METHOD_MAP = {
     'draw_option' : lambda histo: histo.SetDrawOption ,
