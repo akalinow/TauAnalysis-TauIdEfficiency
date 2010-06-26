@@ -105,7 +105,8 @@ for iso_type, hps_type in zip(
 EFFICIENCY_STYLES['byIsolation'] = EFFICIENCY_STYLES['byTrackIsolation']
 
 # Build a pave with the mean and RMS
-def make_mean_rms_pave(plot, x_low=0.6, y_low=0.80, x_high=0.90, y_high=0.90):
+def make_mean_rms_pave(plot, sig_figs = 4, x_low=0.6, y_low=0.80, 
+                       x_high=0.90, y_high=0.90):
     mean = plot.GetMean()
     rms = plot.GetRMS()
     output = ROOT.TPaveText(x_low, y_low, x_high, y_high, "brNDC")
@@ -113,8 +114,9 @@ def make_mean_rms_pave(plot, x_low=0.6, y_low=0.80, x_high=0.90, y_high=0.90):
     output.SetBorderSize(0)
     output.SetTextSize(0.04)
     output.SetFillStyle(0)
-    output.AddText("mean = %0.2f" % mean)
-    output.AddText("rms = %0.2f" % rms)
+    format_string = "%0." + str(sig_figs) + "f"
+    output.AddText("mean = "+ format_string % mean)
+    output.AddText("rms = "+ format_string % rms)
     return output
 
 DEFAULT_STYLE = {
