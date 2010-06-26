@@ -130,6 +130,17 @@ def configurePatTupleProduction(process, patSequenceBuilder = None,
     # enable embedding of decay mode from PFTauDecayMode data format
     process.patPFTauProducerShrinkingCone.addDecayMode = cms.bool(True)
 
+    # load PFTau Decay mode kinematic information into pat::Tau
+    process.load("RecoTauTag.RecoTau.PFRecoTauDecayModeValueExtractor_cfi")
+    process.patPFTauProducerShrinkingCone.tauIDSources.decayModePt = cms.InputTag(
+        "shrinkingConePFTauDecayModePtExtractor")
+    process.patPFTauProducerShrinkingCone.tauIDSources.decayModeEta = cms.InputTag(
+        "shrinkingConePFTauDecayModeEtaExtractor")
+    process.patPFTauProducerShrinkingCone.tauIDSources.decayModePhi = cms.InputTag(
+        "shrinkingConePFTauDecayModePhiExtractor")
+    process.patPFTauProducerShrinkingCone.tauIDSources.decayModeMass = cms.InputTag(
+        "shrinkingConePFTauDecayModeMassExtractor")
+
     retVal_pfTauShrinkingCone = patSequenceBuilder(
         process,
         collectionName = [ "patPFTaus", "ShrinkingCone" ],
@@ -201,6 +212,7 @@ def configurePatTupleProduction(process, patSequenceBuilder = None,
        # recompute decay modes and embed TaNC inputs
        + process.shrinkingConePFTauDecayModeProducer               
        + process.produceTancMVAInputDiscriminators
+       + process.shrinkingConePFTauDecayModeExtractors
        + process.pfTauSequenceFixedCone + process.pfTauSequenceShrinkingCone + process.pfTauSequenceHPS
        + process.patMuonCaloTauPairs
        + process.patMuonPFTauPairsFixedCone + process.patMuonPFTauPairsShrinkingCone + process.patMuonPFTauPairsHPS
