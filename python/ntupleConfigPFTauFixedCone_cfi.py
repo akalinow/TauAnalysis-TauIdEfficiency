@@ -22,6 +22,7 @@ pfTausFixedCone_recInfo = cms.PSet(
         pt = cms.string("pt()"),
         eta = cms.string("eta()"),
         phi = cms.string("phi()"),
+        mass = cms.string("mass()"),
 
         # charge of PFTau
         # (sum of charges of charged particles within signal cone)

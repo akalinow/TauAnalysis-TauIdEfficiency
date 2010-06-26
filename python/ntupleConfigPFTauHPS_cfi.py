@@ -22,6 +22,7 @@ pfTausHPS_recInfo = cms.PSet(
         pt = cms.string("pt()"),
         eta = cms.string("eta()"),
         phi = cms.string("phi()"),
+        mass = cms.string("mass()"),
 
         # kinematic variables for PFJet associated to PFTau
         jetPt = cms.string("pfTauTagInfoRef().pfjetRef().pt()"),
@@ -43,10 +44,6 @@ pfTausHPS_recInfo = cms.PSet(
         # discriminators against electrons/muons
         againstElectron = cms.string("tauID('againstElectron')"),
         againstMuon = cms.string("tauID('againstMuon')"),                             
-
-        # reconstructed visible invariant mass of tau decay products
-        # ("meson mass")
-        mass = cms.string("mass"),
 
         # multiplicity and Pt sum of charged/neutral particles within signal and isolation cones
         numChargedParticlesSignalCone = cms.string("signalPFChargedHadrCands().size()"),

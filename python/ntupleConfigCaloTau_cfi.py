@@ -21,6 +21,7 @@ caloTaus_recInfo = cms.PSet(
         pt = cms.string("pt()"),
         eta = cms.string("eta()"),
         phi = cms.string("phi()"),
+        mass = cms.string("mass()"),
 
         # charge of CaloTau
         # (sum of charges of tracks within signal cone)

@@ -16,6 +16,7 @@ tauGenJets_genInfo = cms.PSet(
         genPt = cms.string("genPt"),
         genEta = cms.string("genEta"),
         genPhi = cms.string("genPhi"),
+        genMass = cms.string("genMass"),
         genDecayMode = cms.string("genDecayMode")
     )
 )    

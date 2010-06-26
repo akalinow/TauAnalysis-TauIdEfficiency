@@ -25,6 +25,7 @@ pfTausShrinkingCone_recInfo = cms.PSet(
         pt = cms.string("pt()"),
         eta = cms.string("eta()"),
         phi = cms.string("phi()"),
+        mass = cms.string("mass()"),
 
         # charge of PFTau
         # (sum of charges of charged particles within signal cone)
@@ -78,6 +79,13 @@ pfTausShrinkingCone_recInfo = cms.PSet(
         
         # additional TaNC (neural network) based discriminators
         decayMode = cms.string('decayMode()'),
+
+        # Load decay mode kinematic information (hacked into the discriminators)
+        decayModePt = cms.string("tauID('decayModePt')"),
+        decayModeEta = cms.string("tauID('decayModeEta')"),
+        decayModePhi = cms.string("tauID('decayModePhi')"),
+        decayModeMass = cms.string("tauID('decayModeMass')"),
+
         byTaNC = cms.string("tauID('byTaNC')"),
         byTaNCfrOnePercent = cms.string("tauID('byTaNCfrOnePercent')"),
         byTaNCfrHalfPercent = cms.string("tauID('byTaNCfrHalfPercent')"),
