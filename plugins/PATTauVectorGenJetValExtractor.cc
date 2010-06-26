@@ -39,6 +39,7 @@ VectorGenJetValExtractor<T>::VectorGenJetValExtractor(const edm::ParameterSet& c
   else if ( value_string == "genPt"        ) value_ = kGenPt;
   else if ( value_string == "genEta"       ) value_ = kGenEta;
   else if ( value_string == "genPhi"       ) value_ = kGenPhi;
+  else if ( value_string == "genMass"       ) value_ = kGenMass;
   else if ( value_string == "genDecayMode" ) value_ = kGenDecayMode;
   else {
     edm::LogError ("VectorGenJetValExtractor") << " Invalid configuration parameter value = " << value_string << " !!";
@@ -70,6 +71,7 @@ std::vector<double> VectorGenJetValExtractor<T>::operator()(const edm::Event& ev
       if      ( value_ == kGenPt        ) vec_i = genJet->pt();
       else if ( value_ == kGenEta       ) vec_i = genJet->eta();
       else if ( value_ == kGenPhi       ) vec_i = genJet->phi();
+      else if ( value_ == kGenMass      ) vec_i = genJet->mass();
       else if ( value_ == kGenDecayMode ) {	
 	std::string genDecayMode_string = JetMCTagUtils::genTauDecayMode(*genJet);
 //--- decode generated tau decay mode

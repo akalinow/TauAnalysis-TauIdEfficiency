@@ -9,9 +9,9 @@
  * 
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.3 $
+ * \version $Revision: 1.4 $
  *
- * $Id: PATTauVectorGenJetValExtractor.h,v 1.3 2010/06/05 00:50:30 friis Exp $
+ * $Id: PATTauVectorGenJetValExtractor.h,v 1.4 2010/06/19 14:06:38 veelken Exp $
  *
  */
 
@@ -37,7 +37,7 @@ class VectorGenJetValExtractor : public ObjValVectorExtractorBase
 //--- configuration parameters
   edm::InputTag src_;
   
-  enum { kGenMatch, kGenPt, kGenEta, kGenPhi, kGenDecayMode };
+  enum { kGenMatch, kGenPt, kGenEta, kGenPhi, kGenMass, kGenDecayMode };
 
   int value_;
 };
