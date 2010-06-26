@@ -18,7 +18,9 @@ plotter = PlotManager()
 
 # Add each sample we want to plot/compare
 # Uncomment to add QCD
-plotter.add_sample(samples.qcd_mc, "QCD MC", **style.QCD_MC_STYLE_HIST)
+plotter.add_sample(samples.qcd_mc, "QCD (Pythia 8)", **style.QCD_MC_STYLE_HIST)
+
+plotter.add_sample(samples.qcd_mc_pythia6, "QCD (Pythia 6)", **style.MINBIAS_MC_STYLE)
 
 #plotter.add_sample(samples.minbias_mc, "Minbias MC", **style.MINBIAS_MC_STYLE)
 

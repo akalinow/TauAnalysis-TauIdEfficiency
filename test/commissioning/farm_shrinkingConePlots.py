@@ -11,9 +11,9 @@ TO_SUBMIT = {}
 CURRENT_JOBS = {}
 FINISHED_JOBS = {}
 
-desired_distributions = ['jetPt', 'jetEta', 'decayMode', 'decayMode_pt40']
+desired_distributions = ['jetPt', 'jetEta', 'jetPhi', 'decayMode', 'decayMode_pt40']
 desired_efficiencies = ['TaNCOne', 'TaNCHalf', 'TaNCQuarter']
-desired_efficiencies_versus = ['Pt', 'Eta']
+desired_efficiencies_versus = ['Pt', 'Eta', 'Phi']
 
 for dist in distributions.keys():
     if dist not in desired_distributions:
