@@ -21,7 +21,8 @@ process.source = cms.Source("PoolSource",
         ##'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/data/muTauSkim_1_1.root'
         ##'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/mcMinBias/muTauSkim_1_1.root'
         ##'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/mcQCDpt15/muTauSkim_1_1.root'
-        'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/mcMinBias_pythia8/muTauSkim_1_2.root'
+        ##'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/mcMinBias_pythia8/muTauSkim_1_2.root'
+        'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/dataReReco/muTauSkim_1_1_QBQ.root'
     ),
     skipEvents = cms.untracked.uint32(0)            
 )
@@ -41,10 +42,10 @@ process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(1000)
 )
 
-isMC = True # use for MC (except for samples from Spring'10 reprocessing)
+##isMC = True # use for MC (except for samples from Spring'10 reprocessing)
 ##isSpring10 = True # use for Spring'10 reprocessed MC
 isSpring10 = False # use for non-Spring'10 reprocessed MC
-##isMC = False # use for Data
+isMC = False # use for Data
 
 #--------------------------------------------------------------------------------
 
