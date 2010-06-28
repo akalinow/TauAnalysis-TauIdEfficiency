@@ -675,7 +675,7 @@
             "tauIdEffEDNtuple_qcdDiJet_99_1_ckI.root",
             "tauIdEffEDNtuple_qcdDiJet_9_1_xZy.root"
         ], 
-        "int_lumi": 7.0700000000000003
+        "int_lumi": 7.07
     }, 
     "QCD_Pt15_pythia8": {
         "allEvents": 2355660.0, 
