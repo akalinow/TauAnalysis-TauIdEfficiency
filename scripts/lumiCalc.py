@@ -15,7 +15,7 @@ prescales for those runs.
 Author: Matthias Edelhoff (Aachen)
 Contributors: Evan K. Friis (UC Davis)
 
-$Id: lumiCalc.py,v 1.8 2010/06/22 15:19:17 edelhoff Exp $
+$Id: lumiCalc.py,v 1.9 2010/06/22 15:45:14 edelhoff Exp $
 
 Takes as input: 
     
@@ -53,7 +53,7 @@ def cleanNTupleFiles( path ):
     elif "__iter__" in dir(path):
         rawFiles = [i for i in path]
         
-    expr = re.compile("(.*)_([0-9]*)_([0-9]*).root")
+    expr = re.compile("(.*)_([0-9]*)_([0-9]*)_(?:...).root")
     fileMap = {}
     for fileName in rawFiles:
         skip = False
