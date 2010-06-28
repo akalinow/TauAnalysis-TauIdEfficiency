@@ -147,17 +147,17 @@ DATA_STYLE = {
     'fill_style' : 0,
 }
 
-QCD_MC_STYLE_HIST = {
+QCD_MC_PYTHIA6_STYLE_HIST = {
     'draw_option' : "hist",
     'line_color' :  ROOT.EColor.kAzure-2,
     #'line_width' : 1.5,
     'fill_color' :  ROOT.EColor.kAzure-4,
-    'fill_style' : 3003,
+    'fill_style' : 3004,
     'marker_style' : 24,
     'marker_color' : ROOT.EColor.kAzure,
 }
 
-QCD_MC_STYLE_DOTS = {
+QCD_MC_PYTHIA6_STYLE_DOTS = {
     'draw_option' : "e1p",
     'marker_style' : 24,        # open dot
     'marker_size' : 1.0,
@@ -165,6 +165,28 @@ QCD_MC_STYLE_DOTS = {
     'line_color' :  ROOT.EColor.kBlack,
     #'line_width' : 1.5,
 }
+
+QCD_MC_PYTHIA8_STYLE_HIST = {
+    'draw_option' : "hist",
+    'line_color' :  ROOT.EColor.kGreen-2,
+    #'line_width' : 1.5,
+    'fill_color' :  ROOT.EColor.kGreen-4,
+    'fill_style' : 3005,
+    'marker_style' : 24,
+    'marker_color' : ROOT.EColor.kGreen,
+}
+
+QCD_MC_PYTHIA8_STYLE_DOTS = {
+    'draw_option' : "e1p",
+    'marker_style' : 24,        # open dot
+    'marker_size' : 1.0,
+    'marker_color' : ROOT.EColor.kGreen,
+    'line_color' :  ROOT.EColor.kBlack,
+    #'line_width' : 1.5,
+}
+
+QCD_MC_STYLE_HIST = QCD_MC_PYTHIA6_STYLE_HIST
+QCD_MC_STYLE_DOTS = QCD_MC_PYTHIA6_STYLE_DOTS
 
 MINBIAS_MC_STYLE = {
     'draw_option' : "e1p",
