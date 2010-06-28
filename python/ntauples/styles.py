@@ -26,7 +26,7 @@ CMS_PRELIMINARY_UPPER_LEFT.SetBorderSize(0)
 
 # Define the luminosity labels
 LUMI_LABEL_UPPER_LEFT = ROOT.TPaveText(0.12, 0.80, 0.45, 0.85, "NDC")
-LUMI_LABEL_UPPER_LEFT.AddText("#int L = 8.19nb^{-1}")
+LUMI_LABEL_UPPER_LEFT.AddText("#int L = 8.44nb^{-1}")
 LUMI_LABEL_UPPER_LEFT.SetTextAlign(13)
 LUMI_LABEL_UPPER_LEFT.SetTextSize(0.04)
 LUMI_LABEL_UPPER_LEFT.SetFillStyle(0)
