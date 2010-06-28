@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/bin/bash
 
 # Run all of the relevant TaNC eff plots and distributions
 
