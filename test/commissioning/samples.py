@@ -7,7 +7,7 @@ samples.py
 
 Central defintion of data sources for commissioning.
 
-$Id: samples.py,v 1.8 2010/06/18 21:50:03 edelhoff Exp $
+$Id: samples.py,v 1.9 2010/06/26 01:15:44 friis Exp $
 
 '''
 
@@ -30,16 +30,19 @@ ztautau_mc = build_sample(_MC_LUMI_MAP_FILE, "mc_ztt", "merge", datasets = ["Zta
 #
 # CV: restrict analysis to first pt hat bin for now...
 #
-print "loading definition of QCD background Monte Carlo samples..."
-##qcd_mc = build_sample(_MC_LUMI_MAP_FILE, "mc_qcd", "merge", "QCD_Pt15", "QCD_Pt30", "QCD_Pt80", "QCD_Pt170")
-qcd_mc = build_sample(_MC_LUMI_MAP_FILE, "mc_qcd", "merge", take_every=1, datasets = ["QCD_Pt15"])
-
 print "loading definition of QCD (pythia 6) background Monte Carlo samples..."
+##qcd_mc = build_sample(_MC_LUMI_MAP_FILE, "mc_qcd", "merge", "QCD_Pt15", "QCD_Pt30", "QCD_Pt80", "QCD_Pt170")
 qcd_mc_pythia6 = build_sample(_MC_LUMI_MAP_FILE, "mc_qcd_pythia6", "merge", take_every=1, datasets = ["QCD_Pt15_pythia6"])
 
-print "loading definition of min. Bias background Monte Carlo samples..."
-minbias_mc = build_sample(_MC_LUMI_MAP_FILE, "mc_minbias", "merge", take_every=1, datasets = ["minBias"])
+print "loading definition of QCD (pythia 8) background Monte Carlo samples..."
+qcd_mc_pythia8 = build_sample(_MC_LUMI_MAP_FILE, "mc_qcd_pythia8", "merge", take_every=1, datasets = ["QCD_Pt15_pythia8"])
+
+print "loading definition of min. Bias (pythia 6) background Monte Carlo samples..."
+minbias_mc_pythia6 = build_sample(_MC_LUMI_MAP_FILE, "mc_minbias_pythia6", "merge", take_every=1, datasets = ["minBias_pythia6"])
+
+print "loading definition of min. Bias (pythia 8) background Monte Carlo samples..."
+minbias_mc_pythia8 = build_sample(_MC_LUMI_MAP_FILE, "mc_minbias_pythia8", "merge", take_every=1, datasets = ["minBias_pythia8"])
 
 # For data, we use the add mode, to concatenate data
 print "loading definition of Data samples..."
-data = build_sample(_DATA_LUMI_MAP_FILE, "data", "add", take_every=1, datasets = ["Data_part01"])
+data = build_sample(_DATA_LUMI_MAP_FILE, "data", "add", take_every=1, datasets = ["Data_rerecoMay27th"])
