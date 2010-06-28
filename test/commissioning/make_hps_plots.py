@@ -27,7 +27,7 @@ if __name__ == "__main__":
 
     # Add each sample we want to plot/compare
     # Uncomment to add QCD
-    plotter.add_sample(samples.qcd_mc, "QCD MC", **style.QCD_MC_STYLE_HIST)
+    plotter.add_sample(samples.qcd_mc_pythia8, "QCD MC", **style.QCD_MC_STYLE_HIST)
 
     #plotter.add_sample(samples.minbias_mc, "Minbias MC", **style.MINBIAS_MC_STYLE)
 
