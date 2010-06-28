@@ -18,9 +18,9 @@ plotter = PlotManager()
 
 # Add each sample we want to plot/compare
 # Uncomment to add QCD
-plotter.add_sample(samples.qcd_mc, "QCD (Pythia 8)", **style.QCD_MC_STYLE_HIST)
+plotter.add_sample(samples.qcd_mc, "QCD (Pythia 8)", **style.QCD_MC_PYTHIA8_STYLE_HIST)
 
-plotter.add_sample(samples.qcd_mc_pythia6, "QCD (Pythia 6)", **style.MINBIAS_MC_STYLE)
+plotter.add_sample(samples.qcd_mc_pythia6, "QCD (Pythia 6)", **style.QCD_MC_PYTHIA6_STYLE_HIST)
 
 #plotter.add_sample(samples.minbias_mc, "Minbias MC", **style.MINBIAS_MC_STYLE)
 
@@ -442,7 +442,8 @@ if __name__ == "__main__":
 
     # Change the style of the QCD from filled histogram to dots
     # name mc_qcd is defined in samples.py
-    plotter.update_style("mc_qcd", **style.QCD_MC_STYLE_DOTS)
+    plotter.update_style("mc_qcd_pythia6", **style.QCD_MC_PYTHIA6_STYLE_DOTS)
+    plotter.update_style("mc_qcd_pythia8", **style.QCD_MC_PYTHIA8_STYLE_DOTS)
 
     # Plot all efficiencies
     for eff_vs, eff_vs_info in efficiency_versus.iteritems():
