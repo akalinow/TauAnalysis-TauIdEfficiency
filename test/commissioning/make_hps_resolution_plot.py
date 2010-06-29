@@ -91,5 +91,3 @@ if __name__ == "__main__":
     canvas.SaveAs("plots/phi_resol.png")
     canvas.SaveAs("plots/phi_resol.pdf")
 
- 
-
