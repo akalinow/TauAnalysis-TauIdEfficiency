@@ -442,6 +442,7 @@ if __name__ == "__main__":
         # Make deviations plot
         deviations = plotter.plot_dist_deviations(
             result, "data", ["mc_qcd_pythia6", "mc_qcd_pythia8"])
+        deviations['legend'].make_legend().Draw()
         canvas.SaveAs("plots/shrinkingCone_dist_%s_diff.png" % dist_name)
         canvas.SaveAs("plots/shrinkingCone_dist_%s_diff.pdf" % dist_name)
 
