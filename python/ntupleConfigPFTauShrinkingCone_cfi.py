@@ -122,6 +122,7 @@ pfTausShrinkingCone_genInfo = pfTausShrinkingCone_recInfo.clone(
         genMatch = cms.string("genMatch"),
         
         genPt = cms.string("genPt"),
+        genMass = cms.string("genMass"),
         genEta = cms.string("genEta"),
         genPhi = cms.string("genPhi"),
         
