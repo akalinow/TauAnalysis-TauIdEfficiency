@@ -18,7 +18,7 @@ plotter = PlotManager()
 
 # Add each sample we want to plot/compare
 # Uncomment to add QCD
-plotter.add_sample(samples.qcd_mc, "QCD (Pythia 8)", **style.QCD_MC_PYTHIA8_STYLE_HIST)
+plotter.add_sample(samples.qcd_mc_pythia8, "QCD (Pythia 8)", **style.QCD_MC_PYTHIA8_STYLE_HIST)
 
 plotter.add_sample(samples.qcd_mc_pythia6, "QCD (Pythia 6)", **style.QCD_MC_PYTHIA6_STYLE_HIST)
 
@@ -439,6 +439,12 @@ if __name__ == "__main__":
         result['legend'].make_legend().Draw()
         canvas.SaveAs("plots/shrinkingCone_dist_%s.png" % dist_name)
         canvas.SaveAs("plots/shrinkingCone_dist_%s.pdf" % dist_name)
+        # Make deviations plot
+        deviations = plotter.plot_dist_deviations(
+            result, "data", ["mc_qcd_pythia6", "mc_qcd_pythia8"])
+        canvas.SaveAs("plots/shrinkingCone_dist_%s_diff.png" % dist_name)
+        canvas.SaveAs("plots/shrinkingCone_dist_%s_diff.pdf" % dist_name)
+
 
     # Change the style of the QCD from filled histogram to dots
     # name mc_qcd is defined in samples.py

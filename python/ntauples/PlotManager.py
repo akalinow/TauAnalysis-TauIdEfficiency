@@ -1,5 +1,6 @@
 import TauAnalysis.TauIdEfficiency.ntauples.plotting as plot
 import TauAnalysis.TauIdEfficiency.ntauples.styles as style
+import math
 
 from ROOT import gROOT
 # Prevent complaining about X server
@@ -225,3 +226,63 @@ class PlotManager(object):
         result_dict['keep'].append(
             style.update_canvas_style(ROOT.gPad, canvas_style))
         return result_dict
+
+    def plot_dist_deviations(self, plot_result, base_sample, probe_samples = [], **options):
+        output = {}
+        # Construct background
+        background = plot_result['samples'][base_sample]['plot'].Clone(
+            plot_result['samples'][base_sample]['plot'].GetName() + "_diff")
+
+        background.Reset()
+        background_style_options = {
+            'y_max' : 1.0,
+            'y_min': -1.0,
+        }
+        ROOT.gPad.SetLogy(False)
+        background_style_options.update(options)
+        style.update_histo_style(background, options)
+        background.GetYaxis().SetRangeUser(-2, 2)
+        background.Draw()
+        output['background'] = background
+        output['samples'] = {}
+        output['legend'] = LegendMaker()
+
+        base_histo = plot_result['samples'][base_sample]['plot']
+        for probe_name in probe_samples:
+            print "Comparing", probe_name
+            probe_histo = plot_result['samples'][probe_name]['plot']
+            difference_histo = probe_histo.Clone(probe_histo.GetName()+"_diff")
+            difference_histo.Reset()
+            output['samples'][probe_name] = difference_histo
+            # Set each bin
+            for bin in range(difference_histo.GetNbinsX()+1):
+                probe_content = probe_histo.GetBinContent(bin)
+                base_content = base_histo.GetBinContent(bin)
+                probe_error = probe_histo.GetBinError(bin)
+                base_error = base_histo.GetBinError(bin)
+                print bin, base_content, probe_content
+                if probe_content > 0:
+                    diff = (base_content - probe_content)/probe_content
+
+                    base_error_norm = 0
+                    if base_content > 0:
+                        base_error_norm = base_error/base_content
+
+                    err = (base_content/probe_content)*math.sqrt(
+                        (probe_error/probe_content)**2 + base_error_norm**2)
+
+                    difference_histo.SetBinContent(bin, diff)
+                    difference_histo.SetBinError(bin, err)
+                    
+            style.update_histo_style(difference_histo, self.samples[probe_name]['style'])
+            output['legend'].add_object(
+                difference_histo, self.samples[probe_name]['nice_name'], 'p')
+            difference_histo.Draw("same,pe")
+
+        return output
+
+
+
+
+
+

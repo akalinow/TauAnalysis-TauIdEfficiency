@@ -6,12 +6,12 @@ from shrinkingConePlots import efficiencies
 from shrinkingConePlots import efficiency_versus
 
 
-MAX_JOBS = 8
+MAX_JOBS = 4
 TO_SUBMIT = {}
 CURRENT_JOBS = {}
 FINISHED_JOBS = {}
 
-desired_distributions = ['jetPt', 'jetEta', 'jetPhi', 'decayMode', 'decayMode_pt40']
+desired_distributions = ['jetPt', 'jetEta', 'jetPhi', 'decayMode']
 desired_efficiencies = ['TaNCOne', 'TaNCHalf', 'TaNCQuarter']
 desired_efficiencies_versus = ['Pt', 'Eta', 'Phi']
 
@@ -58,6 +58,17 @@ def submit_jobs(to_submit, current_jobs, finished_jobs, max_jobs = MAX_JOBS):
         wait_for_jobs(current_jobs, finished_jobs, max_jobs)
 
 if __name__ == "__main__":
-    submit_jobs(TO_SUBMIT, CURRENT_JOBS, FINISHED_JOBS)
+    try:
+        submit_jobs(TO_SUBMIT, CURRENT_JOBS, FINISHED_JOBS)
+    except:
+        pass
+    finally:
+        for job, job_info in CURRENT_JOBS.iteritems():
+            try:
+                print "killing"
+                job_info['proc'].terminate()
+            except:
+                pass
+
 
 
