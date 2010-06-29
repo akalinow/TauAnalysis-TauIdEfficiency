@@ -227,6 +227,70 @@ class PlotManager(object):
             style.update_canvas_style(ROOT.gPad, canvas_style))
         return result_dict
 
+    def multi_efficiency(self, expression, denominator, numerators=[],
+                         binning=(), marker_transform=lambda old:old+4, **options):
+        # Max supported numerators is four!
+        good_markers = [20, 21, 22, 23]
+        output = {}
+        my_legend = LegendMaker()
+        output['legend'] = my_legend
+        output['numerators'] = {}
+        output['keep'] = []
+        
+        cumulative_numerator = None
+        for marker, numerator_info in zip(good_markers, numerators):
+            if cumulative_numerator is None:
+                cumulative_numerator = numerator_info['expr']
+            else:
+                cumulative_numerator = cumulative_numerator & \
+                        numerator_info['expr']
+
+            numerator_name = numerator_info['nice_name']
+
+            # Build the single efficiency
+            print "Building fake rates for", numerator_name
+            single_eff = self.efficiency(expression, cumulative_numerator,
+                                         denominator, binning, options)
+            # No GC please
+            output['keep'].append(single_eff)
+
+            # Build background
+            if 'background' not in output:
+                output['background'] = single_eff['background']
+                background_style = copy.copy(style.DEFAULT_STYLE)
+                background_style.update(options)
+                style.update_histo_style(output['background'], background_style)
+
+            # Set the correct marker for each and store it
+            current_marker = marker
+            output['numerators'][numerator_name] = {}
+            for sample_name, efficiency in single_eff['samples'].iteritems():
+                print "Getting efficiency for", sample_name
+                #Set and update marker
+                efficiency.SetMarkerStyle(current_marker)
+                efficiency.SetMarkerColor(numerator_info['color'])
+                current_marker = marker_transform(current_marker)
+                output['numerators'][numerator_name][sample_name] = efficiency
+                my_legend.add_object(
+                    efficiency, " ".join(
+                        [numerator_info['nice_name'], 
+                         self.samples[sample_name]['nice_name']]), "p")
+
+        # Now draw everything
+        print "Drawing background", output['background']
+        output['background'].Draw()
+        for numerator, numerator_info in output['numerators'].iteritems():
+            for sample_name, efficiency in numerator_info.iteritems():
+                print "Drawing", numerator, sample_name, efficiency
+                efficiency.Draw("e1p,same")
+                
+        # Update the canvas
+        canvas_style = copy.deepcopy(style.DEFAULT_STYLE)
+        canvas_style.update(options)
+        output['keep'].append(
+            style.update_canvas_style(ROOT.gPad, canvas_style))
+        return output
+
     def plot_dist_deviations(self, plot_result, base_sample, probe_samples = [], **options):
         output = {}
         # Construct background
@@ -242,6 +306,7 @@ class PlotManager(object):
         background_style_options.update(options)
         style.update_histo_style(background, options)
         background.GetYaxis().SetRangeUser(-2, 2)
+        background.SetStats(False)
         background.Draw()
         output['background'] = background
         output['samples'] = {}
