@@ -18,13 +18,13 @@ plotter = PlotManager()
 
 # Add each sample we want to plot/compare
 # Uncomment to add QCD
-plotter.add_sample(samples.qcd_mc_pythia8, "QCD (Pythia 8)", **style.QCD_MC_PYTHIA8_STYLE_HIST)
+plotter.add_sample(samples.qcd_mc_pythia8, "Pythia 8", **style.QCD_MC_PYTHIA8_STYLE_HIST)
 
-plotter.add_sample(samples.qcd_mc_pythia6, "QCD (Pythia 6)", **style.QCD_MC_PYTHIA6_STYLE_HIST)
+plotter.add_sample(samples.qcd_mc_pythia6, "Pythia 6", **style.QCD_MC_PYTHIA6_STYLE_HIST)
 
 #plotter.add_sample(samples.minbias_mc, "Minbias MC", **style.MINBIAS_MC_STYLE)
 
-plotter.add_sample(samples.data, "Data (7 TeV)", **style.DATA_STYLE)
+plotter.add_sample(samples.data, "Data", **style.DATA_STYLE)
 
 # Normalize everything to the data luminosity
 plotter.set_integrated_lumi(samples.data.effective_luminosity())
@@ -40,7 +40,6 @@ fixed_ntuple = ntuple_manager.get_ntuple(
 hlt = ntuple_manager.get_ntuple("TriggerResults")
 
 # Make some plots
-canvas = ROOT.TCanvas("blah", "blah", 500, 500)
 
 # Plot # different triggers
 #    trigger_results_expr =  hlt.expr('$hltJet15U')
@@ -394,6 +393,7 @@ efficiency_versus = {
 
 if __name__ == "__main__":
     ROOT.gROOT.SetBatch(True)
+    canvas = ROOT.TCanvas("blah", "blah", 500, 500)
 
     if not os.path.isdir('plots'):
         os.mkdir('plots')
