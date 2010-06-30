@@ -227,10 +227,9 @@ class PlotManager(object):
             style.update_canvas_style(ROOT.gPad, canvas_style))
         return result_dict
 
-    def multi_efficiency(self, expression, denominator, numerators=[],
-                         binning=(), marker_transform=lambda old:old+4, **options):
-        # Max supported numerators is four!
-        good_markers = [20, 21, 22, 23]
+    def multi_efficiency(self, expression, denominator, numerators=[], binning=(),
+                         style_map={"mc_qcd_pythia8": style.MC_STYLES, "data":style.DATA_STYLES},
+                         **options):
         output = {}
         my_legend = LegendMaker()
         output['legend'] = my_legend
@@ -238,7 +237,7 @@ class PlotManager(object):
         output['keep'] = []
         
         cumulative_numerator = None
-        for marker, numerator_info in zip(good_markers, numerators):
+        for numerator_info in numerators:
             if cumulative_numerator is None:
                 cumulative_numerator = numerator_info['expr']
             else:
@@ -246,11 +245,16 @@ class PlotManager(object):
                         numerator_info['expr']
 
             numerator_name = numerator_info['nice_name']
-
+            #set style for the given numerator
+            for sample_name in self.samples:
+                style_to_use = style_map[sample_name][numerator_info["style_name"]]
+                self.update_style(sample_name, **style_to_use)
+            
             # Build the single efficiency
             print "Building fake rates for", numerator_name
             single_eff = self.efficiency(expression, cumulative_numerator,
                                          denominator, binning, options)
+
             # No GC please
             output['keep'].append(single_eff)
 
@@ -262,14 +266,9 @@ class PlotManager(object):
                 style.update_histo_style(output['background'], background_style)
 
             # Set the correct marker for each and store it
-            current_marker = marker
             output['numerators'][numerator_name] = {}
             for sample_name, efficiency in single_eff['samples'].iteritems():
                 print "Getting efficiency for", sample_name
-                #Set and update marker
-                efficiency.SetMarkerStyle(current_marker)
-                efficiency.SetMarkerColor(numerator_info['color'])
-                current_marker = marker_transform(current_marker)
                 output['numerators'][numerator_name][sample_name] = efficiency
                 my_legend.add_object(
                     efficiency, " ".join(

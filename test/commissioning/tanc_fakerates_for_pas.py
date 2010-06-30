@@ -11,7 +11,7 @@ plotter = PlotManager()
 
 # Add each sample we want to plot/compare
 # Uncomment to add QCD
-plotter.add_sample(samples.qcd_mc_pythia8, "Sim.", **style.QCD_MC_PYTHIA8_STYLE_HIST)
+plotter.add_sample(samples.qcd_mc_pythia8, "Simulation", **style.QCD_MC_PYTHIA8_STYLE_HIST)
 
 #plotter.add_sample(samples.qcd_mc_pythia6, "QCD (Pythia 6)", **style.QCD_MC_PYTHIA6_STYLE_HIST)
 
@@ -41,17 +41,17 @@ from shrinkingConePlots import base_selection, basic_kinematic_cut, pt_binning_f
 numerators = [
     {
         'expr': shrinking_ntuple.expr('$byTaNCfrOnePercent') & lead_pion_selection,
-        'color': style.EFFICIENCY_STYLES['byTaNCfrOnePercent']['marker_color'],
+        "style_name":"byTaNCfrOnePercent",
         'nice_name': "TaNC 1.00%",
     },
     {
         'expr': shrinking_ntuple.expr('$byTaNCfrHalfPercent') & lead_pion_selection,
-        'color': style.EFFICIENCY_STYLES['byTaNCfrHalfPercent']['marker_color'],
+        "style_name":"byTaNCfrHalfPercent",
         'nice_name': "TaNC 0.50%"
     },
     {
         'expr': shrinking_ntuple.expr('$byTaNCfrQuarterPercent') & lead_pion_selection,
-        'color': style.EFFICIENCY_STYLES['byTaNCfrQuarterPercent']['marker_color'],
+        "style_name":"byTaNCfrQuarterPercent",
         'nice_name': "TaNC 0.25%"
     },
 ]
