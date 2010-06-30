@@ -9,7 +9,7 @@ import TauAnalysis.TauIdEfficiency.ntauples.styles as style
 
 
 # Defintion of input files.
-import samples as samples
+import samples_cache as samples
 import os
 
 
