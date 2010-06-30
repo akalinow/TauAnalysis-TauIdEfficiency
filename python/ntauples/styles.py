@@ -1,3 +1,4 @@
+from copy import deepcopy
 from ROOT import gROOT
 # Prevent complaining about X server
 gROOT.SetBatch(True)
@@ -32,6 +33,14 @@ LUMI_LABEL_UPPER_LEFT.SetTextSize(0.04)
 LUMI_LABEL_UPPER_LEFT.SetFillStyle(0)
 LUMI_LABEL_UPPER_LEFT.SetBorderSize(0)
 
+#define z->tautau label
+ZTAUTAU_LABEL_UPPER_LEFT = ROOT.TPaveText(0.12, 0.80, 0.45, 0.85, "NDC")
+ZTAUTAU_LABEL_UPPER_LEFT.AddText("Z #rightarrow #tau^{+} #tau^{-}")
+ZTAUTAU_LABEL_UPPER_LEFT.SetTextAlign(13)
+ZTAUTAU_LABEL_UPPER_LEFT.SetTextSize(0.04)
+ZTAUTAU_LABEL_UPPER_LEFT.SetFillStyle(0)
+ZTAUTAU_LABEL_UPPER_LEFT.SetBorderSize(0)
+
 # Define the kinematic cut labels
 PT_CUT_LABEL_UPPER_LEFT = ROOT.TPaveText(0.12, 0.73, 0.45, 0.78, "NDC")
 PT_CUT_LABEL_UPPER_LEFT.AddText("P_{T} > 10 GeV/c")
@@ -39,6 +48,13 @@ PT_CUT_LABEL_UPPER_LEFT.SetTextAlign(13)
 PT_CUT_LABEL_UPPER_LEFT.SetTextSize(0.04)
 PT_CUT_LABEL_UPPER_LEFT.SetFillStyle(0)
 PT_CUT_LABEL_UPPER_LEFT.SetBorderSize(0)
+
+PTVIS_CUT_LABEL_UPPER_LEFT = ROOT.TPaveText(0.12, 0.73, 0.45, 0.78, "NDC")
+PTVIS_CUT_LABEL_UPPER_LEFT.AddText("P_{T}^{vis} > 10 GeV/c")
+PTVIS_CUT_LABEL_UPPER_LEFT.SetTextAlign(13)
+PTVIS_CUT_LABEL_UPPER_LEFT.SetTextSize(0.04)
+PTVIS_CUT_LABEL_UPPER_LEFT.SetFillStyle(0)
+PTVIS_CUT_LABEL_UPPER_LEFT.SetBorderSize(0)
 
 ETA_CUT_LABEL_UPPER_LEFT = ROOT.TPaveText(0.12, 0.73, 0.45, 0.78, "NDC")
 ETA_CUT_LABEL_UPPER_LEFT.AddText("|#eta| < 2.5")
@@ -66,11 +82,12 @@ PT_40_ETA_CUT_LABEL_UPPER_LEFT.AddText("P_{T} > 40 GeV/c, |#eta| < 2.5")
 EFFICIENCY_STYLES = {
     'matching' : {
         'marker_color' : ROOT.EColor.kBlack,
-        'marker_style' : 20, # closed dot
+        'marker_style' : 29, # closed star
+        'marker_size': 2,
     },
     'byLeadTrackFinding' : {
         'marker_color' : ROOT.EColor.kRed,
-        'marker_style' : 25, # open square
+        'marker_style' : 21, # closed square
     },
     'byLeadTrackPtCut' : {
         'marker_color' : ROOT.EColor.kBlue,
@@ -82,7 +99,7 @@ EFFICIENCY_STYLES = {
     },
     'byEcalIsolation' : {
         'marker_color' : ROOT.EColor.kOrange + 7,
-        'marker_style' : 21 # closed square
+        'marker_style' : 25 # open square
     },
     'OneOrThreeProng' : {
         'marker_color' : ROOT.EColor.kMagenta + 2,
@@ -90,19 +107,45 @@ EFFICIENCY_STYLES = {
     },
 }
 
-# TaNC & HPS colors follow the same pattern
+openToCloseMap = { 24:20, 25:21, 26:22}
+MC_STYLES = {"OneOrThreeProng": {
+    'marker_color' : ROOT.EColor.kBlack + 2,
+    'marker_style' : 24 # open dot
+    }
+             }
+DATA_STYLES = deepcopy( MC_STYLES)
+for dataStyle in DATA_STYLES:
+    DATA_STYLES[dataStyle]["marker_style"] = openToCloseMap[DATA_STYLES[dataStyle]["marker_style"]]
+
+# TaNC, HPS and calo tau colors follow the same pattern
 for iso_type, tanc_type in zip(
     ['byTrackIsolation', 'byEcalIsolation', 'OneOrThreeProng'],
     ['byTaNCfrOnePercent', 'byTaNCfrHalfPercent', 'byTaNCfrQuarterPercent']):
     EFFICIENCY_STYLES[tanc_type] = EFFICIENCY_STYLES[iso_type]
+    MC_STYLES[tanc_type] = EFFICIENCY_STYLES[iso_type]
+    DATA_STYLES[tanc_type] = deepcopy(EFFICIENCY_STYLES[iso_type])
+    DATA_STYLES[tanc_type]["marker_style"] = openToCloseMap[EFFICIENCY_STYLES[iso_type]["marker_style"]]
 
 for iso_type, hps_type in zip(
     [ 'byTrackIsolation', 'byEcalIsolation', 'OneOrThreeProng'],
     ['byIsolationLoose', 'byIsolationMedium', 'byIsolationTight']):
     EFFICIENCY_STYLES[hps_type] = EFFICIENCY_STYLES[iso_type]
+    MC_STYLES[hps_type] = EFFICIENCY_STYLES[iso_type]
+    DATA_STYLES[hps_type] = deepcopy(EFFICIENCY_STYLES[iso_type])
+    DATA_STYLES[hps_type]["marker_style"] = openToCloseMap[EFFICIENCY_STYLES[iso_type]["marker_style"]]
 
-# For calo taus
-EFFICIENCY_STYLES['byIsolation'] = EFFICIENCY_STYLES['byTrackIsolation']
+for iso_type, calo_type in zip(
+    [ 'byTrackIsolation', 'byEcalIsolation', 'OneOrThreeProng'],
+    ['byIsolation', 'byEcalIsolation_calo', 'OneOrThreeProng_calo']):
+    EFFICIENCY_STYLES[calo_type] = EFFICIENCY_STYLES[iso_type]
+    MC_STYLES[calo_type] = EFFICIENCY_STYLES[iso_type]
+    DATA_STYLES[calo_type] = deepcopy(EFFICIENCY_STYLES[iso_type])
+    DATA_STYLES[calo_type]["marker_style"] = openToCloseMap[EFFICIENCY_STYLES[iso_type]["marker_style"]]
+    
+# make sure that all errorbars have the right colors
+for effStyle in EFFICIENCY_STYLES:
+    EFFICIENCY_STYLES[effStyle]["line_color"] = EFFICIENCY_STYLES[effStyle]["marker_color"]
+
 
 # Build a pave with the mean and RMS
 def make_mean_rms_pave(plot, sig_figs = 4, x_low=0.6, y_low=0.80, 

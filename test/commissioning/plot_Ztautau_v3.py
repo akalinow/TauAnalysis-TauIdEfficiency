@@ -101,11 +101,13 @@ if __name__ == "__main__":
             'expr_str': '$genPt',
             'binning': pt_bins,
             'label': 'Generated #tau visible P_{T}',
+            'cutLabel':style.ETA_CUT_LABEL_UPPER_LEFT,
         }, 
         'eta' : {
             'expr_str': '$genEta',
             'binning': (60, -3, 3),
             'label': 'Generated #tau visible #eta',
+            'cutLabel':style.PTVIS_CUT_LABEL_UPPER_LEFT,
         },
     }
 
@@ -231,6 +233,8 @@ if __name__ == "__main__":
             t1.Draw()
             # Draw the preliminary label
             style.CMS_PRELIMINARY_UPPER_LEFT.Draw()
+            style.ZTAUTAU_LABEL_UPPER_LEFT.Draw()
+            x_var_info["cutLabel"].Draw()
             # Save the plot
             c1.SaveAs("plots/%s.png" % '_'.join(['ztt', algo, sequence_name, 'vs', x_var]))
             c1.SaveAs("plots/%s.pdf" % '_'.join(['ztt', algo, sequence_name, 'vs', x_var]))
