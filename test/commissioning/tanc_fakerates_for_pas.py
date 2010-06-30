@@ -69,8 +69,12 @@ pt_effs = plotter.multi_efficiency(
     numerators, 
     binning=pt_binning_fine, 
     y_min = 1e-4,
-    y_max = 1,
+    y_max = 10,
     x_axis_title='Jet P_{T}',
+    labels = [style.CMS_PRELIMINARY_UPPER_LEFT,
+              style.LUMI_LABEL_UPPER_LEFT,
+              style.ETA_CUT_LABEL_UPPER_LEFT
+              ],
     logy = True)
 
 pt_effs['legend'].make_legend().Draw()
@@ -85,8 +89,12 @@ eta_effs = plotter.multi_efficiency(
     numerators, 
     binning=eta_binning_fine, 
     y_min = 1e-4,
-    y_max = 1,
+    y_max = 10,
     x_axis_title='Jet #eta',
+    labels = [style.CMS_PRELIMINARY_UPPER_LEFT,
+              style.LUMI_LABEL_UPPER_LEFT,
+              style.PT_CUT_LABEL_UPPER_LEFT
+              ],
     logy = True)
 
 eta_effs['legend'].make_legend().Draw()
@@ -100,8 +108,12 @@ phi_effs = plotter.multi_efficiency(
     numerators, 
     binning=phi_binning_fine, 
     y_min = 1e-4,
-    y_max = 1,
+    y_max = 10,
     x_axis_title='Jet #phi',
+    labels = [style.CMS_PRELIMINARY_UPPER_LEFT,
+              style.LUMI_LABEL_UPPER_LEFT,
+              style.PT_ETA_CUT_LABEL_UPPER_LEFT
+              ],
     logy = True)
 
 phi_effs['legend'].make_legend().Draw()
