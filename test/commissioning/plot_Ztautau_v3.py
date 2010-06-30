@@ -212,6 +212,13 @@ if __name__ == "__main__":
                 )
 
                 my_eff = ROOT.TGraphAsymmErrors(numerator, denominator)
+                #overwrite the additional spacing by root
+                if len(x_var_info['binning']) == 3:
+                    my_eff.GetXaxis().SetRangeUser(x_var_info['binning'][1],
+                                                   x_var_info['binning'][2])
+                else:
+                    my_eff.GetXaxis().SetRangeUser(min(x_var_info['binning']),
+                                                   max(x_var_info['binning']))
                 # Update style
                 style.update_histo_style(
                     my_eff, style.EFFICIENCY_STYLES[numerator_name])
