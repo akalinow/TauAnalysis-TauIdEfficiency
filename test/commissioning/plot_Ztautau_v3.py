@@ -51,12 +51,12 @@ if __name__ == "__main__":
         },
         'byEcalIsolation': {
             'expr_str': '$byEcalIsolation',
-            'label' : "Gamma Isolation",
+            'label' : "Photon Isolation",
         },
         # For calotau
         'byIsolation' : {
             'expr_str': '$byIsolation',
-            'label' : 'Isolation'
+            'label' : 'Track Isolation'
         },
         'OneOrThreeProng': {
             'expr_str': '$numChargedParticlesSignalCone == 1 || $numChargedParticlesSignalCone == 3',
@@ -64,7 +64,7 @@ if __name__ == "__main__":
         },
         'byEcalIsolation_calo' : {
             'expr_str': '$etSumIsolationECAL < 5',
-            'label' : 'EcalIsolation'
+            'label' : 'ECAL Isolation'
         },
         'OneOrThreeProng_calo': {
             'expr_str': '$numSignalTracks ==1 || $numSignalTracks ==3',
@@ -105,7 +105,7 @@ if __name__ == "__main__":
         }, 
         'eta' : {
             'expr_str': '$genEta',
-            'binning': (60, -3, 3),
+            'binning': (50, -2.5, 2.5),
             'label': 'Generated #tau visible #eta',
             'cutLabel':style.PTVIS_CUT_LABEL_UPPER_LEFT,
         },
@@ -149,11 +149,11 @@ if __name__ == "__main__":
 
     # Match up sequences to tau algos
     sequences_and_algos = [
-        (standard_sequence, "iso", "patPFTausDijetTagAndProbeShrinkingCone"),
-        (standard_sequence, "iso", "patPFTausDijetTagAndProbeFixedCone"),
+#        (standard_sequence, "iso", "patPFTausDijetTagAndProbeShrinkingCone"),
+#        (standard_sequence, "iso", "patPFTausDijetTagAndProbeFixedCone"),
         (tanc_sequence, "tanc", "patPFTausDijetTagAndProbeShrinkingCone"),
-        (hps_sequence, "hps", "patPFTausDijetTagAndProbeHPS"),
-        (calo_sequence, "calo", "patCaloTausDijetTagAndProbe"),
+#        (hps_sequence, "hps", "patPFTausDijetTagAndProbeHPS"),
+#        (calo_sequence, "calo", "patCaloTausDijetTagAndProbe"),
     ]
 
     #denom_selection = genTaus.expr(
@@ -162,9 +162,9 @@ if __name__ == "__main__":
         '$genPt > 10 && abs($genEta) < 2.5 && $genDecayMode > 1.5')
     
     #denom_selection_from_reco_str = '$jetPt > 15 && abs($jetEta) < 2.5 && $genMatch > 0.5 && $genDecayMode > 1.5 && $genPt > 5 && abs($genEta) < 2.5'
-    denom_selection_from_reco_str = \
-            '$pt > 10 && abs($eta) < 2.5 && $genMatch > 0.5 && $genDecayMode > 1.5 && $genPt > 10 && abs($genEta) < 2.5'
-    
+    #denom_selection_from_reco_str = \
+    #        '$pt > 10 && abs($eta) < 2.5 && $genMatch > 0.5 && $genDecayMode > 1.5 && $genPt > 10 && abs($genEta) < 2.5'
+    denom_selection_from_reco_str = '$genMatch > 0.5 && $genDecayMode > 1.5 && $genPt > 10 && abs($genEta) < 2.5'
 
     ztt_events = list(ztt.events_and_weights())[0][0]
 
