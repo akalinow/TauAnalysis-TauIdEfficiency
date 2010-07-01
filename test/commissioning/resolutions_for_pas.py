@@ -47,8 +47,8 @@ def makeResolutionPlots( algorithm ):
         stat_label = style.make_mean_rms_pave(pt_resol['samples']['mc_ztt']['plot'])
         stat_label.Draw()
     
-        canvas.SaveAs("plots/%s_pt_resolution.png"%selection["style_name"])
-        canvas.SaveAs("plots/%s_pt_resolution.pdf"%selection["style_name"])
+        canvas.SaveAs("plots/%s%s_pt_resolution.png"%(algorithm,selection["style_name"]))
+        canvas.SaveAs("plots/%s%s_pt_resolution.pdf"%(algorithm,selection["style_name"]))        
 
         plotter.update_style("mc_ztt", **style.MC_STYLES[selection["style_name"]])
         eta_resol = plotter.distribution(
@@ -69,8 +69,8 @@ def makeResolutionPlots( algorithm ):
         stat_label = style.make_mean_rms_pave(eta_resol['samples']['mc_ztt']['plot'])
         stat_label.Draw()
     
-        canvas.SaveAs("plots/%s_eta_resolution.png"%selection["style_name"])
-        canvas.SaveAs("plots/%s_eta_resolution.pdf"%selection["style_name"])
+        canvas.SaveAs("plots/%s%s_eta_resolution.png"%(algorithm,selection["style_name"]))
+        canvas.SaveAs("plots/%s%s_eta_resolution.pdf"%(algorithm,selection["style_name"]))
 
         phi_resol = plotter.distribution(
             expression=getResolutionExpression(algorithm, "phi"),
@@ -90,8 +90,8 @@ def makeResolutionPlots( algorithm ):
         stat_label = style.make_mean_rms_pave(phi_resol['samples']['mc_ztt']['plot'])
         stat_label.Draw()
     
-        canvas.SaveAs("plots/%s_phi_resolution.png"%selection["style_name"])
-        canvas.SaveAs("plots/%s_phi_resolution.pdf"%selection["style_name"])
+        canvas.SaveAs("plots/%s%s_phi_resolution.png"%(algorithm,selection["style_name"]))
+        canvas.SaveAs("plots/%s%s_phi_resolution.pdf"%(algorithm,selection["style_name"]))
     
 
 if __name__ == "__main__":
@@ -126,14 +126,24 @@ if __name__ == "__main__":
     from shrinkingConePlots import lead_pion_selection
     
     # Define the selections to plot
-    shrinkingConeString = "$byLeadTrackFinding > 0.5 & $byLeadTrackPtCut > 0.5 & $byTrackIsolation > 0.5 "
-    shrinkingConeString += " & $byEcalIsolation > 0.5 & $numChargedParticlesSignalCone == 1 || $numChargedParticlesSignalCone == 3"
+    pfString = "$byLeadTrackFinding > 0.5 & $byLeadTrackPtCut > 0.5 & $byTrackIsolation > 0.5 "
+    pfString += " & $byEcalIsolation > 0.5 & $numChargedParticlesSignalCone == 1 || $numChargedParticlesSignalCone == 3"
+    caloString = "$byLeadTrackFinding > 0.5 &  & $byLeadTrackPtCut > 0.5 & $byIsolation > 0.5 "
+    caloString += " & $etSumIsolationECAL < 5 & $numSignalTracks ==1 || $numSignalTracks ==3"
+    
     selections = {
         "shrinkingCone":[
             {
-                'expr':  nTuples["shrinkingCone"].expr(shrinkingConeString) ,
+                'expr':  nTuples["shrinkingCone"].expr(pfString) ,
                 "style_name":"OneOrThreeProng",
                 'nice_name': "all shrinkingCone",
+                },
+            ],
+        "fixedCone":[
+            {
+                'expr':  nTuples["fixedCone"].expr(pfString) ,
+                "style_name":"OneOrThreeProng",
+                'nice_name': "all fixedCone",
                 },
             ],
         "TaNC":[
@@ -152,7 +162,21 @@ if __name__ == "__main__":
                 "style_name":"byTaNCfrQuarterPercent",
                 'nice_name': "TaNC 0.25%"
                 },
-            ]
+            ],
+        "hps":[
+            {
+                'expr':  nTuples["hps"].expr('$byIsolationMedium > 0.5') & lead_pion_selection,
+                "style_name":"byIsolationMedium",
+                'nice_name': "Medium Isolation",
+                },
+            ],
+        "calo":[
+            {
+                'expr':  nTuples["calo"].expr(caloString) ,
+                "style_name":"OneOrThreeProng",
+                'nice_name': "all caloTau",
+                },
+            ],
         }    
     for algorithm in selections:
         #the basic selection is the same for all nTuples.
