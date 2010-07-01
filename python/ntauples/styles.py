@@ -127,7 +127,7 @@ EFFICIENCY_STYLES = {
 openToCloseMap = { 24:20, 25:21, 26:22}
 MC_STYLES = {"OneOrThreeProng": {
     'marker_color' : ROOT.EColor.kBlack,
-    'marker_style' : 24 # open dot
+    'marker_style' : 24, # open dot
     'marker_size': 1.5
     }
              }
