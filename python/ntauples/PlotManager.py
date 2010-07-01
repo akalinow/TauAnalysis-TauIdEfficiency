@@ -91,7 +91,7 @@ class PlotManager(object):
         """
         self.int_lumi = target_int_lumi
 
-    def distribution(self, expression, selection, binning=(), verbose=True, **options):
+    def distribution(self, expression, selection, binning=(), normalize = None, verbose=True, **options):
         " Compare a distribution from the different samples "
         if verbose: print "Plotting", str(expression), str(selection)
         # Get a unique name for the ROOT name
@@ -102,6 +102,8 @@ class PlotManager(object):
         # Keep track of all the plots we make
         result_dict['samples'] = {}
         result_dict['legend'] = LegendMaker()
+        #keep track of all the plots made (yeah one could extract that from the TStack with some gymnastics...
+        all_plots = {}
         for sample_name in self.sample_order:
             if verbose: print " * Sample: ", sample_name
             sample_info = self.samples[sample_name]
@@ -119,6 +121,7 @@ class PlotManager(object):
             )
             if my_plot == None: raise StandardError, "Error drawing '%s' for '%s' with selection '%s' no histogram was created!"%( expression, sample_name, selection)
             if verbose: print " * * - got plot", my_plot, "integral:", my_plot.Integral()
+            all_plots[sample_name] = my_plot
             plot_dict['plot'] = my_plot
             # Get some handy stats
             plot_dict['rms'] = my_plot.GetRMS()
@@ -132,13 +135,20 @@ class PlotManager(object):
             # Update the styles for this histogram
             plot_dict['keep'].append(
                 style.update_histo_style(my_plot, sample_info['style']))
+            #if we want to normalize to this distribution it will be by its integral
+            if sample_name == normalize:
+                normalize = plot_dict['integral']
             # Add this histogram to the stack (will be plotted using 
             # nostack option)
             result_dict['result'].Add(my_plot, sample_info['style']['draw_option'])
             # Add an entry in the legend
             result_dict['legend'].add_object(my_plot, sample_info['nice_name'], 
                                              sample_info['style']['draw_option'])
-
+        #take care of normalization
+        if not normalize == None:
+            for my_plot_name, my_plot in all_plots.iteritems():
+                my_plot.Scale( float(normalize) / my_plot.Integral())
+            
         # Now draw the total stack to current pad
         result_dict['result'].Draw("nostack")
         # If the upper limit for y is not set, make a nice guess
@@ -227,9 +237,13 @@ class PlotManager(object):
             style.update_canvas_style(ROOT.gPad, canvas_style))
         return result_dict
 
-    def multi_efficiency(self, expression, denominator, numerators=[], binning=(),
+    def multi_efficiency(self, expression, denominator, numerators, binning,
                          style_map={"mc_qcd_pythia8": style.MC_STYLES, "data":style.DATA_STYLES},
                          **options):
+        if len(numerators) < 1:
+            raise ValueError, "you have to pass at least one numerator (got '%s')!"%numerators
+        if len(binning) < 3:
+            raise ValueError, "the binning tuple has to be at leal of length 3 (numbins, first, last) or more (list of bin edges) (got '%s')!"%binning
         output = {}
         my_legend = LegendMaker()
         output['legend'] = my_legend
