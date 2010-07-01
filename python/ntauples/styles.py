@@ -78,6 +78,14 @@ PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT.SetTextSize(0.04)
 PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT.SetFillStyle(0)
 PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT.SetBorderSize(0)
 
+PT_ETA_GEN_CUT_TWO_LINE_LABEL_UPPER_LEFT = ROOT.TPaveText(0.12, 0.68, 0.45, 0.78, "NDC")
+PT_ETA_GEN_CUT_TWO_LINE_LABEL_UPPER_LEFT.AddText("P_{T}^{vis}(gen) > 10 GeV/c,\n")
+PT_ETA_GEN_CUT_TWO_LINE_LABEL_UPPER_LEFT.AddText("|#eta|(gen) < 2.5")
+PT_ETA_GEN_CUT_TWO_LINE_LABEL_UPPER_LEFT.SetTextAlign(13)
+PT_ETA_GEN_CUT_TWO_LINE_LABEL_UPPER_LEFT.SetTextSize(0.04)
+PT_ETA_GEN_CUT_TWO_LINE_LABEL_UPPER_LEFT.SetFillStyle(0)
+PT_ETA_GEN_CUT_TWO_LINE_LABEL_UPPER_LEFT.SetBorderSize(0)
+
 # Labels for different pt cuts
 PT_20_ETA_CUT_LABEL_UPPER_LEFT = PT_ETA_CUT_LABEL_UPPER_LEFT.Clone()
 PT_20_ETA_CUT_LABEL_UPPER_LEFT.Clear()
@@ -153,10 +161,13 @@ for iso_type, calo_type in zip(
 # make sure that all errorbars have the right colors
 for effStyle in EFFICIENCY_STYLES:
     EFFICIENCY_STYLES[effStyle]["line_color"] = EFFICIENCY_STYLES[effStyle]["marker_color"]
+    EFFICIENCY_STYLES[effStyle]["fill_color"] = EFFICIENCY_STYLES[effStyle]["marker_color"]
 for mcStyle in MC_STYLES:
     MC_STYLES[mcStyle]["line_color"] = MC_STYLES[mcStyle]["marker_color"]
+    MC_STYLES[mcStyle]["fill_color"] = MC_STYLES[mcStyle]["marker_color"]
 for dataStyle in DATA_STYLES:
     DATA_STYLES[dataStyle]["line_color"] = DATA_STYLES[dataStyle]["marker_color"]
+    DATA_STYLES[dataStyle]["fill_color"] = DATA_STYLES[dataStyle]["marker_color"]
 
 
 # Build a pave with the mean and RMS
