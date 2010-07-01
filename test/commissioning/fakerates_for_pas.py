@@ -10,7 +10,7 @@ import samples_cache as samples
 
 def makeFakeratePlots( algorithm ):
     pt_effs = plotter.multi_efficiency(
-        shrinking_ntuple.expr('$jetPt'), 
+        nTuples[algorithm].expr('$jetPt'), 
         denominator,
         numerators[algorithm], 
         binning=pt_binning_fine, 
@@ -30,7 +30,7 @@ def makeFakeratePlots( algorithm ):
 
     
     eta_effs = plotter.multi_efficiency(
-        shrinking_ntuple.expr('$jetEta'), 
+        nTuples[algorithm].expr('$jetEta'), 
         denominator,
         numerators[algorithm], 
         binning=eta_binning_fine, 
@@ -49,7 +49,7 @@ def makeFakeratePlots( algorithm ):
     canvas.SaveAs("plots/%s_multieff_vs_eta_for_pas.pdf"%(algorithm))
     
     phi_effs = plotter.multi_efficiency(
-        shrinking_ntuple.expr('$jetPhi'), 
+        nTuples[algorithm].expr('$jetPhi'), 
         denominator,
         numerators[algorithm], 
         binning=phi_binning_fine, 
@@ -85,9 +85,11 @@ if __name__ == "__main__":
     
     # Build the ntuple manager
     ntuple_manager = samples.data.build_ntuple_manager("tauIdEffNtuple")
-    
-    shrinking_ntuple = ntuple_manager.get_ntuple(
-        "patPFTausDijetTagAndProbeShrinkingCone")
+
+    nTuples = {
+        "TaNC": ntuple_manager.get_ntuple("patPFTausDijetTagAndProbeShrinkingCone"),
+        "hps": ntuple_manager.get_ntuple("patPFTausDijetTagAndProbeHPS"),
+        }
     
     hlt = ntuple_manager.get_ntuple("TriggerResults")
     
@@ -102,17 +104,17 @@ if __name__ == "__main__":
     numerators = {
         "TaNC":[
             {
-                'expr': shrinking_ntuple.expr('$byTaNCfrOnePercent') & lead_pion_selection,
+                'expr':  nTuples["TaNC"].expr('$byTaNCfrOnePercent') & lead_pion_selection,
                 "style_name":"byTaNCfrOnePercent",
                 'nice_name': "TaNC 1.00%",
                 },
             {
-                'expr': shrinking_ntuple.expr('$byTaNCfrHalfPercent') & lead_pion_selection,
+                'expr':  nTuples["TaNC"].expr('$byTaNCfrHalfPercent') & lead_pion_selection,
                 "style_name":"byTaNCfrHalfPercent",
                 'nice_name': "TaNC 0.50%"
                 },
             {
-                'expr': shrinking_ntuple.expr('$byTaNCfrQuarterPercent') & lead_pion_selection,
+                'expr':  nTuples["TaNC"].expr('$byTaNCfrQuarterPercent') & lead_pion_selection,
                 "style_name":"byTaNCfrQuarterPercent",
                 'nice_name': "TaNC 0.25%"
                 },
