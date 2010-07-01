@@ -127,9 +127,9 @@ if __name__ == "__main__":
     
     # Define the selections to plot
     pfString = "$byLeadTrackFinding > 0.5 & $byLeadTrackPtCut > 0.5 & $byTrackIsolation > 0.5 "
-    pfString += " & $byEcalIsolation > 0.5 & $numChargedParticlesSignalCone == 1 || $numChargedParticlesSignalCone == 3"
+    pfString += " & $byEcalIsolation > 0.5 & ($numChargedParticlesSignalCone == 1 || $numChargedParticlesSignalCone == 3)"
     caloString = "$byLeadTrackFinding > 0.5 &  & $byLeadTrackPtCut > 0.5 & $byIsolation > 0.5 "
-    caloString += " & $etSumIsolationECAL < 5 & $numSignalTracks ==1 || $numSignalTracks ==3"
+    caloString += " & $etSumIsolationECAL < 5 & ($numSignalTracks ==1 || $numSignalTracks ==3)"
     
     selections = {
         "shrinkingCone":[
@@ -165,9 +165,19 @@ if __name__ == "__main__":
             ],
         "hps":[
             {
+                'expr':  nTuples["hps"].expr('$byIsolationLoose > 0.5') & lead_pion_selection,
+                "style_name":"byIsolationLoose",
+                'nice_name': "Loose Isolation",
+                },
+            {
                 'expr':  nTuples["hps"].expr('$byIsolationMedium > 0.5') & lead_pion_selection,
                 "style_name":"byIsolationMedium",
                 'nice_name': "Medium Isolation",
+                },
+            {
+                'expr':  nTuples["hps"].expr('$byIsolationTight > 0.5') & lead_pion_selection,
+                "style_name":"byIsolationTight",
+                'nice_name': "Tight Isolation",
                 },
             ],
         "calo":[
