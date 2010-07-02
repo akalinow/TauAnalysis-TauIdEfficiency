@@ -38,6 +38,7 @@ class LegendMaker(object):
 
 class PlotManager(object):
     def __init__(self):
+        ROOT.TGaxis.SetMaxDigits(3)
         self.samples = {}
         # Keep track of sample ordering
         self.sample_order = []
@@ -170,7 +171,7 @@ class PlotManager(object):
         return result_dict
 
     def efficiency(self, expression, numerator, denominator,
-                   binning=(), verbose=True, x_error_bars=False, **options):
+                   binning=(), verbose=True, x_error_bars=True, **options):
         ''' Compare efficiencies for different samples 
 
         Compute the efficiency of the [numerator] selection with respect

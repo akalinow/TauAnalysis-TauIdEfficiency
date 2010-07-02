@@ -35,7 +35,7 @@ LUMI_LABEL_UPPER_LEFT.SetBorderSize(0)
 
 #define z->tautau label
 ZTAUTAU_LABEL_UPPER_LEFT = ROOT.TPaveText(0.12, 0.80, 0.45, 0.85, "NDC")
-ZTAUTAU_LABEL_UPPER_LEFT.AddText("Z #rightarrow #tau^{+} #tau^{-}")
+ZTAUTAU_LABEL_UPPER_LEFT.AddText("Z #rightarrow #tau^{+} #tau^{-} Simulation")
 ZTAUTAU_LABEL_UPPER_LEFT.SetTextAlign(13)
 ZTAUTAU_LABEL_UPPER_LEFT.SetTextSize(0.04)
 ZTAUTAU_LABEL_UPPER_LEFT.SetFillStyle(0)
@@ -172,8 +172,21 @@ for dataStyle in DATA_STYLES:
     DATA_STYLES[dataStyle]["fill_color"] = DATA_STYLES[dataStyle]["marker_color"]
 
 
+def make_nice_numbers(x, sig_figs = 2):
+    format_string = "%0." + str(sig_figs) + "e"
+    result = format_string%x
+    if result.endswith("e+00"):
+        result = result[:-4]
+    else:
+        result = result.replace("e", " 10^{")
+        result = result.replace("{-0", "{-")
+        result = result.replace("{+0", "{+")
+        result+="}"
+        
+    return result
+
 # Build a pave with the mean and RMS
-def make_mean_rms_pave(plot, sig_figs = 4, x_low=0.6, y_low=0.80, 
+def make_mean_rms_pave(plot, sig_figs = 2, x_low=0.6, y_low=0.80, 
                        x_high=0.90, y_high=0.90):
     mean = plot.GetMean()
     rms = plot.GetRMS()
@@ -182,9 +195,9 @@ def make_mean_rms_pave(plot, sig_figs = 4, x_low=0.6, y_low=0.80,
     output.SetBorderSize(0)
     output.SetTextSize(0.04)
     output.SetFillStyle(0)
-    format_string = "%0." + str(sig_figs) + "f"
-    output.AddText("mean = "+ format_string % mean)
-    output.AddText("rms = "+ format_string % rms)
+    
+    output.AddText("mean = "+ make_nice_numbers(mean) )
+    output.AddText("rms = "+ make_nice_numbers(rms))
     return output
 
 DEFAULT_STYLE = {

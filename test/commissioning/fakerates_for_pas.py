@@ -25,8 +25,8 @@ def makeFakeratePlots( algorithm ):
     
     pt_effs['legend'].make_legend(0.45, 0.65, 0.88, 0.85).Draw()
     
-    canvas.SaveAs("plots/%s_multieff_vs_pt_for_pas.png"%(algorithm))
-    canvas.SaveAs("plots/%s_multieff_vs_pt_for_pas.pdf"%(algorithm))
+    canvas.SaveAs("plots/%s_multifake_vs_pt_for_pas.png"%(algorithm))
+    canvas.SaveAs("plots/%s_multifake_vs_pt_for_pas.pdf"%(algorithm))
 
     
     eta_effs = plotter.multi_efficiency(
@@ -45,8 +45,8 @@ def makeFakeratePlots( algorithm ):
     
     eta_effs['legend'].make_legend(0.45, 0.65, 0.88, 0.85).Draw()
     
-    canvas.SaveAs("plots/%s_multieff_vs_eta_for_pas.png"%(algorithm))
-    canvas.SaveAs("plots/%s_multieff_vs_eta_for_pas.pdf"%(algorithm))
+    canvas.SaveAs("plots/%s_multifake_vs_eta_for_pas.png"%(algorithm))
+    canvas.SaveAs("plots/%s_multifake_vs_eta_for_pas.pdf"%(algorithm))
     
     phi_effs = plotter.multi_efficiency(
         nTuples[algorithm].expr('$jetPhi'), 
@@ -64,8 +64,8 @@ def makeFakeratePlots( algorithm ):
     
     phi_effs['legend'].make_legend(0.45, 0.65, 0.88, 0.85).Draw()
     
-    canvas.SaveAs("plots/%s_multieff_vs_phi_for_pas.png"%(algorithm))
-    canvas.SaveAs("plots/%s_multieff_vs_phi_for_pas.pdf"%(algorithm))
+    canvas.SaveAs("plots/%s_multifake_vs_phi_for_pas.png"%(algorithm))
+    canvas.SaveAs("plots/%s_multifake_vs_phi_for_pas.pdf"%(algorithm))
 
 if __name__ == "__main__":
 
