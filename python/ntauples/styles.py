@@ -18,71 +18,79 @@ Author: Evan K. Friis (UC Davis)
 '''
 
 # Define the CMS preliminary labels
-CMS_PRELIMINARY_UPPER_LEFT = ROOT.TPaveText(0.12, 0.87, 0.45, 0.92, "NDC")
-CMS_PRELIMINARY_UPPER_LEFT.AddText("CMS Preliminary 7 TeV")
+CMS_PRELIMINARY_UPPER_LEFT = ROOT.TPaveText(0.12, 0.855, 0.45, 0.905, "NDC")
+CMS_PRELIMINARY_UPPER_LEFT.AddText("CMS Preliminary")
 CMS_PRELIMINARY_UPPER_LEFT.SetTextAlign(13)
 CMS_PRELIMINARY_UPPER_LEFT.SetTextSize(0.04)
 CMS_PRELIMINARY_UPPER_LEFT.SetFillStyle(0)
 CMS_PRELIMINARY_UPPER_LEFT.SetBorderSize(0)
 
 # Define the luminosity labels
-LUMI_LABEL_UPPER_LEFT = ROOT.TPaveText(0.12, 0.80, 0.45, 0.85, "NDC")
-LUMI_LABEL_UPPER_LEFT.AddText("#int L = 8.44nb^{-1}")
+LUMI_LABEL_UPPER_LEFT = ROOT.TPaveText(0.12, 0.80, 0.45, 0.84, "NDC")
+LUMI_LABEL_UPPER_LEFT.AddText("L = 8.4nb^{-1}")
 LUMI_LABEL_UPPER_LEFT.SetTextAlign(13)
-LUMI_LABEL_UPPER_LEFT.SetTextSize(0.04)
+LUMI_LABEL_UPPER_LEFT.SetTextSize(0.035)
 LUMI_LABEL_UPPER_LEFT.SetFillStyle(0)
 LUMI_LABEL_UPPER_LEFT.SetBorderSize(0)
 
-#define z->tautau label
-ZTAUTAU_LABEL_UPPER_LEFT = ROOT.TPaveText(0.12, 0.80, 0.45, 0.85, "NDC")
+#define Z--> tau tau label
+ZTAUTAU_LABEL_UPPER_LEFT = ROOT.TPaveText(0.12, 0.80, 0.45, 0.84, "NDC")
 ZTAUTAU_LABEL_UPPER_LEFT.AddText("Z #rightarrow #tau^{+} #tau^{-} Simulation")
 ZTAUTAU_LABEL_UPPER_LEFT.SetTextAlign(13)
-ZTAUTAU_LABEL_UPPER_LEFT.SetTextSize(0.04)
+ZTAUTAU_LABEL_UPPER_LEFT.SetTextSize(0.035)
 ZTAUTAU_LABEL_UPPER_LEFT.SetFillStyle(0)
 ZTAUTAU_LABEL_UPPER_LEFT.SetBorderSize(0)
 
+#define center-of-mass energy label
+SQRTS_LABEL_UPPER_LEFT = ROOT.TPaveText(0.12, 0.76, 0.45, 0.80, "NDC")
+SQRTS_LABEL_UPPER_LEFT.AddText("7 TeV")
+SQRTS_LABEL_UPPER_LEFT.SetTextAlign(13)
+SQRTS_LABEL_UPPER_LEFT.SetTextSize(0.035)
+SQRTS_LABEL_UPPER_LEFT.SetFillStyle(0)
+SQRTS_LABEL_UPPER_LEFT.SetBorderSize(0)
+
 # Define the kinematic cut labels
-PT_CUT_LABEL_UPPER_LEFT = ROOT.TPaveText(0.12, 0.73, 0.45, 0.78, "NDC")
+PT_CUT_LABEL_UPPER_LEFT = ROOT.TPaveText(0.12, 0.72, 0.45, 0.76, "NDC")
 PT_CUT_LABEL_UPPER_LEFT.AddText("P_{T} > 10 GeV/c")
 PT_CUT_LABEL_UPPER_LEFT.SetTextAlign(13)
-PT_CUT_LABEL_UPPER_LEFT.SetTextSize(0.04)
+PT_CUT_LABEL_UPPER_LEFT.SetTextSize(0.035)
 PT_CUT_LABEL_UPPER_LEFT.SetFillStyle(0)
 PT_CUT_LABEL_UPPER_LEFT.SetBorderSize(0)
 
-PTVIS_CUT_LABEL_UPPER_LEFT = ROOT.TPaveText(0.12, 0.73, 0.45, 0.78, "NDC")
+PTVIS_CUT_LABEL_UPPER_LEFT = ROOT.TPaveText(0.12, 0.72, 0.45, 0.76, "NDC")
 PTVIS_CUT_LABEL_UPPER_LEFT.AddText("P_{T}^{vis} > 10 GeV/c")
 PTVIS_CUT_LABEL_UPPER_LEFT.SetTextAlign(13)
-PTVIS_CUT_LABEL_UPPER_LEFT.SetTextSize(0.04)
+PTVIS_CUT_LABEL_UPPER_LEFT.SetTextSize(0.035)
 PTVIS_CUT_LABEL_UPPER_LEFT.SetFillStyle(0)
 PTVIS_CUT_LABEL_UPPER_LEFT.SetBorderSize(0)
 
-ETA_CUT_LABEL_UPPER_LEFT = ROOT.TPaveText(0.12, 0.73, 0.45, 0.78, "NDC")
+ETA_CUT_LABEL_UPPER_LEFT = ROOT.TPaveText(0.12, 0.72, 0.45, 0.76, "NDC")
 ETA_CUT_LABEL_UPPER_LEFT.AddText("|#eta| < 2.5")
 ETA_CUT_LABEL_UPPER_LEFT.SetTextAlign(13)
-ETA_CUT_LABEL_UPPER_LEFT.SetTextSize(0.04)
+ETA_CUT_LABEL_UPPER_LEFT.SetTextSize(0.035)
 ETA_CUT_LABEL_UPPER_LEFT.SetFillStyle(0)
 ETA_CUT_LABEL_UPPER_LEFT.SetBorderSize(0)
 
-PT_ETA_CUT_LABEL_UPPER_LEFT = ROOT.TPaveText(0.12, 0.73, 0.45, 0.78, "NDC")
+PT_ETA_CUT_LABEL_UPPER_LEFT = ROOT.TPaveText(0.12, 0.72, 0.45, 0.76, "NDC")
 PT_ETA_CUT_LABEL_UPPER_LEFT.AddText("P_{T} > 10 GeV/c, |#eta| < 2.5")
 PT_ETA_CUT_LABEL_UPPER_LEFT.SetTextAlign(13)
-PT_ETA_CUT_LABEL_UPPER_LEFT.SetTextSize(0.04)
+PT_ETA_CUT_LABEL_UPPER_LEFT.SetTextSize(0.035)
 PT_ETA_CUT_LABEL_UPPER_LEFT.SetFillStyle(0)
 PT_ETA_CUT_LABEL_UPPER_LEFT.SetBorderSize(0)
 
-PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT = ROOT.TPaveText(0.12, 0.68, 0.45, 0.78, "NDC")
+PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT = ROOT.TPaveText(0.12, 0.68, 0.45, 0.76, "NDC")
 PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT.AddText("P_{T} > 10 GeV/c,\n")
 PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT.AddText("|#eta| < 2.5")
 PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT.SetTextAlign(13)
-PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT.SetTextSize(0.04)
+PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT.SetTextSize(0.035)
 PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT.SetFillStyle(0)
 PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT.SetBorderSize(0)
 
-PT_ETA_GEN_CUT_TWO_LINE_LABEL_UPPER_LEFT = ROOT.TPaveText(0.12, 0.68, 0.45, 0.78, "NDC")
+PT_ETA_GEN_CUT_TWO_LINE_LABEL_UPPER_LEFT = ROOT.TPaveText(0.12, 0.68, 0.45, 0.76, "NDC")
 PT_ETA_GEN_CUT_TWO_LINE_LABEL_UPPER_LEFT.AddText("P_{T}^{vis}(gen) > 10 GeV/c,\n")
 PT_ETA_GEN_CUT_TWO_LINE_LABEL_UPPER_LEFT.AddText("|#eta|(gen) < 2.5")
 PT_ETA_GEN_CUT_TWO_LINE_LABEL_UPPER_LEFT.SetTextAlign(13)
-PT_ETA_GEN_CUT_TWO_LINE_LABEL_UPPER_LEFT.SetTextSize(0.04)
+PT_ETA_GEN_CUT_TWO_LINE_LABEL_UPPER_LEFT.SetTextSize(0.035)
 PT_ETA_GEN_CUT_TWO_LINE_LABEL_UPPER_LEFT.SetFillStyle(0)
 PT_ETA_GEN_CUT_TWO_LINE_LABEL_UPPER_LEFT.SetBorderSize(0)
 
@@ -112,7 +120,6 @@ EFFICIENCY_STYLES = {
     'byTrackIsolation' : {
         'marker_color' : ROOT.EColor.kGreen + 2,
         'marker_style' : 24, # open dot
-        'marker_size': 1.5
     },
     'byEcalIsolation' : {
         'marker_color' : ROOT.EColor.kOrange + 7,
@@ -128,7 +135,6 @@ openToCloseMap = { 24:20, 25:21, 26:22}
 MC_STYLES = {"OneOrThreeProng": {
     'marker_color' : ROOT.EColor.kBlack,
     'marker_style' : 24, # open dot
-    'marker_size': 1.5
     }
              }
 DATA_STYLES = deepcopy( MC_STYLES)
@@ -193,7 +199,7 @@ def make_mean_rms_pave(plot, sig_figs = 2, x_low=0.6, y_low=0.80,
     output = ROOT.TPaveText(x_low, y_low, x_high, y_high, "brNDC")
     output.SetTextAlign(33) # top right alignment
     output.SetBorderSize(0)
-    output.SetTextSize(0.04)
+    output.SetTextSize(0.035)
     output.SetFillStyle(0)
     
     output.AddText("mean = "+ make_nice_numbers(mean) )
@@ -213,7 +219,7 @@ DEFAULT_STYLE = {
     'y_axis_title' : "Fake Rate",
     'horizontal_grid' : 0,
     'vertical_grid' : 1,
-    'labels' : [CMS_PRELIMINARY_UPPER_LEFT, LUMI_LABEL_UPPER_LEFT],
+    'labels' : [CMS_PRELIMINARY_UPPER_LEFT, LUMI_LABEL_UPPER_LEFT, SQRTS_LABEL_UPPER_LEFT],
     # Easy way to take on more labels
     'extra_labels' : []
 }
