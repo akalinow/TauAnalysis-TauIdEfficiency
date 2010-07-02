@@ -115,14 +115,16 @@ if __name__ == "__main__":
             {
                 'expr':  nTuples["shrinkingCone"].expr(pfString) ,
                 "style_name":"OneOrThreeProng",
-                'nice_name': "all shrinkingCone",
+                ##'nice_name': "all shrinkingCone",
+                'nice_name': "",
                 },
             ],
         "fixedCone":[
             {
                 'expr':  nTuples["fixedCone"].expr(pfString) ,
                 "style_name":"OneOrThreeProng",
-                'nice_name': "all fixedCone",
+                ##'nice_name': "all fixedCone",
+                'nice_name': "",
                 },
             ],
         "TaNC":[
@@ -163,7 +165,8 @@ if __name__ == "__main__":
             {
                 'expr':  nTuples["calo"].expr(caloString) ,
                 "style_name":"OneOrThreeProng",
-                'nice_name': "all caloTau",
+                ##'nice_name': "all caloTau",
+                'nice_name': "",
                 },
             ],
         }
