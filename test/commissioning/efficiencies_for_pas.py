@@ -124,6 +124,7 @@ if __name__ == "__main__":
 
     tanc_sequence = [
         'matching',
+        'byLeadTrackFinding',
         'byLeadTrackPtCut',
         'byTaNCfrOnePercent',
         'byTaNCfrHalfPercent',
@@ -149,11 +150,11 @@ if __name__ == "__main__":
 
     # Match up sequences to tau algos
     sequences_and_algos = [
-#        (standard_sequence, "iso", "patPFTausDijetTagAndProbeShrinkingCone"),
-#        (standard_sequence, "iso", "patPFTausDijetTagAndProbeFixedCone"),
+        (standard_sequence, "iso", "patPFTausDijetTagAndProbeShrinkingCone"),
+        (standard_sequence, "iso", "patPFTausDijetTagAndProbeFixedCone"),
         (tanc_sequence, "tanc", "patPFTausDijetTagAndProbeShrinkingCone"),
-#        (hps_sequence, "hps", "patPFTausDijetTagAndProbeHPS"),
-#        (calo_sequence, "calo", "patCaloTausDijetTagAndProbe"),
+        (hps_sequence, "hps", "patPFTausDijetTagAndProbeHPS"),
+        (calo_sequence, "calo", "patCaloTausDijetTagAndProbe"),
     ]
 
     #denom_selection = genTaus.expr(
@@ -172,6 +173,8 @@ if __name__ == "__main__":
     c1.SetGridy(1)
     
     for sequence, sequence_name, algo in sequences_and_algos:
+#        if not sequence_name == "tanc":
+#            continue
         print "Plotting", sequence_name, "for", algo
         # Get the ntuple
         ntuple = ntuple_manager.get_ntuple(algo)
