@@ -115,7 +115,7 @@ EFFICIENCY_STYLES = {
     },
     'byLeadTrackPtCut' : {
         'marker_color' : ROOT.EColor.kBlue,
-        'marker_style' : 22, # closed triangle
+        'marker_style' : 22, # closed upward-facing triangle
     },
     'byTrackIsolation' : {
         'marker_color' : ROOT.EColor.kGreen + 2,
@@ -127,11 +127,16 @@ EFFICIENCY_STYLES = {
     },
     'OneOrThreeProng' : {
         'marker_color' : ROOT.EColor.kMagenta + 2,
-        'marker_style' : 26, # open triangle
+        'marker_style' : 26, # open upward-facing triangle
+    },
+    # For HPS
+    'byDecayModeFinding' : {
+        'marker_color' : 28,
+        'marker_style' : 23, # closed downward-facing triangle
     },
 }
 
-openToCloseMap = { 24:20, 25:21, 26:22}
+openToCloseMap = { 24:20, 25:21, 26:22 }
 MC_STYLES = {"OneOrThreeProng": {
     'marker_color' : ROOT.EColor.kBlack,
     'marker_style' : 24, # open dot
@@ -143,24 +148,24 @@ for dataStyle in DATA_STYLES:
 
 # TaNC, HPS and calo tau colors follow the same pattern
 for iso_type, tanc_type in zip(
-    ['byTrackIsolation', 'byEcalIsolation', 'OneOrThreeProng'],
-    ['byTaNCfrOnePercent', 'byTaNCfrHalfPercent', 'byTaNCfrQuarterPercent']):
+    [ 'byTrackIsolation', 'byEcalIsolation', 'OneOrThreeProng' ],
+    [ 'byTaNCfrOnePercent', 'byTaNCfrHalfPercent', 'byTaNCfrQuarterPercent' ]):
     EFFICIENCY_STYLES[tanc_type] = EFFICIENCY_STYLES[iso_type]
     MC_STYLES[tanc_type] = EFFICIENCY_STYLES[iso_type]
     DATA_STYLES[tanc_type] = deepcopy(EFFICIENCY_STYLES[iso_type])
     DATA_STYLES[tanc_type]["marker_style"] = openToCloseMap[EFFICIENCY_STYLES[iso_type]["marker_style"]]
 
 for iso_type, hps_type in zip(
-    [ 'byTrackIsolation', 'byEcalIsolation', 'OneOrThreeProng'],
-    ['byIsolationLoose', 'byIsolationMedium', 'byIsolationTight']):
+    [ 'byTrackIsolation', 'byEcalIsolation', 'OneOrThreeProng' ],
+    [ 'byIsolationLoose', 'byIsolationMedium', 'byIsolationTight' ]):
     EFFICIENCY_STYLES[hps_type] = EFFICIENCY_STYLES[iso_type]
     MC_STYLES[hps_type] = EFFICIENCY_STYLES[iso_type]
     DATA_STYLES[hps_type] = deepcopy(EFFICIENCY_STYLES[iso_type])
     DATA_STYLES[hps_type]["marker_style"] = openToCloseMap[EFFICIENCY_STYLES[iso_type]["marker_style"]]
 
 for iso_type, calo_type in zip(
-    [ 'byTrackIsolation', 'byEcalIsolation', 'OneOrThreeProng'],
-    ['byIsolation', 'byEcalIsolation_calo', 'OneOrThreeProng_calo']):
+    [ 'byTrackIsolation', 'byEcalIsolation', 'OneOrThreeProng' ],
+    [ 'byIsolation', 'byEcalIsolation_calo', 'OneOrThreeProng_calo' ]):
     EFFICIENCY_STYLES[calo_type] = EFFICIENCY_STYLES[iso_type]
     MC_STYLES[calo_type] = EFFICIENCY_STYLES[iso_type]
     DATA_STYLES[calo_type] = deepcopy(EFFICIENCY_STYLES[iso_type])
@@ -176,7 +181,6 @@ for mcStyle in MC_STYLES:
 for dataStyle in DATA_STYLES:
     DATA_STYLES[dataStyle]["line_color"] = DATA_STYLES[dataStyle]["marker_color"]
     DATA_STYLES[dataStyle]["fill_color"] = DATA_STYLES[dataStyle]["marker_color"]
-
 
 def make_nice_numbers(x, sig_figs = 2):
     format_string = "%0." + str(sig_figs) + "e"
