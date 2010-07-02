@@ -70,6 +70,7 @@ if __name__ == "__main__":
             'expr_str': '$numSignalTracks ==1 || $numSignalTracks ==3',
             'label' : "1 or 3 Prong",
         },
+        # For TaNC
         'byTaNCfrOnePercent': {
             'expr_str': '$byTaNCfrOnePercent',
             'label' : "TaNC 1.00%",
@@ -81,6 +82,11 @@ if __name__ == "__main__":
         'byTaNCfrQuarterPercent': {
             'expr_str': '$byTaNCfrQuarterPercent',
             'label' : "TaNC 0.25%",
+        },
+        # For HPS
+        'byDecayModeFinding': {
+            'expr_str': '$byLeadTrackFinding',
+            'label' : "Decay Mode Finding",
         },
         'byIsolationLoose' : {
             'expr_str': '$byIsolationLoose',
@@ -133,7 +139,7 @@ if __name__ == "__main__":
 
     hps_sequence = [
         'matching',
-        'byLeadTrackFinding',
+        'byDecayModeFinding',
         'byIsolationLoose',
         'byIsolationMedium',
         'byIsolationTight'
