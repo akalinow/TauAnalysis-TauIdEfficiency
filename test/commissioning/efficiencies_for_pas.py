@@ -9,8 +9,9 @@ Authors: Aruna Nayak, Evan K. Friis
 
 import ROOT
 import samples_cache as samples
-from TauAnalysis.TauIdEfficiency.ntauples.plotting import draw
+from TauAnalysis.TauIdEfficiency.ntauples.plotting import draw, efficiencyLogHack
 import TauAnalysis.TauIdEfficiency.ntauples.styles as style
+import sys
 
 if __name__ == "__main__":
     ROOT.gROOT.SetBatch(True)
@@ -177,10 +178,9 @@ if __name__ == "__main__":
 
     c1 = ROOT.TCanvas("c1","",0,0,500,500)
     c1.SetGridy(1)
-    
     for sequence, sequence_name, algo in sequences_and_algos:
-#        if not sequence_name == "tanc":
-#            continue
+        if sys.argv[1:] != [] and (not sequence_name in sys.argv[1:]):
+            continue
         print "Plotting", sequence_name, "for", algo
         # Get the ntuple
         ntuple = ntuple_manager.get_ntuple(algo)
@@ -219,8 +219,17 @@ if __name__ == "__main__":
                     binning = x_var_info['binning'],
                     output_name = '_'.join([numerator_name, x_var, sequence_name, algo]),
                 )
-
+                #FIXME clean this up
+                from math import sqrt
+                nNum = float(numerator.Integral())
+                nDenom = denominator.Integral()
+                err = 1/nDenom*sqrt(nNum*(1-nNum/nDenom) )
+                efficiencyLogHack("%s -> %s: "%(algo, numerator_name),timestamp=True)
+                efficiencyLogHack( "%e / %e = %e +- %e\n"%(nNum, nDenom, nNum/nDenom,err))
+                #end cleanup
+                
                 my_eff = ROOT.TGraphAsymmErrors(numerator, denominator)
+                                    
                 #overwrite the additional spacing by root
                 if len(x_var_info['binning']) == 3:
                     my_eff.GetXaxis().SetRangeUser(x_var_info['binning'][1],
@@ -255,6 +264,7 @@ if __name__ == "__main__":
             # Save the plot
             c1.SaveAs("plots/%s.png" % '_'.join(['ztt', algo, sequence_name, 'vs', x_var]))
             c1.SaveAs("plots/%s.pdf" % '_'.join(['ztt', algo, sequence_name, 'vs', x_var]))
+            
 
                     
 

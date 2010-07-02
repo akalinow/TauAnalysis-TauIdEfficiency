@@ -69,6 +69,15 @@ def efficiency(events, expression, numerator="", denominator="", output_name="",
         output_name = "eff_temp"
     numerator_h = draw(events, expression, numerator, "numerator_temp", **kwargs)
     denominator_h = draw(events, expression, denominator, "denominator_temp", **kwargs)
+    #FIXME clean this up
+    from math import sqrt
+    nNum = float(numerator_h.Integral())
+    nDenom = denominator_h.Integral()
+    err = 1/nDenom*sqrt(nNum*(1-nNum/nDenom) )
+    efficiencyLogHack( "%e / %e = %e +- %e\n"%(nNum, nDenom, nNum/nDenom, err))
+    efficiencyLogHack("",timestamp=True)
+    #end cleanup
+    
     #print numerator_h, denominator_h
     # Build a blank histogram w/ correct x & y axes to draw the efficiency on
     histogram_background = numerator_h.Clone("%s_bkg" % output_name)
@@ -83,3 +92,12 @@ def efficiency(events, expression, numerator="", denominator="", output_name="",
     efficiency.SetName(output_name)
     return (histogram_background, efficiency)
 
+def efficiencyLogHack(output, timestamp = False):
+    from time import strftime
+    import sys
+    ts = ""
+    if timestamp:
+        ts = strftime("%D - %T")
+    f = open("plots/efficiency_%s.log"%("_".join(sys.argv[1:])),"a")
+    f.write("%s: %s"%(ts, output))
+    f.close()

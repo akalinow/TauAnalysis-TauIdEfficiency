@@ -192,6 +192,9 @@ if __name__ == "__main__":
             ],
         }    
     for algorithm in selections:
+        import sys
+        if sys.argv[1:] != [] and (not algorithm in sys.argv[1:]):
+            continue
         #the basic selection is the same for all nTuples.
         base_selection = nTuples[algorithm].expr("$genMatch > 0.5 && $genDecayMode > 1.5 && $genPt > 10. && abs($genEta) < 2.5 ")
     

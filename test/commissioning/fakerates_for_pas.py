@@ -176,6 +176,9 @@ if __name__ == "__main__":
     for algorithm in numerators:
         # Update the numerator for each efficiency to ensure it is a subset of the
         # denominator
+        import sys
+        if sys.argv[1:] != [] and (not algorithm in sys.argv[1:]):
+            continue
         for eff_info in numerators[algorithm]: 
             eff_info['expr'] = denominator & eff_info['expr']
             makeFakeratePlots( algorithm )

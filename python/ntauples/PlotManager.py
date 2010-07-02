@@ -203,6 +203,7 @@ class PlotManager(object):
             # samples are the only contribution.  (i.e. it will think that there are a few
             # events for QCD jets of PT = 100, when actually the QCD_80 sample contributes
             # a lot.
+            plot.efficiencyLogHack(" for %s "%sample_name)
             my_bkg_hist, my_eff = plot.efficiency(
                 #list(sample_info['sample'].events_and_weights(self.int_lumi)),
                 list(sample_info['sample'].events_and_weights(None)),
@@ -260,6 +261,8 @@ class PlotManager(object):
                         numerator_info['expr']
 
             numerator_name = numerator_info['nice_name']
+            plot.efficiencyLogHack("####### %s ######\n"%numerator_name)
+            plot.efficiencyLogHack("",timestamp=True)
             #set style for the given numerator
             for sample_name in self.samples:
                 style_to_use = style_map[sample_name][numerator_info["style_name"]]

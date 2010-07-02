@@ -43,7 +43,7 @@ ZTAUTAU_LABEL_UPPER_LEFT.SetBorderSize(0)
 
 #define center-of-mass energy label
 SQRTS_LABEL_UPPER_LEFT = ROOT.TPaveText(0.12, 0.76, 0.45, 0.80, "NDC")
-SQRTS_LABEL_UPPER_LEFT.AddText("7 TeV")
+SQRTS_LABEL_UPPER_LEFT.AddText("#sqrt{s} = 7 TeV")
 SQRTS_LABEL_UPPER_LEFT.SetTextAlign(13)
 SQRTS_LABEL_UPPER_LEFT.SetTextSize(0.035)
 SQRTS_LABEL_UPPER_LEFT.SetFillStyle(0)
