@@ -100,7 +100,7 @@ if __name__ == "__main__":
         'pt' : {
             'expr_str': '$genPt',
             'binning': pt_bins,
-            'label': 'Generated #tau visible P_{T}',
+            'label': 'Generated #tau visible P_{T} [GeV/c]',
             'cutLabel':style.ETA_CUT_LABEL_UPPER_LEFT,
         }, 
         'eta' : {
@@ -181,7 +181,7 @@ if __name__ == "__main__":
         # Loop over different horizontal axes
         for x_var, x_var_info in parameterizations.iteritems():
             #t1 = ROOT.TLegend(0.6, 0.10, 0.7, 0.35, "","brNDC")
-            t1 = ROOT.TLegend(0.45, 0.65, 0.88, 0.85, "","brNDC")
+            t1 = ROOT.TLegend(0.45, 0.68, 0.88, 0.88, "","brNDC")
             t1.SetTextSize(0.03)
             t1.SetFillColor(0);
             t1.SetLineColor(1);
@@ -244,6 +244,7 @@ if __name__ == "__main__":
             # Draw the preliminary label
             style.CMS_PRELIMINARY_UPPER_LEFT.Draw()
             style.ZTAUTAU_LABEL_UPPER_LEFT.Draw()
+            style.SQRTS_LABEL_UPPER_LEFT.Draw()
             x_var_info["cutLabel"].Draw()
             # Save the plot
             c1.SaveAs("plots/%s.png" % '_'.join(['ztt', algo, sequence_name, 'vs', x_var]))
