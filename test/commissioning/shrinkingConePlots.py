@@ -73,9 +73,9 @@ expr_abs_jetEta = shrinking_ntuple.expr('abs($jetEta)')
 
 # Define some common binnings
 #pt_binning_fine = (50, 0, 100)
-pt_binning_fine = (0, 5, 10, 15, 20, 25, 35, 45, 60, 80, 100)
-eta_binning_fine = (50, -2.5, 2.5)
-phi_binning_fine = (50, -3.14, 3.14)
+pt_binning_fine = (0, 10, 12.5, 15, 17.5, 20, 22.5, 25, 30, 35, 40, 45, 50, 60, 70, 80, 100)
+eta_binning_fine = (25, -2.5, 2.5)
+phi_binning_fine = (25, -3.14, 3.14)
 decay_mode_binning = (25, -0.5, 24.5)
 discriminator_binning = (200, -0.5, 1.5)
 
