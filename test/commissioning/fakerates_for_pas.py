@@ -16,9 +16,10 @@ def makeFakeratePlots( algorithm ):
         binning=pt_binning_fine, 
         y_min = 1e-4,
         y_max = 10,
-        x_axis_title='Jet P_{T}',
+        x_axis_title='Jet P_{T} [GeV/c]',
         labels = [style.CMS_PRELIMINARY_UPPER_LEFT,
                   style.LUMI_LABEL_UPPER_LEFT,
+                  style.SQRTS_LABEL_UPPER_LEFT,
                   style.ETA_CUT_LABEL_UPPER_LEFT
                   ],
         logy = True)
@@ -39,6 +40,7 @@ def makeFakeratePlots( algorithm ):
         x_axis_title='Jet #eta',
         labels = [style.CMS_PRELIMINARY_UPPER_LEFT,
                   style.LUMI_LABEL_UPPER_LEFT,
+                  style.SQRTS_LABEL_UPPER_LEFT,
                   style.PT_CUT_LABEL_UPPER_LEFT
                   ],
         logy = True)
@@ -58,6 +60,7 @@ def makeFakeratePlots( algorithm ):
         x_axis_title='Jet #phi',
         labels = [style.CMS_PRELIMINARY_UPPER_LEFT,
                   style.LUMI_LABEL_UPPER_LEFT,
+                  style.SQRTS_LABEL_UPPER_LEFT,
                   style.PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT,
                   ],
         logy = True)
