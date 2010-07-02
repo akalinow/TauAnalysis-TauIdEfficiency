@@ -87,8 +87,11 @@ if __name__ == "__main__":
     ntuple_manager = samples.data.build_ntuple_manager("tauIdEffNtuple")
 
     nTuples = {
+        "shrinkingCone": ntuple_manager.get_ntuple("patPFTausDijetTagAndProbeShrinkingCone"),
+        "fixedCone": ntuple_manager.get_ntuple("patPFTausDijetTagAndProbeFixedCone"),
         "TaNC": ntuple_manager.get_ntuple("patPFTausDijetTagAndProbeShrinkingCone"),
         "hps": ntuple_manager.get_ntuple("patPFTausDijetTagAndProbeHPS"),
+        "calo": ntuple_manager.get_ntuple("patCaloTausDijetTagAndProbe"),
         }
     
     hlt = ntuple_manager.get_ntuple("TriggerResults")
@@ -101,7 +104,26 @@ if __name__ == "__main__":
          eta_binning_fine, phi_binning_fine, lead_pion_selection
 
     # Define the numerators to plot
+    pfString = "$byLeadTrackFinding > 0.5 & $byLeadTrackPtCut > 0.5 & $byTrackIsolation > 0.5 "
+    pfString += " & $byEcalIsolation > 0.5 & ($numChargedParticlesSignalCone == 1 || $numChargedParticlesSignalCone == 3)"
+    caloString = "$byLeadTrackFinding > 0.5 &  & $byLeadTrackPtCut > 0.5 & $byIsolation > 0.5 "
+    caloString += " & $etSumIsolationECAL < 5 & ($numSignalTracks ==1 || $numSignalTracks ==3)"
+    
     numerators = {
+         "shrinkingCone":[
+            {
+                'expr':  nTuples["shrinkingCone"].expr(pfString) ,
+                "style_name":"OneOrThreeProng",
+                'nice_name': "all shrinkingCone",
+                },
+            ],
+        "fixedCone":[
+            {
+                'expr':  nTuples["fixedCone"].expr(pfString) ,
+                "style_name":"OneOrThreeProng",
+                'nice_name': "all fixedCone",
+                },
+            ],
         "TaNC":[
             {
                 'expr':  nTuples["TaNC"].expr('$byTaNCfrOnePercent') & lead_pion_selection,
@@ -118,7 +140,31 @@ if __name__ == "__main__":
                 "style_name":"byTaNCfrQuarterPercent",
                 'nice_name': "TaNC 0.25%"
                 },
-            ]
+            ],
+         "hps":[
+            {
+                'expr':  nTuples["hps"].expr('$byIsolationLoose > 0.5') & lead_pion_selection,
+                "style_name":"byIsolationLoose",
+                'nice_name': "Loose Isolation",
+                },
+            {
+                'expr':  nTuples["hps"].expr('$byIsolationMedium > 0.5') & lead_pion_selection,
+                "style_name":"byIsolationMedium",
+                'nice_name': "Medium Isolation",
+                },
+            {
+                'expr':  nTuples["hps"].expr('$byIsolationTight > 0.5') & lead_pion_selection,
+                "style_name":"byIsolationTight",
+                'nice_name': "Tight Isolation",
+                },
+            ],
+        "calo":[
+            {
+                'expr':  nTuples["calo"].expr(caloString) ,
+                "style_name":"OneOrThreeProng",
+                'nice_name': "all caloTau",
+                },
+            ],
         }
     
     denominator = base_selection & basic_kinematic_cut
