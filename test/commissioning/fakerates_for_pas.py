@@ -7,7 +7,6 @@ import TauAnalysis.TauIdEfficiency.ntauples.styles as style
 # Definition of input files.
 import samples_cache as samples
 
-
 def makeFakeratePlots( algorithm ):
     pt_effs = plotter.multi_efficiency(
         nTuples[algorithm].expr('$jetPt'), 
@@ -24,11 +23,10 @@ def makeFakeratePlots( algorithm ):
                   ],
         logy = True)
     
-    pt_effs['legend'].make_legend(0.45, 0.65, 0.88, 0.85).Draw()
+    pt_effs['legend'].make_legend(0.45, 0.68, 0.88, 0.88).Draw()
     
     canvas.SaveAs("plots/%s_multifake_vs_pt_for_pas.png"%(algorithm))
     canvas.SaveAs("plots/%s_multifake_vs_pt_for_pas.pdf"%(algorithm))
-
     
     eta_effs = plotter.multi_efficiency(
         nTuples[algorithm].expr('$jetEta'), 
@@ -45,7 +43,7 @@ def makeFakeratePlots( algorithm ):
                   ],
         logy = True)
     
-    eta_effs['legend'].make_legend(0.45, 0.65, 0.88, 0.85).Draw()
+    eta_effs['legend'].make_legend(0.45, 0.68, 0.88, 0.88).Draw()
     
     canvas.SaveAs("plots/%s_multifake_vs_eta_for_pas.png"%(algorithm))
     canvas.SaveAs("plots/%s_multifake_vs_eta_for_pas.pdf"%(algorithm))
@@ -65,7 +63,7 @@ def makeFakeratePlots( algorithm ):
                   ],
         logy = True)
     
-    phi_effs['legend'].make_legend(0.45, 0.65, 0.88, 0.85).Draw()
+    phi_effs['legend'].make_legend(0.45, 0.68, 0.88, 0.88).Draw()
     
     canvas.SaveAs("plots/%s_multifake_vs_phi_for_pas.png"%(algorithm))
     canvas.SaveAs("plots/%s_multifake_vs_phi_for_pas.pdf"%(algorithm))
@@ -171,8 +169,7 @@ if __name__ == "__main__":
         }
     
     denominator = base_selection & basic_kinematic_cut
-    
-    
+        
     for algorithm in numerators:
         # Update the numerator for each efficiency to ensure it is a subset of the
         # denominator
