@@ -22,7 +22,7 @@ if __name__ == "__main__":
     plotter = PlotManager()
 
     # Add each sample we want to plot/compare
-    plotter.add_sample(samples.qcd_mc_pythia8, "Simulation", **style.QCD_MC_PYTHIA8_STYLE_HIST)
+    plotter.add_sample(samples.qcd_mc_pythia8, "Simulation", **style.QCD_MC_STYLE_HIST)
     plotter.add_sample(samples.data, "Data", **style.DATA_STYLE)
 
     # Normalize everything to the data luminosity
@@ -56,7 +56,7 @@ if __name__ == "__main__":
     #Compare basic distributions
     pfJetPt_result = plotter.distribution(
         expression = pfTau_ntuple.expr('$jetPt'),
-        selection = pfTau_ntuple.expr('abs($jetEta) < 2.5') & pfTau_base_selection,
+        selection = pfTau_ntuple.expr('$jetPt > 10 && abs($jetEta) < 2.5') & pfTau_base_selection,
         extra_labels = [ style.ETA_CUT_LABEL_UPPER_LEFT ],
         binning = (50, 0, 100),
         normalize = "data",
@@ -98,7 +98,7 @@ if __name__ == "__main__":
   
     pfJetPhi_result = plotter.distribution(
         expression = pfTau_ntuple.expr('$jetPhi'),
-        selection = pfTau_ntuple.expr('$jetPt > 10') & pfTau_base_selection,
+        selection = pfTau_ntuple.expr('$jetPt > 10 && abs($jetEta) < 2.5') & pfTau_base_selection,
         extra_labels = [ style.PT_ETA_CUT_LABEL_UPPER_LEFT ],
         binning = (50, -3.14, 3.14),
         normalize = "data",
@@ -130,7 +130,7 @@ if __name__ == "__main__":
     #Compare basic distributions
     caloJetPt_result = plotter.distribution(
         expression = caloTau_ntuple.expr('$jetPt'),
-        selection = caloTau_ntuple.expr('abs($jetEta) < 2.5') & caloTau_base_selection,
+        selection = caloTau_ntuple.expr('$jetPt > 10 && abs($jetEta) < 2.5') & caloTau_base_selection,
         extra_labels = [ style.ETA_CUT_LABEL_UPPER_LEFT ],
         binning = (50, 0, 100),
         normalize = "data",
@@ -172,7 +172,7 @@ if __name__ == "__main__":
   
     caloJetPhi_result = plotter.distribution(
         expression = caloTau_ntuple.expr('$jetPhi'),
-        selection = caloTau_ntuple.expr('$jetPt > 10') & caloTau_base_selection,
+        selection = caloTau_ntuple.expr('$jetPt > 10 && abs($jetEta) < 2.5') & caloTau_base_selection,
         extra_labels = [ style.PT_ETA_CUT_LABEL_UPPER_LEFT ],
         binning = (50, -3.14, 3.14),
         normalize = "data",
