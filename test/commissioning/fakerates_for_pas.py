@@ -10,7 +10,8 @@ import samples_cache as samples
 def makeFakeratePlots( algorithm ):
     denominator_section = "$probe > 0.5 & $jetPt > 10.0 & abs($jetEta) < 2.5"
     denominator = hlt.expr('$hltJet15U > 0.5') & nTuples[algorithm].expr(denominator_section)
-    numerators[algorithm]['expr'] = denominator & numerators[algorithm]['expr']
+    for eff_info in numerators[algorithm]: 
+        eff_info['expr'] = denominator & eff_info['expr']
     pt_effs = plotter.multi_efficiency(
         nTuples[algorithm].expr('$jetPt'), 
         denominator,
@@ -135,34 +136,34 @@ if __name__ == "__main__":
             ],
         "TaNC":[
             {
-                'expr':  nTuples["TaNC"].expr(lead_pion_selection+' $byTaNCfrOnePercent > 0.5'),
+                'expr':  nTuples["TaNC"].expr('$byLeadTrackFinding > 0.5 & $byTaNCfrOnePercent > 0.5'),
                 "style_name":"byTaNCfrOnePercent",
                 'nice_name': "TaNC 1.00%",
                 },
             {
-                'expr':  nTuples["TaNC"].expr(lead_pion_selection+'$byTaNCfrHalfPercent > 0.5'),
+                'expr':  nTuples["TaNC"].expr('$byLeadTrackFinding > 0.5 & $byTaNCfrHalfPercent > 0.5'),
                 "style_name":"byTaNCfrHalfPercent",
                 'nice_name': "TaNC 0.50%"
                 },
             {
-                'expr':  nTuples["TaNC"].expr(lead_pion_selection+'$byTaNCfrQuarterPercent > 0.5'),
+                'expr':  nTuples["TaNC"].expr('$byLeadTrackFinding > 0.5 & $byTaNCfrQuarterPercent > 0.5'),
                 "style_name":"byTaNCfrQuarterPercent",
                 'nice_name': "TaNC 0.25%"
                 },
             ],
          "hps":[
             {
-                'expr':  nTuples["hps"].expr(lead_pion_selection+'$byIsolationLoose > 0.5'),
+                'expr':  nTuples["hps"].expr('$byLeadTrackFinding > 0.5 & $byIsolationLoose > 0.5'),
                 "style_name":"byIsolationLoose",
                 'nice_name': "Loose Isolation",
                 },
             {
-                'expr':  nTuples["hps"].expr(lead_pion_selection+'$byIsolationMedium > 0.5'),
+                'expr':  nTuples["hps"].expr('$byLeadTrackFinding > 0.5 & $byIsolationMedium > 0.5'),
                 "style_name":"byIsolationMedium",
                 'nice_name': "Medium Isolation",
                 },
             {
-                'expr':  nTuples["hps"].expr(lead_pion_selection+'$byIsolationTight > 0.5'),
+                'expr':  nTuples["hps"].expr('$byLeadTrackFinding > 0.5 & $byIsolationTight > 0.5'),
                 "style_name":"byIsolationTight",
                 'nice_name': "Tight Isolation",
                 },
@@ -182,8 +183,7 @@ if __name__ == "__main__":
         import sys
         if sys.argv[1:] != [] and (not algorithm in sys.argv[1:]):
             continue
-        for eff_info in numerators[algorithm]: 
-            makeFakeratePlots( algorithm )
+        makeFakeratePlots( algorithm )
             
         
         
