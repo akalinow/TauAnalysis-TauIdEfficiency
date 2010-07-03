@@ -8,6 +8,9 @@ import TauAnalysis.TauIdEfficiency.ntauples.styles as style
 import samples_cache as samples
 
 def makeFakeratePlots( algorithm ):
+    denominator_section = "$probe > 0.5 & $jetPt > 10.0 & abs($jetEta) < 2.5"
+    denominator = hlt.expr('$hltJet15U > 0.5') & nTuples[algorithm].expr(denominator_section)
+    numerators[algorithm]['expr'] = denominator & numerators[algorithm]['expr']
     pt_effs = plotter.multi_efficiency(
         nTuples[algorithm].expr('$jetPt'), 
         denominator,
@@ -101,10 +104,13 @@ if __name__ == "__main__":
     canvas = ROOT.TCanvas("pas", "pas", 500, 500)
     canvas.cd()
     
-    from shrinkingConePlots import base_selection, basic_kinematic_cut, pt_binning_fine, \
-         eta_binning_fine, phi_binning_fine, lead_pion_selection
+    pt_binning_fine = (0, 10, 12.5, 15, 17.5, 20, 22.5, 25, 30, 35, 40, 45, 50, 60, 70, 80, 100)
+    eta_binning_fine = (25, -2.5, 2.5)
+    phi_binning_fine = (25, -3.14, 3.14)
+
 
     # Define the numerators to plot
+    lead_pion_selection = '$byLeadPionPtCut > 0.5 '
     pfString = "$byLeadTrackFinding > 0.5 & $byLeadTrackPtCut > 0.5 & $byTrackIsolation > 0.5 "
     pfString += " & $byEcalIsolation > 0.5 & ($numChargedParticlesSignalCone == 1 || $numChargedParticlesSignalCone == 3)"
     caloString = "$byLeadTrackFinding > 0.5 & $byLeadTrackPtCut > 0.5 & $byIsolation > 0.5 "
@@ -129,34 +135,34 @@ if __name__ == "__main__":
             ],
         "TaNC":[
             {
-                'expr':  nTuples["TaNC"].expr('$byTaNCfrOnePercent') & lead_pion_selection,
+                'expr':  nTuples["TaNC"].expr(lead_pion_selection+' $byTaNCfrOnePercent > 0.5'),
                 "style_name":"byTaNCfrOnePercent",
                 'nice_name': "TaNC 1.00%",
                 },
             {
-                'expr':  nTuples["TaNC"].expr('$byTaNCfrHalfPercent') & lead_pion_selection,
+                'expr':  nTuples["TaNC"].expr(lead_pion_selection+'$byTaNCfrHalfPercent > 0.5'),
                 "style_name":"byTaNCfrHalfPercent",
                 'nice_name': "TaNC 0.50%"
                 },
             {
-                'expr':  nTuples["TaNC"].expr('$byTaNCfrQuarterPercent') & lead_pion_selection,
+                'expr':  nTuples["TaNC"].expr(lead_pion_selection+'$byTaNCfrQuarterPercent > 0.5'),
                 "style_name":"byTaNCfrQuarterPercent",
                 'nice_name': "TaNC 0.25%"
                 },
             ],
          "hps":[
             {
-                'expr':  nTuples["hps"].expr('$byIsolationLoose > 0.5') & lead_pion_selection,
+                'expr':  nTuples["hps"].expr(lead_pion_selection+'$byIsolationLoose > 0.5'),
                 "style_name":"byIsolationLoose",
                 'nice_name': "Loose Isolation",
                 },
             {
-                'expr':  nTuples["hps"].expr('$byIsolationMedium > 0.5') & lead_pion_selection,
+                'expr':  nTuples["hps"].expr(lead_pion_selection+'$byIsolationMedium > 0.5'),
                 "style_name":"byIsolationMedium",
                 'nice_name': "Medium Isolation",
                 },
             {
-                'expr':  nTuples["hps"].expr('$byIsolationTight > 0.5') & lead_pion_selection,
+                'expr':  nTuples["hps"].expr(lead_pion_selection+'$byIsolationTight > 0.5'),
                 "style_name":"byIsolationTight",
                 'nice_name': "Tight Isolation",
                 },
@@ -165,13 +171,10 @@ if __name__ == "__main__":
             {
                 'expr':  nTuples["calo"].expr(caloString) ,
                 "style_name":"OneOrThreeProng",
-                ##'nice_name': "all caloTau",
                 'nice_name': "",
                 },
             ],
         }
-    
-    denominator = base_selection & basic_kinematic_cut
         
     for algorithm in numerators:
         # Update the numerator for each efficiency to ensure it is a subset of the
@@ -180,7 +183,6 @@ if __name__ == "__main__":
         if sys.argv[1:] != [] and (not algorithm in sys.argv[1:]):
             continue
         for eff_info in numerators[algorithm]: 
-            eff_info['expr'] = denominator & eff_info['expr']
             makeFakeratePlots( algorithm )
             
         
