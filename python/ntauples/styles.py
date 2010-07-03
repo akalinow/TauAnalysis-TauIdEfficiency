@@ -71,6 +71,13 @@ ETA_CUT_LABEL_UPPER_LEFT.SetTextSize(0.035)
 ETA_CUT_LABEL_UPPER_LEFT.SetFillStyle(0)
 ETA_CUT_LABEL_UPPER_LEFT.SetBorderSize(0)
 
+ETAVIS_CUT_LABEL_UPPER_LEFT = ROOT.TPaveText(0.12, 0.72, 0.45, 0.76, "NDC")
+ETAVIS_CUT_LABEL_UPPER_LEFT.AddText("|#eta^{vis}| < 2.5")
+ETAVIS_CUT_LABEL_UPPER_LEFT.SetTextAlign(13)
+ETAVIS_CUT_LABEL_UPPER_LEFT.SetTextSize(0.035)
+ETAVIS_CUT_LABEL_UPPER_LEFT.SetFillStyle(0)
+ETAVIS_CUT_LABEL_UPPER_LEFT.SetBorderSize(0)
+
 PT_ETA_CUT_LABEL_UPPER_LEFT = ROOT.TPaveText(0.12, 0.72, 0.45, 0.76, "NDC")
 PT_ETA_CUT_LABEL_UPPER_LEFT.AddText("P_{T} > 10 GeV/c, |#eta| < 2.5")
 PT_ETA_CUT_LABEL_UPPER_LEFT.SetTextAlign(13)
@@ -276,8 +283,24 @@ QCD_MC_PYTHIA8_STYLE_DOTS = {
     #'line_width' : 1.5,
 }
 
-QCD_MC_STYLE_HIST = QCD_MC_PYTHIA6_STYLE_HIST
-QCD_MC_STYLE_DOTS = QCD_MC_PYTHIA6_STYLE_DOTS
+QCD_MC_STYLE_HIST = {
+    'draw_option' : "hist",
+    'line_color' :  ROOT.EColor.kAzure-2,
+    #'line_width' : 1.5,
+    'fill_color' :  ROOT.EColor.kAzure-4,
+    'fill_style' : 3003,
+    'marker_style' : 24,
+    'marker_color' : ROOT.EColor.kAzure,
+}
+
+QCD_MC_STYLE_DOTS = {
+    'draw_option' : "e1p",
+    'marker_style' : 24,        # open dot
+    'marker_size' : 1.0,
+    'marker_color' : ROOT.EColor.kAzure,
+    'line_color' :  ROOT.EColor.kBlack,
+    #'line_width' : 1.5,
+}
 
 MINBIAS_MC_STYLE = {
     'draw_option' : "e1p",
