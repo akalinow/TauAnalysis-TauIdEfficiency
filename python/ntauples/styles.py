@@ -35,7 +35,7 @@ LUMI_LABEL_UPPER_LEFT.SetBorderSize(0)
 
 #define Z--> tau tau label
 ZTAUTAU_LABEL_UPPER_LEFT = ROOT.TPaveText(0.12, 0.80, 0.45, 0.84, "NDC")
-ZTAUTAU_LABEL_UPPER_LEFT.AddText("Z #rightarrow #tau^{+} #tau^{-} Simulation")
+ZTAUTAU_LABEL_UPPER_LEFT.AddText("Z #rightarrow #tau #tau Simulation")
 ZTAUTAU_LABEL_UPPER_LEFT.SetTextAlign(13)
 ZTAUTAU_LABEL_UPPER_LEFT.SetTextSize(0.035)
 ZTAUTAU_LABEL_UPPER_LEFT.SetFillStyle(0)
