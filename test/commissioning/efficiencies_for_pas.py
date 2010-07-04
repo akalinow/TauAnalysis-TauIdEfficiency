@@ -91,7 +91,7 @@ if __name__ == "__main__":
         },
         'byIsolationLoose' : {
             'expr_str': '$byIsolationLoose',
-            'label': "Medium Isolation",
+            'label': "Loose Isolation",
         },
         'byIsolationMedium' : {
             'expr_str': '$byIsolationMedium',
@@ -108,7 +108,7 @@ if __name__ == "__main__":
             'expr_str': '$genPt',
             'binning': pt_bins,
             'label': 'Generated #tau visible P_{T} [GeV/c]',
-            'cutLabel':style.ETA_CUT_LABEL_UPPER_LEFT,
+            'cutLabel':style.ETAVIS_CUT_LABEL_UPPER_LEFT,
         }, 
         'eta' : {
             'expr_str': '$genEta',
