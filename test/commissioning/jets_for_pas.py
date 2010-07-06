@@ -53,7 +53,7 @@ if __name__ == "__main__":
     # Basic requirement HLT + Probe object
     pfTau_base_selection = hlt.expr('$hltJet15U > 0.5') & pfTau_ntuple.expr('$probe > 0.5')
 
-    #Compare basic distributions
+    # Compare basic distributions
     pfJetPt_result = plotter.distribution(
         expression = pfTau_ntuple.expr('$jetPt'),
         selection = pfTau_ntuple.expr('$jetPt > 10 && abs($jetEta) < 2.5') & pfTau_base_selection,
@@ -62,7 +62,7 @@ if __name__ == "__main__":
         normalize = "data",
         x_axis_title = "Jet P_{T} [GeV/c]",
         y_axis_title = "Number of Events",
-        y_min = 1e0, y_max = 1e10, logy = True
+        y_min = 1e0, y_max = 1e8, logy = True
     )
   
     # Draw the legend - you can pass NDC xl, yl, xh, yh coords to make_legend(...)
@@ -75,6 +75,22 @@ if __name__ == "__main__":
   
     canvas.SaveAs("plots/pfJetPt.png")
     canvas.SaveAs("plots/pfJetPt.pdf")
+
+    # Make plot of (normalized) difference (Data - MC)/MC
+    pfJetPt_diff = plotter.plot_dist_deviations(
+        pfJetPt_result,
+        "data",
+        [ "mc_qcd_pythia8" ]
+    )
+
+    pfJetPt_diff['legend'].make_legend(0.60, 0.69, 0.88, 0.88).Draw()
+
+    pad.RedrawAxis()
+    canvas.Update()
+    pad.Update()
+  
+    canvas.SaveAs("plots/pfJetPt_diff.png")
+    canvas.SaveAs("plots/pfJetPt_diff.pdf")
   
     pfJetEta_result = plotter.distribution(
         expression = pfTau_ntuple.expr('$jetEta'),
@@ -84,7 +100,7 @@ if __name__ == "__main__":
         normalize = "data",
         x_axis_title = "Jet #eta",
         y_axis_title = "Number of Events",
-        y_min = 0, y_max = 60000, logy = False
+        y_min = 0, y_max = 50000, logy = False
     )
 
     pfJetEta_result['legend'].make_legend(0.60, 0.69, 0.88, 0.88).Draw()
@@ -104,7 +120,7 @@ if __name__ == "__main__":
         normalize = "data",
         x_axis_title = "Jet #phi",
         y_axis_title = "Number of Events",
-        y_min = 0, y_max = 60000, logy = False
+        y_min = 0, y_max = 50000, logy = False
     )
     
     pfJetPhi_result['legend'].make_legend(0.60, 0.69, 0.88, 0.88).Draw()
@@ -127,7 +143,7 @@ if __name__ == "__main__":
     # Basic requirement HLT + Probe object
     caloTau_base_selection = hlt.expr('$hltJet15U > 0.5') & caloTau_ntuple.expr('$probe > 0.5')
 
-    #Compare basic distributions
+    # Compare basic distributions
     caloJetPt_result = plotter.distribution(
         expression = caloTau_ntuple.expr('$jetPt'),
         selection = caloTau_ntuple.expr('$jetPt > 10 && abs($jetEta) < 2.5') & caloTau_base_selection,
@@ -136,7 +152,7 @@ if __name__ == "__main__":
         normalize = "data",
         x_axis_title = "Jet P_{T} [GeV/c]",
         y_axis_title = "Number of Events",
-        y_min = 1e0, y_max = 1e10, logy = True
+        y_min = 1e0, y_max = 1e8, logy = True
     )
   
     # Draw the legend - you can pass NDC xl, yl, xh, yh coords to make_legend(...)
@@ -158,7 +174,7 @@ if __name__ == "__main__":
         normalize = "data",
         x_axis_title = "Jet #eta",
         y_axis_title = "Number of Events",
-        y_min = 0, y_max = 60000, logy = False
+        y_min = 0, y_max = 50000, logy = False
     )
 
     caloJetEta_result['legend'].make_legend(0.60, 0.69, 0.88, 0.88).Draw()
@@ -178,7 +194,7 @@ if __name__ == "__main__":
         normalize = "data",
         x_axis_title = "Jet #phi",
         y_axis_title = "Number of Events",
-        y_min = 0, y_max = 60000, logy = False
+        y_min = 0, y_max = 50000, logy = False
     )
     
     caloJetPhi_result['legend'].make_legend(0.60, 0.69, 0.88, 0.88).Draw()
