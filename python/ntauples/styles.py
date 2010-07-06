@@ -237,7 +237,7 @@ DEFAULT_STYLE = {
 
 DATA_STYLE = {
     'draw_option' : "e1p",      # draw error bars
-    'marker_style' : 20,        # dot
+    'marker_style' : 20,        # solid circle
     'marker_size' : 1.0,
     #'line_width' : 1.5,
     'marker_color' : ROOT.EColor.kBlack,
@@ -247,6 +247,25 @@ DATA_STYLE = {
 
 QCD_MC_PYTHIA6_STYLE_HIST = {
     'draw_option' : "hist",
+    'line_color' :  ROOT.EColor.kGreen-2,
+    #'line_width' : 1.5,
+    'fill_color' :  ROOT.EColor.kGreen-4,
+    'fill_style' : 3005,
+    'marker_style' : 25,
+    'marker_color' : ROOT.EColor.kGreen,
+}
+
+QCD_MC_PYTHIA6_STYLE_DOTS = {
+    'draw_option' : "e1p",
+    'marker_style' : 25,        # open square
+    'marker_size' : 1.0,
+    'marker_color' : ROOT.EColor.kGreen,
+    'line_color' :  ROOT.EColor.kBlack,
+    #'line_width' : 1.5,
+}
+
+QCD_MC_PYTHIA8_STYLE_HIST = {
+    'draw_option' : "hist",
     'line_color' :  ROOT.EColor.kAzure-2,
     #'line_width' : 1.5,
     'fill_color' :  ROOT.EColor.kAzure-4,
@@ -255,30 +274,11 @@ QCD_MC_PYTHIA6_STYLE_HIST = {
     'marker_color' : ROOT.EColor.kAzure,
 }
 
-QCD_MC_PYTHIA6_STYLE_DOTS = {
-    'draw_option' : "e1p",
-    'marker_style' : 24,        # open dot
-    'marker_size' : 1.0,
-    'marker_color' : ROOT.EColor.kAzure,
-    'line_color' :  ROOT.EColor.kBlack,
-    #'line_width' : 1.5,
-}
-
-QCD_MC_PYTHIA8_STYLE_HIST = {
-    'draw_option' : "hist",
-    'line_color' :  ROOT.EColor.kGreen-2,
-    #'line_width' : 1.5,
-    'fill_color' :  ROOT.EColor.kGreen-4,
-    'fill_style' : 3005,
-    'marker_style' : 24,
-    'marker_color' : ROOT.EColor.kGreen,
-}
-
 QCD_MC_PYTHIA8_STYLE_DOTS = {
     'draw_option' : "e1p",
-    'marker_style' : 24,        # open dot
+    'marker_style' : 24,        # open circle
     'marker_size' : 1.0,
-    'marker_color' : ROOT.EColor.kGreen,
+    'marker_color' : ROOT.EColor.kAzure,
     'line_color' :  ROOT.EColor.kBlack,
     #'line_width' : 1.5,
 }
@@ -295,7 +295,7 @@ QCD_MC_STYLE_HIST = {
 
 QCD_MC_STYLE_DOTS = {
     'draw_option' : "e1p",
-    'marker_style' : 24,        # open dot
+    'marker_style' : 24,        # open circle
     'marker_size' : 1.0,
     'marker_color' : ROOT.EColor.kAzure,
     'line_color' :  ROOT.EColor.kBlack,
@@ -304,7 +304,7 @@ QCD_MC_STYLE_DOTS = {
 
 MINBIAS_MC_STYLE = {
     'draw_option' : "e1p",
-    'marker_style' : 21,        # square dot
+    'marker_style' : 21,        # solid square 
     'marker_size' : 1.0,
     'marker_color' : ROOT.EColor.kRed,
     'line_color' :  ROOT.EColor.kBlack,
