@@ -10,6 +10,133 @@ import samples as samples
 import os
 import sys
 
+def makeJetPlot(expression, selection, extra_labels,
+                binning, x_axis_title, y_min, y_max, logy,
+                filename):
+
+    #----------------------------------------------------------------------------
+    # Plot distribution of Data vs. Monte Carlo predictions
+    #----------------------------------------------------------------------------
+
+    # Create canvas
+    canvas_distribution = ROOT.TCanvas("canvas_distribution", "canvas_distribution", 500, 500)     
+    canvas_distribution.SetLeftMargin(0.12)
+    canvas_distribution.SetBottomMargin(0.12)
+
+    canvas_distribution.cd()
+
+    # Create plot
+    distribution_result = plotter.distribution(
+        expression = expression,
+        selection = selection,
+        extra_labels = extra_labels,
+        binning = binning,
+        normalize = "data",
+        x_axis_title = x_axis_title,
+        y_axis_title = "Number of Events",
+        y_min = y_min, y_max = y_max, logy = logy
+    )
+
+    # Adjust offset of y-axis title
+    distribution_result['result'].GetYaxis().SetTitleOffset(1.4)
+  
+    # Draw the legend - you can pass NDC xl, yl, xh, yh coordinates to make_legend(...)
+    legend_x1 = 0.60
+    legend_y1 = 0.69
+    legend_x2 = 0.88
+    legend_y2 = 0.88
+    distribution_result['legend'].make_legend(legend_x1, legend_y1, legend_x2, legend_y2).Draw()
+
+    canvas_distribution.cd()
+    canvas_distribution.Update()
+    canvas_distribution.SaveAs("plots/" + filename + ".png")
+    canvas_distribution.SaveAs("plots/" + filename + ".pdf")
+
+    canvas_distribution.IsA().Destructor(canvas_distribution)
+
+    #----------------------------------------------------------------------------
+    # Add plot of (normalized) difference (Data - MC)/MC
+    #----------------------------------------------------------------------------
+
+    # Create new canvas
+    canvas_diff = ROOT.TCanvas("canvas_diff", "canvas_diff", 500, 625)
+
+    canvas_diff.cd()
+    
+    topPad_diff = ROOT.TPad("topPad_diff", "topPad_diff", 0.00, 0.35, 1.00, 1.00)
+    topPad_diff.SetFillColor(10)
+    topPad_diff.SetLogy(logy)
+    topPad_diff.SetTopMargin(0.05)
+    topPad_diff.SetLeftMargin(0.18)
+    topPad_diff.SetBottomMargin(0.00)
+    topPad_diff.SetRightMargin(0.05)
+    topPad_diff.SetGridy()
+    topPad_diff.Draw()
+    topPad_diff.cd()
+
+    distribution_result['result'].Draw("nostack")
+
+    # Ommit x-axis title
+    distribution_result['result'].GetXaxis().SetTitle("")
+    
+    distribution_result['result'].GetYaxis().SetTitleSize(0.05) 
+    distribution_result['result'].GetYaxis().SetLabelSize(0.05)
+  
+    # Draw the legend - you can pass NDC xl, yl, xh, yh coords to make_legend(...)
+    legend_adjusted_coordinates = style.adjust_coordinates(topPad_diff, legend_x1, legend_y1, legend_x2, legend_y2)
+    distribution_result['legend'].make_legend(
+        legend_adjusted_coordinates['x1'], legend_adjusted_coordinates['y1'],
+        legend_adjusted_coordinates['x2'], legend_adjusted_coordinates['y2']).Draw()
+
+    # Define temporary disctionary to prevent automatic garbage collection
+    to_keep = {}
+
+    draw_labels_topPad = style.draw_labels(topPad_diff)
+    to_keep["1"] = draw_labels_topPad(style.DEFAULT_STYLE['labels'])
+    to_keep["2"] = draw_labels_topPad(extra_labels)
+
+    canvas_diff.cd()
+    
+    bottomPad_diff = ROOT.TPad("bottomPad_diff", "bottomPad_diff", 0.00, 0.00, 1.00, 0.35)
+    bottomPad_diff.SetFillColor(10)
+    bottomPad_diff.SetLogy(False)
+    bottomPad_diff.SetTopMargin(0.00)
+    bottomPad_diff.SetLeftMargin(0.18)
+    bottomPad_diff.SetBottomMargin(0.20)
+    bottomPad_diff.SetRightMargin(0.05)
+    bottomPad_diff.SetGridy()
+    bottomPad_diff.Draw()
+    bottomPad_diff.cd()
+
+    # Make plot of (normalized) difference (Data - MC)/MC
+    diff_result = plotter.plot_dist_deviations(
+        distribution_result,
+        "data",
+        [ "mc_qcd_pythia8" ],
+        x_axis_title = x_axis_title,
+        y_axis_title = "#frac{Data - Simulation}{Simulation}",
+        y_min = -0.28, y_max = +0.28, logy = False
+    )
+
+    diff_result['background'].GetYaxis().SetNdivisions(505)
+
+    diff_result['background'].GetXaxis().SetTitleOffset(1.1)
+    diff_result['background'].GetXaxis().SetTitleSize(0.08) 
+    diff_result['background'].GetXaxis().SetLabelSize(0.08)
+    diff_result['background'].GetXaxis().SetTickLength(0.055)
+
+    diff_result['background'].GetYaxis().SetTitleOffset(0.9)
+    diff_result['background'].GetYaxis().SetTitleSize(0.08) 
+    diff_result['background'].GetYaxis().SetLabelSize(0.08)
+    diff_result['background'].GetYaxis().SetTickLength(0.04)
+
+    canvas_diff.cd() 
+    canvas_diff.Update()    
+    canvas_diff.SaveAs("plots/" + filename + "_diff.png")
+    canvas_diff.SaveAs("plots/" + filename + "_diff.pdf")
+
+    canvas_diff.IsA().Destructor(canvas_diff)
+
 if __name__ == "__main__":
     ROOT.gROOT.SetBatch(True)
 
@@ -34,174 +161,84 @@ if __name__ == "__main__":
     # Get HLT trigger decisions
     hlt = ntuple_manager.get_ntuple("TriggerResults")
  
-    # Make some plots
-    canvas = ROOT.TCanvas("canvas", "canvas", 500, 500)
-    pad = ROOT.TPad("pad", "pad", 0.01, 0.06, 0.99, 0.99)
-    pad.SetFillColor(10)
-    pad.Draw()
-    pad.Divide(1,1)
-    pad.cd(1)
-
     ######################################################
     ####      Plot PFJet distributions                ####
     ######################################################
 
     # Get the (shrinking cone) PFTau ntuple
-    pfTau_ntuple = ntuple_manager.get_ntuple(
-        "patPFTausDijetTagAndProbeShrinkingCone")
+    pfTau_ntuple = ntuple_manager.get_ntuple("patPFTausDijetTagAndProbeShrinkingCone")
 
     # Basic requirement HLT + Probe object
     pfTau_base_selection = hlt.expr('$hltJet15U > 0.5') & pfTau_ntuple.expr('$probe > 0.5')
 
-    # Compare basic distributions
-    pfJetPt_result = plotter.distribution(
+    # Make plots of jetPt, jetEta and jetPhi
+    makeJetPlot(
         expression = pfTau_ntuple.expr('$jetPt'),
         selection = pfTau_ntuple.expr('$jetPt > 10 && abs($jetEta) < 2.5') & pfTau_base_selection,
         extra_labels = [ style.ETA_CUT_LABEL_UPPER_LEFT ],
         binning = (50, 0, 100),
-        normalize = "data",
         x_axis_title = "Jet P_{T} [GeV/c]",
-        y_axis_title = "Number of Events",
-        y_min = 1e0, y_max = 1e8, logy = True
-    )
-  
-    # Draw the legend - you can pass NDC xl, yl, xh, yh coords to make_legend(...)
-    pfJetPt_result['legend'].make_legend(0.60, 0.69, 0.88, 0.88).Draw()
-    pfJetPt_result['result'].GetYaxis().SetTitleOffset(1.4)
-
-    pad.RedrawAxis()
-    canvas.Update()
-    pad.Update()
-  
-    canvas.SaveAs("plots/pfJetPt.png")
-    canvas.SaveAs("plots/pfJetPt.pdf")
-
-    # Make plot of (normalized) difference (Data - MC)/MC
-    pfJetPt_diff = plotter.plot_dist_deviations(
-        pfJetPt_result,
-        "data",
-        [ "mc_qcd_pythia8" ]
+        y_min = 6.5e-1, y_max = 1.e+8, logy = True,
+        filename = "pfJetPt"
     )
 
-    pfJetPt_diff['legend'].make_legend(0.60, 0.69, 0.88, 0.88).Draw()
-
-    pad.RedrawAxis()
-    canvas.Update()
-    pad.Update()
-  
-    canvas.SaveAs("plots/pfJetPt_diff.png")
-    canvas.SaveAs("plots/pfJetPt_diff.pdf")
-  
-    pfJetEta_result = plotter.distribution(
+    makeJetPlot(
         expression = pfTau_ntuple.expr('$jetEta'),
-        selection = pfTau_ntuple.expr('$jetPt > 10') & pfTau_base_selection,
+        selection = pfTau_ntuple.expr('$jetPt > 10 && abs($jetEta) < 2.5') & pfTau_base_selection,
         extra_labels = [ style.PT_CUT_LABEL_UPPER_LEFT ],
         binning = (50, -2.5, 2.5),
-        normalize = "data",
         x_axis_title = "Jet #eta",
-        y_axis_title = "Number of Events",
-        y_min = 0, y_max = 50000, logy = False
+        y_min = -4000, y_max = 50000, logy = False,
+        filename = "pfJetEta"
     )
 
-    pfJetEta_result['legend'].make_legend(0.60, 0.69, 0.88, 0.88).Draw()
-
-    pad.RedrawAxis()
-    canvas.Update()
-    pad.Update()
-  
-    canvas.SaveAs("plots/pfJetEta.png")
-    canvas.SaveAs("plots/pfJetEta.pdf")
-  
-    pfJetPhi_result = plotter.distribution(
+    makeJetPlot(
         expression = pfTau_ntuple.expr('$jetPhi'),
         selection = pfTau_ntuple.expr('$jetPt > 10 && abs($jetEta) < 2.5') & pfTau_base_selection,
         extra_labels = [ style.PT_ETA_CUT_LABEL_UPPER_LEFT ],
         binning = (50, -3.14, 3.14),
-        normalize = "data",
         x_axis_title = "Jet #phi",
-        y_axis_title = "Number of Events",
-        y_min = 0, y_max = 50000, logy = False
+        y_min = -4000, y_max = 50000, logy = False,
+        filename = "pfJetEta"
     )
-    
-    pfJetPhi_result['legend'].make_legend(0.60, 0.69, 0.88, 0.88).Draw()
-
-    pad.RedrawAxis()
-    canvas.Update()
-    pad.Update()
-  
-    canvas.SaveAs("plots/pfJetPhi.png")
-    canvas.SaveAs("plots/pfJetPhi.pdf")
 
     ######################################################
     ####      Plot Calo/JPTJet distributions          ####
     ######################################################
 
     # Get the Calo/TCTau ntuple
-    caloTau_ntuple = ntuple_manager.get_ntuple(
-        "patCaloTausDijetTagAndProbe")
+    caloTau_ntuple = ntuple_manager.get_ntuple("patCaloTausDijetTagAndProbe")
 
     # Basic requirement HLT + Probe object
     caloTau_base_selection = hlt.expr('$hltJet15U > 0.5') & caloTau_ntuple.expr('$probe > 0.5')
 
-    # Compare basic distributions
-    caloJetPt_result = plotter.distribution(
+    # Make plots of jetPt, jetEta and jetPhi
+    makeJetPlot(
         expression = caloTau_ntuple.expr('$jetPt'),
         selection = caloTau_ntuple.expr('$jetPt > 10 && abs($jetEta) < 2.5') & caloTau_base_selection,
         extra_labels = [ style.ETA_CUT_LABEL_UPPER_LEFT ],
         binning = (50, 0, 100),
-        normalize = "data",
         x_axis_title = "Jet P_{T} [GeV/c]",
-        y_axis_title = "Number of Events",
-        y_min = 1e0, y_max = 1e8, logy = True
+        y_min = 6.5e-1, y_max = 1.e+8, logy = True,
+        filename = "caloJetPt"
     )
-  
-    # Draw the legend - you can pass NDC xl, yl, xh, yh coords to make_legend(...)
-    caloJetPt_result['legend'].make_legend(0.60, 0.69, 0.88, 0.88).Draw()
-    caloJetPt_result['result'].GetYaxis().SetTitleOffset(1.4)
 
-    pad.RedrawAxis()
-    canvas.Update()
-    pad.Update()
-  
-    canvas.SaveAs("plots/caloJetPt.png")
-    canvas.SaveAs("plots/caloJetPt.pdf")
-  
-    caloJetEta_result = plotter.distribution(
+    makeJetPlot(
         expression = caloTau_ntuple.expr('$jetEta'),
-        selection = caloTau_ntuple.expr('$jetPt > 10') & caloTau_base_selection,
+        selection = caloTau_ntuple.expr('$jetPt > 10 && abs($jetEta) < 2.5') & caloTau_base_selection,
         extra_labels = [ style.PT_CUT_LABEL_UPPER_LEFT ],
         binning = (50, -2.5, 2.5),
-        normalize = "data",
         x_axis_title = "Jet #eta",
-        y_axis_title = "Number of Events",
-        y_min = 0, y_max = 50000, logy = False
+        y_min = -4000, y_max = 50000, logy = False,
+        filename = "caloJetEta"
     )
 
-    caloJetEta_result['legend'].make_legend(0.60, 0.69, 0.88, 0.88).Draw()
-
-    pad.RedrawAxis()
-    canvas.Update()
-    pad.Update()
-  
-    canvas.SaveAs("plots/caloJetEta.png")
-    canvas.SaveAs("plots/caloJetEta.pdf")
-  
-    caloJetPhi_result = plotter.distribution(
+    makeJetPlot(
         expression = caloTau_ntuple.expr('$jetPhi'),
         selection = caloTau_ntuple.expr('$jetPt > 10 && abs($jetEta) < 2.5') & caloTau_base_selection,
         extra_labels = [ style.PT_ETA_CUT_LABEL_UPPER_LEFT ],
         binning = (50, -3.14, 3.14),
-        normalize = "data",
         x_axis_title = "Jet #phi",
-        y_axis_title = "Number of Events",
-        y_min = 0, y_max = 50000, logy = False
+        y_min = -4000, y_max = 50000, logy = False,
+        filename = "caloJetEta"
     )
-    
-    caloJetPhi_result['legend'].make_legend(0.60, 0.69, 0.88, 0.88).Draw()
-
-    pad.RedrawAxis()
-    canvas.Update()
-    pad.Update()
-  
-    canvas.SaveAs("plots/caloJetPhi.png")
-    canvas.SaveAs("plots/caloJetPhi.pdf")
