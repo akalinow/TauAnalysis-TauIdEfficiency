@@ -55,6 +55,7 @@ class NtupleSample(object):
             self.scaleFactor = 1.
         else:
             self.scaleFactor = float(self.allEvents)/self.events.GetEntries()
+        print("<SampleManager::build_events>: setting scaleFactor = " + str(self.scaleFactor))
 
     def get_events(self):
         if not self.events:
@@ -100,7 +101,7 @@ class NtupleSample(object):
     def norm_factor_for_lumi(self, target_int_lumi):
         ''' Return weight need to scale sample to target luminosity '''
         if self.scaleFactor == None:
-            raise StandardError, "scaleFactor not computed yet. Youe have to call build_events() first!"
+            raise StandardError, "scaleFactor not computed yet. You have to call build_events() first!"
         return target_int_lumi*self.scaleFactor/self.effective_luminosity()
 
     def build_ntuple_manager(self, name):
