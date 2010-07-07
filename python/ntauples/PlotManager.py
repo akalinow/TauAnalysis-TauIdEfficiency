@@ -322,7 +322,9 @@ class PlotManager(object):
         ROOT.gPad.SetLogy(False)
         background_style_options.update(options)
         style.update_histo_style(background, options)
-        background.GetYaxis().SetRangeUser(-2, 2)
+        # CV: SetRangeUser overwrites y-axis range;
+        #     I don't think this is what we want (?)
+        #background.GetYaxis().SetRangeUser(-2, 2)
         background.SetStats(False)
         background.Draw()
         output['background'] = background
