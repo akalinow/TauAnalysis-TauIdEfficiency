@@ -18,86 +18,86 @@ Author: Evan K. Friis (UC Davis)
 '''
 
 # Define the CMS preliminary labels
-CMS_PRELIMINARY_UPPER_LEFT = ROOT.TPaveText(0.13, 0.855, 0.46, 0.905, "NDC")
+CMS_PRELIMINARY_UPPER_LEFT = ROOT.TPaveText(0.13, 0.855, 0.45, 0.905, "NDC")
 CMS_PRELIMINARY_UPPER_LEFT.AddText("CMS Preliminary")
 CMS_PRELIMINARY_UPPER_LEFT.SetTextAlign(13)
-CMS_PRELIMINARY_UPPER_LEFT.SetTextSize(0.04)
+CMS_PRELIMINARY_UPPER_LEFT.SetTextSize(0.050)
 CMS_PRELIMINARY_UPPER_LEFT.SetFillStyle(0)
 CMS_PRELIMINARY_UPPER_LEFT.SetBorderSize(0)
 
 # Define the luminosity labels
-LUMI_LABEL_UPPER_LEFT = ROOT.TPaveText(0.13, 0.80, 0.46, 0.84, "NDC")
+LUMI_LABEL_UPPER_LEFT = ROOT.TPaveText(0.13, 0.800, 0.45, 0.845, "NDC")
 LUMI_LABEL_UPPER_LEFT.AddText("L = 8.4nb^{-1}")
 LUMI_LABEL_UPPER_LEFT.SetTextAlign(13)
-LUMI_LABEL_UPPER_LEFT.SetTextSize(0.035)
+LUMI_LABEL_UPPER_LEFT.SetTextSize(0.040)
 LUMI_LABEL_UPPER_LEFT.SetFillStyle(0)
 LUMI_LABEL_UPPER_LEFT.SetBorderSize(0)
 
 #define Z--> tau tau label
-ZTAUTAU_LABEL_UPPER_LEFT = ROOT.TPaveText(0.13, 0.80, 0.46, 0.84, "NDC")
+ZTAUTAU_LABEL_UPPER_LEFT = ROOT.TPaveText(0.13, 0.800, 0.45, 0.845, "NDC")
 ZTAUTAU_LABEL_UPPER_LEFT.AddText("Z #rightarrow #tau #tau Simulation")
 ZTAUTAU_LABEL_UPPER_LEFT.SetTextAlign(13)
-ZTAUTAU_LABEL_UPPER_LEFT.SetTextSize(0.035)
+ZTAUTAU_LABEL_UPPER_LEFT.SetTextSize(0.040)
 ZTAUTAU_LABEL_UPPER_LEFT.SetFillStyle(0)
 ZTAUTAU_LABEL_UPPER_LEFT.SetBorderSize(0)
 
 #define center-of-mass energy label
-SQRTS_LABEL_UPPER_LEFT = ROOT.TPaveText(0.13, 0.76, 0.46, 0.80, "NDC")
+SQRTS_LABEL_UPPER_LEFT = ROOT.TPaveText(0.13, 0.750, 0.45, 0.795, "NDC")
 SQRTS_LABEL_UPPER_LEFT.AddText("#sqrt{s} = 7 TeV")
 SQRTS_LABEL_UPPER_LEFT.SetTextAlign(13)
-SQRTS_LABEL_UPPER_LEFT.SetTextSize(0.035)
+SQRTS_LABEL_UPPER_LEFT.SetTextSize(0.040)
 SQRTS_LABEL_UPPER_LEFT.SetFillStyle(0)
 SQRTS_LABEL_UPPER_LEFT.SetBorderSize(0)
 
 # Define the kinematic cut labels
-PT_CUT_LABEL_UPPER_LEFT = ROOT.TPaveText(0.13, 0.72, 0.46, 0.76, "NDC")
+PT_CUT_LABEL_UPPER_LEFT = ROOT.TPaveText(0.13, 0.710, 0.45, 0.755, "NDC")
 PT_CUT_LABEL_UPPER_LEFT.AddText("P_{T} > 10 GeV/c")
 PT_CUT_LABEL_UPPER_LEFT.SetTextAlign(13)
-PT_CUT_LABEL_UPPER_LEFT.SetTextSize(0.035)
+PT_CUT_LABEL_UPPER_LEFT.SetTextSize(0.040)
 PT_CUT_LABEL_UPPER_LEFT.SetFillStyle(0)
 PT_CUT_LABEL_UPPER_LEFT.SetBorderSize(0)
 
-PTVIS_CUT_LABEL_UPPER_LEFT = ROOT.TPaveText(0.13, 0.72, 0.46, 0.76, "NDC")
+PTVIS_CUT_LABEL_UPPER_LEFT = ROOT.TPaveText(0.13, 0.710, 0.45, 0.755, "NDC")
 PTVIS_CUT_LABEL_UPPER_LEFT.AddText("P_{T}^{vis} > 10 GeV/c")
 PTVIS_CUT_LABEL_UPPER_LEFT.SetTextAlign(13)
-PTVIS_CUT_LABEL_UPPER_LEFT.SetTextSize(0.035)
+PTVIS_CUT_LABEL_UPPER_LEFT.SetTextSize(0.040)
 PTVIS_CUT_LABEL_UPPER_LEFT.SetFillStyle(0)
 PTVIS_CUT_LABEL_UPPER_LEFT.SetBorderSize(0)
 
-ETA_CUT_LABEL_UPPER_LEFT = ROOT.TPaveText(0.13, 0.72, 0.46, 0.76, "NDC")
+ETA_CUT_LABEL_UPPER_LEFT = ROOT.TPaveText(0.13, 0.710, 0.45, 0.755, "NDC")
 ETA_CUT_LABEL_UPPER_LEFT.AddText("|#eta| < 2.5")
 ETA_CUT_LABEL_UPPER_LEFT.SetTextAlign(13)
-ETA_CUT_LABEL_UPPER_LEFT.SetTextSize(0.035)
+ETA_CUT_LABEL_UPPER_LEFT.SetTextSize(0.040)
 ETA_CUT_LABEL_UPPER_LEFT.SetFillStyle(0)
 ETA_CUT_LABEL_UPPER_LEFT.SetBorderSize(0)
 
-ETAVIS_CUT_LABEL_UPPER_LEFT = ROOT.TPaveText(0.13, 0.72, 0.46, 0.76, "NDC")
+ETAVIS_CUT_LABEL_UPPER_LEFT = ROOT.TPaveText(0.13, 0.710, 0.45, 0.755, "NDC")
 ETAVIS_CUT_LABEL_UPPER_LEFT.AddText("|#eta^{vis}| < 2.5")
 ETAVIS_CUT_LABEL_UPPER_LEFT.SetTextAlign(13)
-ETAVIS_CUT_LABEL_UPPER_LEFT.SetTextSize(0.035)
+ETAVIS_CUT_LABEL_UPPER_LEFT.SetTextSize(0.040)
 ETAVIS_CUT_LABEL_UPPER_LEFT.SetFillStyle(0)
 ETAVIS_CUT_LABEL_UPPER_LEFT.SetBorderSize(0)
 
-PT_ETA_CUT_LABEL_UPPER_LEFT = ROOT.TPaveText(0.13, 0.72, 0.46, 0.76, "NDC")
+PT_ETA_CUT_LABEL_UPPER_LEFT = ROOT.TPaveText(0.13, 0.710, 0.45, 0.755, "NDC")
 PT_ETA_CUT_LABEL_UPPER_LEFT.AddText("P_{T} > 10 GeV/c, |#eta| < 2.5")
 PT_ETA_CUT_LABEL_UPPER_LEFT.SetTextAlign(13)
-PT_ETA_CUT_LABEL_UPPER_LEFT.SetTextSize(0.035)
+PT_ETA_CUT_LABEL_UPPER_LEFT.SetTextSize(0.040)
 PT_ETA_CUT_LABEL_UPPER_LEFT.SetFillStyle(0)
 PT_ETA_CUT_LABEL_UPPER_LEFT.SetBorderSize(0)
 
-PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT = ROOT.TPaveText(0.13, 0.68, 0.46, 0.76, "NDC")
+PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT = ROOT.TPaveText(0.13, 0.655, 0.45, 0.755, "NDC")
 PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT.AddText("P_{T} > 10 GeV/c,\n")
 PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT.AddText("|#eta| < 2.5")
 PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT.SetTextAlign(13)
-PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT.SetTextSize(0.035)
+PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT.SetTextSize(0.040)
 PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT.SetFillStyle(0)
 PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT.SetBorderSize(0)
 
-PT_ETA_GEN_CUT_TWO_LINE_LABEL_UPPER_LEFT = ROOT.TPaveText(0.13, 0.66, 0.46, 0.76, "NDC")
+PT_ETA_GEN_CUT_TWO_LINE_LABEL_UPPER_LEFT = ROOT.TPaveText(0.13, 0.640, 0.45, 0.750, "NDC")
 PT_ETA_GEN_CUT_TWO_LINE_LABEL_UPPER_LEFT.AddText("P_{T}^{vis}(gen) > 10 GeV/c,\n")
 PT_ETA_GEN_CUT_TWO_LINE_LABEL_UPPER_LEFT.AddText("|#eta|(gen) < 2.5")
 PT_ETA_GEN_CUT_TWO_LINE_LABEL_UPPER_LEFT.SetTextAlign(13)
-PT_ETA_GEN_CUT_TWO_LINE_LABEL_UPPER_LEFT.SetTextSize(0.035)
+PT_ETA_GEN_CUT_TWO_LINE_LABEL_UPPER_LEFT.SetTextSize(0.040)
 PT_ETA_GEN_CUT_TWO_LINE_LABEL_UPPER_LEFT.SetFillStyle(0)
 PT_ETA_GEN_CUT_TWO_LINE_LABEL_UPPER_LEFT.SetBorderSize(0)
 
@@ -203,14 +203,13 @@ def make_nice_numbers(x, sig_figs = 2):
     return result
 
 # Build a pave with the mean and RMS
-def make_mean_rms_pave(plot, sig_figs = 2, x_low=0.6, y_low=0.80, 
-                       x_high=0.90, y_high=0.90):
+def make_mean_rms_pave(plot, sig_figs = 2, x_low=0.55, y_low=0.77, x_high=0.89, y_high=0.89):
     mean = plot.GetMean()
     rms = plot.GetRMS()
     output = ROOT.TPaveText(x_low, y_low, x_high, y_high, "brNDC")
     output.SetTextAlign(33) # top right alignment
     output.SetBorderSize(0)
-    output.SetTextSize(0.035)
+    output.SetTextSize(0.045)
     output.SetFillStyle(0)
     
     output.AddText("mean = "+ make_nice_numbers(mean) )
@@ -331,12 +330,6 @@ HISTO_METHOD_MAP = {
 
 def adjust_coordinates(pad, x1, y1, x2, y2):
 
-    #print("<adjust_coordinates>:")
-    #print(" x1 = " + str(x1))
-    #print(" y1 = " + str(y1))
-    #print(" x2 = " + str(x2))
-    #print(" y2 = " + str(y2))
-
     result_dict = {}
 
     # Adjust position and size of labels/legends to margins of pad
@@ -360,11 +353,6 @@ def adjust_coordinates(pad, x1, y1, x2, y2):
     result_dict['y1'] = pad_bottomMargin + (y1 - pad_defaultBottomMargin)*(pad_widthY)/pad_defaultWidthY
     result_dict['x2'] = pad_leftMargin + (x2 - pad_defaultLeftMargin)*(pad_widthX)/pad_defaultWidthX
     result_dict['y2'] = pad_bottomMargin + (y2 - pad_defaultBottomMargin)*(pad_widthY)/pad_defaultWidthY
-
-    #print(" x1 (adjusted) = " + str(result_dict['x1']))
-    #print(" y1 (adjusted) = " + str(result_dict['y1']))
-    #print(" x2 (adjusted) = " + str(result_dict['x2']))
-    #print(" y2 (adjusted) = " + str(result_dict['y2']))
 
     return result_dict
 
