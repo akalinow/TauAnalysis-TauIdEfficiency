@@ -7,6 +7,41 @@ import TauAnalysis.TauIdEfficiency.ntauples.styles as style
 # Definition of input files.
 import samples_cache as samples
 
+# style Definitions
+resolutions_CMS_PRELIMINARY_UPPER_LEFT = style.CMS_PRELIMINARY_UPPER_LEFT.Clone()
+resolutions_CMS_PRELIMINARY_UPPER_LEFT.SetX1(0.12)
+resolutions_CMS_PRELIMINARY_UPPER_LEFT.SetX2(0.55)
+resolutions_CMS_PRELIMINARY_UPPER_LEFT.SetY1(0.855)
+resolutions_CMS_PRELIMINARY_UPPER_LEFT.SetTextSize(0.050)
+
+resolutions_ZTAUTAU_LABEL_UPPER_LEFT = style.ZTAUTAU_LABEL_UPPER_LEFT.Clone()
+resolutions_ZTAUTAU_LABEL_UPPER_LEFT.SetX1(0.12)
+resolutions_ZTAUTAU_LABEL_UPPER_LEFT.SetX2(0.55)
+resolutions_ZTAUTAU_LABEL_UPPER_LEFT.SetY2(0.845)
+resolutions_ZTAUTAU_LABEL_UPPER_LEFT.SetY1(0.800)
+resolutions_ZTAUTAU_LABEL_UPPER_LEFT.SetTextSize(0.040)
+
+resolutions_SQRTS_LABEL_UPPER_LEFT = style.SQRTS_LABEL_UPPER_LEFT.Clone()
+resolutions_SQRTS_LABEL_UPPER_LEFT.SetX1(0.12)
+resolutions_SQRTS_LABEL_UPPER_LEFT.SetX2(0.55)
+resolutions_SQRTS_LABEL_UPPER_LEFT.SetY2(0.800)
+resolutions_SQRTS_LABEL_UPPER_LEFT.SetY1(0.755)
+resolutions_SQRTS_LABEL_UPPER_LEFT.SetTextSize(0.040)
+
+resolutions_PT_ETA_GEN_CUT_TWO_LINE_LABEL_UPPER_LEFT = style.PT_ETA_GEN_CUT_TWO_LINE_LABEL_UPPER_LEFT.Clone()
+resolutions_PT_ETA_GEN_CUT_TWO_LINE_LABEL_UPPER_LEFT.SetX1(0.12)
+resolutions_PT_ETA_GEN_CUT_TWO_LINE_LABEL_UPPER_LEFT.SetX2(0.55)
+resolutions_PT_ETA_GEN_CUT_TWO_LINE_LABEL_UPPER_LEFT.SetY2(0.755)
+resolutions_PT_ETA_GEN_CUT_TWO_LINE_LABEL_UPPER_LEFT.SetY1(0.645)
+resolutions_PT_ETA_GEN_CUT_TWO_LINE_LABEL_UPPER_LEFT.SetTextSize(0.040)
+
+resolutions_DEFAULT_LABELS = [
+    resolutions_CMS_PRELIMINARY_UPPER_LEFT,
+    resolutions_ZTAUTAU_LABEL_UPPER_LEFT,
+    resolutions_SQRTS_LABEL_UPPER_LEFT,
+    resolutions_PT_ETA_GEN_CUT_TWO_LINE_LABEL_UPPER_LEFT
+]
+
 def getResolutionExpression(algorithm, variable):
     result = None
     resolutions ={
@@ -14,13 +49,13 @@ def getResolutionExpression(algorithm, variable):
             "pt": nTuples["TaNC"].expr('($decayModePt-$genPt)/$genPt'),
             "eta": nTuples["TaNC"].expr('$decayModeEta-$genEta'),
             "phi": nTuples["TaNC"].expr('$decayModePhi-$genPhi'),
-            },
+        },
         "other":{
             "pt": '($pt-$genPt)/$genPt',
             "eta": '$eta-$genEta',
             "phi": '$phi-$genPhi',
-            }
         }
+    }
     if algorithm in resolutions.keys() and not algorithm == "other":
         result = resolutions[algorithm][variable]
     else:
@@ -33,17 +68,16 @@ def makeResolutionPlots( algorithm ):
         pt_resol = plotter.distribution(
             expression= getResolutionExpression(algorithm, "pt"),
             selection=selection["expr"],
-            labels = [style.CMS_PRELIMINARY_UPPER_LEFT,
-                      style.ZTAUTAU_LABEL_UPPER_LEFT,
-                      style.SQRTS_LABEL_UPPER_LEFT,
-                      style.PT_ETA_GEN_CUT_TWO_LINE_LABEL_UPPER_LEFT],
-            binning=(100, -0.5, 0.5),
+            labels = resolutions_DEFAULT_LABELS,
+            binning = (100, -0.5, 0.5),
             x_axis_title = "(P_{T}^{vis}(rec) - P_{T}^{vis}(gen))/P_{T}^{vis}(gen)",
-            y_min = 0., y_max=0.175,
+            y_min = 0., y_max = 0.200,
             normalize = 1.,
-            logy=False
-            )
+            logy = False
+        )
 
+        pt_resol['result'].GetXaxis().SetTitleOffset(1.2)
+  
         # Make a pave text w/ mean rms
         stat_label = style.make_mean_rms_pave(pt_resol['samples']['mc_ztt']['plot'])
         stat_label.Draw()
@@ -55,17 +89,16 @@ def makeResolutionPlots( algorithm ):
         eta_resol = plotter.distribution(
             expression= getResolutionExpression(algorithm, "eta"),
             selection=selection["expr"],
-            labels = [style.CMS_PRELIMINARY_UPPER_LEFT,
-                      style.ZTAUTAU_LABEL_UPPER_LEFT,
-                      style.SQRTS_LABEL_UPPER_LEFT,
-                      style.PT_ETA_GEN_CUT_TWO_LINE_LABEL_UPPER_LEFT],
-            binning=(100, -0.01, 0.01),
+            labels = resolutions_DEFAULT_LABELS,
+            binning = (100, -0.01, 0.01),
             n_divisions = 404,
             x_axis_title = "#eta(rec) - #eta(gen)",
-            y_min = 0., y_max=0.175,
+            y_min = 0., y_max = 0.200,
             normalize = 1.,
-            logy=False
-            )
+            logy = False
+        )
+
+        eta_resol['result'].GetXaxis().SetTitleOffset(1.2)
 
         # Make a pave text w/ mean rms
         stat_label = style.make_mean_rms_pave(eta_resol['samples']['mc_ztt']['plot'])
@@ -77,17 +110,16 @@ def makeResolutionPlots( algorithm ):
         phi_resol = plotter.distribution(
             expression=getResolutionExpression(algorithm, "phi"),
             selection=selection["expr"],
-            labels = [style.CMS_PRELIMINARY_UPPER_LEFT,
-                      style.ZTAUTAU_LABEL_UPPER_LEFT,
-                      style.SQRTS_LABEL_UPPER_LEFT,
-                      style.PT_ETA_GEN_CUT_TWO_LINE_LABEL_UPPER_LEFT],
-            binning=(100, -0.01, 0.01),
+            labels = resolutions_DEFAULT_LABELS,
+            binning = (100, -0.01, 0.01),
             x_axis_title = "#phi(rec) - #phi(gen)",
-            y_min = 0., y_max=0.175,
+            y_min = 0., y_max = 0.200,
             n_divisions = 404,
             normalize = 1.,
-            logy=False
-            )
+            logy = False
+        )
+
+        phi_resol['result'].GetXaxis().SetTitleOffset(1.2)
 
         # Make a pave text w/ mean rms
         stat_label = style.make_mean_rms_pave(phi_resol['samples']['mc_ztt']['plot'])
@@ -117,12 +149,13 @@ if __name__ == "__main__":
         "TaNC": ntuple_manager.get_ntuple("patPFTausDijetTagAndProbeShrinkingCone"),
         "hps": ntuple_manager.get_ntuple("patPFTausDijetTagAndProbeHPS"),
         "calo": ntuple_manager.get_ntuple("patCaloTausDijetTagAndProbe"),
-        }
+    }
     
     hlt = ntuple_manager.get_ntuple("TriggerResults")
     
     # Make some plots
     canvas = ROOT.TCanvas("pas", "pas", 500, 500)
+    canvas.SetBottomMargin(0.12)
     canvas.cd()
     
     from shrinkingConePlots import pt_binning_fine, eta_binning_fine, phi_binning_fine
@@ -137,60 +170,60 @@ if __name__ == "__main__":
     selections = {
         "shrinkingCone":[
             {
-                'expr':  nTuples["shrinkingCone"].expr(pfString) ,
-                "style_name":"OneOrThreeProng",
+                'expr': nTuples["shrinkingCone"].expr(pfString),
+                "style_name": "OneOrThreeProng",
                 'nice_name': "all shrinkingCone",
-                },
-            ],
+            }
+        ],
         "fixedCone":[
             {
-                'expr':  nTuples["fixedCone"].expr(pfString) ,
-                "style_name":"OneOrThreeProng",
+                'expr': nTuples["fixedCone"].expr(pfString),
+                "style_name": "OneOrThreeProng",
                 'nice_name': "all fixedCone",
-                },
-            ],
+                }
+        ],
         "TaNC":[
             {
-                'expr':  nTuples["TaNC"].expr('$byTaNCfrOnePercent > 0.5') & lead_pion_selection,
-                "style_name":"byTaNCfrOnePercent",
+                'expr': nTuples["TaNC"].expr('$byTaNCfrOnePercent > 0.5') & lead_pion_selection,
+                "style_name": "byTaNCfrOnePercent",
                 'nice_name': "TaNC 1.00%",
-                },
+            },
             {
-                'expr':  nTuples["TaNC"].expr('$byTaNCfrHalfPercent > 0.5') & lead_pion_selection,
-                "style_name":"byTaNCfrHalfPercent",
+                'expr': nTuples["TaNC"].expr('$byTaNCfrHalfPercent > 0.5') & lead_pion_selection,
+                "style_name": "byTaNCfrHalfPercent",
                 'nice_name': "TaNC 0.50%"
-                },
+            },
             {
-                'expr':  nTuples["TaNC"].expr('$byTaNCfrQuarterPercent > 0.5') & lead_pion_selection,
-                "style_name":"byTaNCfrQuarterPercent",
+                'expr': nTuples["TaNC"].expr('$byTaNCfrQuarterPercent > 0.5') & lead_pion_selection,
+                "style_name": "byTaNCfrQuarterPercent",
                 'nice_name': "TaNC 0.25%"
-                },
-            ],
+            }
+        ],
         "hps":[
             {
-                'expr':  nTuples["hps"].expr('$byIsolationLoose > 0.5') & lead_pion_selection,
-                "style_name":"byIsolationLoose",
+                'expr': nTuples["hps"].expr('$byIsolationLoose > 0.5') & lead_pion_selection,
+                "style_name": "byIsolationLoose",
                 'nice_name': "Loose Isolation",
-                },
+            },
             {
-                'expr':  nTuples["hps"].expr('$byIsolationMedium > 0.5') & lead_pion_selection,
-                "style_name":"byIsolationMedium",
+                'expr': nTuples["hps"].expr('$byIsolationMedium > 0.5') & lead_pion_selection,
+                "style_name": "byIsolationMedium",
                 'nice_name': "Medium Isolation",
-                },
+            },
             {
-                'expr':  nTuples["hps"].expr('$byIsolationTight > 0.5') & lead_pion_selection,
-                "style_name":"byIsolationTight",
+                'expr': nTuples["hps"].expr('$byIsolationTight > 0.5') & lead_pion_selection,
+                "style_name": "byIsolationTight",
                 'nice_name': "Tight Isolation",
-                },
-            ],
+            }
+        ],
         "calo":[
             {
-                'expr':  nTuples["calo"].expr(caloString) ,
-                "style_name":"OneOrThreeProng",
+                'expr': nTuples["calo"].expr(caloString) ,
+                "style_name": "OneOrThreeProng",
                 'nice_name': "all caloTau",
-                },
-            ],
-        }    
+            }
+        ],
+    }    
     for algorithm in selections:
         import sys
         if sys.argv[1:] != [] and (not algorithm in sys.argv[1:]):
