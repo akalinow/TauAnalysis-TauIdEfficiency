@@ -62,6 +62,8 @@ caloTaus_recInfo = cms.PSet(
         # tau id. discriminators based on leading track
         byLeadTrackFinding = cms.string("tauID('leadingTrackFinding')"),
         byLeadTrackPtCut = cms.string("tauID('leadingTrackPtCut')"),
+        byTrackIsolation = cms.string("tauID('trackIsolation')"),
+        byEcalIsolation = cms.string("tauID('ecalIsolation')"),
         byIsolation = cms.string("tauID('byIsolation')"),
         
         # discriminators against electrons

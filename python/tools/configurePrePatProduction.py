@@ -37,6 +37,13 @@ def configurePrePatProduction(process, addGenInfo = False):
     #--------------------------------------------------------------------------------
 
     #--------------------------------------------------------------------------------
+    # produce collection of PFTaus reconstructed using ellipse for photon isolation
+    process.load("TauAnalysis.TauIdEfficiency.ShrinkingConePFTausEllipticPhotonIso_cfi")
+    process.prePatProductionSequence += process.produceAndDiscriminateShrinkingConePFTausEllipticPhotonIso
+    ##process.prePatProductionSequence += process.produceShrinkingConePFTauEllipticPhotonIsoDiscriminationByTauNeuralClassifier
+    #--------------------------------------------------------------------------------
+
+    #--------------------------------------------------------------------------------
     # if running on Monte Carlo, produce ak5GenJets collection "on-the-fly",
     # as it is needed for matching reconstructed particles to generator level information by PAT,
     # but not contained in Monte Carlo samples produced with CMSSW_3_5_x
