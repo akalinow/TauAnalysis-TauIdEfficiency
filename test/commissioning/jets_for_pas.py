@@ -6,9 +6,51 @@ from TauAnalysis.TauIdEfficiency.ntauples.PlotManager import PlotManager
 import TauAnalysis.TauIdEfficiency.ntauples.styles as style
 
 # Defintion of input files.
-import samples as samples
+import samples_cache as samples
 import os
 import sys
+
+# style Definitions
+jets_CMS_PRELIMINARY_UPPER_LEFT = style.CMS_PRELIMINARY_UPPER_LEFT.Clone()
+jets_CMS_PRELIMINARY_UPPER_LEFT.SetX2(0.60)
+jets_CMS_PRELIMINARY_UPPER_LEFT.SetY1(0.850)
+jets_CMS_PRELIMINARY_UPPER_LEFT.SetTextSize(0.055)
+
+jets_LUMI_LABEL_UPPER_LEFT = style.LUMI_LABEL_UPPER_LEFT.Clone()
+jets_LUMI_LABEL_UPPER_LEFT.SetX2(0.60)
+jets_LUMI_LABEL_UPPER_LEFT.SetY2(0.840)
+jets_LUMI_LABEL_UPPER_LEFT.SetY1(0.790)
+jets_LUMI_LABEL_UPPER_LEFT.SetTextSize(0.045)
+
+jets_SQRTS_LABEL_UPPER_LEFT = style.SQRTS_LABEL_UPPER_LEFT.Clone()
+jets_SQRTS_LABEL_UPPER_LEFT.SetX2(0.60)
+jets_SQRTS_LABEL_UPPER_LEFT.SetY2(0.785)
+jets_SQRTS_LABEL_UPPER_LEFT.SetY1(0.735)
+jets_SQRTS_LABEL_UPPER_LEFT.SetTextSize(0.045)
+
+jets_PT_CUT_LABEL_UPPER_LEFT = style.PT_CUT_LABEL_UPPER_LEFT.Clone()
+jets_PT_CUT_LABEL_UPPER_LEFT.SetX2(0.60)
+jets_PT_CUT_LABEL_UPPER_LEFT.SetY2(0.740)
+jets_PT_CUT_LABEL_UPPER_LEFT.SetY1(0.690)
+jets_PT_CUT_LABEL_UPPER_LEFT.SetTextSize(0.045)
+
+jets_ETA_CUT_LABEL_UPPER_LEFT = style.ETA_CUT_LABEL_UPPER_LEFT.Clone()
+jets_ETA_CUT_LABEL_UPPER_LEFT.SetX2(0.60)
+jets_ETA_CUT_LABEL_UPPER_LEFT.SetY2(0.740)
+jets_ETA_CUT_LABEL_UPPER_LEFT.SetY1(0.690)
+jets_ETA_CUT_LABEL_UPPER_LEFT.SetTextSize(0.045)
+
+jets_PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT = style.PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT.Clone()
+jets_PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT.SetX2(0.60)
+jets_PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT.SetY2(0.740)
+jets_PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT.SetY1(0.640)
+jets_PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT.SetTextSize(0.045)
+
+jets_DEFAULT_LABELS = [
+    jets_CMS_PRELIMINARY_UPPER_LEFT,
+    jets_LUMI_LABEL_UPPER_LEFT,
+    jets_SQRTS_LABEL_UPPER_LEFT
+]
 
 def makeJetPlot(expression, selection, extra_labels,
                 binning, x_axis_title, y_min, y_max, logy,
@@ -92,7 +134,7 @@ def makeJetPlot(expression, selection, extra_labels,
     to_keep = {}
 
     draw_labels_topPad = style.draw_labels(topPad_diff)
-    to_keep["1"] = draw_labels_topPad(style.DEFAULT_STYLE['labels'])
+    to_keep["1"] = draw_labels_topPad(jets_DEFAULT_LABELS)
     to_keep["2"] = draw_labels_topPad(extra_labels)
 
     canvas_diff.cd()
@@ -175,7 +217,7 @@ if __name__ == "__main__":
     makeJetPlot(
         expression = pfTau_ntuple.expr('$jetPt'),
         selection = pfTau_ntuple.expr('$jetPt > 10 && abs($jetEta) < 2.5') & pfTau_base_selection,
-        extra_labels = [ style.ETA_CUT_LABEL_UPPER_LEFT ],
+        extra_labels = [ jets_ETA_CUT_LABEL_UPPER_LEFT ],
         binning = (50, 0, 100),
         x_axis_title = "Jet P_{T} [GeV/c]",
         y_min = 6.5e-1, y_max = 1.e+8, logy = True,
@@ -185,7 +227,7 @@ if __name__ == "__main__":
     makeJetPlot(
         expression = pfTau_ntuple.expr('$jetEta'),
         selection = pfTau_ntuple.expr('$jetPt > 10 && abs($jetEta) < 2.5') & pfTau_base_selection,
-        extra_labels = [ style.PT_CUT_LABEL_UPPER_LEFT ],
+        extra_labels = [ jets_PT_CUT_LABEL_UPPER_LEFT ],
         binning = (50, -2.5, 2.5),
         x_axis_title = "Jet #eta",
         y_min = -4000, y_max = 50000, logy = False,
@@ -195,11 +237,11 @@ if __name__ == "__main__":
     makeJetPlot(
         expression = pfTau_ntuple.expr('$jetPhi'),
         selection = pfTau_ntuple.expr('$jetPt > 10 && abs($jetEta) < 2.5') & pfTau_base_selection,
-        extra_labels = [ style.PT_ETA_CUT_LABEL_UPPER_LEFT ],
+        extra_labels = [ jets_PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT ],
         binning = (50, -3.14, 3.14),
         x_axis_title = "Jet #phi",
         y_min = -4000, y_max = 50000, logy = False,
-        filename = "pfJetEta"
+        filename = "pfJetPhi"
     )
 
     ######################################################
@@ -216,7 +258,7 @@ if __name__ == "__main__":
     makeJetPlot(
         expression = caloTau_ntuple.expr('$jetPt'),
         selection = caloTau_ntuple.expr('$jetPt > 10 && abs($jetEta) < 2.5') & caloTau_base_selection,
-        extra_labels = [ style.ETA_CUT_LABEL_UPPER_LEFT ],
+        extra_labels = [ jets_ETA_CUT_LABEL_UPPER_LEFT ],
         binning = (50, 0, 100),
         x_axis_title = "Jet P_{T} [GeV/c]",
         y_min = 6.5e-1, y_max = 1.e+8, logy = True,
@@ -226,7 +268,7 @@ if __name__ == "__main__":
     makeJetPlot(
         expression = caloTau_ntuple.expr('$jetEta'),
         selection = caloTau_ntuple.expr('$jetPt > 10 && abs($jetEta) < 2.5') & caloTau_base_selection,
-        extra_labels = [ style.PT_CUT_LABEL_UPPER_LEFT ],
+        extra_labels = [ jets_PT_CUT_LABEL_UPPER_LEFT ],
         binning = (50, -2.5, 2.5),
         x_axis_title = "Jet #eta",
         y_min = -4000, y_max = 50000, logy = False,
@@ -236,9 +278,9 @@ if __name__ == "__main__":
     makeJetPlot(
         expression = caloTau_ntuple.expr('$jetPhi'),
         selection = caloTau_ntuple.expr('$jetPt > 10 && abs($jetEta) < 2.5') & caloTau_base_selection,
-        extra_labels = [ style.PT_ETA_CUT_LABEL_UPPER_LEFT ],
+        extra_labels = [ jets_PT_ETA_CUT_LABEL_UPPER_LEFT ],
         binning = (50, -3.14, 3.14),
         x_axis_title = "Jet #phi",
         y_min = -4000, y_max = 50000, logy = False,
-        filename = "caloJetEta"
+        filename = "caloJetPhi"
     )
