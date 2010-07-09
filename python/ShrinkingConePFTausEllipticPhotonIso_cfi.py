@@ -1,0 +1,119 @@
+import FWCore.ParameterSet.Config as cms
+import copy
+
+from RecoTauTag.Configuration.ShrinkingConePFTaus_cfi import *
+
+# Configure producer module for shrinking signal cone PFTau collection
+# using ellipse for photon isolation
+shrinkingConePFTauEllipticPhotonIsoProducer = copy.deepcopy(shrinkingConePFTauProducer)
+shrinkingConePFTauEllipticPhotonIsoProducer.AddEllipseGammas = cms.bool(False)
+shrinkingConePFTauEllipticPhotonIsoProducer.Rphi = cms.double(2.0)
+shrinkingConePFTauEllipticPhotonIsoProducer.MaxEtInEllipse = cms.double(2.0)
+
+# Configure decay mode reconstruction producer
+shrinkingConePFTauEllipticPhotonIsoDecayModeProducer = copy.deepcopy(shrinkingConePFTauDecayModeProducer)
+shrinkingConePFTauEllipticPhotonIsoDecayModeProducer.PFTauProducer = 'shrinkingConePFTauEllipticPhotonIsoProducer'
+
+# Store the reco'd decay modes in a simple container
+shrinkingConePFTauEllipticPhotonIsoDecayModeIndexProducer = copy.deepcopy(shrinkingConePFTauDecayModeIndexProducer)
+shrinkingConePFTauEllipticPhotonIsoDecayModeIndexProducer.PFTauProducer = 'shrinkingConePFTauEllipticPhotonIsoProducer'
+shrinkingConePFTauEllipticPhotonIsoDecayModeIndexProducer.PFTauDecayModeProducer = 'shrinkingConePFTauEllipticPhotonIsoDecayModeProducer'
+
+# Configure discriminator producer modules;
+# load helper functions to change the source of the discriminants
+from RecoTauTag.RecoTau.TauDiscriminatorTools import *
+
+shrinkingConePFTauEllipticPhotonIsoDiscriminationByLeadingTrackFinding = \
+  copy.deepcopy(shrinkingConePFTauDiscriminationByLeadingTrackFinding)
+setTauSource(shrinkingConePFTauEllipticPhotonIsoDiscriminationByLeadingTrackFinding, 'shrinkingConePFTauEllipticPhotonIsoProducer')
+
+shrinkingConePFTauEllipticPhotonIsoDiscriminationByLeadingTrackPtCut = \
+  copy.deepcopy(shrinkingConePFTauDiscriminationByLeadingTrackPtCut)
+setTauSource(shrinkingConePFTauEllipticPhotonIsoDiscriminationByLeadingTrackPtCut, 'shrinkingConePFTauEllipticPhotonIsoProducer')
+
+shrinkingConePFTauEllipticPhotonIsoDiscriminationByLeadingPionPtCut = \
+  copy.deepcopy(shrinkingConePFTauDiscriminationByLeadingPionPtCut)
+setTauSource(shrinkingConePFTauEllipticPhotonIsoDiscriminationByLeadingPionPtCut, 'shrinkingConePFTauEllipticPhotonIsoProducer')
+
+shrinkingConePFTauEllipticPhotonIsoDiscriminationByIsolation = \
+  copy.deepcopy(shrinkingConePFTauDiscriminationByIsolation)
+setTauSource(shrinkingConePFTauEllipticPhotonIsoDiscriminationByIsolation, 'shrinkingConePFTauEllipticPhotonIsoProducer')
+shrinkingConePFTauEllipticPhotonIsoDiscriminationByIsolation.qualityCuts.isolationQualityCuts.minGammaEt = 1.0
+
+shrinkingConePFTauEllipticPhotonIsoDiscriminationByTrackIsolation = \
+  copy.deepcopy(shrinkingConePFTauDiscriminationByTrackIsolation)
+setTauSource(shrinkingConePFTauEllipticPhotonIsoDiscriminationByTrackIsolation, 'shrinkingConePFTauEllipticPhotonIsoProducer')
+
+shrinkingConePFTauEllipticPhotonIsoDiscriminationByECALIsolation = \
+  copy.deepcopy(shrinkingConePFTauDiscriminationByECALIsolation)
+setTauSource(shrinkingConePFTauEllipticPhotonIsoDiscriminationByECALIsolation, 'shrinkingConePFTauEllipticPhotonIsoProducer')
+shrinkingConePFTauEllipticPhotonIsoDiscriminationByECALIsolation.qualityCuts.isolationQualityCuts.minGammaEt = 1.0
+
+shrinkingConePFTauEllipticPhotonIsoDiscriminationByIsolationUsingLeadingPion = \
+  copy.deepcopy(shrinkingConePFTauDiscriminationByIsolationUsingLeadingPion)
+setTauSource(shrinkingConePFTauEllipticPhotonIsoDiscriminationByIsolationUsingLeadingPion, 'shrinkingConePFTauEllipticPhotonIsoProducer')
+shrinkingConePFTauEllipticPhotonIsoDiscriminationByIsolationUsingLeadingPion.qualityCuts.isolationQualityCuts.minGammaEt = 1.0
+
+shrinkingConePFTauEllipticPhotonIsoDiscriminationByTrackIsolationUsingLeadingPion = \
+  copy.deepcopy(shrinkingConePFTauDiscriminationByTrackIsolationUsingLeadingPion)
+setTauSource(shrinkingConePFTauEllipticPhotonIsoDiscriminationByTrackIsolationUsingLeadingPion, 'shrinkingConePFTauEllipticPhotonIsoProducer')
+
+shrinkingConePFTauEllipticPhotonIsoDiscriminationByECALIsolationUsingLeadingPion = \
+  copy.deepcopy(shrinkingConePFTauDiscriminationByECALIsolationUsingLeadingPion)
+setTauSource(shrinkingConePFTauEllipticPhotonIsoDiscriminationByECALIsolationUsingLeadingPion, 'shrinkingConePFTauEllipticPhotonIsoProducer')
+shrinkingConePFTauEllipticPhotonIsoDiscriminationByECALIsolationUsingLeadingPion.qualityCuts.isolationQualityCuts.minGammaEt = 1.0
+
+shrinkingConePFTauEllipticPhotonIsoDiscriminationAgainstElectron = \
+  copy.deepcopy(shrinkingConePFTauDiscriminationAgainstElectron)
+setTauSource(shrinkingConePFTauEllipticPhotonIsoDiscriminationAgainstElectron, 'shrinkingConePFTauEllipticPhotonIsoProducer')
+
+shrinkingConePFTauEllipticPhotonIsoDiscriminationAgainstMuon = \
+  copy.deepcopy(shrinkingConePFTauDiscriminationAgainstMuon)
+setTauSource(shrinkingConePFTauEllipticPhotonIsoDiscriminationAgainstMuon, 'shrinkingConePFTauEllipticPhotonIsoProducer')
+
+produceAndDiscriminateShrinkingConePFTausEllipticPhotonIso = cms.Sequence(
+    shrinkingConePFTauEllipticPhotonIsoProducer
+   * shrinkingConePFTauEllipticPhotonIsoDecayModeProducer
+   *  shrinkingConePFTauEllipticPhotonIsoDecayModeIndexProducer
+   *  shrinkingConePFTauEllipticPhotonIsoDiscriminationByLeadingTrackFinding
+   *  shrinkingConePFTauEllipticPhotonIsoDiscriminationByLeadingTrackPtCut
+   *  shrinkingConePFTauEllipticPhotonIsoDiscriminationByLeadingPionPtCut
+   *  shrinkingConePFTauEllipticPhotonIsoDiscriminationByIsolation
+   *  shrinkingConePFTauEllipticPhotonIsoDiscriminationByTrackIsolation
+   *  shrinkingConePFTauEllipticPhotonIsoDiscriminationByECALIsolation
+   *  shrinkingConePFTauEllipticPhotonIsoDiscriminationByIsolationUsingLeadingPion
+   *  shrinkingConePFTauEllipticPhotonIsoDiscriminationByTrackIsolationUsingLeadingPion
+   *  shrinkingConePFTauEllipticPhotonIsoDiscriminationByECALIsolationUsingLeadingPion
+   *  shrinkingConePFTauEllipticPhotonIsoDiscriminationAgainstElectron
+   *  shrinkingConePFTauEllipticPhotonIsoDiscriminationAgainstMuon
+)
+
+##shrinkingConePFTauEllipticPhotonIsoDiscriminationByTaNC = \
+##  copy.deepcopy(shrinkingConePFTauDiscriminationByTaNC)
+##setTauSource(shrinkingConePFTauEllipticPhotonIsoDiscriminationByTaNC, 'shrinkingConePFTauEllipticPhotonIsoProducer')
+##
+##shrinkingConePFTauEllipticPhotonIsoDiscriminationByTaNCfrOnePercent = \
+##  copy.deepcopy(shrinkingConePFTauDiscriminationByTaNCfrOnePercent)
+##setTauSource(shrinkingConePFTauEllipticPhotonIsoDiscriminationByTaNCfrOnePercent, 'shrinkingConePFTauEllipticPhotonIsoProducer')
+##
+##shrinkingConePFTauEllipticPhotonIsoDiscriminationByTaNCfrHalfPercent = \
+##  copy.deepcopy(shrinkingConePFTauDiscriminationByTaNCfrHalfPercent)
+##setTauSource(shrinkingConePFTauEllipticPhotonIsoDiscriminationByTaNCfrHalfPercent, 'shrinkingConePFTauEllipticPhotonIsoProducer')
+##
+##shrinkingConePFTauEllipticPhotonIsoDiscriminationByTaNCfrQuarterPercent = \
+##  copy.deepcopy(shrinkingConePFTauDiscriminationByTaNCfrQuarterPercent)
+##setTauSource(shrinkingConePFTauEllipticPhotonIsoDiscriminationByTaNCfrQuarterPercent, 'shrinkingConePFTauEllipticPhotonIsoProducer')
+##
+##shrinkingConePFTauEllipticPhotonIsoDiscriminationByTaNCfrTenthPercent = \
+##  copy.deepcopy(shrinkingConePFTauDiscriminationByTaNCfrTenthPercent)
+##setTauSource(shrinkingConePFTauEllipticPhotonIsoDiscriminationByTaNCfrTenthPercent, 'shrinkingConePFTauEllipticPhotonIsoProducer')
+##
+##produceShrinkingConePFTauEllipticPhotonIsoDiscriminationByTauNeuralClassifier = cms.Sequence(
+##    shrinkingConePFTauEllipticPhotonIsoDiscriminationByTaNC
+##   * shrinkingConePFTauEllipticPhotonIsoDiscriminationByTaNCfrOnePercent
+##   * shrinkingConePFTauEllipticPhotonIsoDiscriminationByTaNCfrHalfPercent
+##   * shrinkingConePFTauEllipticPhotonIsoDiscriminationByTaNCfrQuarterPercent
+##   * shrinkingConePFTauEllipticPhotonIsoDiscriminationByTaNCfrTenthPercent
+##)
+
+
