@@ -28,9 +28,11 @@ if __name__ == "__main__":
     genTaus = ntuple_manager.get_ntuple("tauGenJets")
 
     # Binning for PT
-    pt_bins = (0,2.5,5.,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,
-               35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,63,66,69,72,
-               76,80,85,90,95,100,110,120,130,140,150)
+    pt_bins = (
+        0, 2.5, 5., 7.5, 10, 12.5, 15, 17.5, 20, 22.5, 25, 27.5, 30, 32.5, 
+        35, 37.5, 40, 42.5, 45, 47.5, 50, 52.5, 55, 57.5, 60, 63, 66, 69, 72, 
+        76, 80, 85, 90, 95, 100, 110, 120, 130, 140, 150
+    )
 
     # Define styles of all of the numerators
     numerators = {
@@ -108,14 +110,14 @@ if __name__ == "__main__":
             'expr_str': '$genPt',
             'binning': pt_bins,
             'label': 'Generated #tau visible P_{T} [GeV/c]',
-            'cutLabel':style.ETAVIS_CUT_LABEL_UPPER_LEFT,
+            'cutLabel': style.ETAVIS_CUT_LABEL_UPPER_LEFT,
         }, 
         'eta' : {
             'expr_str': '$genEta',
             'binning': (50, -2.5, 2.5),
             'label': 'Generated #tau visible #eta',
-            'cutLabel':style.PTVIS_CUT_LABEL_UPPER_LEFT,
-        },
+            'cutLabel': style.PTVIS_CUT_LABEL_UPPER_LEFT,
+        }
     }
 
     # Define 'orders' for tau discriminators
@@ -157,11 +159,11 @@ if __name__ == "__main__":
 
     # Match up sequences to tau algos
     sequences_and_algos = [
-        (standard_sequence, "iso", "patPFTausDijetTagAndProbeShrinkingCone"),
-        (standard_sequence, "iso", "patPFTausDijetTagAndProbeFixedCone"),
-        (tanc_sequence, "tanc", "patPFTausDijetTagAndProbeShrinkingCone"),
-        (hps_sequence, "hps", "patPFTausDijetTagAndProbeHPS"),
-        (calo_sequence, "calo", "patCaloTausDijetTagAndProbe"),
+        ( standard_sequence, "iso", "patPFTausDijetTagAndProbeShrinkingCone" ),
+        ( standard_sequence, "iso", "patPFTausDijetTagAndProbeFixedCone" ),
+        ( tanc_sequence, "tanc", "patPFTausDijetTagAndProbeShrinkingCone" ),
+        ( hps_sequence, "hps", "patPFTausDijetTagAndProbeHPS" ),
+        ( calo_sequence, "calo", "patCaloTausDijetTagAndProbe" ),
     ]
 
     #denom_selection = genTaus.expr(
@@ -176,8 +178,12 @@ if __name__ == "__main__":
 
     ztt_events = list(ztt.events_and_weights())[0][0]
 
-    c1 = ROOT.TCanvas("c1","",0,0,500,500)
-    c1.SetGridy(1)
+    efficiency_results = {}
+
+    canvas = ROOT.TCanvas("canvas", "canvas", 500, 500)
+    canvas.SetLeftMargin(0.11)
+    canvas.SetGridy(1)
+    
     for sequence, sequence_name, algo in sequences_and_algos:
         if sys.argv[1:] != [] and (not sequence_name in sys.argv[1:]):
             continue
@@ -186,12 +192,14 @@ if __name__ == "__main__":
         ntuple = ntuple_manager.get_ntuple(algo)
         # Loop over different horizontal axes
         for x_var, x_var_info in parameterizations.iteritems():
-            #t1 = ROOT.TLegend(0.6, 0.10, 0.7, 0.35, "","brNDC")
-            t1 = ROOT.TLegend(0.45, 0.68, 0.88, 0.88, "","brNDC")
-            t1.SetTextSize(0.03)
-            t1.SetFillColor(0);
-            t1.SetLineColor(1);
-            t1.SetBorderSize(1);
+            
+            # build legend
+            legend = ROOT.TLegend(0.45, 0.68, 0.88, 0.88, "","brNDC")
+            legend.SetTextSize(0.03)
+            legend.SetFillColor(0);
+            legend.SetLineColor(1);
+            legend.SetBorderSize(1);
+            
             # build denominator
             print "Building denominator for", x_var
             denominator = draw(
@@ -201,14 +209,17 @@ if __name__ == "__main__":
                 binning = x_var_info['binning'],
                 output_name = '_'.join(["denom", x_var, sequence_name, algo]),
             )
+            
             # Loop over sequence of numerators
             numerator_effs = []
             running_cut = ntuple.expr(denom_selection_from_reco_str)
             for numerator_name in sequence:
+
                 # Get the description of this numerator
                 numerator_info = numerators[numerator_name]
                 print "Building numerator for", numerator_name
                 running_cut = ntuple.expr(numerator_info['expr_str']) & running_cut
+
                 # Draw numerator
                 print x_var_info['expr_str']
                 print running_cut
@@ -219,30 +230,39 @@ if __name__ == "__main__":
                     binning = x_var_info['binning'],
                     output_name = '_'.join([numerator_name, x_var, sequence_name, algo]),
                 )
-                #FIXME clean this up
+                
+                # FIXME: clean this up
                 from math import sqrt
                 nNum = float(numerator.Integral())
                 nDenom = denominator.Integral()
                 err = 1/nDenom*sqrt(nNum*(1-nNum/nDenom) )
                 efficiencyLogHack("%s -> %s: "%(algo, numerator_name),timestamp=True)
                 efficiencyLogHack( "%e / %e = %e +- %e\n"%(nNum, nDenom, nNum/nDenom,err))
-                #end cleanup
+                # end cleanup
                 
                 my_eff = ROOT.TGraphAsymmErrors(numerator, denominator)
                                     
-                #overwrite the additional spacing by root
+                # Overwrite the additional spacing by root
                 if len(x_var_info['binning']) == 3:
                     my_eff.GetXaxis().SetRangeUser(x_var_info['binning'][1],
                                                    x_var_info['binning'][2])
                 else:
                     my_eff.GetXaxis().SetRangeUser(min(x_var_info['binning']),
                                                    max(x_var_info['binning']))
+                    
                 # Update style
                 style.update_histo_style(
                     my_eff, style.EFFICIENCY_STYLES[numerator_name])
+                
                 numerator_effs.append(my_eff)
-                t1.AddEntry(my_eff, numerator_info['label'],"P")
-
+                
+                efficiency_results.setdefault(x_var, {})
+                efficiency_results[x_var].setdefault(algo, {})
+                efficiency_results[x_var][algo].setdefault(algo, {})
+                efficiency_results[x_var][algo][numerator_name] = my_eff
+                
+                legend.AddEntry(my_eff, numerator_info['label'], "P")
+                
             # Make the actual plots
             print "Building plots"
             for index, numerator_eff in enumerate(numerator_effs):
@@ -251,21 +271,85 @@ if __name__ == "__main__":
                     numerator_eff.Draw("Ap")
                     numerator_eff.GetHistogram().GetXaxis().SetTitle(x_var_info['label'])
                     numerator_eff.GetHistogram().GetYaxis().SetTitle("Efficiency")
+                    numerator_eff.GetHistogram().GetYaxis().SetTitleOffset(1.2)
                     numerator_eff.GetHistogram().GetYaxis().SetRangeUser(0, 1.5)
                 else:
                     numerator_eff.Draw("p,same")
+
             # Draw legend
-            t1.Draw()
+            legend.Draw()
+            
             # Draw the preliminary label
             style.CMS_PRELIMINARY_UPPER_LEFT.Draw()
             style.ZTAUTAU_LABEL_UPPER_LEFT.Draw()
             style.SQRTS_LABEL_UPPER_LEFT.Draw()
             x_var_info["cutLabel"].Draw()
-            # Save the plot
-            c1.SaveAs("plots/%s.png" % '_'.join(['ztt', algo, sequence_name, 'vs', x_var]))
-            c1.SaveAs("plots/%s.pdf" % '_'.join(['ztt', algo, sequence_name, 'vs', x_var]))
-            
 
+            # Save the plot
+            canvas.SaveAs("plots/%s.png" % '_'.join(['ztt', algo, sequence_name, 'vs', x_var]))
+            canvas.SaveAs("plots/%s.pdf" % '_'.join(['ztt', algo, sequence_name, 'vs', x_var]))
+
+    # Make comparison plot of efficiencies after all tau id. criteria are applied
+    # for different algorithms
+    for x_var, x_var_info in parameterizations.iteritems():
+
+        # build legend
+        legend = ROOT.TLegend(0.45, 0.68, 0.88, 0.88, "","brNDC")
+        legend.SetTextSize(0.03)
+        legend.SetFillColor(0);
+        legend.SetLineColor(1);
+        legend.SetBorderSize(1);
+
+        efficiency_fixed = efficiency_results[x_var]['patPFTausDijetTagAndProbeFixedCone']['OneOrThreeProng']
+        efficiency_fixed.SetMarkerStyle(20)
+        efficiency_fixed.SetMarkerColor(ROOT.EColor.kGreen + 2)
+        efficiency_fixed.SetLineColor(ROOT.EColor.kGreen + 2)
+        efficiency_fixed.Draw("Ap")
+        efficiency_fixed.GetHistogram().GetXaxis().SetTitle(x_var_info['label'])
+        efficiency_fixed.GetHistogram().GetYaxis().SetTitle("Efficiency")
+        efficiency_fixed.GetHistogram().GetYaxis().SetRangeUser(0, 1.5)
+        legend.AddEntry(efficiency_fixed, "Fixed signal cone", "P")
+
+        efficiency_shrinking = efficiency_results[x_var]['patPFTausDijetTagAndProbeShrinkingCone']['OneOrThreeProng']
+        efficiency_shrinking.SetMarkerStyle(21)
+        efficiency_shrinking.SetMarkerColor(ROOT.EColor.kRed)
+        efficiency_shrinking.SetLineColor(ROOT.EColor.kRed)
+        efficiency_shrinking.Draw("p,same")
+        legend.AddEntry(efficiency_shrinking, "Shrinking signal cone", "P")
+
+        efficiency_tanc = efficiency_results[x_var]['patPFTausDijetTagAndProbeShrinkingCone']['byTaNCfrHalfPercent']
+        efficiency_tanc.SetMarkerStyle(22)
+        efficiency_tanc.SetMarkerColor(ROOT.EColor.kBlue)
+        efficiency_tanc.SetLineColor(ROOT.EColor.kBlue)
+        efficiency_tanc.Draw("p,same")
+        legend.AddEntry(efficiency_tanc, "TaNC 0.50%", "P")
+
+        efficiency_hps = efficiency_results[x_var]['patPFTausDijetTagAndProbeHPS']['byIsolationMedium']
+        efficiency_hps.SetMarkerStyle(23)
+        efficiency_hps.SetMarkerColor(28)
+        efficiency_hps.SetLineColor(28)
+        efficiency_hps.Draw("p,same")
+        legend.AddEntry(efficiency_hps, "HPS medium isolation", "P")
+
+        efficiency_tctau = efficiency_results[x_var]['patCaloTausDijetTagAndProbe']['OneOrThreeProng_calo']
+        efficiency_tctau.SetMarkerStyle(29)
+        efficiency_tctau.SetMarkerColor(ROOT.EColor.kBlack)
+        efficiency_tctau.SetLineColor(ROOT.EColor.kBlack)
+        efficiency_tctau.Draw("p,same")
+        legend.AddEntry(efficiency_tctau, "TCTau", "P")
+
+        # Draw legend
+        legend.Draw()
+            
+        # Draw the preliminary label
+        style.CMS_PRELIMINARY_UPPER_LEFT.Draw()
+        style.ZTAUTAU_LABEL_UPPER_LEFT.Draw()
+        style.SQRTS_LABEL_UPPER_LEFT.Draw()
+        x_var_info["cutLabel"].Draw()
+
+        # Save the plot
+        canvas.SaveAs("plots/%s.png" % '_'.join(['efficiency_algo_comparison', 'vs', x_var]))
+        canvas.SaveAs("plots/%s.pdf" % '_'.join(['efficiency_algo_comparison', 'vs', x_var]))
                     
 
 

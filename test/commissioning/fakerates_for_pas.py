@@ -7,25 +7,35 @@ import TauAnalysis.TauIdEfficiency.ntauples.styles as style
 # Definition of input files.
 import samples_cache as samples
 
-def makeFakeratePlots( algorithm ):
+def makeFakeratePlots(algorithm):
+    
     denominator_section = "$probe > 0.5 & $jetPt > 10.0 & abs($jetEta) < 2.5"
+    
     denominator = hlt.expr('$hltJet15U > 0.5') & nTuples[algorithm].expr(denominator_section)
+    
     for eff_info in numerators[algorithm]: 
         eff_info['expr'] = denominator & eff_info['expr']
+
+    result_algorithm = {}    
+        
     pt_effs = plotter.multi_efficiency(
         nTuples[algorithm].expr('$jetPt'), 
         denominator,
         numerators[algorithm], 
         binning=pt_binning_fine, 
         y_min = 1e-4,
-        y_max = 10,
+        y_max = 9.9,
         x_axis_title='Jet P_{T} [GeV/c]',
-        labels = [style.CMS_PRELIMINARY_UPPER_LEFT,
-                  style.LUMI_LABEL_UPPER_LEFT,
-                  style.SQRTS_LABEL_UPPER_LEFT,
-                  style.ETA_CUT_LABEL_UPPER_LEFT
-                  ],
-        logy = True)
+        labels = [
+            style.CMS_PRELIMINARY_UPPER_LEFT,
+            style.LUMI_LABEL_UPPER_LEFT,
+            style.SQRTS_LABEL_UPPER_LEFT,
+            style.ETA_CUT_LABEL_UPPER_LEFT
+        ],
+        logy = True
+    )
+    result_algorithm['Pt'] = pt_effs
+    result_algorithm['Pt']['extra_labels'] = style.ETA_CUT_LABEL_UPPER_LEFT
     
     pt_effs['legend'].make_legend(0.45, 0.68, 0.88, 0.88).Draw()
     
@@ -38,14 +48,18 @@ def makeFakeratePlots( algorithm ):
         numerators[algorithm], 
         binning=eta_binning_fine, 
         y_min = 1e-4,
-        y_max = 10,
+        y_max = 9.9,
         x_axis_title='Jet #eta',
-        labels = [style.CMS_PRELIMINARY_UPPER_LEFT,
-                  style.LUMI_LABEL_UPPER_LEFT,
-                  style.SQRTS_LABEL_UPPER_LEFT,
-                  style.PT_CUT_LABEL_UPPER_LEFT
-                  ],
-        logy = True)
+        labels = [
+            style.CMS_PRELIMINARY_UPPER_LEFT,
+            style.LUMI_LABEL_UPPER_LEFT,
+            style.SQRTS_LABEL_UPPER_LEFT,
+            style.PT_CUT_LABEL_UPPER_LEFT
+        ],
+        logy = True
+    )
+    result_algorithm['eta'] = eta_effs
+    result_algorithm['eta']['extra_labels'] = style.PT_CUT_LABEL_UPPER_LEFT
     
     eta_effs['legend'].make_legend(0.45, 0.68, 0.88, 0.88).Draw()
     
@@ -58,19 +72,24 @@ def makeFakeratePlots( algorithm ):
         numerators[algorithm], 
         binning=phi_binning_fine, 
         y_min = 1e-4,
-        y_max = 10,
+        y_max = 9.9,
         x_axis_title='Jet #phi',
-        labels = [style.CMS_PRELIMINARY_UPPER_LEFT,
-                  style.LUMI_LABEL_UPPER_LEFT,
-                  style.SQRTS_LABEL_UPPER_LEFT,
-                  style.PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT,
-                  ],
+        labels = [
+            style.CMS_PRELIMINARY_UPPER_LEFT,
+            style.LUMI_LABEL_UPPER_LEFT,
+            style.SQRTS_LABEL_UPPER_LEFT,
+            style.PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT
+        ],
         logy = True)
+    result_algorithm['phi'] = phi_effs
+    result_algorithm['phi']['extra_labels'] = style.PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT
     
     phi_effs['legend'].make_legend(0.45, 0.68, 0.88, 0.88).Draw()
     
     canvas.SaveAs("plots/%s_multifake_vs_phi_for_pas.png"%(algorithm))
     canvas.SaveAs("plots/%s_multifake_vs_phi_for_pas.pdf"%(algorithm))
+
+    return result_algorithm
 
 if __name__ == "__main__":
 
@@ -97,7 +116,7 @@ if __name__ == "__main__":
         "TaNC": ntuple_manager.get_ntuple("patPFTausDijetTagAndProbeShrinkingCone"),
         "hps": ntuple_manager.get_ntuple("patPFTausDijetTagAndProbeHPS"),
         "calo": ntuple_manager.get_ntuple("patCaloTausDijetTagAndProbe"),
-        }
+    }
     
     hlt = ntuple_manager.get_ntuple("TriggerResults")
     
@@ -109,7 +128,6 @@ if __name__ == "__main__":
     eta_binning_fine = (25, -2.5, 2.5)
     phi_binning_fine = (25, -3.14, 3.14)
 
-
     # Define the numerators to plot
     lead_pion_selection = '$byLeadPionPtCut > 0.5 '
     pfString = "$byLeadTrackFinding > 0.5 & $byLeadTrackPtCut > 0.5 & $byTrackIsolation > 0.5 "
@@ -118,64 +136,64 @@ if __name__ == "__main__":
     caloString += " & $etSumIsolationECAL < 5 & ($numSignalTracks ==1 || $numSignalTracks ==3)"
     
     numerators = {
-         "shrinkingCone":[
+        "shrinkingCone":[
             {
-                'expr':  nTuples["shrinkingCone"].expr(pfString) ,
-                "style_name":"OneOrThreeProng",
-                ##'nice_name': "all shrinkingCone",
-                'nice_name': "",
-                },
-            ],
+                'expr': nTuples["shrinkingCone"].expr(pfString) ,
+                'style_name':"OneOrThreeProng",
+                'nice_name': ""
+            }
+        ],
         "fixedCone":[
             {
-                'expr':  nTuples["fixedCone"].expr(pfString) ,
-                "style_name":"OneOrThreeProng",
-                ##'nice_name': "all fixedCone",
-                'nice_name': "",
-                },
-            ],
+                'expr': nTuples["fixedCone"].expr(pfString) ,
+                'style_name':"OneOrThreeProng",
+                'nice_name': ""
+            }
+        ],
         "TaNC":[
             {
-                'expr':  nTuples["TaNC"].expr('$byLeadTrackFinding > 0.5 & $byTaNCfrOnePercent > 0.5'),
-                "style_name":"byTaNCfrOnePercent",
-                'nice_name': "TaNC 1.00%",
-                },
+                'expr': nTuples["TaNC"].expr('$byLeadTrackFinding > 0.5 & $byTaNCfrOnePercent > 0.5'),
+                'style_name':"byTaNCfrOnePercent",
+                'nice_name': "TaNC 1.00%"
+            },
             {
-                'expr':  nTuples["TaNC"].expr('$byLeadTrackFinding > 0.5 & $byTaNCfrHalfPercent > 0.5'),
-                "style_name":"byTaNCfrHalfPercent",
+                'expr': nTuples["TaNC"].expr('$byLeadTrackFinding > 0.5 & $byTaNCfrHalfPercent > 0.5'),
+                'style_name':"byTaNCfrHalfPercent",
                 'nice_name': "TaNC 0.50%"
-                },
+            },
             {
-                'expr':  nTuples["TaNC"].expr('$byLeadTrackFinding > 0.5 & $byTaNCfrQuarterPercent > 0.5'),
-                "style_name":"byTaNCfrQuarterPercent",
+                'expr': nTuples["TaNC"].expr('$byLeadTrackFinding > 0.5 & $byTaNCfrQuarterPercent > 0.5'),
+                'style_name':"byTaNCfrQuarterPercent",
                 'nice_name': "TaNC 0.25%"
-                },
-            ],
+            }
+         ],
          "hps":[
             {
-                'expr':  nTuples["hps"].expr('$byLeadTrackFinding > 0.5 & $byIsolationLoose > 0.5'),
-                "style_name":"byIsolationLoose",
-                'nice_name': "Loose Isolation",
-                },
+                'expr': nTuples["hps"].expr('$byLeadTrackFinding > 0.5 & $byIsolationLoose > 0.5'),
+                'style_name':"byIsolationLoose",
+                'nice_name': "Loose Isolation"
+            },
             {
-                'expr':  nTuples["hps"].expr('$byLeadTrackFinding > 0.5 & $byIsolationMedium > 0.5'),
-                "style_name":"byIsolationMedium",
-                'nice_name': "Medium Isolation",
-                },
+                'expr': nTuples["hps"].expr('$byLeadTrackFinding > 0.5 & $byIsolationMedium > 0.5'),
+                'style_name':"byIsolationMedium",
+                'nice_name': "Medium Isolation"
+            },
             {
-                'expr':  nTuples["hps"].expr('$byLeadTrackFinding > 0.5 & $byIsolationTight > 0.5'),
-                "style_name":"byIsolationTight",
-                'nice_name': "Tight Isolation",
-                },
-            ],
+                'expr': nTuples["hps"].expr('$byLeadTrackFinding > 0.5 & $byIsolationTight > 0.5'),
+                'style_name':"byIsolationTight",
+                'nice_name': "Tight Isolation"
+            }
+        ],
         "calo":[
             {
-                'expr':  nTuples["calo"].expr(caloString) ,
-                "style_name":"OneOrThreeProng",
-                'nice_name': "",
-                },
-            ],
-        }
+                'expr': nTuples["calo"].expr(caloString) ,
+                'style_name':"OneOrThreeProng",
+                'nice_name': ""
+            }
+        ]
+    }
+
+    fakerate_results = {}
         
     for algorithm in numerators:
         # Update the numerator for each efficiency to ensure it is a subset of the
@@ -183,7 +201,74 @@ if __name__ == "__main__":
         import sys
         if sys.argv[1:] != [] and (not algorithm in sys.argv[1:]):
             continue
-        makeFakeratePlots( algorithm )
+        
+        result_algorithm = makeFakeratePlots(algorithm)
+        fakerate_results[algorithm] = result_algorithm
+
+    # Make comparison plot of fake-rate after all tau id. criteria are applied
+    # for different algorithms
+    for x_var in [ "Pt", "eta", "phi" ]:
+
+        # build legend
+        legend = ROOT.TLegend(0.45, 0.68, 0.88, 0.88, "","brNDC")
+        legend.SetTextSize(0.03)
+        legend.SetFillColor(0);
+        legend.SetLineColor(1);
+        legend.SetBorderSize(1);
+
+        fakerate_results['fixedCone'][x_var]['background'].Draw("")
+
+        fakerate_fixed = fakerate_results['fixedCone'][x_var]['numerators']['OneOrThreeProng']['data']
+        fakerate_fixed.SetMarkerStyle(20)
+        fakerate_fixed.SetMarkerColor(ROOT.EColor.kGreen + 2)
+        fakerate_fixed.SetLineColor(ROOT.EColor.kGreen + 2)
+        fakerate_fixed.Draw("e1p, same")
+        legend.AddEntry(fakerate_fixed, "Fixed signal cone", "P")
+
+        fakerate_shrinking = fakerate_results['shrinkingCone'][x_var]['numerators']['OneOrThreeProng']['data']
+        fakerate_shrinking.SetMarkerStyle(21)
+        fakerate_shrinking.SetMarkerColor(ROOT.EColor.kRed)
+        fakerate_shrinking.SetLineColor(ROOT.EColor.kRed)
+        fakerate_shrinking.Draw("e1p,same")
+        legend.AddEntry(fakerate_shrinking, "Shrinking signal cone", "P")
+
+        fakerate_tanc = fakerate_results['TaNC'][x_var]['numerators']['byTaNCfrHalfPercent']['data']
+        fakerate_tanc.SetMarkerStyle(22)
+        fakerate_tanc.SetMarkerColor(ROOT.EColor.kBlue)
+        fakerate_tanc.SetLineColor(ROOT.EColor.kBlue)
+        fakerate_tanc.Draw("e1p,same")
+        legend.AddEntry(fakerate_tanc, "TaNC 0.50%", "P")
+
+        fakerate_hps = fakerate_results['hps'][x_var]['numerators']['byIsolationMedium']['data']
+        fakerate_hps.SetMarkerStyle(23)
+        fakerate_hps.SetMarkerColor(28)
+        fakerate_hps.SetLineColor(28)
+        fakerate_hps.Draw("e1p,same")
+        legend.AddEntry(fakerate_hps, "HPS medium isolation", "P")
+
+        fakerate_tctau = fakerate_results['calo'][x_var]['numerators']['OneOrThreeProng']['data']
+        fakerate_tctau.SetMarkerStyle(29)
+        fakerate_tctau.SetMarkerColor(ROOT.EColor.kBlack)
+        fakerate_tctau.SetLineColor(ROOT.EColor.kBlack)
+        fakerate_tctau.Draw("e1p,same")
+        legend.AddEntry(fakerate_tctau, "TCTau", "P")
+
+        # Draw legend
+        legend.Draw()
+            
+        # Draw the preliminary label
+        style.CMS_PRELIMINARY_UPPER_LEFT.Draw()
+        style.ZTAUTAU_LABEL_UPPER_LEFT.Draw()
+        style.SQRTS_LABEL_UPPER_LEFT.Draw()
+        fakerate_results['calo'][x_var]['extra_labels'].Draw()
+        
+        # Save the plot
+        canvas.SaveAs("plots/%s.png" % '_'.join(['fakerate_algo_comparison', 'vs', x_var]))
+        canvas.SaveAs("plots/%s.pdf" % '_'.join(['fakerate_algo_comparison', 'vs', x_var]))
+                    
+    
+
+        
             
         
         
