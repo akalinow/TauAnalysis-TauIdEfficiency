@@ -260,7 +260,7 @@ class PlotManager(object):
                 cumulative_numerator = cumulative_numerator & \
                         numerator_info['expr']
 
-            numerator_name = numerator_info['nice_name']
+            numerator_name = numerator_info['style_name']
             plot.efficiencyLogHack("####### %s ######\n"%numerator_name)
             plot.efficiencyLogHack("",timestamp=True)
             #set style for the given numerator
