@@ -281,4 +281,5 @@ def configurePatTupleProduction(process, patSequenceBuilder = None,
     retVal["pfTauCollectionFixedCone"] = retVal_pfTauFixedCone["collection"]
     retVal["pfTauCollectionShrinkingCone"] = retVal_pfTauShrinkingCone["collection"]
     retVal["pfTauCollectionHPS"] = retVal_pfTauHPS["collection"]
+    retVal["pfTauCollectionShrinkingConeEllipticPhotonIso"] = retVal_pfTauShrinkingConeEllipticPhotonIso["collection"]
     return retVal
