@@ -66,8 +66,9 @@ caloTaus_recInfo = cms.PSet(
         byEcalIsolation = cms.string("tauID('ecalIsolation')"),
         byIsolation = cms.string("tauID('byIsolation')"),
         
-        # discriminators against electrons
-        againstElectron = cms.string("tauID('againstElectron')")
+        # discriminators against electrons/muons
+        againstElectron = cms.string("tauID('againstElectron')"),
+        againstMuon = cms.string("tauID('againstMuon')")
     )
 )
 
