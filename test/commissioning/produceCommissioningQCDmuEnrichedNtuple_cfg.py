@@ -32,7 +32,9 @@ process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(1000)
 )
 
-isMC = True # use for MC
+isMC = True # use for MC (except for samples from Spring'10 reprocessing)
+isSpring10 = True # use for Spring'10 reprocessed MC
+##isSpring10 = False # use for non-Spring'10 reprocessed MC
 ##isMC = False # use for Data
 #--------------------------------------------------------------------------------
 
@@ -158,40 +160,48 @@ process.ntupleProducer = cms.EDAnalyzer("ObjValEDNtupleProducer",
         vertex = process.vertex_template,
 
         # variables specific to Muons
-        muons_part01 = process.muons_recInfo,              
+        muons_rec = process.muons_recInfo,              
 
         # variables specific to CaloTaus                                            
-        caloTaus_part01 = process.caloTaus_recInfo.clone(
+        caloTaus_rec = process.caloTaus_recInfo.clone(
             src = cms.InputTag(retVal["caloTauCollection"])                       
         ),
 
         # variables specific to fixed cone PFTaus                                            
-        pfTausFixedCone_part01 = process.pfTausFixedCone_recInfo.clone(
+        pfTausFixedCone_rec = process.pfTausFixedCone_recInfo.clone(
             src = cms.InputTag(retVal["pfTauCollectionFixedCone"])                       
         ),
 
         # variables specific to shrinking cone PFTaus                                            
-        pfTausShrinkingCone_part01 = process.pfTausShrinkingCone_recInfo.clone(
+        pfTausShrinkingCone_rec = process.pfTausShrinkingCone_recInfo.clone(
             src = cms.InputTag(retVal["pfTauCollectionShrinkingCone"])                       
         ),
 
         # variables specific to PFTaus reconstructed by hadron + strips (HPS) algorithm                                           
-        pfTausHPS_part01 = process.pfTausHPS_recInfo.clone(
+        pfTausHPS_rec = process.pfTausHPS_recInfo.clone(
             src = cms.InputTag(retVal["pfTauCollectionHPS"])                       
+        ),
+
+        # variables specific to shrinking cone PFTaus
+        # reconstructed using ellipse for photon isolation
+        pfTausShrinkingConeEllPhotonIso_rec = process.pfTausShrinkingConeEllipticPhotonIso_recInfo.clone(
+            src = cms.InputTag(retVal["pfTauCollectionShrinkingConeEllipticPhotonIso"])                       
         )
     )
 )
 
 if isMC:
-    setattr(process.ntupleProducer.sources, "muons_part02", process.muons_genInfo)
+    setattr(process.ntupleProducer.sources, "muons_gen", process.muons_genInfo)
     process.caloTaus_genInfo.src = cms.InputTag(retVal["caloTauCollection"])
-    setattr(process.ntupleProducer.sources, "caloTaus_part02", process.caloTaus_genInfo)
+    setattr(process.ntupleProducer.sources, "caloTaus_gen", process.caloTaus_genInfo)
     process.pfTausFixedCone_genInfo.src = cms.InputTag(retVal["pfTauCollectionFixedCone"])
-    setattr(process.ntupleProducer.sources, "pfTausFixedCone_part02", process.pfTausFixedCone_genInfo)
+    setattr(process.ntupleProducer.sources, "pfTausFixedCone_gen", process.pfTausFixedCone_genInfo)
     process.pfTausShrinkingCone_genInfo.src = cms.InputTag(retVal["pfTauCollectionShrinkingCone"])
-    setattr(process.ntupleProducer.sources, "pfTausShrinkingCone_part02", process.pfTausShrinkingCone_genInfo)
+    setattr(process.ntupleProducer.sources, "pfTausShrinkingCone_gen", process.pfTausShrinkingCone_genInfo)
     process.pfTausHPS_genInfo.src = cms.InputTag(retVal["pfTauCollectionHPS"])
-    setattr(process.ntupleProducer.sources, "pfTausHPS_part02", process.pfTausHPS_genInfo)
+    setattr(process.ntupleProducer.sources, "pfTausHPS_gen", process.pfTausHPS_genInfo)
+    process.pfTausShrinkingConeEllipticPhotonIso_genInfo.src = cms.InputTag(retVal["pfTauCollectionShrinkingConeEllipticPhotonIso"])
+    setattr(process.ntupleProducer.sources, "pfTausShrinkingConeEllPhotonIso_gen", process.pfTausShrinkingConeEllipticPhotonIso_genInfo)
     # add in information about generator level visible taus and all generator level jets
     setattr(process.ntupleProducer.sources, "tauGenJets", process.tauGenJets_genInfo)
     setattr(process.ntupleProducer.sources, "genJets", process.genJets_genInfo)
@@ -202,7 +212,7 @@ if isMC:
 #
 # updated InputTags for HLT trigger result object
 # in case running on reprocessed Spring'10 Monte Carlo samples
-if isMC:
+if isSpring10:
     process.hltMu3.selector.src = cms.InputTag('TriggerResults::REDIGI')
     process.patTrigger.processName = cms.string('REDIGI')
     process.patCaloTausTriggerEvent.processName = cms.string('REDIGI')

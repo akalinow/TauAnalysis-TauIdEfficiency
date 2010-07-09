@@ -22,7 +22,8 @@ process.source = cms.Source("PoolSource",
         ##'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/mcMinBias/muTauSkim_1_1.root'
         ##'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/mcQCDpt15/muTauSkim_1_1.root'
         ##'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/mcMinBias_pythia8/muTauSkim_1_2.root'
-        'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/dataReReco/muTauSkim_1_1_QBQ.root'
+        ##'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/dataReReco/muTauSkim_1_1_QBQ.root'
+        'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/mcWtauNu/muTauSkim_1_1_9yq.root'
     ),
     skipEvents = cms.untracked.uint32(0)            
 )
@@ -42,11 +43,10 @@ process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(1000)
 )
 
-##isMC = True # use for MC (except for samples from Spring'10 reprocessing)
-##isSpring10 = True # use for Spring'10 reprocessed MC
-isSpring10 = False # use for non-Spring'10 reprocessed MC
-isMC = False # use for Data
-
+isMC = True # use for MC (except for samples from Spring'10 reprocessing)
+isSpring10 = True # use for Spring'10 reprocessed MC
+##isSpring10 = False # use for non-Spring'10 reprocessed MC
+##isMC = False # use for Data
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
@@ -122,6 +122,7 @@ process.load("TauAnalysis.TauIdEfficiency.ntupleConfigCaloTau_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigPFTauFixedCone_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigPFTauShrinkingCone_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigPFTauHPS_cfi")
+process.load("TauAnalysis.TauIdEfficiency.ntupleConfigPFTauShrinkingConeEllipticPhotonIso_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigGlobalVariables_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigTrackVariables_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigGenJets_cfi")
@@ -146,54 +147,68 @@ process.ntupleProducer = cms.EDAnalyzer("ObjValEDNtupleProducer",
         met = process.met_template,                                    
 
         # variables specific to CaloTaus                                            
-        caloTaus_part01 = process.caloTaus_recInfo.clone(
+        caloTaus_rec01 = process.caloTaus_recInfo.clone(
             src = cms.InputTag(retVal["caloTauCollection"])                       
         ),
-        caloTaus_part02 = process.tauTrackVariables_template.clone(
+        caloTaus_rec02 = process.tauTrackVariables_template.clone(
             src = cms.InputTag(retVal["caloTauCollection"])                       
         ),
 
         # variables specific to fixed cone PFTaus                                            
-        pfTausFixedCone_part01 = process.pfTausFixedCone_recInfo.clone(
+        pfTausFixedCone_rec01 = process.pfTausFixedCone_recInfo.clone(
             src = cms.InputTag(retVal["pfTauCollectionFixedCone"])                       
         ),
-        pfTausFixedCone_part02 = process.extraTauCandVariables_template.clone(
+        pfTausFixedCone_rec02 = process.extraTauCandVariables_template.clone(
             src = cms.InputTag(retVal["pfTauCollectionFixedCone"])                       
         ),
-        pfTausFixedCone_part03 = process.tauTrackVariables_template.clone(
+        pfTausFixedCone_rec03 = process.tauTrackVariables_template.clone(
             src = cms.InputTag(retVal["pfTauCollectionFixedCone"])                       
         ),
 
         # variables specific to shrinking cone PFTaus                                            
-        pfTausShrinkingCone_part01 = process.pfTausShrinkingCone_recInfo.clone(
+        pfTausShrinkingCone_rec01 = process.pfTausShrinkingCone_recInfo.clone(
             src = cms.InputTag(retVal["pfTauCollectionShrinkingCone"])                       
         ),
-        pfTausShrinkingCone_part02 = process.extraTauCandVariables_template.clone(
+        pfTausShrinkingCone_rec02 = process.extraTauCandVariables_template.clone(
             src = cms.InputTag(retVal["pfTauCollectionShrinkingCone"])                       
         ),                                
-        pfTausShrinkingCone_part03 = process.tauTrackVariables_template.clone(
+        pfTausShrinkingCone_rec03 = process.tauTrackVariables_template.clone(
             src = cms.InputTag(retVal["pfTauCollectionShrinkingCone"])                       
         ),
 
         # variables specific to PFTaus reconstructed by hadron + strips (HPS) algorithm                                           
-        pfTausHPS_part01 = process.pfTausHPS_recInfo.clone(
+        pfTausHPS_rec01 = process.pfTausHPS_recInfo.clone(
             src = cms.InputTag(retVal["pfTauCollectionHPS"])                       
         ),
-        pfTausHPS_part02 = process.tauTrackVariables_template.clone(
+        pfTausHPS_rec02 = process.tauTrackVariables_template.clone(
             src = cms.InputTag(retVal["pfTauCollectionHPS"])                       
+        ),
+
+        # variables specific to shrinking cone PFTaus
+        # reconstructed using ellipse for photon isolation
+        pfTausShrinkingConeEllPhotonIso_rec01 = process.pfTausShrinkingConeEllipticPhotonIso_recInfo.clone(
+            src = cms.InputTag(retVal["pfTauCollectionShrinkingConeEllipticPhotonIso"])                       
+        ),
+        pfTausShrinkingConeEllPhotonIso_rec02 = process.extraTauCandVariables_template.clone(
+            src = cms.InputTag(retVal["pfTauCollectionShrinkingConeEllipticPhotonIso"])                       
+        ),                                
+        pfTausShrinkingConeEllPhotonIso_rec03 = process.tauTrackVariables_template.clone(
+            src = cms.InputTag(retVal["pfTauCollectionShrinkingConeEllipticPhotonIso"])                       
         )
     )
 )
 
 if isMC:
     process.caloTaus_genInfo.src = cms.InputTag(retVal["caloTauCollection"])
-    setattr(process.ntupleProducer.sources, "caloTaus_part03", process.caloTaus_genInfo)
+    setattr(process.ntupleProducer.sources, "caloTaus_gen", process.caloTaus_genInfo)
     process.pfTausFixedCone_genInfo.src = cms.InputTag(retVal["pfTauCollectionFixedCone"])
-    setattr(process.ntupleProducer.sources, "pfTausFixedCone_part04", process.pfTausFixedCone_genInfo)
+    setattr(process.ntupleProducer.sources, "pfTausFixedCone_gen", process.pfTausFixedCone_genInfo)
     process.pfTausShrinkingCone_genInfo.src = cms.InputTag(retVal["pfTauCollectionShrinkingCone"])
-    setattr(process.ntupleProducer.sources, "pfTausShrinkingCone_part04", process.pfTausShrinkingCone_genInfo)
+    setattr(process.ntupleProducer.sources, "pfTausShrinkingCone_gen", process.pfTausShrinkingCone_genInfo)
     process.pfTausHPS_genInfo.src = cms.InputTag(retVal["pfTauCollectionHPS"])
-    setattr(process.ntupleProducer.sources, "pfTausHPS_part03", process.pfTausHPS_genInfo)
+    setattr(process.ntupleProducer.sources, "pfTausHPS_gen", process.pfTausHPS_genInfo)
+    process.pfTausShrinkingConeEllipticPhotonIso_genInfo.src = cms.InputTag(retVal["pfTauCollectionShrinkingConeEllipticPhotonIso"])
+    setattr(process.ntupleProducer.sources, "pfTausShrinkingConeEllPhotonIso_gen", process.pfTausShrinkingConeEllipticPhotonIso_genInfo)
     # add in information about generator level visible taus and all generator level jets
     setattr(process.ntupleProducer.sources, "tauGenJets", process.tauGenJets_genInfo)
     setattr(process.ntupleProducer.sources, "genJets", process.genJets_genInfo)
@@ -261,7 +276,7 @@ process.p = cms.Path(
    + process.patTupleProductionSequence
    ##+ process.patTauCollectionDiffAnalyzer
    ##+ process.savePatTauCollectionDiffAnalyzerPlots
-   #+ process.printEventContent
+   ##+ process.printEventContent
    + process.ntupleProducer
 )
 
