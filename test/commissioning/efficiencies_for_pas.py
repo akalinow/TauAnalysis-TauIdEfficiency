@@ -12,6 +12,119 @@ import samples_cache as samples
 from TauAnalysis.TauIdEfficiency.ntauples.plotting import draw, efficiencyLogHack
 import TauAnalysis.TauIdEfficiency.ntauples.styles as style
 import sys
+import copy
+
+# Define labels for different algorithms
+algo_label_template = ROOT.TPaveText(0.50, 0.14, 0.88, 0.18, "NDC")
+algo_label_template.SetTextAlign(33)
+algo_label_template.SetTextSize(0.035)
+algo_label_template.SetTextColor(2)
+algo_label_template.SetFillStyle(0)
+algo_label_template.SetBorderSize(0)
+
+algo_label_fixed = copy.deepcopy(algo_label_template)
+algo_label_fixed.AddText("Fixed Cone")
+
+algo_label_shrinking = copy.deepcopy(algo_label_template)
+algo_label_shrinking.AddText("Shrinking Cone")
+
+algo_label_tanc = copy.deepcopy(algo_label_template)
+algo_label_tanc.AddText("TaNC")
+
+algo_label_hps = copy.deepcopy(algo_label_template)
+algo_label_hps.AddText("HPS")
+
+algo_label_calo = copy.deepcopy(algo_label_template)
+algo_label_calo.AddText("TCTau")
+
+def drawEfficiency(graph, isFirst):
+
+    if isFirst:
+        graph.Draw("Ae1p")
+        graph.GetHistogram().GetXaxis().SetTitle(x_var_info['label'])
+        graph.GetHistogram().GetYaxis().SetTitle("Efficiency")
+        graph.GetHistogram().GetYaxis().SetRangeUser(0., 1.5)
+    else:
+        graph.Draw("e1p, same")
+
+def makeEfficiencyComparisonPlots(numerators):
+
+    # Make comparison plot of efficiencies after all tau id. criteria are applied
+    # for different algorithms
+    for x_var, x_var_info in parameterizations.iteritems():
+
+        canvas.Clear()
+
+        # build legend
+        legend = ROOT.TLegend(0.45, 0.68, 0.88, 0.88, "","brNDC")
+        legend.SetTextSize(0.03)
+        legend.SetFillColor(0)
+        legend.SetLineColor(1)
+        legend.SetBorderSize(1)
+
+        isFirst = True
+
+        if numerators['fixedCone'] != "":
+            numerator_fixed = numerators['fixedCone']
+            efficiency_fixed = efficiency_results[x_var]['fixedCone'][numerator_fixed]
+            efficiency_fixed.SetMarkerStyle(20)
+            efficiency_fixed.SetMarkerColor(ROOT.EColor.kGreen + 2)
+            efficiency_fixed.SetLineColor(ROOT.EColor.kGreen + 2)
+            drawEfficiency(efficiency_fixed, isFirst)
+            isFirst = False
+            legend.AddEntry(efficiency_fixed, "Fixed signal cone", "P")
+
+        if numerators['shrinkingCone'] != "":
+            numerator_shrinking = numerators['shrinkingCone']    
+            efficiency_shrinking = efficiency_results[x_var]['shrinkingCone'][numerator_shrinking]
+            efficiency_shrinking.SetMarkerStyle(21)
+            efficiency_shrinking.SetMarkerColor(ROOT.EColor.kRed)
+            efficiency_shrinking.SetLineColor(ROOT.EColor.kRed)
+            drawEfficiency(efficiency_shrinking, isFirst)
+            isFirst = False
+            legend.AddEntry(efficiency_shrinking, "Shrinking signal cone", "P")
+
+        if numerators['TaNC'] != "":
+            numerator_tanc = numerators['TaNC']
+            efficiency_tanc = efficiency_results[x_var]['TaNC'][numerator_tanc]
+            efficiency_tanc.SetMarkerStyle(22)
+            efficiency_tanc.SetMarkerColor(ROOT.EColor.kBlue)
+            efficiency_tanc.SetLineColor(ROOT.EColor.kBlue)
+            drawEfficiency(efficiency_tanc, isFirst)
+            isFirst = False
+            legend.AddEntry(efficiency_tanc, "TaNC 0.50%", "P")
+
+        if numerators['hps'] != "":
+            numerator_hps = numerators['hps']    
+            efficiency_hps = efficiency_results[x_var]['hps'][numerator_hps]
+            efficiency_hps.SetMarkerStyle(23)
+            efficiency_hps.SetMarkerColor(28)
+            efficiency_hps.SetLineColor(28)
+            drawEfficiency(efficiency_hps, isFirst)
+            isFirst = False
+            legend.AddEntry(efficiency_hps, "HPS medium isolation", "P")
+
+        if numerators['calo'] != "":
+            numerator_tctau = numerators['calo']     
+            efficiency_tctau = efficiency_results[x_var]['calo'][numerator_tctau]
+            efficiency_tctau.SetMarkerStyle(29)
+            efficiency_tctau.SetMarkerColor(ROOT.EColor.kBlack)
+            efficiency_tctau.SetLineColor(ROOT.EColor.kBlack)
+            drawEfficiency(efficiency_tctau, isFirst)
+            legend.AddEntry(efficiency_tctau, "TCTau", "P")
+
+        # Draw legend
+        legend.Draw()
+            
+        # Draw the preliminary label
+        style.CMS_PRELIMINARY_UPPER_LEFT.Draw()
+        style.ZTAUTAU_LABEL_UPPER_LEFT.Draw()
+        style.SQRTS_LABEL_UPPER_LEFT.Draw()
+        x_var_info["cutLabel"].Draw()
+
+        # Save the plot
+        canvas.SaveAs("plots/%s.png" % '_'.join(['efficiency_algo_comparison', 'vs', x_var]))
+        canvas.SaveAs("plots/%s.pdf" % '_'.join(['efficiency_algo_comparison', 'vs', x_var]))
 
 if __name__ == "__main__":
     ROOT.gROOT.SetBatch(True)
@@ -159,12 +272,20 @@ if __name__ == "__main__":
 
     # Match up sequences to tau algos
     sequences_and_algos = [
-        ( standard_sequence, "iso", "patPFTausDijetTagAndProbeShrinkingCone" ),
-        ( standard_sequence, "iso", "patPFTausDijetTagAndProbeFixedCone" ),
-        ( tanc_sequence, "tanc", "patPFTausDijetTagAndProbeShrinkingCone" ),
-        ( hps_sequence, "hps", "patPFTausDijetTagAndProbeHPS" ),
-        ( calo_sequence, "calo", "patCaloTausDijetTagAndProbe" ),
+        ( "shrinkingCone", standard_sequence ),
+        ( "fixedCone", standard_sequence ),
+        ( "TaNC", tanc_sequence ),
+        ( "hps", hps_sequence ),
+        ( "calo", calo_sequence )
     ]
+
+    nTuples = {
+        "shrinkingCone": "patPFTausDijetTagAndProbeShrinkingCone",
+        "fixedCone": "patPFTausDijetTagAndProbeFixedCone",
+        "TaNC": "patPFTausDijetTagAndProbeShrinkingCone",
+        "hps": "patPFTausDijetTagAndProbeHPS",
+        "calo": "patCaloTausDijetTagAndProbe"
+    }
 
     #denom_selection = genTaus.expr(
     #    '$genPt > 5 && abs($genEta) < 2.5 && $genDecayMode > 1.5')
@@ -180,16 +301,21 @@ if __name__ == "__main__":
 
     efficiency_results = {}
 
+    extra_labels = {}
+    extra_labels['fixedCone'] = [ algo_label_fixed, ]
+    extra_labels['shrinkingCone'] = [ algo_label_shrinking, ]
+    extra_labels['TaNC'] = [ algo_label_tanc, ]
+    extra_labels['hps'] = [ algo_label_hps, ]
+    extra_labels['calo'] = [ algo_label_calo, ]
+
     canvas = ROOT.TCanvas("canvas", "canvas", 500, 500)
     canvas.SetLeftMargin(0.11)
     canvas.SetGridy(1)
     
-    for sequence, sequence_name, algo in sequences_and_algos:
-        if sys.argv[1:] != [] and (not sequence_name in sys.argv[1:]):
-            continue
-        print "Plotting", sequence_name, "for", algo
+    for algorithm, sequence in sequences_and_algos:
+        print "Plotting", algorithm
         # Get the ntuple
-        ntuple = ntuple_manager.get_ntuple(algo)
+        ntuple = ntuple_manager.get_ntuple(nTuples[algorithm])
         # Loop over different horizontal axes
         for x_var, x_var_info in parameterizations.iteritems():
             
@@ -207,7 +333,7 @@ if __name__ == "__main__":
                 expression = genTaus.expr(x_var_info['expr_str']),
                 selection = denom_selection,
                 binning = x_var_info['binning'],
-                output_name = '_'.join(["denom", x_var, sequence_name, algo]),
+                output_name = '_'.join(["denom", x_var, algorithm]),
             )
             
             # Loop over sequence of numerators
@@ -228,7 +354,7 @@ if __name__ == "__main__":
                     expression = ntuple.expr(x_var_info['expr_str']),
                     selection = running_cut,
                     binning = x_var_info['binning'],
-                    output_name = '_'.join([numerator_name, x_var, sequence_name, algo]),
+                    output_name = '_'.join([numerator_name, x_var, algorithm]),
                 )
                 
                 # FIXME: clean this up
@@ -236,7 +362,7 @@ if __name__ == "__main__":
                 nNum = float(numerator.Integral())
                 nDenom = denominator.Integral()
                 err = 1/nDenom*sqrt(nNum*(1-nNum/nDenom) )
-                efficiencyLogHack("%s -> %s: "%(algo, numerator_name),timestamp=True)
+                efficiencyLogHack("%s -> %s: "%(nTuples[algorithm], numerator_name),timestamp=True)
                 efficiencyLogHack( "%e / %e = %e +- %e\n"%(nNum, nDenom, nNum/nDenom,err))
                 # end cleanup
                 
@@ -257,9 +383,9 @@ if __name__ == "__main__":
                 numerator_effs.append(my_eff)
                 
                 efficiency_results.setdefault(x_var, {})
-                efficiency_results[x_var].setdefault(algo, {})
-                efficiency_results[x_var][algo].setdefault(algo, {})
-                efficiency_results[x_var][algo][numerator_name] = my_eff
+                efficiency_results[x_var].setdefault(algorithm, {})
+                efficiency_results[x_var][algorithm].setdefault(algorithm, {})
+                efficiency_results[x_var][algorithm][numerator_name] = my_eff
                 
                 legend.AddEntry(my_eff, numerator_info['label'], "P")
                 
@@ -274,7 +400,7 @@ if __name__ == "__main__":
                     numerator_eff.GetHistogram().GetYaxis().SetTitleOffset(1.2)
                     numerator_eff.GetHistogram().GetYaxis().SetRangeUser(0, 1.5)
                 else:
-                    numerator_eff.Draw("p,same")
+                    numerator_eff.Draw("p, same")
 
             # Draw legend
             legend.Draw()
@@ -284,79 +410,22 @@ if __name__ == "__main__":
             style.ZTAUTAU_LABEL_UPPER_LEFT.Draw()
             style.SQRTS_LABEL_UPPER_LEFT.Draw()
             x_var_info["cutLabel"].Draw()
+            for extra_label in extra_labels[algorithm]:
+                extra_label.Draw()
 
             # Save the plot
-            canvas.SaveAs("plots/%s.png" % '_'.join(['ztt', algo, sequence_name, 'vs', x_var]))
-            canvas.SaveAs("plots/%s.pdf" % '_'.join(['ztt', algo, sequence_name, 'vs', x_var]))
+            canvas.SaveAs("plots/%s.png" % '_'.join([algorithm, "efficiency", 'vs', x_var]))
+            canvas.SaveAs("plots/%s.pdf" % '_'.join([algorithm, "efficiency", 'vs', x_var]))
 
     # Make comparison plot of efficiencies after all tau id. criteria are applied
     # for different algorithms
-    for x_var, x_var_info in parameterizations.iteritems():
-
-        # build legend
-        legend = ROOT.TLegend(0.45, 0.68, 0.88, 0.88, "","brNDC")
-        legend.SetTextSize(0.03)
-        legend.SetFillColor(0);
-        legend.SetLineColor(1);
-        legend.SetBorderSize(1);
-
-        efficiency_fixed = efficiency_results[x_var]['patPFTausDijetTagAndProbeFixedCone']['OneOrThreeProng']
-        efficiency_fixed.SetMarkerStyle(20)
-        efficiency_fixed.SetMarkerColor(ROOT.EColor.kGreen + 2)
-        efficiency_fixed.SetLineColor(ROOT.EColor.kGreen + 2)
-        efficiency_fixed.Draw("Ap")
-        efficiency_fixed.GetHistogram().GetXaxis().SetTitle(x_var_info['label'])
-        efficiency_fixed.GetHistogram().GetYaxis().SetTitle("Efficiency")
-        efficiency_fixed.GetHistogram().GetYaxis().SetRangeUser(0, 1.5)
-        legend.AddEntry(efficiency_fixed, "Fixed signal cone", "P")
-
-        efficiency_shrinking = efficiency_results[x_var]['patPFTausDijetTagAndProbeShrinkingCone']['OneOrThreeProng']
-        efficiency_shrinking.SetMarkerStyle(21)
-        efficiency_shrinking.SetMarkerColor(ROOT.EColor.kRed)
-        efficiency_shrinking.SetLineColor(ROOT.EColor.kRed)
-        efficiency_shrinking.Draw("p,same")
-        legend.AddEntry(efficiency_shrinking, "Shrinking signal cone", "P")
-
-        efficiency_tanc = efficiency_results[x_var]['patPFTausDijetTagAndProbeShrinkingCone']['byTaNCfrHalfPercent']
-        efficiency_tanc.SetMarkerStyle(22)
-        efficiency_tanc.SetMarkerColor(ROOT.EColor.kBlue)
-        efficiency_tanc.SetLineColor(ROOT.EColor.kBlue)
-        efficiency_tanc.Draw("p,same")
-        legend.AddEntry(efficiency_tanc, "TaNC 0.50%", "P")
-
-        efficiency_hps = efficiency_results[x_var]['patPFTausDijetTagAndProbeHPS']['byIsolationMedium']
-        efficiency_hps.SetMarkerStyle(23)
-        efficiency_hps.SetMarkerColor(28)
-        efficiency_hps.SetLineColor(28)
-        efficiency_hps.Draw("p,same")
-        legend.AddEntry(efficiency_hps, "HPS medium isolation", "P")
-
-        efficiency_tctau = efficiency_results[x_var]['patCaloTausDijetTagAndProbe']['OneOrThreeProng_calo']
-        efficiency_tctau.SetMarkerStyle(29)
-        efficiency_tctau.SetMarkerColor(ROOT.EColor.kBlack)
-        efficiency_tctau.SetLineColor(ROOT.EColor.kBlack)
-        efficiency_tctau.Draw("p,same")
-        legend.AddEntry(efficiency_tctau, "TCTau", "P")
-
-        # Draw legend
-        legend.Draw()
-            
-        # Draw the preliminary label
-        style.CMS_PRELIMINARY_UPPER_LEFT.Draw()
-        style.ZTAUTAU_LABEL_UPPER_LEFT.Draw()
-        style.SQRTS_LABEL_UPPER_LEFT.Draw()
-        x_var_info["cutLabel"].Draw()
-
-        # Save the plot
-        canvas.SaveAs("plots/%s.png" % '_'.join(['efficiency_algo_comparison', 'vs', x_var]))
-        canvas.SaveAs("plots/%s.pdf" % '_'.join(['efficiency_algo_comparison', 'vs', x_var]))
-                    
-
-
-                
-
-
-
+    numerators = {}
+    numerators['fixedCone'] = ""
+    numerators['shrinkingCone'] = 'OneOrThreeProng'
+    numerators['TaNC'] = 'byTaNCfrHalfPercent'
+    numerators['hps'] = 'byIsolationMedium'
+    numerators['calo'] = 'OneOrThreeProng_calo'
+    makeEfficiencyComparisonPlots(numerators)
             
 
 
