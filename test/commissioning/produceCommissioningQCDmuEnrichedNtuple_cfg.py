@@ -36,6 +36,8 @@ isMC = True # use for MC (except for samples from Spring'10 reprocessing)
 isSpring10 = True # use for Spring'10 reprocessed MC
 ##isSpring10 = False # use for non-Spring'10 reprocessed MC
 ##isMC = False # use for Data
+applyTrackDowngrade = False # default
+#applyTrackDowngrade = True # to be used for studies of systematic uncertainties only
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
@@ -65,7 +67,7 @@ if isMC:
 #
 from TauAnalysis.TauIdEfficiency.tools.configurePrePatProduction import configurePrePatProduction
 
-configurePrePatProduction(process, addGenInfo = isMC)
+configurePrePatProduction(process, applyTrackDowngrade = applyTrackDowngrade, addGenInfo = isMC)
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------

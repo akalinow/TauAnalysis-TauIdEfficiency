@@ -20,10 +20,10 @@ process.source = cms.Source("PoolSource",
         #'/store/relval/CMSSW_3_6_1/RelValZTT/GEN-SIM-RECO/START36_V7-v1/0020/EE3E8F74-365D-DF11-AE3D-002618FDA211.root'
         ##'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/data/muTauSkim_1_1.root'
         ##'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/mcMinBias/muTauSkim_1_1.root'
-        ##'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/mcQCDpt15/muTauSkim_1_1.root'
+        'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/mcQCDpt15/muTauSkim_1_1.root'
         ##'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/mcMinBias_pythia8/muTauSkim_1_2.root'
         ##'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/dataReReco/muTauSkim_1_1_QBQ.root'
-        'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/mcWtauNu/muTauSkim_1_1_9yq.root'
+        ##'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/mcWtauNu/muTauSkim_1_1_9yq.root'
     ),
     skipEvents = cms.untracked.uint32(0)            
 )
@@ -47,6 +47,8 @@ isMC = True # use for MC (except for samples from Spring'10 reprocessing)
 isSpring10 = True # use for Spring'10 reprocessed MC
 ##isSpring10 = False # use for non-Spring'10 reprocessed MC
 ##isMC = False # use for Data
+#applyTrackDowngrade = False # default
+applyTrackDowngrade = True # to be used for studies of systematic uncertainties only
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
@@ -75,7 +77,7 @@ if isMC:
 #
 from TauAnalysis.TauIdEfficiency.tools.configurePrePatProduction import configurePrePatProduction
 
-configurePrePatProduction(process, addGenInfo = isMC)
+configurePrePatProduction(process, applyTrackDowngrade = applyTrackDowngrade, addGenInfo = isMC)
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
