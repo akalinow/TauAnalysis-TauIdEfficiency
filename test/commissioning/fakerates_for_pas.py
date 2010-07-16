@@ -188,7 +188,12 @@ def makeFakerateComparisonPlots(numerators):
             
         # Draw the preliminary label
         style.CMS_PRELIMINARY_UPPER_LEFT.Draw()
-        style.LUMI_LABEL_UPPER_LEFT.Draw()
+        #style.LUMI_LABEL_UPPER_LEFT.Draw()
+        custom_LUMI_LABEL_UPPER_LEFT = copy.deepcopy(style.LUMI_LABEL_UPPER_LEFT)
+        custom_LUMI_LABEL_UPPER_LEFT.SetTextSize(0.0375)
+        custom_LUMI_LABEL_UPPER_LEFT.Clear()
+        custom_LUMI_LABEL_UPPER_LEFT.AddText("Data, L = 8.4nb^{-1}")
+        custom_LUMI_LABEL_UPPER_LEFT.Draw()
         style.SQRTS_LABEL_UPPER_LEFT.Draw()
         for extra_label in fakerate_results['calo'][x_var]['extra_labels']:
             extra_label.Draw()
