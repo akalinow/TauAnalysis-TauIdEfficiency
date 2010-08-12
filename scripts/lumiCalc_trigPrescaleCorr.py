@@ -15,12 +15,12 @@ prescales for those runs.
 Author: Matthias Edelhoff (Aachen)
 Contributors: Evan K. Friis (UC Davis)
 
-$Id: lumiCalc.py,v 1.9 2010/06/22 15:45:14 edelhoff Exp $
+$Id: lumiCalc_trigPrescaleCorr.py,v 1.10 2010/06/28 15:19:21 edelhoff Exp $
 
 Takes as input: 
     
     o CSV file mapping lumi sections to their corresponding integrated
-    luminsoities
+    luminosities
 
     o A json file containing the mask that maps runs to good lumisection ranges
     corresponding to a dataset. (i.e. the file produced crab -report)
