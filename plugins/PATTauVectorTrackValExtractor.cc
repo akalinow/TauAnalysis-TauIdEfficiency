@@ -42,7 +42,7 @@ PATTauVectorTrackValExtractor::PATTauVectorTrackValExtractor(const edm::Paramete
     value_ = -1;
   }
 
-  if ( value_ == kDeltaZ ||  value_ == kDeltaXY ) {
+  if ( value_ == kDeltaZ || value_ == kDeltaXY ) {
     srcVertex_ = cfg.getParameter<edm::InputTag>("vertexSrc");
   }
 }
