@@ -55,9 +55,9 @@ applyTrackDowngrade = True # to be used for studies of systematic uncertainties 
 # define GlobalTag to be used for event reconstruction
 # (only relevant for HPS tau reconstruction algorithm)
 if isMC:
-    process.GlobalTag.globaltag = cms.string('MC_36Y_V7A::All')
+    process.GlobalTag.globaltag = cms.string('MC_36Y_V10::All')
 else:
-    process.GlobalTag.globaltag = cms.string('GR_R_36X_V11A::All')
+    process.GlobalTag.globaltag = cms.string('GR_R_36X_V12::All')
 #--------------------------------------------------------------------------------    
 
 #--------------------------------------------------------------------------------
@@ -111,7 +111,8 @@ retVal = configurePatTupleProduction(
     process, patSequenceBuilder = buildQCDdiJetTauSequence,
     patPFTauCleanerPrototype = patPFTauCleanerPrototype,
     patCaloTauCleanerPrototype = patCaloTauCleanerPrototype,
-    addGenInfo = isMC)
+    addGenInfo = isMC
+)
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
