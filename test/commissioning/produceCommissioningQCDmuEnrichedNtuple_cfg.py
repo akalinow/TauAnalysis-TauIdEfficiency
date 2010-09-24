@@ -44,9 +44,9 @@ applyTrackDowngrade = False # default
 # define GlobalTag to be used for event reconstruction
 # (only relevant for HPS tau reconstruction algorithm)
 if isMC:
-    process.GlobalTag.globaltag = cms.string('MC_36Y_V7A::All')
+    process.GlobalTag.globaltag = cms.string('MC_36Y_V10::All')
 else:
-    process.GlobalTag.globaltag = cms.string('GR_R_36X_V11A::All')
+    process.GlobalTag.globaltag = cms.string('GR_R_36X_V12::All')
 #--------------------------------------------------------------------------------    
 
 #--------------------------------------------------------------------------------
@@ -85,6 +85,19 @@ from TauAnalysis.TauIdEfficiency.tools.sequenceBuilder import buildQCDmuEnriched
 ##process.load("PhysicsTools.PatAlgos.selectionLayer1.muonSelector_cfi")
 ##process.selectedPatMuons.cut = cms.string("isGlobalMuon & pt > 3 & abs(eta) < 2.5")
 
+process.load("PhysicsTools.PFCandProducer.Isolation.pfMuonIsolation_cff")
+from PhysicsTools.PFCandProducer.Isolation.tools_cfi import *
+process.pfmuIsoDepositPFCandidates = isoDepositReplace("muons", "particleFlow")
+process.prePatProductionSequence._seq = process.prePatProductionSequence._seq * process.pfmuIsoDepositPFCandidates
+
+process.load("PhysicsTools.PatAlgos.producersLayer1.muonProducer_cfi")
+process.patMuons.userIsolation.user = cms.VPSet(
+    cms.PSet( 
+        src = cms.InputTag("pfmuIsoDepositPFCandidates"),
+        deltaR = cms.double(0.4)
+    )
+)
+
 # "clean" CaloTau/PFTau collections
 # (i.e. remove CaloTaus/PFTaus overlapping with muons)
 process.load("PhysicsTools.PatAlgos.cleaningLayer1.tauCleaner_cfi")
@@ -119,7 +132,8 @@ retVal = configurePatTupleProduction(
     process, patSequenceBuilder = buildQCDmuEnrichedTauSequence,
     patPFTauCleanerPrototype = patPFTauCleanerPrototype,
     patCaloTauCleanerPrototype = patCaloTauCleanerPrototype,
-    addGenInfo = isMC)
+    addGenInfo = isMC
+)
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
@@ -216,7 +230,7 @@ if isMC:
 # updated InputTags for HLT trigger result object
 # in case running on reprocessed Spring'10 Monte Carlo samples
 if isSpring10:
-    process.hltMu3.selector.src = cms.InputTag('TriggerResults::REDIGI')
+    process.hltMu.selector.src = cms.InputTag('TriggerResults::REDIGI')
     process.patTrigger.processName = cms.string('REDIGI')
     process.patCaloTausTriggerEvent.processName = cms.string('REDIGI')
     process.patPFTausTriggerEventFixedCone.processName = cms.string('REDIGI')

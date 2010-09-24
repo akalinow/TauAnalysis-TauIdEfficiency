@@ -11,23 +11,37 @@ from TauAnalysis.TauIdEfficiency.filterDataQuality_cfi import *
 #
 # define HLT trigger path
 #
-hltMu3 = cms.EDFilter("EventSelPluginFilter",
+hltMu = cms.EDFilter("EventSelPluginFilter",
     selector = cms.PSet(
-        pluginName = cms.string('hltMu3'),             
+        pluginName = cms.string('hltMu'),             
         pluginType = cms.string('TriggerResultEventSelector'),
         src = cms.InputTag('TriggerResults::HLT'),
-        triggerPaths = cms.vstring('HLT_Mu3')
+        triggerPaths = cms.vstring('HLT_Mu9')
     )
 )
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
 #
-# define loose Muon selection
+# define selection of "loose" Muons
 #
-selectedMuons = cms.EDFilter("MuonSelector",
-    src = cms.InputTag('muons'),
-    cut = cms.string("isGlobalMuon & pt > 3 & abs(eta) < 2.5"),
+globalMuons = cms.EDFilter("PATMuonSelector",
+    src = cms.InputTag('patMuons'),
+    cut = cms.string("isGlobalMuon"),
+    filter = cms.bool(False)
+)
+
+diMuonVeto = cms.EDFilter("PATCandViewCountFilter",
+    src = cms.InputTag('globalMuons'),
+    minNumber = cms.uint32(1),
+    maxNumber = cms.uint32(1)
+)
+#
+# define selection of "tight" Muons
+#
+selectedMuons = cms.EDFilter("PATMuonSelector",
+    src = cms.InputTag('patMuons'),
+    cut = cms.string("isGlobalMuon & pt > 10. & abs(eta) < 2.5 & userIsolation('pfmuIsoDepositPFCandidates') > 0.5*pt"),
     filter = cms.bool(True)
 )
 #--------------------------------------------------------------------------------
@@ -45,7 +59,7 @@ selectedCaloTaus = cms.EDFilter("CaloTauSelector",
 
 muonCaloTauPairs = cms.EDProducer("DiCandidatePairProducer",
     useLeadingTausOnly = cms.bool(False),
-    srcLeg1 = cms.InputTag('selectedMuons'),
+    srcLeg1 = cms.InputTag('patSelectedMuons'),
     srcLeg2 = cms.InputTag('selectedCaloTaus'),
     dRmin12 = cms.double(0.),
     srcMET = cms.InputTag(''),
@@ -56,13 +70,13 @@ muonCaloTauPairs = cms.EDProducer("DiCandidatePairProducer",
 
 selectedMuonCaloTauPairs = cms.EDFilter("DiCandidatePairSelector",
     src = cms.InputTag('muonCaloTauPairs'),
-    cut = cms.string("dR12 > 0.7"),
+    cut = cms.string("dR12 > 0.7 & mt1MET < 40."),
     filter = cms.bool(True)                                     
 )
 
 muonCaloTauSkimPath = cms.Path(
-    #hltMu3
-    selectedMuons
+    hltMu
+   + globalMuons + diMuonVeto + selectedMuons
    + selectedCaloTaus + muonCaloTauPairs + selectedMuonCaloTauPairs
    + dataQualityFilters
 )
@@ -81,7 +95,7 @@ selectedPFTaus = cms.EDFilter("PFTauSelector",
 
 muonPFTauPairs = cms.EDProducer("DiCandidatePairProducer",
     useLeadingTausOnly = cms.bool(False),
-    srcLeg1 = cms.InputTag('selectedMuons'),
+    srcLeg1 = cms.InputTag('patSelectedMuons'),
     srcLeg2 = cms.InputTag('selectedPFTaus'),
     dRmin12 = cms.double(0.),
     srcMET = cms.InputTag(''),
@@ -92,13 +106,13 @@ muonPFTauPairs = cms.EDProducer("DiCandidatePairProducer",
 
 selectedMuonPFTauPairs = cms.EDFilter("DiCandidatePairSelector",
     src = cms.InputTag('muonPFTauPairs'),
-    cut = cms.string("dR12 > 0.7"),
+    cut = cms.string("dR12 > 0.7 & mt1MET < 40."),
     filter = cms.bool(True)                                     
 )
 
 muonPFTauSkimPath = cms.Path(    
-    #hltMu3
-    selectedMuons
+    hltMu
+   + globalMuons + diMuonVeto + selectedMuons
    + selectedPFTaus + muonPFTauPairs + selectedMuonPFTauPairs
    + dataQualityFilters
 )
