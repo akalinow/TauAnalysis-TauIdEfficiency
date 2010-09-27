@@ -125,7 +125,12 @@ pfTausShrinkingCone_genInfo = pfTausShrinkingCone_recInfo.clone(
         genMass = cms.string("genMass"),
         genEta = cms.string("genEta"),
         genPhi = cms.string("genPhi"),
+
+        genDecayMode = cms.string("genDecayMode"),
         
-        genDecayMode = cms.string("genDecayMode")
-    )
+        genPdgId = cms.string("genPdgId")
+    ),
+    
+    srcGenParticles = cms.InputTag('genParticles'),
+    skipPdgIdsGenParticleMatch = cms.vint32( 12, 14, 16 )
 )    

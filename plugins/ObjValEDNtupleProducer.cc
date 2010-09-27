@@ -35,10 +35,7 @@ ObjValEDNtupleProducer::ObjValEDNtupleProducer(const edm::ParameterSet& cfg)
     std::string pluginTypeObjValExtractor = cfgObjValExtractor.getParameter<std::string>("pluginType");
     edm::InputTag cfgCollection = cfgObjValExtractor.getParameter<edm::InputTag>("src");
 
-    //typedef std::vector<std::string> vstring;
-    //vstring cfgInputTagNames = cfgObjValExtractor.getParameterNamesForType<edm::InputTag>();
-
-    // Determine if we want the whole collection or just specific indices.  Default case, index=0
+    // Determine if we want the whole collection or just specific indices. Default case: index = 0 only
     typedef std::vector<unsigned> vunsigned;
     vunsigned indices; 
     
@@ -65,13 +62,6 @@ ObjValEDNtupleProducer::ObjValEDNtupleProducer(const edm::ParameterSet& cfg)
       
       // concatentate relavant information into a single PSet to send to the ObjValExtractors
       edm::ParameterSet tempNtupleCfg(cfgObjValExtractor);
-      //edm::ParameterSet tempNtupleCfg;
-      //tempNtupleCfg.addParameter<edm::InputTag>("src", cfgCollection);
-      //for ( vstring::const_iterator cfgInputTagName = cfgInputTagNames.begin();
-      //      cfgInputTagName != cfgInputTagNames.end(); ++cfgInputTagName ) {
-      //  edm::InputTag cfgInputTag = cfgObjValExtractor.getParameter<edm::InputTag>(*cfgInputTagName);
-      //  tempNtupleCfg.addParameter<edm::InputTag>(*cfgInputTagName, cfgInputTag);
-      //}
       tempNtupleCfg.addParameter<std::string>("value", columnCfg);
       
       // Check if we are taking specific indices

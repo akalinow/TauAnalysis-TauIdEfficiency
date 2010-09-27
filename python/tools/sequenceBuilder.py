@@ -184,6 +184,33 @@ def buildQCDmuEnrichedTauSequence(
     # generator level particle and jet matches and trigger matches
     return retVal_tau
 
+def buildWplusJetsEnrichedTauSequence(
+    process, 
+    collectionName = [ "patTaus", "" ],
+    patTauProducerPrototype = None,
+    patTauCleanerPrototype = None,
+    triggerMatcherProtoType = None,
+    addGenInfo = False):
+    '''
+    blah
+    '''
+
+    # produce collection of basic pat::Taus
+    # matched to generator level particles and jets
+    # and trigger primitives embedded
+    retVal_tau = buildTauSequence(
+        process, 
+        collectionName = collectionName,
+        patTauProducerPrototype = patTauProducerPrototype,
+        patTauCleanerPrototype = patTauCleanerPrototype,
+        triggerMatcherProtoType = triggerMatcherProtoType,
+        addGenInfo = addGenInfo
+    )
+
+    # return full sequence for production of basic tau collection,
+    # generator level particle and jet matches and trigger matches
+    return retVal_tau
+
 
 
 

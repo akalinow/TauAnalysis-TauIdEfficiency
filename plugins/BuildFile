@@ -9,5 +9,6 @@
   <use name=DataFormats/VertexReco>
   <use name=PhysicsTools/JetMCUtils>
   <use name=TauAnalysis/BgEstimationTools>
+  <use name=TauAnalysis/GenSimTools>
   <use name=TauAnalysis/Core>
 </library>

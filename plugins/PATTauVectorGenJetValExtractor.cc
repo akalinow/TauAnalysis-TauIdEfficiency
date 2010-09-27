@@ -7,6 +7,8 @@
 
 #include "PhysicsTools/JetMCUtils/interface/JetMCTag.h"
 
+#include "TauAnalysis/GenSimTools/interface/genParticleAuxFunctions.h"
+
 #include <string>
 
 namespace {
@@ -27,21 +29,25 @@ namespace {
    }
 }
   
-
-
 template<typename T>
 VectorGenJetValExtractor<T>::VectorGenJetValExtractor(const edm::ParameterSet& cfg)
 {
   src_ = cfg.getParameter<edm::InputTag>("src");
-  
+
   std::string value_string = cfg.getParameter<std::string>("value");
+//--- variables for "true" hadronic tau decays
   if      ( value_string == "genMatch"     ) value_ = kGenMatch;
   else if ( value_string == "genPt"        ) value_ = kGenPt;
   else if ( value_string == "genEta"       ) value_ = kGenEta;
   else if ( value_string == "genPhi"       ) value_ = kGenPhi;
-  else if ( value_string == "genMass"       ) value_ = kGenMass;
+  else if ( value_string == "genMass"      ) value_ = kGenMass;
   else if ( value_string == "genDecayMode" ) value_ = kGenDecayMode;
-  else {
+//--- variables for quark/gluon jets faking signature of hadronic tau decays
+  else if ( value_string == "genPdgId"     ) {
+    value_ = kGenPdgId;
+    srcGenParticles_ = cfg.getParameter<edm::InputTag>("srcGenParticles");
+    skipPdgIdsGenParticleMatch_ = cfg.getParameter<vint>("skipPdgIdsGenParticleMatch");
+  } else {
     edm::LogError ("VectorGenJetValExtractor") << " Invalid configuration parameter value = " << value_string << " !!";
     value_ = -1;
   }
@@ -54,6 +60,9 @@ std::vector<double> VectorGenJetValExtractor<T>::operator()(const edm::Event& ev
   typedef edm::View<T> inputCollectionType;
   edm::Handle<inputCollectionType> input;
   evt.getByLabel(src_, input);
+
+  edm::Handle<reco::GenParticleCollection> genParticles;
+  if ( srcGenParticles_.label() != "" ) evt.getByLabel(srcGenParticles_, genParticles);
 
   unsigned nInput = input->size();
   for ( unsigned i = 0; i < nInput; ++i ) {
@@ -86,8 +95,8 @@ std::vector<double> VectorGenJetValExtractor<T>::operator()(const edm::Event& ev
 	else if ( genDecayMode_string == "threeProng1Pi0"  ) vec_i = 7;
 	else if ( genDecayMode_string == "threeProngOther" ) vec_i = 8;
 	else if ( genDecayMode_string == "rare"            ) vec_i = 9;
-      }
-    } 
+      } 
+    } else if ( value_ == kGenPdgId ) vec_i = getMatchingGenParticlePdgId(inputPtr->p4(), *genParticles, &skipPdgIdsGenParticleMatch_);
 
     vec.push_back(vec_i);
   }

@@ -7,7 +7,7 @@ samples.py
 
 Central defintion of data sources for commissioning.
 
-$Id: samples.py,v 1.9 2010/06/26 01:15:44 friis Exp $
+$Id: samples.py,v 1.10 2010/06/28 09:07:44 veelken Exp $
 
 '''
 
@@ -33,9 +33,11 @@ ztautau_mc = build_sample(_MC_LUMI_MAP_FILE, "mc_ztt", "merge", datasets = ["Zta
 print "loading definition of QCD (pythia 6) background Monte Carlo samples..."
 ##qcd_mc = build_sample(_MC_LUMI_MAP_FILE, "mc_qcd", "merge", "QCD_Pt15", "QCD_Pt30", "QCD_Pt80", "QCD_Pt170")
 qcd_mc_pythia6 = build_sample(_MC_LUMI_MAP_FILE, "mc_qcd_pythia6", "merge", take_every=1, datasets = ["QCD_Pt15_pythia6"])
+qcd_mc_pythia6_recoTrackDowngrade = build_sample(_MC_LUMI_MAP_FILE, "mc_qcd_pythia6_recoTrackDowngrade", "merge", take_every=1, datasets = ["QCD_Pt15_pythia6_recoTrackDowngrade"])
 
 print "loading definition of QCD (pythia 8) background Monte Carlo samples..."
 qcd_mc_pythia8 = build_sample(_MC_LUMI_MAP_FILE, "mc_qcd_pythia8", "merge", take_every=1, datasets = ["QCD_Pt15_pythia8"])
+qcd_mc_pythia8_recoTrackDowngrade = build_sample(_MC_LUMI_MAP_FILE, "mc_qcd_pythia8_recoTrackDowngrade", "merge", take_every=1, datasets = ["QCD_Pt15_pythia8_recoTrackDowngrade"])
 
 print "loading definition of min. Bias (pythia 6) background Monte Carlo samples..."
 minbias_mc_pythia6 = build_sample(_MC_LUMI_MAP_FILE, "mc_minbias_pythia6", "merge", take_every=1, datasets = ["minBias_pythia6"])

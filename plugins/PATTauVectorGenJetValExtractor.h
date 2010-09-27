@@ -9,9 +9,9 @@
  * 
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.4 $
+ * \version $Revision: 1.5 $
  *
- * $Id: PATTauVectorGenJetValExtractor.h,v 1.4 2010/06/19 14:06:38 veelken Exp $
+ * $Id: PATTauVectorGenJetValExtractor.h,v 1.5 2010/06/26 01:12:35 friis Exp $
  *
  */
 
@@ -21,6 +21,8 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
 #include "TauAnalysis/BgEstimationTools/interface/ObjValVectorExtractorBase.h"
+
+#include <vector>
 
 template<class T>
 class VectorGenJetValExtractor : public ObjValVectorExtractorBase
@@ -37,7 +39,12 @@ class VectorGenJetValExtractor : public ObjValVectorExtractorBase
 //--- configuration parameters
   edm::InputTag src_;
   
-  enum { kGenMatch, kGenPt, kGenEta, kGenPhi, kGenMass, kGenDecayMode };
+  edm::InputTag srcGenParticles_;
+
+  typedef std::vector<int> vint;
+  vint skipPdgIdsGenParticleMatch_;
+
+  enum { kGenMatch, kGenPt, kGenEta, kGenPhi, kGenMass, kGenDecayMode, kGenPdgId };
 
   int value_;
 };

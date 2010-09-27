@@ -72,6 +72,11 @@ pfTausHPS_genInfo = pfTausHPS_recInfo.clone(
         genEta = cms.string("genEta"),
         genPhi = cms.string("genPhi"),
         
-        genDecayMode = cms.string("genDecayMode")
-    )
+        genDecayMode = cms.string("genDecayMode"),
+        
+        genPdgId = cms.string("genPdgId")
+    ),
+    
+    srcGenParticles = cms.InputTag('genParticles'),
+    skipPdgIdsGenParticleMatch = cms.vint32( 12, 14, 16 )
 )    
