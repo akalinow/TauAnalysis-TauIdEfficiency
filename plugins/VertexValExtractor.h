@@ -11,13 +11,13 @@
  *
  * \version $Revision: 1.1 $
  *
- * $Id: VertexValExtractor.h,v 1.1 2010/05/20 17:34:34 veelken Exp $
+ * $Id: VertexValExtractor.h,v 1.1 2010/05/22 16:44:12 veelken Exp $
  *
  */
 
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/EventSetup.h"
-#include "FWCore/ParameterSet/interface/InputTag.h"
+#include "FWCore/Utilities/interface/InputTag.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
 #include "TauAnalysis/BgEstimationTools/interface/ObjValExtractorBase.h"

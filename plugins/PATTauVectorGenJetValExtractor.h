@@ -9,15 +9,15 @@
  * 
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.5 $
+ * \version $Revision: 1.6 $
  *
- * $Id: PATTauVectorGenJetValExtractor.h,v 1.5 2010/06/26 01:12:35 friis Exp $
+ * $Id: PATTauVectorGenJetValExtractor.h,v 1.6 2010/09/27 10:34:40 veelken Exp $
  *
  */
 
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/EventSetup.h"
-#include "FWCore/ParameterSet/interface/InputTag.h"
+#include "FWCore/Utilities/interface/InputTag.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
 #include "TauAnalysis/BgEstimationTools/interface/ObjValVectorExtractorBase.h"

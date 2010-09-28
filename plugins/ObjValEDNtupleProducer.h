@@ -8,16 +8,16 @@
  *
  * \author Christian Veelken, Evan Friis, UC Davis
  *
- * \version $Revision: 1.1 $
+ * \version $Revision: 1.2 $
  *
- * $Id: ObjValEDNtupleProducer.h,v 1.1 2010/05/03 14:27:40 friis Exp $
+ * $Id: ObjValEDNtupleProducer.h,v 1.2 2010/05/27 16:24:26 veelken Exp $
  *
  */
 
 #include "FWCore/Framework/interface/EDProducer.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/EventSetup.h"
-#include "FWCore/ParameterSet/interface/InputTag.h"
+#include "FWCore/Utilities/interface/InputTag.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
 #include "TauAnalysis/BgEstimationTools/interface/ObjValExtractorBase.h"
