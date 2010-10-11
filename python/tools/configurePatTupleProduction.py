@@ -49,7 +49,7 @@ def configurePatTupleProduction(process, patSequenceBuilder = None,
     # configure PAT trigger matching
     process.load("PhysicsTools.PatAlgos.triggerLayer1.triggerProducer_cff")
     
-    process.patTauTriggerMatchHLTsingleJet15UprotoType = cms.EDFilter("PATTriggerMatcherDRLessByR",
+    process.patTauTriggerMatchHLTsingleJet15UprotoType = cms.EDProducer("PATTriggerMatcherDRLessByR",
         src                   = cms.InputTag("cleanLayer1Taus"),
         matched               = cms.InputTag("patTrigger"),
         andOr                 = cms.bool(False),
@@ -213,12 +213,14 @@ def configurePatTupleProduction(process, patSequenceBuilder = None,
     #       in order **NOT** to add TaNC discriminator to corresponding pat::Tau collection
     #      (as TaNC was trained using "regular" photon isolation parameters)
     #
+    pfTauShrinkingConeEllipticPhotonIsoTauIdSources = copy.deepcopy(classicTauIDSources)
+    pfTauShrinkingConeEllipticPhotonIsoTauIdSources.extend(classicPFTauIDSources)
     _switchToPFTau(
         process,
         pfTauLabelOld = cms.InputTag('shrinkingConePFTauProducer'),
         pfTauLabelNew = cms.InputTag('shrinkingConePFTauEllipticPhotonIsoProducer'),
         pfTauType = 'shrinkingConePFTauEllipticPhotonIso',
-        idSources = classicTauIDSources,
+        idSources = pfTauShrinkingConeEllipticPhotonIsoTauIdSources,
         postfix = ""
     )
     process.patPFTauProducerShrinkingConeEllipticPhotonIso = copy.deepcopy(process.patTaus)
