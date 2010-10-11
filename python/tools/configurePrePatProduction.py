@@ -21,7 +21,7 @@ def configurePrePatProduction(process, applyTrackDowngrade = False, addGenInfo =
         process.load("RecoTracker/Configuration/RecoTracker_cff")
         process.prePatProductionSequence += process.ckftracks
 
-        process.downgradedGeneralTracks = cms.EDAnalyzer("TrackAndTrajectoryDowngrade",
+        process.downgradedGeneralTracks = cms.EDProducer("TrackAndTrajectoryDowngrade",
             src = cms.InputTag('generalTracks'),
             pDowngrade = cms.double(0.05)
         )                                                     
