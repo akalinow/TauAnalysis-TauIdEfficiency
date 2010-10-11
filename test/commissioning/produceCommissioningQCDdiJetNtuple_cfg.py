@@ -18,13 +18,8 @@ process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
         #'/store/relval/CMSSW_3_6_1/RelValZTT/GEN-SIM-RECO/START36_V7-v1/0021/F405BC9A-525D-DF11-AB96-002618943811.root',
         #'/store/relval/CMSSW_3_6_1/RelValZTT/GEN-SIM-RECO/START36_V7-v1/0020/EE3E8F74-365D-DF11-AE3D-002618FDA211.root'
-        ##'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/data/muTauSkim_1_1.root'
-        ##'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/mcMinBias/muTauSkim_1_1.root'
-        ##'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/mcQCDpt15/muTauSkim_1_1.root'
-        ##'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/mcMinBias_pythia8/muTauSkim_1_2.root'
-        ##'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/dataReReco/muTauSkim_1_1_QBQ.root'
-        ##'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/mcWtauNu/muTauSkim_1_1_9yq.root'
-        'file:/data1/veelken/CMSSW_3_1_2/skims/selEvents_ZtoMuTau_Ztautau_7TeV_part01.root'
+        'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/mcMinBias/muTauSkim_1_1.root'
+        ##'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/ZtoMuTau/test/pseudoData_Ztautau_1_1_Hwf.root'
     ),
     skipEvents = cms.untracked.uint32(0)            
 )
@@ -48,17 +43,17 @@ isMC = True # use for MC (except for samples from Spring'10 reprocessing)
 isSpring10 = True # use for Spring'10 reprocessed MC
 ##isSpring10 = False # use for non-Spring'10 reprocessed MC
 ##isMC = False # use for Data
-#applyTrackDowngrade = False # default
-applyTrackDowngrade = True # to be used for studies of systematic uncertainties only
+applyTrackDowngrade = False # default
+#applyTrackDowngrade = True # to be used for studies of systematic uncertainties only
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
 # define GlobalTag to be used for event reconstruction
 # (only relevant for HPS tau reconstruction algorithm)
 if isMC:
-    process.GlobalTag.globaltag = cms.string('MC_36Y_V10::All')
-else:
-    process.GlobalTag.globaltag = cms.string('GR_R_36X_V12::All')
+    process.GlobalTag.globaltag = cms.string('START38_V12::All')
+else:   
+    process.GlobalTag.globaltag = cms.string('GR_R_38X_V13::All')
 #--------------------------------------------------------------------------------    
 
 #--------------------------------------------------------------------------------
@@ -132,7 +127,7 @@ process.load("TauAnalysis.TauIdEfficiency.ntupleConfigTrackVariables_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigGenJets_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigGenPhaseSpaceEventInfo_cfi")
 
-process.ntupleProducer = cms.EDAnalyzer("ObjValEDNtupleProducer",
+process.ntupleProducer = cms.EDProducer("ObjValEDNtupleProducer",
                                         
     ntupleName = cms.string("tauIdEffNtuple"),
                                         
@@ -300,4 +295,5 @@ process.schedule = cms.Schedule(
 
 # print-out all python configuration parameter information
 #print process.dumpPython()
+
 

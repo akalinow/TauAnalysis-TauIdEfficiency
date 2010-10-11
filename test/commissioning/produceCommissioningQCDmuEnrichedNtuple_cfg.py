@@ -44,9 +44,9 @@ applyTrackDowngrade = False # default
 # define GlobalTag to be used for event reconstruction
 # (only relevant for HPS tau reconstruction algorithm)
 if isMC:
-    process.GlobalTag.globaltag = cms.string('MC_36Y_V10::All')
-else:
-    process.GlobalTag.globaltag = cms.string('GR_R_36X_V12::All')
+    process.GlobalTag.globaltag = cms.string('START38_V12::All')
+else:  
+    process.GlobalTag.globaltag = cms.string('GR_R_38X_V13::All')
 #--------------------------------------------------------------------------------    
 
 #--------------------------------------------------------------------------------
@@ -151,7 +151,7 @@ process.load("TauAnalysis.TauIdEfficiency.ntupleConfigPFTauShrinkingConeElliptic
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigGenJets_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigGenPhaseSpaceEventInfo_cfi")
 
-process.ntupleProducer = cms.EDAnalyzer("ObjValEDNtupleProducer",
+process.ntupleProducer = cms.EDProducer("ObjValEDNtupleProducer",
                                         
     ntupleName = cms.string("tauIdEffNtuple"),
                                         
@@ -279,4 +279,5 @@ process.schedule = cms.Schedule(
 
 # print-out all python configuration parameter information
 #print process.dumpPython()
+
 
