@@ -3,12 +3,12 @@ void makeTauIsolationPlots()
   TFile* inputFile = TFile::Open("../test/patTauIsolationAnalyzer.root");
 
   TObjArray ptThresholds;
-  ptThresholds.Add(new TObjString("0_5GeV"));
-  ptThresholds.Add(new TObjString("1_0GeV"));
-  ptThresholds.Add(new TObjString("1_5GeV"));
-  ptThresholds.Add(new TObjString("2_0GeV"));
-  ptThresholds.Add(new TObjString("2_5GeV"));
-  ptThresholds.Add(new TObjString("3_0GeV"));
+  ptThresholds.Add(new TObjString("0_50GeV"));
+  ptThresholds.Add(new TObjString("1_00GeV"));
+  ptThresholds.Add(new TObjString("1_50GeV"));
+  ptThresholds.Add(new TObjString("2_00GeV"));
+  ptThresholds.Add(new TObjString("2_50GeV"));
+  ptThresholds.Add(new TObjString("3_00GeV"));
   unsigned numPtThresholds = ptThresholds.GetEntries();
 
   TObjArray sigConeSizes;
@@ -26,33 +26,53 @@ void makeTauIsolationPlots()
   canvas->SetFillColor(10);
   canvas->SetBorderSize(2);
 
+//-------------------------------------------------------------------------------
+// show distributions of isolation Pt sums **before** tight tau id. is applied
+//-------------------------------------------------------------------------------
   TPostScript* psBeforeTauId = new TPostScript("patTauIsolationPlots_beforeTauId.ps", 112);
-  for ( unsigned iPtThreshold = 0; iPtThreshold < numPtThresholds; ++iPtThreshold ) {
-    for ( unsigned iSigConeSize = 0; iSigConeSize < numSigConeSizes; ++iSigConeSize ) {
+  for ( unsigned iSigConeSize = 0; iSigConeSize < numSigConeSizes; ++iSigConeSize ) {
+    TObjString* sigConeSize = (TObjString*)sigConeSizes.At(iSigConeSize);
+//--- show plots for PFCandidate Pt > XX GeV
+//   (same threshold for all types of PFCandidates)
+    for ( unsigned iPtThreshold = 0; iPtThreshold < numPtThresholds; ++iPtThreshold ) {
       TObjString* ptThreshold = (TObjString*)ptThresholds.At(iPtThreshold);
-      TObjString* sigConeSize = (TObjString*)sigConeSizes.At(iSigConeSize);
 
       TString meName = TString("PFCandIso").Append(sigConeSize->GetString()).Append(ptThreshold->GetString()).Append("_matched");
 
       showTauIsolation(inputFile, dqmDirectory, meName, 
 		       "TauPFIsolationQuantities/beforeTauId", "MuonPFIsolationQuantities", "ElectronPFIsolationQuantities",
-		       canvas, psBeforeTauId, true);
+		       canvas, psBeforeTauId, "beforeTauId", true);
     }
+//--- show plots for PFChargedHadron Pt > 1.0 GeV, PFGamma Pt > 1.5 GeV
+    TString meName = TString("PFCandIso").Append(sigConeSize->GetString()).Append("1_00_1_50GeV").Append("_matched");
+    showTauIsolation(inputFile, dqmDirectory, meName, 
+		     "TauPFIsolationQuantities/beforeTauId", "MuonPFIsolationQuantities", "ElectronPFIsolationQuantities",
+		     canvas, psBeforeTauId, "beforeTauId", true);
   }
   delete psBeforeTauId;
 
+//-------------------------------------------------------------------------------
+// show distributions of isolation Pt sums **after** tight tau id. is applied
+//-------------------------------------------------------------------------------
   TPostScript* psAfterTauId = new TPostScript("patTauIsolationPlots_afterTauId.ps", 112);
-  for ( unsigned iPtThreshold = 0; iPtThreshold < numPtThresholds; ++iPtThreshold ) {
-    for ( unsigned iSigConeSize = 0; iSigConeSize < numSigConeSizes; ++iSigConeSize ) {
+  for ( unsigned iSigConeSize = 0; iSigConeSize < numSigConeSizes; ++iSigConeSize ) {
+    TObjString* sigConeSize = (TObjString*)sigConeSizes.At(iSigConeSize);
+//--- show plots for PFCandidate Pt > XX GeV
+//   (same threshold for all types of PFCandidates)
+    for ( unsigned iPtThreshold = 0; iPtThreshold < numPtThresholds; ++iPtThreshold ) {
       TObjString* ptThreshold = (TObjString*)ptThresholds.At(iPtThreshold);
-      TObjString* sigConeSize = (TObjString*)sigConeSizes.At(iSigConeSize);
 
       TString meName = TString("PFCandIso").Append(sigConeSize->GetString()).Append(ptThreshold->GetString()).Append("_matched");
 
       showTauIsolation(inputFile, dqmDirectory, meName, 
 		       "TauPFIsolationQuantities/afterTauId", "", "",
-		       canvas, psAfterTauId, true);
+		       canvas, psAfterTauId, "afterTauId", true);
     }
+//--- show plots for PFChargedHadron Pt > 1.0 GeV, PFGamma Pt > 1.5 GeV
+    TString meName = TString("PFCandIso").Append(sigConeSize->GetString()).Append("1_00_1_50GeV").Append("_matched");
+    showTauIsolation(inputFile, dqmDirectory, meName, 
+		     "TauPFIsolationQuantities/afterTauId", "", "",
+		     canvas, psAfterTauId, "afterTauId", true);
   }
   delete psAfterTauId;
 
@@ -86,7 +106,7 @@ TH1* getMonitorElement(TFile* inputFile, const TString& dqmDirectory, const char
 
 void showTauIsolation(TFile* inputFile, const TString& dqmDirectory, const TString& meName,
 		      const char* dqmSubDirectoryTauJet, const char* dqmSubDirectoryMuon, const char* dqmSubDirectoryElectron,
-		      TCanvas* canvas, TPostScript* ps, bool useLogScale)
+		      TCanvas* canvas, TPostScript* ps, const char* outputFileLabel, bool useLogScale)
 {
   canvas->SetLogy(useLogScale);
 
@@ -122,7 +142,9 @@ void showTauIsolation(TFile* inputFile, const TString& dqmDirectory, const TStri
   legend.Draw();
 
   canvas->Update();
-  ps->NewPage();
+  TString outputFileName = TString("plot").Append(meTauJet->GetName()).Append("_").Append(outputFileLabel).Append(".png");
+  canvas->Print(outputFileName.Data());
+  //ps->NewPage();
 }
 		     
 
