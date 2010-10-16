@@ -27,11 +27,20 @@ extraTauCandVariables_template = cms.PSet(
 jets_template = cms.PSet(
     vector = cms.bool(False),
 
-    pluginType = cms.string("NumCandidateExtractor"),
+    pluginType = cms.string("NumSelPATJetExtractor"),
     src = cms.InputTag("patJets"),
+    srcNotToBeFiltered = cms.VInputTag(
+        "cleanPatElectrons",
+        "cleanPatMuons",
+    ),
+    dRmin = cms.double(0.5),
 
     columns = cms.PSet(
-        numJets = cms.string("JetsMultiplicity")
+        numJetsEta25Pt10 = cms.string("abs(eta) < 2.5 & pt > 10."),
+        numJetsEta25Pt15 = cms.string("abs(eta) < 2.5 & pt > 15."),
+        numJetsEta25Pt20 = cms.string("abs(eta) < 2.5 & pt > 20."),
+        numJetsEta25Pt25 = cms.string("abs(eta) < 2.5 & pt > 25."),
+        numJetsEta25Pt30 = cms.string("abs(eta) < 2.5 & pt > 30.")
     )  
 )
 
