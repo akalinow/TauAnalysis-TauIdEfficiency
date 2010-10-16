@@ -24,6 +24,7 @@ from RecoTauTag.TauTagTools.PFTauMVAInputDiscriminatorTranslator_cfi import \
 def configurePatTupleProduction(process, patSequenceBuilder = None, 
                                 patPFTauCleanerPrototype = None, 
                                 patCaloTauCleanerPrototype = None,
+                                hltProcess = "HLT",
                                 addGenInfo = False):
 
     # check that patSequenceBuilder and patTauCleanerPrototype are defined and non-null
@@ -47,8 +48,11 @@ def configurePatTupleProduction(process, patSequenceBuilder = None,
 
     #--------------------------------------------------------------------------------
     # configure PAT trigger matching
-    process.load("PhysicsTools.PatAlgos.triggerLayer1.triggerProducer_cff")
-    
+
+    from PhysicsTools.PatAlgos.tools.trigTools import *
+    switchOnTrigger(process, hltProcess = hltProcess, outputModule = '')
+    switchOnTriggerStandAlone(process, outputModule = '')
+
     process.patTauTriggerMatchHLTsingleJet15UprotoType = cms.EDProducer("PATTriggerMatcherDRLessByR",
         src                   = cms.InputTag("cleanLayer1Taus"),
         matched               = cms.InputTag("patTrigger"),
@@ -61,7 +65,7 @@ def configurePatTupleProduction(process, patSequenceBuilder = None,
         maxDeltaR             = cms.double(0.5),
         resolveAmbiguities    = cms.bool(True),
         resolveByMatchQuality = cms.bool(False)
-    )                                                             
+    )   
     #--------------------------------------------------------------------------------
 
     #-------------------------------------------------------------------------------- 
@@ -263,7 +267,7 @@ def configurePatTupleProduction(process, patSequenceBuilder = None,
 
     process.patTupleProductionSequence = cms.Sequence(
         process.patDefaultSequence
-       + process.patTrigger
+       ##+ process.patTrigger + process.patTriggerEvent
        + process.caloTauSequence
        # recompute decay modes and embed TaNC inputs
        + process.shrinkingConePFTauDecayModeProducer               
