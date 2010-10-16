@@ -33,11 +33,11 @@ process.maxEvents = cms.untracked.PSet(
 )
 
 isMC = True # use for MC (except for samples from Spring'10 reprocessing)
-isSpring10 = True # use for Spring'10 reprocessed MC
-##isSpring10 = False # use for non-Spring'10 reprocessed MC
 ##isMC = False # use for Data
-applyTrackDowngrade = False # default
-#applyTrackDowngrade = True # to be used for studies of systematic uncertainties only
+HLTprocessName = "HLT" # use for non-reprocessed MC samples and Data
+##HLTprocessName = "REDIGI" # use for Spring'10 reprocessed MC
+##pfCandidateCollection = "particleFlow" # pile-up removal disabled
+pfCandidateCollection = "pfNoPileUp" # pile-up removal enabled
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
@@ -67,7 +67,7 @@ if isMC:
 #
 from TauAnalysis.TauIdEfficiency.tools.configurePrePatProduction import configurePrePatProduction
 
-configurePrePatProduction(process, applyTrackDowngrade = applyTrackDowngrade, addGenInfo = isMC)
+configurePrePatProduction(process, pfCandidateCollection = pfCandidateCollection, addGenInfo = isMC)
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
@@ -132,6 +132,7 @@ retVal = configurePatTupleProduction(
     process, patSequenceBuilder = buildQCDmuEnrichedTauSequence,
     patPFTauCleanerPrototype = patPFTauCleanerPrototype,
     patCaloTauCleanerPrototype = patCaloTauCleanerPrototype,
+    hltProcess = HLTprocessName,
     addGenInfo = isMC
 )
 #--------------------------------------------------------------------------------
@@ -173,7 +174,7 @@ process.ntupleProducer = cms.EDProducer("ObjValEDNtupleProducer",
             )
         ),                                              
 
-        # variables specifying x,y,z coordinates of primary event vertex
+        # variables specifying x,y,z coordinates of primary event vertices
         vertex = process.vertex_template,
 
         # variables specific to Muons
@@ -227,16 +228,17 @@ if isMC:
 
 #--------------------------------------------------------------------------------
 #
-# updated InputTags for HLT trigger result object
-# in case running on reprocessed Spring'10 Monte Carlo samples
-if isSpring10:
-    process.hltMu.selector.src = cms.InputTag('TriggerResults::REDIGI')
-    process.patTrigger.processName = cms.string('REDIGI')
-    process.patCaloTausTriggerEvent.processName = cms.string('REDIGI')
-    process.patPFTausTriggerEventFixedCone.processName = cms.string('REDIGI')
-    process.patPFTausTriggerEventShrinkingCone.processName = cms.string('REDIGI')
-    process.patPFTausTriggerEventHPS.processName = cms.string('REDIGI')    
-    process.ntupleProducer.sources.trigger.src = cms.InputTag('TriggerResults::REDIGI')
+# update InputTags for HLT trigger result object
+# in case running on reprocessed Monte Carlo samples
+#
+if HLTprocessName != "HLT":
+    process.hltMu.selector.src = cms.InputTag('TriggerResults::' + HLTprocessName)
+    process.patTrigger.processName = cms.string(HLTprocessName)
+    process.patCaloTausTriggerEvent.processName = cms.string(HLTprocessName)
+    process.patPFTausTriggerEventFixedCone.processName = cms.string(HLTprocessName)
+    process.patPFTausTriggerEventShrinkingCone.processName = cms.string(HLTprocessName)
+    process.patPFTausTriggerEventHPS.processName = cms.string(HLTprocessName)    
+    process.ntupleProducer.sources.trigger.src = cms.InputTag('TriggerResults::' + HLTprocessName)
 #--------------------------------------------------------------------------------    
 
 #--------------------------------------------------------------------------------

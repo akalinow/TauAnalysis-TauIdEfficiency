@@ -24,14 +24,6 @@ process.source = cms.Source("PoolSource",
     skipEvents = cms.untracked.uint32(0)            
 )
 
-# To prevent file name CVS battles         
-#import os
-#if not os.path.exists('/usr/bin/nsls'):
-#    process.source.fileNames = cms.untracked.vstring(
-#        '/store/relval/CMSSW_3_6_1/RelValZTT/GEN-SIM-RECO/START36_V7-v1/0021/F405BC9A-525D-DF11-AB96-002618943811.root',
-#        '/store/relval/CMSSW_3_6_1/RelValZTT/GEN-SIM-RECO/START36_V7-v1/0020/EE3E8F74-365D-DF11-AE3D-002618FDA211.root'
-#    )
-
 # print event content 
 process.printEventContent = cms.EDAnalyzer("EventContentAnalyzer")
 
@@ -40,11 +32,11 @@ process.maxEvents = cms.untracked.PSet(
 )
 
 isMC = True # use for MC (except for samples from Spring'10 reprocessing)
-isSpring10 = True # use for Spring'10 reprocessed MC
-##isSpring10 = False # use for non-Spring'10 reprocessed MC
 ##isMC = False # use for Data
-applyTrackDowngrade = False # default
-#applyTrackDowngrade = True # to be used for studies of systematic uncertainties only
+HLTprocessName = "HLT" # use for non-reprocessed MC samples and Data
+##HLTprocessName = "REDIGI" # use for Spring'10 reprocessed MC
+##pfCandidateCollection = "particleFlow" # pile-up removal disabled
+pfCandidateCollection = "pfNoPileUp" # pile-up removal enabled
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
@@ -73,7 +65,7 @@ if isMC:
 #
 from TauAnalysis.TauIdEfficiency.tools.configurePrePatProduction import configurePrePatProduction
 
-configurePrePatProduction(process, applyTrackDowngrade = applyTrackDowngrade, addGenInfo = isMC)
+configurePrePatProduction(process, pfCandidateCollection = pfCandidateCollection, addGenInfo = isMC)
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
@@ -107,6 +99,7 @@ retVal = configurePatTupleProduction(
     process, patSequenceBuilder = buildQCDdiJetTauSequence,
     patPFTauCleanerPrototype = patPFTauCleanerPrototype,
     patCaloTauCleanerPrototype = patCaloTauCleanerPrototype,
+    hltProcess = HLTprocessName,
     addGenInfo = isMC
 )
 #--------------------------------------------------------------------------------
@@ -135,9 +128,30 @@ process.ntupleProducer = cms.EDProducer("ObjValEDNtupleProducer",
         # Grouping of sources is for convenience of specifying pluginTypes, etc
 
         # variables indicating decision of HLT trigger paths
-        trigger = process.trigger_template,                                    
+        trigger = process.trigger_template.clone(
+            columns = cms.PSet(
+                hltL1Jet6Ubit      = cms.string("HLT_L1Jet6U:bit"),
+                hltL1Jet6Uprescale = cms.string("HLT_L1Jet6U:prescale"),                                    
+                hltJet15Ubit       = cms.string("HLT_Jet15U:bit"),
+                hltJet15Uprescale  = cms.string("HLT_Jet15U:prescale"),                                    
+                hltJet30Ubit       = cms.string("HLT_Jet30U:bit"),
+                hltJet30Uprescale  = cms.string("HLT_Jet30U:prescale"),                                    
+                hltJet50Ubit       = cms.string("HLT_Jet50U:bit"),
+                hltJet50Uprescale  = cms.string("HLT_Jet50U:prescale"),                                    
+                hltMu3bit          = cms.string("HLT_Mu3:bit"),
+                hltMu3prescale     = cms.string("HLT_Mu3:prescale"),                                    
+                hltMu5bit          = cms.string("HLT_Mu5:bit"),
+                hltMu5prescale     = cms.string("HLT_Mu5:prescale"),                                    
+                hltMu9bit          = cms.string("HLT_Mu9:bit"),
+                hltMu9prescale     = cms.string("HLT_Mu9:prescale"),
+                hltIsoMu9bit       = cms.string("HLT_IsoMu9:bit"),
+                hltIsoMu9prescale  = cms.string("HLT_IsoMu9:prescale"),                                    
+                hltMu11bit         = cms.string("HLT_Mu11:bit"),
+                hltMu11prescale    = cms.string("HLT_Mu11:prescale"),                                    
+            )
+        ),
 
-        # variables specifying x,y,z coordinates of primary event vertex
+        # variables specifying x,y,z coordinates of primary event vertices
         vertex = process.vertex_template,                   
 
         # global variables describing the underlying event/
@@ -216,16 +230,17 @@ if isMC:
 
 #--------------------------------------------------------------------------------
 #
-# updated InputTags for HLT trigger result object
-# in case running on reprocessed Spring'10 Monte Carlo samples
-if isSpring10:
-    process.hltJet15U.selector.src = cms.InputTag('TriggerResults::REDIGI')
-    process.patTrigger.processName = cms.string('REDIGI')
-    process.patCaloTausTriggerEvent.processName = cms.string('REDIGI')
-    process.patPFTausTriggerEventFixedCone.processName = cms.string('REDIGI')
-    process.patPFTausTriggerEventShrinkingCone.processName = cms.string('REDIGI')
-    process.patPFTausTriggerEventHPS.processName = cms.string('REDIGI')    
-    process.ntupleProducer.sources.trigger.src = cms.InputTag('TriggerResults::REDIGI')
+# update InputTags for HLT trigger result object
+# in case running on reprocessed Monte Carlo samples
+#
+if HLTprocessName != "HLT":
+    process.hltJet15U.selector.src = cms.InputTag('TriggerResults::' + HLTprocessName)
+    process.patTrigger.processName = cms.string(HLTprocessName)
+    process.patCaloTausTriggerEvent.processName = cms.string(HLTprocessName)
+    process.patPFTausTriggerEventFixedCone.processName = cms.string(HLTprocessName)
+    process.patPFTausTriggerEventShrinkingCone.processName = cms.string(HLTprocessName)
+    process.patPFTausTriggerEventHPS.processName = cms.string(HLTprocessName)    
+    process.ntupleProducer.sources.trigger.src = cms.InputTag('TriggerResults::' + HLTprocessName)
 #--------------------------------------------------------------------------------    
 
 #--------------------------------------------------------------------------------
@@ -245,37 +260,10 @@ process.ntupleOutputModule = cms.OutputModule("PoolOutputModule",
 )
 #--------------------------------------------------------------------------------
 
-####--------------------------------------------------------------------------------
-###
-### Print differences between collections of pat::Taus
-### reconstructed by "regular" shrinking cone and by HPS (PF)Tau algorithm
-###
-### NOTE: to be used for debugging purposes only !!
-###
-##process.DQMStore = cms.Service("DQMStore")
-##
-##process.patTauCollectionDiffAnalyzer = cms.EDAnalyzer("PATTauCollectionDiffAnalyzer",
-##    patTauSource1 = cms.InputTag(retVal["pfTauCollectionShrinkingCone"]),
-##    patTauSource2 = cms.InputTag(retVal["pfTauCollectionHPS"]),
-##                                          
-##    patTauSelection = cms.string("abs(pfTauTagInfoRef.pfjetRef.eta) < 2.5 & pfTauTagInfoRef.pfjetRef.pt > 10. & userFloat('probe') > 0.5"),
-##
-##    dRmatch = cms.double(0.5),
-##
-##    dqmDirectory = cms.string('PATTauComparator')
-##)                                          
-##
-##process.savePatTauCollectionDiffAnalyzerPlots = cms.EDAnalyzer("DQMSimpleFileSaver",
-##    outputFileName = cms.string('plotsPatTauCollectionDiffAnalyzer.root')
-##)
-###--------------------------------------------------------------------------------
-
 process.p = cms.Path(
     process.prePatProductionSequence
    + process.patTupleProductionSequence
-   ##+ process.patTauCollectionDiffAnalyzer
-   ##+ process.savePatTauCollectionDiffAnalyzerPlots
-   ##+ process.printEventContent
+   #+ process.printEventContent
    + process.ntupleProducer
 )
 
