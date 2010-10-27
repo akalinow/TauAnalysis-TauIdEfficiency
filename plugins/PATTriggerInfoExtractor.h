@@ -8,7 +8,7 @@
  *
  * \author Christian, UC Davis
  *
- * \version $Revision: 1.4 $
+ * \version $Revision: 1.1 $
  */
 
 #include "FWCore/Framework/interface/Event.h"
@@ -32,7 +32,8 @@ class PATTriggerInfoExtractor : public ObjValExtractorBase
   //--- configuration parameters
   edm::InputTag src_;
 
-  std::string hltPath_;
+  std::string hltPathName_;
+  std::string l1SeedName_;
 
   enum { kBit, kPrescale };
   int value_;
