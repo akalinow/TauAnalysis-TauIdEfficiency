@@ -148,6 +148,7 @@ process.load("TauAnalysis.TauIdEfficiency.ntupleConfigPFTauFixedCone_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigPFTauShrinkingCone_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigPFTauHPS_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigPFTauShrinkingConeEllipticPhotonIso_cfi")
+process.load("TauAnalysis.TauIdEfficiency.ntupleConfigGlobalVariables_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigGenJets_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigGenPhaseSpaceEventInfo_cfi")
 
@@ -159,28 +160,7 @@ process.ntupleProducer = cms.EDProducer("ObjValEDNtupleProducer",
         # Grouping of sources is for convenience of specifying pluginTypes, etc
 
         # variables indicating decision of HLT trigger paths
-        trigger = process.trigger_template.clone(
-            columns = cms.PSet(
-                hltL1Jet6Ubit      = cms.string("HLT_L1Jet6U:bit"),
-                hltL1Jet6Uprescale = cms.string("HLT_L1Jet6U:prescale"),                                    
-                hltJet15Ubit       = cms.string("HLT_Jet15U:bit"),
-                hltJet15Uprescale  = cms.string("HLT_Jet15U:prescale"),                                    
-                hltJet30Ubit       = cms.string("HLT_Jet30U:bit"),
-                hltJet30Uprescale  = cms.string("HLT_Jet30U:prescale"),                                    
-                hltJet50Ubit       = cms.string("HLT_Jet50U:bit"),
-                hltJet50Uprescale  = cms.string("HLT_Jet50U:prescale"),                                    
-                hltMu3bit          = cms.string("HLT_Mu3:bit"),
-                hltMu3prescale     = cms.string("HLT_Mu3:prescale"),                                    
-                hltMu5bit          = cms.string("HLT_Mu5:bit"),
-                hltMu5prescale     = cms.string("HLT_Mu5:prescale"),                                    
-                hltMu9bit          = cms.string("HLT_Mu9:bit"),
-                hltMu9prescale     = cms.string("HLT_Mu9:prescale"),
-                hltIsoMu9bit       = cms.string("HLT_IsoMu9:bit"),
-                hltIsoMu9prescale  = cms.string("HLT_IsoMu9:prescale"),                                    
-                hltMu11bit         = cms.string("HLT_Mu11:bit"),
-                hltMu11prescale    = cms.string("HLT_Mu11:prescale"),                                    
-            )
-        ),                                              
+        trigger = process.trigger_template,
 
         # variables specifying x,y,z coordinates of primary event vertices
         vertex = process.vertex_template,
@@ -212,6 +192,22 @@ process.ntupleProducer = cms.EDProducer("ObjValEDNtupleProducer",
         # reconstructed using ellipse for photon isolation
         pfTausShrinkingConeEllPhotonIso_rec = process.pfTausShrinkingConeEllipticPhotonIso_recInfo.clone(
             src = cms.InputTag(retVal["pfTauCollectionShrinkingConeEllipticPhotonIso"])                       
+        ),
+
+        # global event variables specific to W + jets selection
+        caloMet_rec = process.caloMet_template,
+        pfMet_rec = process.pfMet_template,
+        caloMetDiTau_rec = process.diTau_template.clone(
+            src = cms.InputTag("selectedMuonCaloTauPairs"),
+            columns = cms.PSet(
+                caloMt1MET = cms.string("mt1MET()")
+            )
+        ),
+        pfMetDiTau_rec = process.diTau_template.clone(
+            src = cms.InputTag("selectedMuonPFTauPairs"),
+            columns = cms.PSet(
+                pfMt1MET = cms.string("mt1MET()")
+            )
         )
     )
 )
@@ -269,6 +265,7 @@ process.ntupleOutputModule = cms.OutputModule("PoolOutputModule",
 process.p = cms.Path(
     process.prePatProductionSequence
    + process.patTupleProductionSequence
+   + process.produceMuonCaloTauPairs + process.produceMuonPFTauPairs
    #+ process.printEventContent
    + process.ntupleProducer
 )
