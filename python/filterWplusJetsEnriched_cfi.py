@@ -42,7 +42,7 @@ diMuonVeto = cms.EDFilter("PATCandViewCountFilter",
 selectedMuons = cms.EDFilter("PATMuonSelector",
     src = cms.InputTag('patMuons'),
     cut = cms.string("isGlobalMuon & pt > 15. & abs(eta) < 2.1 & userIsolation('pfmuIsoDepositPFCandidates') < 0.06*pt"),
-    filter = cms.bool(True)
+    filter = cms.bool(False)
 )
 #--------------------------------------------------------------------------------
 
@@ -54,12 +54,12 @@ selectedCaloTaus = cms.EDFilter("CaloTauSelector",
     src = cms.InputTag('caloRecoTauProducer'),
     discriminators = cms.VPSet(),
     cut = cms.string("abs(caloTauTagInfoRef().jetRef().eta) < 2.5 & caloTauTagInfoRef().jetRef().pt > 10."),
-    filter = cms.bool(True)
+    filter = cms.bool(False)
 )
 
 muonCaloTauPairs = cms.EDProducer("DiCandidatePairProducer",
     useLeadingTausOnly = cms.bool(False),
-    srcLeg1 = cms.InputTag('patSelectedMuons'),
+    srcLeg1 = cms.InputTag('selectedMuons'),
     srcLeg2 = cms.InputTag('selectedCaloTaus'),
     dRmin12 = cms.double(0.),
     srcMET = cms.InputTag('metJESCorAK5CaloJetMuons'),
@@ -71,7 +71,17 @@ muonCaloTauPairs = cms.EDProducer("DiCandidatePairProducer",
 selectedMuonCaloTauPairs = cms.EDFilter("DiCandidatePairSelector",
     src = cms.InputTag('muonCaloTauPairs'),
     cut = cms.string("dR12 > 0.7 & mt1MET > 50. & (pZeta - 1.5*pZetaVis) < -20."),
-    filter = cms.bool(True)                                     
+    filter = cms.bool(False)                                     
+)
+
+produceMuonCaloTauPairs = cms.Sequence(
+    globalMuons * selectedMuons
+   * selectedCaloTaus * muonCaloTauPairs * selectedMuonCaloTauPairs
+)
+
+selectedMuonCaloTauPairFilter = cms.EDFilter("CandViewCountFilter",
+    src = cms.InputTag('selectedMuonCaloTauPairs'),
+    minNumber = cms.uint32(1)
 )
 
 centralCaloJetVeto = cms.EDFilter("PATCandViewCountFilter",
@@ -82,8 +92,9 @@ centralCaloJetVeto = cms.EDFilter("PATCandViewCountFilter",
 
 muonCaloTauSkimPath = cms.Path(
     hltMu
-   + globalMuons + diMuonVeto + selectedMuons
-   + selectedCaloTaus + muonCaloTauPairs + selectedMuonCaloTauPairs + centralCaloJetVeto
+   + produceMuonCaloTauPairs
+   + diMuonVeto + selectedMuonCaloTauPairFilter + centralCaloJetVeto
+   + selectedMuonCaloTauPairFilter + centralCaloJetVeto
    + dataQualityFilters
 )
 #--------------------------------------------------------------------------------
@@ -96,15 +107,15 @@ selectedPFTaus = cms.EDFilter("PFTauSelector",
     src = cms.InputTag('shrinkingConePFTauProducer'),
     discriminators = cms.VPSet(),                          
     cut = cms.string("abs(pfTauTagInfoRef().pfjetRef().eta) < 2.5 & pfTauTagInfoRef().pfjetRef().pt > 10."),
-    filter = cms.bool(True)
+    filter = cms.bool(False)
 )
 
 muonPFTauPairs = cms.EDProducer("DiCandidatePairProducer",
     useLeadingTausOnly = cms.bool(False),
-    srcLeg1 = cms.InputTag('patSelectedMuons'),
+    srcLeg1 = cms.InputTag('selectedMuons'),
     srcLeg2 = cms.InputTag('selectedPFTaus'),
     dRmin12 = cms.double(0.),
-    srcMET = cms.InputTag('pfType1MET'),
+    srcMET = cms.InputTag('pfMet'),
     recoMode = cms.string(""),
     scaleFuncImprovedCollinearApprox = cms.string('1'),                                  
     verbosity = cms.untracked.int32(0)                                       
@@ -113,7 +124,18 @@ muonPFTauPairs = cms.EDProducer("DiCandidatePairProducer",
 selectedMuonPFTauPairs = cms.EDFilter("DiCandidatePairSelector",
     src = cms.InputTag('muonPFTauPairs'),
     cut = cms.string("dR12 > 0.7 & mt1MET > 50. & (pZeta - 1.5*pZetaVis) < -20."),
-    filter = cms.bool(True)                                     
+    filter = cms.bool(False)                                     
+)
+
+
+produceMuonPFTauPairs = cms.Sequence(
+    globalMuons * selectedMuons
+   * selectedPFTaus * muonPFTauPairs * selectedMuonPFTauPairs
+)
+
+selectedMuonPFTauPairFilter = cms.EDFilter("CandViewCountFilter",
+    src = cms.InputTag('selectedMuonPFTauPairs'),
+    minNumber = cms.uint32(1)
 )
 
 centralPFJetVeto = cms.EDFilter("PATCandViewCountFilter",
@@ -124,8 +146,8 @@ centralPFJetVeto = cms.EDFilter("PATCandViewCountFilter",
 
 muonPFTauSkimPath = cms.Path(    
     hltMu
-   + globalMuons + diMuonVeto + selectedMuons
-   + selectedPFTaus + muonPFTauPairs + selectedMuonPFTauPairs + centralPFJetVeto
+   + produceMuonPFTauPairs
+   + diMuonVeto + selectedMuonPFTauPairFilter + centralPFJetVeto
    + dataQualityFilters
 )
 #--------------------------------------------------------------------------------
