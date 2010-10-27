@@ -14,4 +14,8 @@
   <use name=TauAnalysis/BgEstimationTools>
   <use name=TauAnalysis/GenSimTools>
   <use name=TauAnalysis/Core>
+  <use name="rootgraphics">
+  <use name="PhysicsTools/MVATrainer">
+  <use name="PhysicsTools/MVAComputer">
+  <use name="CondFormats/PhysicsToolsObjects">
 </library>
