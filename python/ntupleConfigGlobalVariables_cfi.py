@@ -44,7 +44,20 @@ jets_template = cms.PSet(
     )  
 )
 
-met_template = cms.PSet(
+caloMet_template = cms.PSet(
+    vector = cms.bool(False),
+
+    pluginType = cms.string("PATMetValExtractor"),
+
+    src = cms.InputTag("patMETs"),
+
+    columns = cms.PSet(
+        caloMEt = cms.string("p4().Et()"),
+        caloSumEt = cms.string("sumEt()")
+    )
+)
+
+pfMet_template = cms.PSet(
     vector = cms.bool(False),
 
     pluginType = cms.string("PATMetValExtractor"),
@@ -52,7 +65,17 @@ met_template = cms.PSet(
     src = cms.InputTag("patPFMETs"),
 
     columns = cms.PSet(
-        MEt = cms.string("p4().Et()"),
-        sumEt = cms.string("sumEt()")
+        pfMEt = cms.string("p4().Et()"),
+        pfSumEt = cms.string("sumEt()")
     )
+)
+
+diTau_template = cms.PSet(
+    vector = cms.bool(False),
+
+    pluginType = cms.string("DiCandidatePairValExtractor"),
+
+    src = cms.InputTag(""),
+
+    columns = cms.PSet()
 )
