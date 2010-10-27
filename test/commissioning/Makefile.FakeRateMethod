@@ -1,0 +1,28 @@
+# Automation of the Fake rate method workflow
+#
+# Author: Evan K. Friis, Christian Veelken (UC Davis)
+
+# Define your numerator and denominator.  Note you have to escape the $!!
+DEN = " \$$pt > 5 & abs(\$$eta) < 2.5 & \$$probe > 0.5 "
+NUM = " \$$byTaNCfrOnePercent "
+ALGO = patPFTausDijetTagAndProbeShrinkingCone
+DIR = TancFakeRate
+XML = fakeRateMVADef.xml
+#XML = /afs/cern.ch/user/f/friis/scratch0/TauSoftware/src/RecoTauTag/TauTagTools/test/training/xml/1prong0pi0_hpstanc.xml
+
+# Train the MVA
+${DIR}/fakeRate.db: ${XML} ${DIR}/numerator.root ${DIR}/denominator.root 
+	mkdir -p train
+	rm -f $@.temp.db
+	./trainTauFakeRate_cfg.py xml=fakeRateMVADef.xml numeratorfile=${DIR}/numerator.root \
+	  denominatorfile=${DIR}/denominator.root outputFile=$@.temp.db
+	mv $@.temp.db $@
+
+# Build the numerator
+${DIR}/numerator.root: fakeratemethod_ntuplize.py samples.py samples_cache.py 
+	./fakeratemethod_ntuplize.py -skipd --ntuple ${ALGO} --num ${NUM} --den ${DEN} --output $@
+
+# Build the denominator
+${DIR}/denominator.root: fakeratemethod_ntuplize.py samples.py samples_cache.py 
+	./fakeratemethod_ntuplize.py -skipn --ntuple ${ALGO} --num ${NUM} --den ${DEN} --output $@
+
