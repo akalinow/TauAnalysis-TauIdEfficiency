@@ -14,6 +14,7 @@ from PhysicsTools.PatAlgos.tools.tauTools import _switchToPFTau
 from PhysicsTools.PatAlgos.tools.jetTools import *
 from PhysicsTools.PatAlgos.tools.trigTools import switchOnTrigger
 from PhysicsTools.PatAlgos.tools.coreTools import removeMCMatching
+from PhysicsTools.PatAlgos.tools.trigTools import *
 
 from TauAnalysis.Configuration.tools.metTools import *
 
@@ -48,10 +49,8 @@ def configurePatTupleProduction(process, patSequenceBuilder = None,
 
     #--------------------------------------------------------------------------------
     # configure PAT trigger matching
-
-    from PhysicsTools.PatAlgos.tools.trigTools import *
     switchOnTrigger(process, hltProcess = hltProcess, outputModule = '')
-    switchOnTriggerStandAlone(process, outputModule = '')
+    process.patTrigger.addL1Algos = cms.bool(True)
 
     process.patTauTriggerMatchHLTsingleJet15UprotoType = cms.EDProducer("PATTriggerMatcherDRLessByR",
         src                   = cms.InputTag("cleanLayer1Taus"),
