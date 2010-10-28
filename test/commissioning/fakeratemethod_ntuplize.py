@@ -53,7 +53,7 @@ denominator = hlt.expr(options.hlt) & \
 passing = ntuple.expr(options.num) & denominator
 failing = ntuple.expr(options.num).false() & denominator
 
-draw_string = ntuple.expr('$jetPt:$jetEta:$jetWidth')
+draw_string = ntuple.expr('$jetWidtht:$jetEta:$jetPt')
 
 output_file = ROOT.TFile(options.output, "RECREATE")
 output_file.cd()
