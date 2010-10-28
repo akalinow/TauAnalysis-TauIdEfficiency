@@ -18,9 +18,9 @@
       <var source="input" name="JetWidth"/>
     </input>
     <config>
-      <method type="KNN" name="MLP">nkNN=20</method>
+      <method type="KNN" name="KNN">nkNN=20</method>
       <!--Keep a small amount events for the testing as a sanity check-->
-      <setup cuts="" options="NormMode=NumEvents:NSigTest=1000:NBkgTest=50"/>
+      <setup cuts="" options="NormMode=NumEvents:NSigTest=50:NBkgTest=1000"/>
     </config>
     <output>
       <var name="MVAOutput"/>
