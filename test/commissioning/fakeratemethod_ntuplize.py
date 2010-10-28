@@ -90,7 +90,7 @@ if options.failing:
     drawn = events.Draw(str(draw_string), str(failing))
     denominator_tuple = ROOT.gPad.GetPrimitive("TPolyMarker3D")
     denominator_tuple.SetName("failing")
-    print "Built 'failining' pre-ntuple with %i entries" % \
+    print "Built 'failing' pre-ntuple with %i entries" % \
             denominator_tuple.GetN()
     if denominator_tuple.GetN() == events.GetEstimate():
         print "Error: Number of entries produced is at the upper limit " \
