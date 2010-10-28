@@ -19,10 +19,11 @@ parser = argparse.ArgumentParser(
 parser.add_argument('--ntuple', help="Name of ntuple")
 parser.add_argument('--num', help="Numerator")
 parser.add_argument('--den', help="Denominator")
-parser.add_argument('-skipn', action='store_true', default=False,
-                    help="Don't make numerator ntuple")
-parser.add_argument('-skipd', action='store_true', default=False,
-                    help="Don't make denominator ntuple")
+parser.add_argument('--hlt', help="HLT ntuple selection")
+parser.add_argument('-passing', action='store_true', default=False,
+                    help="Build ntuple for events that pass")
+parser.add_argument('-failing', action='store_true', default=False,
+                    help="Build ntuple for events that fail")
 parser.add_argument('--output', help="Output file")
 
 options=parser.parse_args()
@@ -45,11 +46,12 @@ ntuple = ntuple_manager.get_ntuple(options.ntuple)
 hlt = ntuple_manager.get_ntuple("TriggerResults")
 
 # Build the denominator query
-denominator = hlt.expr('$hltJet15U > 0.5') & \
+denominator = hlt.expr(options.hlt) & \
         ntuple.expr(options.den)
 
-# Build the numerator query
-numerator = ntuple.expr(options.num) & denominator
+# Build the queries for passing and failing
+passing = ntuple.expr(options.num) & denominator
+failing = ntuple.expr(options.num).false() & denominator
 
 draw_string = ntuple.expr('$jetPt:$jetEta:$jetWidth')
 
@@ -67,22 +69,33 @@ print "Ntuple has entries: ", events.GetEntries()
 # Prevent root from cutting us off at 10^6
 events.SetEstimate(100000000L)
 
-if not options.skipn:
+if options.passing:
     # Build a TPolyMaker3D with our points
-    events.Draw(str(draw_string), str(numerator))
+    events.Draw(str(draw_string), str(passing))
     numerator_tuple = ROOT.gPad.GetPrimitive("TPolyMarker3D")
-    numerator_tuple.SetName("numerator")
+    numerator_tuple.SetName("pass")
 
-    print "Built nuemrator pre-ntuple with %i entries" % \
+    print "Built 'passing' pre-ntuple with %i entries" % \
             numerator_tuple.GetN()
+
+    if numerator_tuple.GetN() == events.GetEstimate():
+        print "Error: Number of entries produced is at the upper limit " \
+                "of TTree::Draw.  You need to set events.SetEstimate to " \
+                "be larger than the total number of selected rows."
+        sys.exit(1)
     numerator_tuple.Write()
 
-if not options.skipd:
+if options.failing:
     # Build a TPolyMaker3D with our points
-    drawn = events.Draw(str(draw_string), str(denominator))
+    drawn = events.Draw(str(draw_string), str(failing))
     denominator_tuple = ROOT.gPad.GetPrimitive("TPolyMarker3D")
-    denominator_tuple.SetName("denominator")
-    print "Built denominator pre-ntuple with %i entries" % \
+    denominator_tuple.SetName("failing")
+    print "Built 'failining' pre-ntuple with %i entries" % \
             denominator_tuple.GetN()
+    if denominator_tuple.GetN() == events.GetEstimate():
+        print "Error: Number of entries produced is at the upper limit " \
+                "of TTree::Draw.  You need to set events.SetEstimate to " \
+                "be larger than the total number of selected rows."
+        sys.exit(1)
     denominator_tuple.Write()
 

@@ -19,7 +19,8 @@
     </input>
     <config>
       <method type="KNN" name="MLP">nkNN=20</method>
-      <setup cuts="" options="NormMode=NumEvents:NSigTrain=0:NBkgTrain=0"/>
+      <!--Keep a small amount events for the testing as a sanity check-->
+      <setup cuts="" options="NormMode=NumEvents:NSigTest=1000:NBkgTest=50"/>
     </config>
     <output>
       <var name="MVAOutput"/>

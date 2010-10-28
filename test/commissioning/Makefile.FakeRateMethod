@@ -2,16 +2,17 @@
 #
 # Author: Evan K. Friis, Christian Veelken (UC Davis)
 
-# Define your numerator and denominator.  Note you have to escape the $!!
-DEN = " \$$pt > 5 & abs(\$$eta) < 2.5 & \$$probe > 0.5 "
+# Define your numerator and denominator and HLT selection.  
+# Note you have to escape the $!!
+HLT = " \$$hltJet15U > 0.5 "
+DEN = " \$$jetPt > 5 & abs(\$$jetEta) < 2.1 & \$$probe > 0.5 "
 NUM = " \$$byTaNCfrOnePercent "
 ALGO = patPFTausDijetTagAndProbeShrinkingCone
 DIR = TancFakeRate
 XML = fakeRateMVADef.xml
-#XML = /afs/cern.ch/user/f/friis/scratch0/TauSoftware/src/RecoTauTag/TauTagTools/test/training/xml/1prong0pi0_hpstanc.xml
 
 # Train the MVA
-${DIR}/fakeRate.db: ${XML} ${DIR}/numerator.root ${DIR}/denominator.root 
+${DIR}/fakeRate.db: ${XML} ${DIR}/pass.root ${DIR}/fail.root 
 	mkdir -p train
 	rm -f $@.temp.db
 	./trainTauFakeRate_cfg.py xml=fakeRateMVADef.xml numeratorfile=${DIR}/numerator.root \
@@ -19,10 +20,10 @@ ${DIR}/fakeRate.db: ${XML} ${DIR}/numerator.root ${DIR}/denominator.root
 	mv $@.temp.db $@
 
 # Build the numerator
-${DIR}/numerator.root: fakeratemethod_ntuplize.py samples.py samples_cache.py 
-	./fakeratemethod_ntuplize.py -skipd --ntuple ${ALGO} --num ${NUM} --den ${DEN} --output $@
+${DIR}/pass.root: fakeratemethod_ntuplize.py samples.py samples_cache.py 
+	./fakeratemethod_ntuplize.py -passing --ntuple ${ALGO} --hlt ${HLT} --num ${NUM} --den ${DEN} --output $@
 
 # Build the denominator
-${DIR}/denominator.root: fakeratemethod_ntuplize.py samples.py samples_cache.py 
-	./fakeratemethod_ntuplize.py -skipn --ntuple ${ALGO} --num ${NUM} --den ${DEN} --output $@
+${DIR}/fail.root: fakeratemethod_ntuplize.py samples.py samples_cache.py 
+	./fakeratemethod_ntuplize.py -failing --ntuple ${ALGO} --hlt ${HLT} --num ${NUM} --den ${DEN} --output $@
 
