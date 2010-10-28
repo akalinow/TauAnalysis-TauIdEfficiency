@@ -19,11 +19,12 @@ ${DIR}/fakeRate.db: ${XML} ${DIR}/pass.root ${DIR}/fail.root
 	  denominatorfile=${DIR}/denominator.root outputFile=$@.temp.db
 	mv $@.temp.db $@
 
-# Build the numerator
+# Build the 'numerator'
 ${DIR}/pass.root: fakeratemethod_ntuplize.py samples.py samples_cache.py 
+	mkdir -p ${DIR}
 	./fakeratemethod_ntuplize.py -passing --ntuple ${ALGO} --hlt ${HLT} --num ${NUM} --den ${DEN} --output $@
 
-# Build the denominator
+# Build the 'denominator'
 ${DIR}/fail.root: fakeratemethod_ntuplize.py samples.py samples_cache.py 
+	mkdir -p ${DIR}
 	./fakeratemethod_ntuplize.py -failing --ntuple ${ALGO} --hlt ${HLT} --num ${NUM} --den ${DEN} --output $@
-
