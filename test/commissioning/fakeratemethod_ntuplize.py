@@ -73,7 +73,7 @@ if options.passing:
     # Build a TPolyMaker3D with our points
     events.Draw(str(draw_string), str(passing))
     numerator_tuple = ROOT.gPad.GetPrimitive("TPolyMarker3D")
-    numerator_tuple.SetName("pass")
+    numerator_tuple.SetName("passing")
 
     print "Built 'passing' pre-ntuple with %i entries" % \
             numerator_tuple.GetN()
