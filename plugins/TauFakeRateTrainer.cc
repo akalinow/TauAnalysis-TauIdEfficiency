@@ -1,5 +1,5 @@
 
-// user include files
+#include <FWCore/Utilities/interface/Exception.h>
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/EDAnalyzer.h"
 #include "FWCore/Framework/interface/Event.h"
@@ -72,13 +72,25 @@ TauFakeRateTrainer::TauFakeRateTrainer(const edm::ParameterSet &pset)
   :helper_("train") {
   // Load the stuff.
   numeratorFile = TFile::Open(
-      pset.getParameter<std::string>("numerator").c_str(), "READ");
+      pset.getParameter<std::string>("passing").c_str(), "READ");
+  if (!numeratorFile) {
+    throw cms::Exception("NumeratorFile") << "Can't open passing file!";
+  }
   numerator_tuple = dynamic_cast<const TPolyMarker3D*>(
-      numeratorFile->Get("numerator"));
+      numeratorFile->Get("passing"));
+  if (!numerator_tuple) {
+    throw cms::Exception("Missing ntuple") << "Can't Get() passing ntuple";
+  }
   denominatorFile = TFile::Open(
-      pset.getParameter<std::string>("denominator").c_str(), "READ");
+      pset.getParameter<std::string>("failing").c_str(), "READ");
+  if (!denominatorFile) {
+    throw cms::Exception("denominatorFile") << "Can't open failing file!";
+  }
   denominator_tuple = dynamic_cast<const TPolyMarker3D*>(
-      denominatorFile->Get("denominator"));
+      denominatorFile->Get("failing"));
+  if (!denominator_tuple) {
+    throw cms::Exception("Missing ntuple") << "Can't Get() failing ntuple";
+  }
 }
 
 void TauFakeRateTrainer::analyze(const edm::Event& evt,
