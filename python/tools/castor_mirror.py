@@ -97,15 +97,23 @@ def wait_for_completion(current_jobs, finished_jobs, max_running_jobs):
                 # Remove from running jobs list
                 del current_jobs[pid]
 
+
 def stage_files(castor_files):
     ''' Request that castor stage the relevant files '''
     for castor_file in castor_files:
         # Don't care about keeping track of output
-        stager = subprocess.Popen(['stager_get', '-M', castor_file], 
-                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        stager.wait()
+        try: 
+            stager = subprocess.Popen(['stager_get', '-M', castor_file], 
+                                      stdout=subprocess.PIPE, 
+                                      stderr=subprocess.PIPE)
+            stager.wait()
+        except OSError: # File doesn't exist
+            if not stage_files._complained_once:
+                print "stager_get command doesn't exist - won't prestage files."
+                stage_files._complained_once = True
+            pass
 
-    
+stage_files._complained_once = False
 
 def mirror_files(castor_files, max_jobs=20):
     ''' Copy [castor_files] to local disk.
