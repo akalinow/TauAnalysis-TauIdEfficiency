@@ -20,13 +20,13 @@ options.register(
     "XML file with MVA configuration")
 
 options.register(
-    'numeratorfile', '',
+    'passing', '',
     VarParsing.VarParsing.multiplicity.singleton,
     VarParsing.VarParsing.varType.string,
     "Numerator file")
 
 options.register(
-    'denominatorfile', '',
+    'failing', '',
     VarParsing.VarParsing.multiplicity.singleton,
     VarParsing.VarParsing.varType.string,
     "Denominator file")
@@ -89,8 +89,8 @@ process.looper = cms.Looper(
 
 process.train = cms.EDAnalyzer(
     "TauFakeRateTrainer",
-    numerator = cms.string(options.numeratorfile),
-    denominator = cms.string(options.denominatorfile),
+    passing = cms.string(options.passing),
+    failing = cms.string(options.failing),
 )
 
 process.main = cms.Path(process.train)
