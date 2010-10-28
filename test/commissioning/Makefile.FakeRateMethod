@@ -15,8 +15,8 @@ XML = fakeRateMVADef.xml
 ${DIR}/fakeRate.db: ${XML} ${DIR}/pass.root ${DIR}/fail.root 
 	mkdir -p train
 	rm -f $@.temp.db
-	./trainTauFakeRate_cfg.py xml=fakeRateMVADef.xml numeratorfile=${DIR}/numerator.root \
-	  denominatorfile=${DIR}/denominator.root outputFile=$@.temp.db
+	./trainTauFakeRate_cfg.py xml=fakeRateMVADef.xml numeratorfile=${DIR}/pass.root \
+	  denominatorfile=${DIR}/fail.root outputFile=$@.temp.db
 	mv $@.temp.db $@
 
 # Build the 'numerator'
