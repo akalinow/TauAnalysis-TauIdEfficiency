@@ -1,4 +1,14 @@
 
+//-------------------------------------------------------------------------------
+// test that k-NearestNeighbour tree storing fake-rates has been filled correctly
+// 
+// NOTE: macro has to be run in ACLiC compiled mode via
+//         root
+//         .x validateTauFakeRateKNN.C++
+//
+// 
+//-------------------------------------------------------------------------------
+
 #include <TCanvas.h>
 #include <TString.h>
 #include <TFile.h>
@@ -63,7 +73,7 @@ void makePlot(TCanvas* canvas, const std::string& outputFileName, TTree* testTre
 {
   std::cout << "creating histogramFakeRateWeighted..." << std::endl;
   TString histogramFakeRateWeightedName = TString("histogramFakeRateWeighted").Append("_").Append(varName.data());
-  TH1* histogramFakeRateWeighted = fillHistogram(testTree, varName, "", "MVA_MLP", 
+  TH1* histogramFakeRateWeighted = fillHistogram(testTree, varName, "", "MVA_KNN", 
 						 histogramFakeRateWeightedName.Data(), numBinsX, xMin, xMax);
   std::cout << "--> histogramFakeRateWeighted = " << histogramFakeRateWeighted << std::endl;
 
