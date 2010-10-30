@@ -8,6 +8,8 @@ process.load('Configuration/StandardSequences/Services_cff')
 process.load('FWCore/MessageService/MessageLogger_cfi')
 process.MessageLogger.cerr.FwkReport.reportEvery = 100
 #process.MessageLogger.cerr.threshold = cms.untracked.string('INFO')
+#process.MessageLogger.suppressInfo = cms.untracked.vstring()
+process.MessageLogger.suppressWarning = cms.untracked.vstring("PATTriggerProducer",)
 process.load('Configuration/StandardSequences/GeometryIdeal_cff')
 process.load('Configuration/StandardSequences/MagneticField_cff')
 process.load('Configuration/StandardSequences/Reconstruction_cff')
@@ -32,7 +34,7 @@ process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(1000)
 )
 
-isMC = True # use for MC (except for samples from Spring'10 reprocessing)
+isMC = True # use for MC
 ##isMC = False # use for Data
 HLTprocessName = "HLT" # use for non-reprocessed MC samples and Data
 ##HLTprocessName = "REDIGI" # use for Spring'10 reprocessed MC

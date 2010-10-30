@@ -8,6 +8,8 @@ process.load('Configuration/StandardSequences/Services_cff')
 process.load('FWCore/MessageService/MessageLogger_cfi')
 process.MessageLogger.cerr.FwkReport.reportEvery = 100
 #process.MessageLogger.cerr.threshold = cms.untracked.string('INFO')
+#process.MessageLogger.suppressInfo = cms.untracked.vstring()
+process.MessageLogger.suppressWarning = cms.untracked.vstring("PATTriggerProducer",)
 process.load('Configuration/StandardSequences/GeometryIdeal_cff')
 process.load('Configuration/StandardSequences/MagneticField_cff')
 process.load('Configuration/StandardSequences/Reconstruction_cff')
@@ -21,6 +23,7 @@ process.source = cms.Source("PoolSource",
         ##'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/mcMinBias/muTauSkim_1_1.root'
         ##'file:/data1/veelken/CMSSW_3_6_x/skims/pseudoData_Ztautau.root'
         'file:/data1/veelken/CMSSW_3_6_x/skims/Ztautau_1_1_sXK.root'
+        ##'file:/data1/veelken/CMSSW_3_6_x/skims/selEvents_ZtoDiTau_qcdDiJet_RECO.root'
     ),
     skipEvents = cms.untracked.uint32(0)            
 )
@@ -32,7 +35,7 @@ process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(1000)
 )
 
-isMC = True # use for MC (except for samples from Spring'10 reprocessing)
+isMC = True # use for MC
 ##isMC = False # use for Data
 HLTprocessName = "HLT" # use for non-reprocessed MC samples and Data
 ##HLTprocessName = "REDIGI" # use for Spring'10 reprocessed MC
