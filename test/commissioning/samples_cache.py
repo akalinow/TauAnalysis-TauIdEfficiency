@@ -10,9 +10,6 @@ mirror.LOCAL_DIRECTORY = "/tmp/tau_commissioning_friis"
 #_sample_list = [ data, qcd_mc_pythia8 ]
 #_sample_list = [ ztautau_mc ]
 #_sample_list = [ data, qcd_mc_pythia8, ztautau_mc ]
-#_sample_list = [ data, qcd_mc_pythia6, qcd_mc_pythia6_recoTrackDowngrade, qcd_mc_pythia8, qcd_mc_pythia8_recoTrackDowngrade ]
-#_sample_list = [ data, qcd_mc_pythia6, qcd_mc_pythia6_recoTrackDowngrade ]
-#_sample_list = [ data, qcd_mc_pythia8, qcd_mc_pythia8_recoTrackDowngrade ]
 _sample_list = [ data ]
 
 # Update the samples to use any existing local files
