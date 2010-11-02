@@ -24,6 +24,7 @@ process.source = cms.Source("PoolSource",
         ##'file:/data1/veelken/CMSSW_3_6_x/skims/pseudoData_Ztautau.root'
         'file:/data1/veelken/CMSSW_3_6_x/skims/Ztautau_1_1_sXK.root'
         ##'file:/data1/veelken/CMSSW_3_6_x/skims/selEvents_ZtoDiTau_qcdDiJet_RECO.root'
+        ##'file:/data1/veelken/CMSSW_3_6_x/skims/ppMuXPtGt20Mu15_GEN_SIM_RECO_1_1_2VK.root'
     ),
     skipEvents = cms.untracked.uint32(0)            
 )
@@ -38,7 +39,7 @@ process.maxEvents = cms.untracked.PSet(
 isMC = True # use for MC
 ##isMC = False # use for Data
 HLTprocessName = "HLT" # use for non-reprocessed MC samples and Data
-##HLTprocessName = "REDIGI" # use for Spring'10 reprocessed MC
+##HLTprocessName = "REDIGI36X" # use for Spring'10 reprocessed MC
 ##pfCandidateCollection = "particleFlow" # pile-up removal disabled
 pfCandidateCollection = "pfNoPileUp" # pile-up removal enabled
 #--------------------------------------------------------------------------------
@@ -219,12 +220,10 @@ if isMC:
 #
 if HLTprocessName != "HLT":
     process.hltJet15U.selector.src = cms.InputTag('TriggerResults::' + HLTprocessName)
-    process.patTrigger.processName = cms.string(HLTprocessName)
     process.patCaloTausTriggerEvent.processName = cms.string(HLTprocessName)
     process.patPFTausTriggerEventFixedCone.processName = cms.string(HLTprocessName)
     process.patPFTausTriggerEventShrinkingCone.processName = cms.string(HLTprocessName)
     process.patPFTausTriggerEventHPS.processName = cms.string(HLTprocessName)    
-    process.ntupleProducer.sources.trigger.src = cms.InputTag('TriggerResults::' + HLTprocessName)
 #--------------------------------------------------------------------------------    
 
 #--------------------------------------------------------------------------------

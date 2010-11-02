@@ -223,12 +223,10 @@ if isMC:
 #
 if HLTprocessName != "HLT":
     process.hltMu.selector.src = cms.InputTag('TriggerResults::' + HLTprocessName)
-    process.patTrigger.processName = cms.string(HLTprocessName)
     process.patCaloTausTriggerEvent.processName = cms.string(HLTprocessName)
     process.patPFTausTriggerEventFixedCone.processName = cms.string(HLTprocessName)
     process.patPFTausTriggerEventShrinkingCone.processName = cms.string(HLTprocessName)
     process.patPFTausTriggerEventHPS.processName = cms.string(HLTprocessName)    
-    process.ntupleProducer.sources.trigger.src = cms.InputTag('TriggerResults::' + HLTprocessName)
 #--------------------------------------------------------------------------------    
 
 #--------------------------------------------------------------------------------
