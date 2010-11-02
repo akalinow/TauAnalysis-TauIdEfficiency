@@ -1,11 +1,12 @@
 from ROOT import gROOT
 gROOT.SetBatch(True)
 import ROOT
+import TauAnalysis.TauIdEfficiency.ntauples.helpers as helpers
 from TauAnalysis.TauIdEfficiency.ntauples.TauNtupleManager \
         import TauNtupleManager
 
 '''
-Classes to support managing different samples with 
+Classes to support managing different samples with
 different integrated luminosities.
 
 Author: Evan K. Friis (UC Davis)
@@ -13,13 +14,19 @@ Author: Evan K. Friis (UC Davis)
 '''
 
 class NtupleSample(object):
-    ''' 
+    '''
     NtupleSample
 
     Holds a set of root files corresponding to a known luminosity.
+    The alias map can be used to rename ntupes so that different inputs
+    can be used.  For exmaple:
+
+        'patPFTausDijetTagAndProbeHPS' --> 'hps'
+
 
     '''
-    def __init__(self, name, int_lumi, allEvents=-1, prescale=1.0, files=[], directory=""):
+    def __init__(self, name, int_lumi, allEvents=-1, prescale=1.0, files=[],
+                 directory="", alias_map=None):
         self.name = name
         self.int_lumi = int_lumi
         self.allEvents = allEvents
@@ -31,6 +38,7 @@ class NtupleSample(object):
         self.ttree_cache = False
         if ROOT.gROOT.GetVersionCode() >= 334336:
             self.ttree_cache = True
+        self.alias_map = alias_map
 
     def effective_luminosity(self):
         ''' Effective integrated luminosity, given prescale
@@ -44,6 +52,18 @@ class NtupleSample(object):
         self.events = ROOT.TChain("Events")
         for file in self.files:
             self.events.AddFile(file)
+        helpers.copy_aliases(self.events)
+        # "Rename" the aliases, if desired.
+        if self.alias_map:
+            print " Copying aliases: "
+            for alias in [a.GetName() for a in self.events.GetListOfAliases()]:
+                for key in self.alias_map.keys():
+                    if alias.find(key) != -1:
+                        new_alias = alias.replace(key, self.alias_map[key])
+                        long_name = self.events.GetAlias(alias)
+                        print alias, " --> ", new_alias, "(", long_name, ")"
+                        self.events.SetAlias(new_alias, long_name)
+
         # Turn on read-ahead caching, described in
         # http://root.cern.ch/drupal/content/spin-little-disk-spin
         # (adds ~100 MB memory consumption)
@@ -88,7 +108,7 @@ class NtupleSample(object):
         if not entry_list:
             # Build entry list
             print "Selection list not found in file, building..."
-            self.get_events().Draw(">>%s" % name_in_file, str(selection), 
+            self.get_events().Draw(">>%s" % name_in_file, str(selection),
                                    "entrylist")
             entry_list = ROOT.gDirectory.Get(name_in_file)
             entry_list.Write()
@@ -120,7 +140,9 @@ class NtupleSampleCollection(object):
     with the lowest integrated luminosity.
 
     '''
-    def __init__(self, name, subsamples=[], mode='add'):
+    def __init__(self, name, subsamples=None, mode='add'):
+        if not subsamples:
+            subsamples = []
         self.name = name
         self.subsamples = subsamples
         self.mode = mode
@@ -134,24 +156,24 @@ class NtupleSampleCollection(object):
         ''' Build an ntuple manager corresponding to [name] in the associated files'''
         if not self.subsamples:
             raise ValueError, "cannot retrieve ntuple, no subsamples defined"
-        return self.subsamples[0].build_ntuple_manager(name)  
+        return self.subsamples[0].build_ntuple_manager(name)
 
     def effective_luminosity(self):
         ''' Get effective int. luminosity for this sample colleciton '''
         if self.mode=='add':
-            return sum(subsample.effective_luminosity() 
+            return sum(subsample.effective_luminosity()
                        for subsample in self.subsamples)
         elif self.mode=='merge':
-            # Take the lowest integrated luminsotiy one.  
+            # Take the lowest integrated luminsotiy one.
             # (always scale down, never up)
-            return min(subsample.effective_luminosity() 
+            return min(subsample.effective_luminosity()
                        for subsample in self.subsamples)
 
     def norm_factor_for_lumi(self, target_int_lumi):
         return target_int_lumi*1.0/self.effective_luminosity()
 
     def events_and_weights(self, target_lumi=None):
-        ''' Yields a list of event TTree sources with the appropriate weights 
+        ''' Yields a list of event TTree sources with the appropriate weights
 
         The entire collection is weighted to correspond to an integrated
         luminosity of [target_lumi].
@@ -171,17 +193,17 @@ class NtupleSampleCollection(object):
         # luminosity of the whole sample, then apply the correction factor.
         elif self.mode=='merge':
             for subsample in self.subsamples:
-                yield (subsample.get_events(), 
+                yield (subsample.get_events(),
                        subsample.norm_factor_for_lumi(self.effective_luminosity())*
                        overall_norm_factor)
 
 if __name__ == "__main__":
     import unittest
-    print "Running tests." 
+    print "Running tests."
     class TestSampleManagers(unittest.TestCase):
         def setUp(self):
             self.sample1 = NtupleSample(
-                'sample1', 
+                'sample1',
                 10.0, prescale=16.0, files = [])
             self.sample2 = NtupleSample(
                 'sample2',
@@ -192,7 +214,7 @@ if __name__ == "__main__":
 
             self.merger = NtupleSampleCollection(
                 'merged',
-                subsamples=[self.sample1, 
+                subsamples=[self.sample1,
                             self.sample2,
                             self.sample3],
                 mode='merge')
@@ -220,14 +242,14 @@ if __name__ == "__main__":
             # When added, each subsample's integrated luminosity
             # should add up to the total
             self.assertEqual(
-                sum(weight for event, weight in 
-                    self.adder.events_and_weights(5.0)), 
+                sum(weight for event, weight in
+                    self.adder.events_and_weights(5.0)),
                 3*5.0/(10/16.0 + 20 + 30/2.0)
             )
 
             self.assertEqual(
-                sum(weight for event, weight in 
-                    self.merger.events_and_weights(5.0)), 
+                sum(weight for event, weight in
+                    self.merger.events_and_weights(5.0)),
                 5.0/(10/16.0) + 5.0/20 + 5.0/(30/2.0)
             )
     unittest.main()
