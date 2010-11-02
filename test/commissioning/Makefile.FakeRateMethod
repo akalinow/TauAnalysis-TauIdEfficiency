@@ -11,7 +11,8 @@ HLT = " \$$hltJet15U > 0.5 "
 # for reproducing ICHEP results
 DEN = " \$$jetPt > 10. & abs(\$$jetEta) < 2.5 & \$$probe > 0.5"
 NUM = " \$$byTaNCfrHalfPercent > 0.5"
-ALGO = patPFTausDijetTagAndProbeShrinkingCone
+#ALGO = patPFTausDijetTagAndProbeShrinkingCone
+ALGO = shrinking
 DIR = TancFakeRate
 XML = fakeRateMVADef.xml
 
