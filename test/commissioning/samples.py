@@ -7,10 +7,14 @@ samples.py
 
 Central defintion of data sources for commissioning.
 
-$Id: samples.py,v 1.11 2010/09/27 10:34:40 veelken Exp $
+$Id: samples.py,v 1.12 2010/11/02 17:53:48 friis Exp $
 
 '''
 
+# Map the complicated PFTau EDProducer names to something more managable.  These
+# are the strings that can/should now be used to retrieve the ntuple from the
+# ntuple manager.  Other samples (W+jets etc) can rename their tau collections
+# to match these.
 dijetSampleAliasMap = {
     'patPFTausDijetTagAndProbeHPS': 'hps',
     'patPFTausDijetTagAndProbeShrinkingCone': 'shrinking',
@@ -31,8 +35,7 @@ _MC_LUMI_MAP_FILE = os.path.join(
 print "loading definition of Ztautau signal Monte Carlo samples..."
 ztautau_mc = build_sample(_MC_LUMI_MAP_FILE, "mc_ztt",
                           "merge", datasets = ["Ztautau"],
-                          alias_map=dijetSampleAliasMap
-                         )
+                          alias_map=dijetSampleAliasMap)
 
 # Merge multiple pt hat bins
 #
@@ -80,6 +83,6 @@ minbias_mc_pythia8 = build_sample(
 print "loading definition of Data samples..."
 data = build_sample(
     _DATA_LUMI_MAP_FILE, "data", "add",
-    take_every=20, datasets = ["Data_rerecoMay27th"],
+    take_every=1, datasets = ["Data_rerecoMay27th"],
     alias_map = dijetSampleAliasMap
 )
