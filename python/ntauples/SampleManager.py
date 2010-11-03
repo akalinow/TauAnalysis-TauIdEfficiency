@@ -62,7 +62,7 @@ class NtupleSample(object):
                     if alias.find(key) != -1:
                         new_alias = alias.replace(key, self.alias_map[key])
                         long_name = self.events.GetAlias(alias)
-                        print alias, " --> ", new_alias, "(", long_name, ")"
+                        #print alias, " --> ", new_alias, "(", long_name, ")"
                         self.events.SetAlias(new_alias, long_name)
 
         # Turn on read-ahead caching, described in
