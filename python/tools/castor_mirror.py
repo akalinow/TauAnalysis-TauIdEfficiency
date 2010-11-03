@@ -164,10 +164,18 @@ def needs_local_copy(castor_files, verbose=False):
         if not local_version_current(file):
             yield file
 
+def expand_file_list(fileEntries):
+     for fileEntry in fileEntries:
+         if fileEntry.find("*") != -1:
+             for file in castor.nsls(clean_name(fileEntry)):
+                 yield "rfio:" + file
+         else:
+             yield fileEntry
+
 def castor_files_in(sample):
     ''' Copy the files associated with this sample to the local drive '''
     for subsample in sample.subsamples:
-        for index, file in enumerate(subsample.files):
+        for file in expand_file_list(subsample.files):
             if is_on_castor(file):
                 yield clean_name(file)
 
@@ -186,12 +194,14 @@ def update_sample_to_use_local_files(sample, tiny_mode=False):
     if tiny_mode:
         print "Warning, tiny mode is on! Only taking 1 file"
     for subsample in sample.subsamples:
+        count = 0
         new_file_list = []
         local_count = 0
-        for count, input_file in enumerate(subsample.files):
+        for input_file in expand_file_list(subsample.files):
+            count += 1            
             if tiny_mode:
                 if count > 1:
-                    break
+                    break                
             if is_on_castor(input_file):
                 # strip rfio:
                 clean_file = clean_name(input_file)
@@ -201,9 +211,10 @@ def update_sample_to_use_local_files(sample, tiny_mode=False):
                     input_file = "file:%s" % local_version(clean_file)
                 else:
                     # Request CASTOR stage this file
-                    stage_files([clean_file])
+                    stage_files([clean_file])                    
             new_file_list.append(input_file)
         # Update the files for this sample
         subsample.files = new_file_list
         print "Subsample %s has (%i/%i) files cached locally" % (
             subsample.name, local_count, len(subsample.files))
+
