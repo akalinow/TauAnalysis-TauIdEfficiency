@@ -45,7 +45,7 @@ ntuple_manager = getattr(
 ntuple = ntuple_manager.get_ntuple(options.ntuple)
 
 # Get the HLT ntuple
-hlt = ntuple_manager.get_ntuple("TriggerResults")
+hlt = ntuple_manager.get_ntuple("patTriggerEvent")
 
 # Build the denominator query
 denominator = hlt.expr(options.hlt) & \
@@ -61,11 +61,34 @@ output_file = ROOT.TFile(options.output, "RECREATE")
 output_file.cd()
 
 events_list = list(samples.data.events_and_weights())
-if len(events_list) > 1:
-    print "More than one TChain at once not supported!"
-    sys.exit(1)
 
-events = events_list[0][0]
+# WARNING: current method of filling k-NN tree using TPolyMarker3D objects
+#          does not support event weights
+#         --> need to make sure that all events have the same weights,
+#             by requiring sample to either contain one set of files
+#             or all sets to have the same weights in case sample contains multiple set of files
+#         (Note that this means it is not possible to fill k-NN tree
+#          with QCD Monte Carlo generated in different PtHat bins)
+import TauAnalysis.TauIdEfficiency.ntauples.helpers as helpers
+events = None
+if len(events_list) == 1:
+    events = events_list[0][0]
+elif len(events_list) > 1:
+    events = ROOT.TChain("Events")
+    isFirst = True
+    weight = 0.
+    for entry in events_list:
+        if isFirst:
+            helpers.copy_aliases_from(entry[0], events)
+            weight = entry[1]
+            isFirst = False
+        else:
+            if weight != entry[1]:
+                raise ValueError("Events with different weights not supported yet !!")
+        print("--> adding %s events to TChain..." % entry[0].GetEntries())
+        events.Add(entry[0])
+if events is None:
+    raise ValueError("Failed to access TChain !!")
 
 print "Ntuple has entries: ", events.GetEntries()
 # Prevent root from cutting us off at 10^6
@@ -81,10 +104,9 @@ if options.passing:
             numerator_tuple.GetN()
 
     if numerator_tuple.GetN() == events.GetEstimate():
-        print "Error: Number of entries produced is at the upper limit " \
-                "of TTree::Draw.  You need to set events.SetEstimate to " \
-                "be larger than the total number of selected rows."
-        sys.exit(1)
+        raise ValueError("Number of entries produced is at the upper limit " \
+                         "of TTree::Draw.  You need to set events.SetEstimate to " \
+                         "be larger than the total number of selected rows.")
     numerator_tuple.Write()
 
 if options.failing:
@@ -95,9 +117,8 @@ if options.failing:
     print "Built 'failing' pre-ntuple with %i entries" % \
             denominator_tuple.GetN()
     if denominator_tuple.GetN() == events.GetEstimate():
-        print "Error: Number of entries produced is at the upper limit " \
-                "of TTree::Draw.  You need to set events.SetEstimate to " \
-                "be larger than the total number of selected rows."
-        sys.exit(1)
+        raise ValueError("Number of entries produced is at the upper limit " \
+                         "of TTree::Draw.  You need to set events.SetEstimate to " \
+                         "be larger than the total number of selected rows.")
     denominator_tuple.Write()
 
