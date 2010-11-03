@@ -15,7 +15,7 @@ of files and corresponding integrated luminsoity.
 
 Author: Evan K. Friis (UC Davis)
 
-$Id: sample_builder.py,v 1.8 2010/11/02 17:52:49 friis Exp $
+$Id: sample_builder.py,v 1.9 2010/11/03 09:06:13 veelken Exp $
 
 '''
 
@@ -68,7 +68,7 @@ def build_sample(lumifile, sample_name, mode, take_every=1, datasets=[],
                 NtupleSample(dataset, int_lumi=dataset_info['int_lumi'],
                              allEvents=allEvents,
                              files=files_to_add,
-                             directory=''
+                             directory='',
                              prescale=1.0,
                              alias_map=alias_map)
             )
