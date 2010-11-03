@@ -19,9 +19,6 @@ def configurePrePatProduction(process, pfCandidateCollection = "particleFlow", a
     process.load("RecoTauTag.Configuration.RecoPFTauTag_cff")
     process.pfRecoTauTagInfoProducer.PFCandidateProducer = cms.InputTag(pfCandidateCollection)
     process.prePatProductionSequence += process.PFTau
-    
-    ##process.load("RecoTauTag.TauTagTools.TancCVTransform_cfi")
-    ##process.prePatProductionSequence += process.shrinkingConePFTauTancCVTransform
     #--------------------------------------------------------------------------------
 
     #--------------------------------------------------------------------------------
