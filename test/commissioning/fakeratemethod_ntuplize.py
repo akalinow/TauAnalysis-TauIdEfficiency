@@ -17,6 +17,7 @@ parser = argparse.ArgumentParser(
     " given an algorithm and numerator/denominator selection."
 )
 parser.add_argument('--ntuple', help="Name of ntuple")
+parser.add_argument('--sample', help="Name of sample")
 parser.add_argument('--num', help="Numerator")
 parser.add_argument('--den', help="Denominator")
 parser.add_argument('--hlt', help="HLT ntuple selection")
@@ -37,7 +38,8 @@ ROOT.gROOT.SetBatch(True)
 # Definition of input files.
 import samples_cache as samples
 
-ntuple_manager = samples.data.build_ntuple_manager("tauIdEffNtuple")
+ntuple_manager = getattr(
+    samples, options.sample).build_ntuple_manager("tauIdEffNtuple")
 
 # Get our specific ntuple
 ntuple = ntuple_manager.get_ntuple(options.ntuple)
