@@ -51,6 +51,7 @@ class NtupleSample(object):
         # Build TChain of events
         self.events = ROOT.TChain("Events")
         for file in self.files:
+            print("--> adding file = " + file + " to chain...")
             self.events.AddFile(file)
         helpers.copy_aliases(self.events)
         # "Rename" the aliases, if desired.
