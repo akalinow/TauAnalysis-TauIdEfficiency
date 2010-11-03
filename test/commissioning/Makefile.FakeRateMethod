@@ -15,6 +15,7 @@ NUM = " \$$byTaNCfrHalfPercent > 0.5"
 ALGO = shrinking
 DIR = TancFakeRate
 XML = fakeRateMVADef.xml
+SAMPLE = data
 
 # Train the MVA
 ${DIR}/fakeRate.db: ${XML} ${DIR}/pass.root ${DIR}/fail.root 
@@ -27,9 +28,11 @@ ${DIR}/fakeRate.db: ${XML} ${DIR}/pass.root ${DIR}/fail.root
 # Build the 'numerator'
 ${DIR}/pass.root: fakeratemethod_ntuplize.py samples.py samples_cache.py 
 	mkdir -p ${DIR}
-	./fakeratemethod_ntuplize.py -passing --ntuple ${ALGO} --hlt ${HLT} --num ${NUM} --den ${DEN} --output $@
+	./fakeratemethod_ntuplize.py -passing --ntuple ${ALGO} --hlt ${HLT} \
+	  --num ${NUM} --den ${DEN} --sample ${SAMPLE} --output $@ 
 
 # Build the 'denominator'
 ${DIR}/fail.root: fakeratemethod_ntuplize.py samples.py samples_cache.py 
 	mkdir -p ${DIR}
-	./fakeratemethod_ntuplize.py -failing --ntuple ${ALGO} --hlt ${HLT} --num ${NUM} --den ${DEN} --output $@
+	./fakeratemethod_ntuplize.py -failing --ntuple ${ALGO} --hlt ${HLT} \
+	  --num ${NUM} --den ${DEN} --sample ${SAMPLE} --output $@
