@@ -7,7 +7,7 @@ samples.py
 
 Central defintion of data sources for commissioning.
 
-$Id: samples.py,v 1.12 2010/11/02 17:53:48 friis Exp $
+$Id: samples.py,v 1.13 2010/11/02 17:55:39 friis Exp $
 
 '''
 
@@ -81,8 +81,19 @@ minbias_mc_pythia8 = build_sample(
 
 # For data, we use the add mode, to concatenate data
 print "loading definition of Data samples..."
+data_runs132440to133802 = build_sample(
+    _DATA_LUMI_MAP_FILE, "data_runs132440to133802", "add",
+    take_every=1, datasets = ["data_runs132440_133802"],
+    alias_map = dijetSampleAliasMap)
+data_runs135821to141887 = build_sample(
+    _DATA_LUMI_MAP_FILE, "data_runs135821to141887", "add",
+    take_every=1, datasets = ["data_runs135821_141887"],
+    alias_map = dijetSampleAliasMap)
+data_runs141950to144114 = build_sample(
+    _DATA_LUMI_MAP_FILE, "data_runs141950to144114", "add",
+    take_every=1, datasets = ["data_runs141950_144114"],
+    alias_map = dijetSampleAliasMap)
 data = build_sample(
     _DATA_LUMI_MAP_FILE, "data", "add",
-    take_every=1, datasets = ["Data_rerecoMay27th"],
-    alias_map = dijetSampleAliasMap
-)
+    take_every=1, datasets = ["data_runs132440_133802", "data_runs135821_141887", "data_runs141950_144114"],
+    alias_map = dijetSampleAliasMap)
