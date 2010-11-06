@@ -1,17 +1,16 @@
-#ifndef TauAnalysis_TauIdEfficiency_PATTauVectorGenJetValExtractor_h  
+#ifndef TauAnalysis_TauIdEfficiency_VertexValExtractor_h  
 #define TauAnalysis_TauIdEfficiency_VertexValExtractor_h
 
 /** \class VertexValExtractor
  *
- * Auxiliary class for extracting x,y,z coordinates of reconstructed primary event vertex
- *
- * NOTE: the x and y coordinates are computed with respect to the (offline) beam-spot
+ * Auxiliary class for extracting the multiplicity of reconstructed 
+ * primary event vertices with sum(trackPt) exceeding a configurable threshold
  * 
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.1 $
+ * \version $Revision: 1.2 $
  *
- * $Id: VertexValExtractor.h,v 1.1 2010/05/22 16:44:12 veelken Exp $
+ * $Id: VertexValExtractor.h,v 1.2 2010/09/28 11:23:39 jkolb Exp $
  *
  */
 
@@ -35,11 +34,10 @@ class VertexValExtractor : public ObjValExtractorBase
 
 //--- configuration parameters
   edm::InputTag srcVertex_;
-  edm::InputTag srcBeamSpot_;
-  
-  enum { kVertexX, kVertexY, kVertexZ };
 
-  int value_;
+  double trackSumPtThreshold_;
+
+  int error_;
 };
 
 #endif  

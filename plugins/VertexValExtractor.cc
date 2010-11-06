@@ -4,22 +4,29 @@
 
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
-#include "DataFormats/BeamSpot/interface/BeamSpot.h"
+
+#include "TauAnalysis/DQMTools/interface/generalAuxFunctions.h"
+#include "TauAnalysis/CandidateTools/interface/candidateAuxFunctions.h"
 
 #include <string>
 
+const std::string trackSumPtThreshold_keyword = "numVerticesPtGt";
+
 VertexValExtractor::VertexValExtractor(const edm::ParameterSet& cfg)
+  : error_(0)
 {
   srcVertex_ = cfg.getParameter<edm::InputTag>("src");
-  srcBeamSpot_ = cfg.getParameter<edm::InputTag>("srcBeamSpot");
   
   std::string value_string = cfg.getParameter<std::string>("value");
-  if      ( value_string == "vertexX" ) value_ = kVertexX;
-  else if ( value_string == "vertexY" ) value_ = kVertexY;
-  else if ( value_string == "vertexZ" ) value_ = kVertexZ;
-  else {
+  if ( value_string.find(trackSumPtThreshold_keyword) != std::string::npos ) {
+    std::string trackSumPtThreshold_string = 
+      std::string(value_string, trackSumPtThreshold_keyword.length());
+    trackSumPtThreshold_string = replace_string(trackSumPtThreshold_string, "_", ".", 0, 1000, error_);
+    assert(error_ == 0);
+    trackSumPtThreshold_ = atof(trackSumPtThreshold_string.data());
+  } else {
     edm::LogError ("VertexValExtractor") << " Invalid configuration parameter value = " << value_string << " !!";
-    value_ = -1;
+    error_ = 1;
   }
 }
 
@@ -35,17 +42,9 @@ double VertexValExtractor::operator()(const edm::Event& evt) const
   edm::Handle<reco::VertexCollection> vertices;
   evt.getByLabel(srcVertex_, vertices);
 
-  edm::Handle<reco::BeamSpot> beamSpot;
-  evt.getByLabel(srcBeamSpot_, beamSpot);
-
-//--- take as "the" event vertex the vertex with the highest Pt sum of tracks associated to it;
-//    this vertex is the first entry in the collection of (offline) reconstructed vertices
-  reco::VertexCollection::const_iterator vertex = vertices->begin();
-  if ( vertex != vertices->end() ) {
-    
-    if      ( value_ == kVertexX ) val = vertex->x() - beamSpot->x0();
-    else if ( value_ == kVertexY ) val = vertex->y() - beamSpot->y0();
-    else if ( value_ == kVertexZ ) val = vertex->z();
+  if ( !error_ ) {
+    std::vector<double> trackPtSums = compTrackPtSums(*vertices);
+    val = getNumVerticesPtGtThreshold(trackPtSums, trackSumPtThreshold_);
   }
 
   return val;

@@ -22,4 +22,21 @@ vertex_template = cms.PSet(
         y = cms.string("vertexY"),
         z = cms.string("vertexZ")
     )
-)    
+)
+
+vertexMultiplicity_template = cms.PSet(
+    # Select multiplicy of object(s) to store
+    vector = cms.bool(False), # Store a value for all objects in this collection
+    #indices = cms.vuint_32([0, 1, 2]) # Store values for first, second, third objects
+    
+    pluginType = cms.string("VertexValExtractor"),
+
+    src = cms.InputTag("offlinePrimaryVertices"),
+
+    columns = cms.PSet(
+        numVerticesPtGt5 = cms.string("numVerticesPtGt5"),
+        numVerticesPtGt10 = cms.string("numVerticesPtGt10"),
+        numVerticesPtGt15 = cms.string("numVerticesPtGt15"),
+        numVerticesPtGt20 = cms.string("numVerticesPtGt20"),
+    )
+)

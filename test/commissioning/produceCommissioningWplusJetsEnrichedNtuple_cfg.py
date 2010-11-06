@@ -37,7 +37,8 @@ process.maxEvents = cms.untracked.PSet(
 isMC = True # use for MC
 ##isMC = False # use for Data
 HLTprocessName = "HLT" # use for non-reprocessed MC samples and Data
-##HLTprocessName = "REDIGI" # use for Spring'10 reprocessed MC
+##HLTprocessName = "REDIGI36X" # use for Spring'10 reprocessed MC
+##HLTprocessName = "REDIGI38XPU" # use for Fall'10 reprocessed MC with pile-up
 ##pfCandidateCollection = "particleFlow" # pile-up removal disabled
 pfCandidateCollection = "pfNoPileUp" # pile-up removal enabled
 #--------------------------------------------------------------------------------

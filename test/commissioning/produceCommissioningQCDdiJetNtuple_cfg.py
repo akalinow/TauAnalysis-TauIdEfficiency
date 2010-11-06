@@ -40,6 +40,7 @@ isMC = True # use for MC
 ##isMC = False # use for Data
 HLTprocessName = "HLT" # use for non-reprocessed MC samples and Data
 ##HLTprocessName = "REDIGI36X" # use for Spring'10 reprocessed MC
+##HLTprocessName = "REDIGI38XPU" # use for Fall'10 reprocessed MC with pile-up
 ##pfCandidateCollection = "particleFlow" # pile-up removal disabled
 pfCandidateCollection = "pfNoPileUp" # pile-up removal enabled
 #--------------------------------------------------------------------------------
@@ -136,7 +137,11 @@ process.ntupleProducer = cms.EDProducer("ObjValEDNtupleProducer",
         trigger = process.trigger_template,
 
         # variables specifying x,y,z coordinates of primary event vertices
-        vertex = process.vertex_template,                   
+        vertex = process.vertex_template,
+
+        # number of reconstructed primary event vertices
+        # with sum(trackPt) exceeding different thresholds
+        vertexMultiplicity = process.vertexMultiplicity_template,
 
         # global variables describing the underlying event/
         # amount of hadronic activity                                            
