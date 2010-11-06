@@ -74,7 +74,7 @@ std::vector<double> VectorGenJetValExtractor<T>::operator()(const edm::Event& ev
     const reco::GenJet* genJet = getGenJet<T>(inputPtr);
 
     bool isMatched = ( genJet != NULL ) ? true : false;
-    
+
     if      ( value_ == kGenMatch ) vec_i = isMatched;
     else if ( isMatched ) {
       if      ( value_ == kGenPt        ) vec_i = genJet->pt();
@@ -95,6 +95,11 @@ std::vector<double> VectorGenJetValExtractor<T>::operator()(const edm::Event& ev
 	else if ( genDecayMode_string == "threeProng1Pi0"  ) vec_i = 7;
 	else if ( genDecayMode_string == "threeProngOther" ) vec_i = 8;
 	else if ( genDecayMode_string == "rare"            ) vec_i = 9;
+	else {
+	  edm::LogError ("VectorGenJetValExtractor::operator()") 
+	    << " Undefined genDecayMode = " << genDecayMode_string << " --> returning -1 !!";
+	  vec_i = -1;
+	}
       } 
     } else if ( value_ == kGenPdgId ) vec_i = getMatchingGenParticlePdgId(inputPtr->p4(), *genParticles, &skipPdgIdsGenParticleMatch_);
 
