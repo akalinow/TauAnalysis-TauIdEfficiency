@@ -5,17 +5,18 @@
   <use name=FWCore/PluginManager>
   <use name=FWCore/ParameterSet>
   <use name=CommonTools/Utils>
+  <use name=CondFormats/PhysicsToolsObjects>
   <use name=DataFormats/BeamSpot>
   <use name=DataFormats/Candidate>
   <use name=DataFormats/Common>
   <use name=DataFormats/Math>
   <use name=DataFormats/VertexReco>
   <use name=PhysicsTools/JetMCUtils>
+  <use name=PhysicsTools/MVAComputer>
+  <use name=PhysicsTools/MVATrainer>
   <use name=TauAnalysis/BgEstimationTools>
-  <use name=TauAnalysis/GenSimTools>
+  <use name=TauAnalysis/CandidateTools>
   <use name=TauAnalysis/Core>
-  <use name="rootgraphics">
-  <use name="PhysicsTools/MVATrainer">
-  <use name="PhysicsTools/MVAComputer">
-  <use name="CondFormats/PhysicsToolsObjects">
+  <use name=TauAnalysis/GenSimTools>
+  <use name=rootgraphics>
 </library>

@@ -21,6 +21,9 @@
 #include <iostream>
 #include <iomanip>
 
+//const int maxEntriesToProcess = 10000; // for testing purposes only
+const int maxEntriesToProcess = -1;
+
 TH1* fillHistogram(TTree* testTree, const std::string& varName, const std::string& selection, const std::string& weightName,
 		   const std::string& histogramName, unsigned numBinsX, double xMin, double xMax)
 {
@@ -39,6 +42,8 @@ TH1* fillHistogram(TTree* testTree, const std::string& varName, const std::strin
     histogram->Sumw2();
   }
 
+  TFile* dummyOutputFile = new TFile("dummyOutputFile.root", "RECREATE");
+
   TTree* selTree = ( selection != "" ) ? testTree->CopyTree(selection.data()) : testTree;
   std::cout << " selTree = " << selTree << std::endl;
 
@@ -53,16 +58,22 @@ TH1* fillHistogram(TTree* testTree, const std::string& varName, const std::strin
 
   int numEntries = selTree->GetEntries();
   std::cout << "--> numEntries = " << numEntries << std::endl;
+  //if ( maxEntriesToProcess != -1 ) numEntries = TMath::Min(numEntries, maxEntriesToProcess);
   for ( int iEntry = 0 ; iEntry < numEntries; ++iEntry ) {
     selTree->GetEvent(iEntry);  
 
-    std::cout << "iEntry = " << iEntry << ": var = " << var << ", weight = " << weight << std::endl;
+    //std::cout << "iEntry = " << iEntry << ": var = " << var << ", weight = " << weight << std::endl;
 
-    if ( weightName != "" )
-      histogram->Fill(var, weight);
-    else
+    if ( weightName != "" ) {
+      if ( TMath::Abs(weight) < 1. ) // some entries have weight O(-100)
+                                     // --> indication of technical problem with k-NearestNeighbour tree ?
+	histogram->Fill(var, weight);
+    } else {
       histogram->Fill(var);
+    }
   }
+
+  delete dummyOutputFile;
 
   return histogram;
 }
@@ -75,19 +86,23 @@ void makePlot(TCanvas* canvas, const std::string& outputFileName, TTree* testTre
   TString histogramFakeRateWeightedName = TString("histogramFakeRateWeighted").Append("_").Append(varName.data());
   TH1* histogramFakeRateWeighted = fillHistogram(testTree, varName, "", "MVA_KNN", 
 						 histogramFakeRateWeightedName.Data(), numBinsX, xMin, xMax);
-  std::cout << "--> histogramFakeRateWeighted = " << histogramFakeRateWeighted << std::endl;
+  std::cout << "--> histogramFakeRateWeighted = " << histogramFakeRateWeighted 
+	    << " entries = " << histogramFakeRateWeighted->GetEntries() << ","
+	    << " integral = " << histogramFakeRateWeighted->Integral() << std::endl;
 
   std::cout << "creating histogramTauIdPassed..." << std::endl;
   TString histogramTauIdPassedName = TString("histogramTauIdPassed").Append("_").Append(varName.data());
   TH1* histogramTauIdPassed = fillHistogram(testTree, varName, "type==1", "",
 					    histogramTauIdPassedName.Data(), numBinsX, xMin, xMax);
-  std::cout << "--> histogramTauIdPassed = " << histogramTauIdPassed << std::endl;
+  std::cout << "--> histogramTauIdPassed = " << histogramTauIdPassed << ":" 
+	    << " integral = " << histogramTauIdPassed->Integral() << std::endl;
 
   std::cout << "creating histogramTauIdFailed..." << std::endl;
   TString histogramTauIdFailedName = TString("histogramTauIdFailed").Append("_").Append(varName.data());
   TH1* histogramTauIdFailed = fillHistogram(testTree, varName, "type==0", "",
 					    histogramTauIdFailedName.Data(), numBinsX, xMin, xMax);
-  std::cout << "--> histogramTauIdFailed = " << histogramTauIdFailed << std::endl;
+  std::cout << "--> histogramTauIdFailed = " << histogramTauIdFailed 
+	    << " integral = " << histogramTauIdFailed->Integral() << std::endl;
 
   std::cout << "creating histogramTauIdDenominator..." << std::endl;
   TString histogramTauIdDenominatorName = TString("histogramTauIdDenominator").Append("_").Append(varName.data());
@@ -95,7 +110,8 @@ void makePlot(TCanvas* canvas, const std::string& outputFileName, TTree* testTre
 					    histogramTauIdDenominatorName.Data(), numBinsX, xMin, xMax);
   histogramTauIdDenominator->Add(histogramTauIdPassed);
   histogramTauIdDenominator->Add(histogramTauIdFailed);
-  std::cout << "--> histogramTauIdDenominator = " << histogramTauIdDenominator << std::endl;
+  std::cout << "--> histogramTauIdDenominator = " << histogramTauIdDenominator 
+	    << " integral = " << histogramTauIdDenominator->Integral() << std::endl;
 
   std::cout << "creating histogramFakeRate..." << std::endl;
   TString histogramFakeRateName = TString("histogramFakeRate").Append("_").Append(varName.data());
@@ -103,11 +119,12 @@ void makePlot(TCanvas* canvas, const std::string& outputFileName, TTree* testTre
 				    histogramFakeRateName.Data(), numBinsX, xMin, xMax);
   histogramFakeRate->Add(histogramTauIdPassed);
   histogramFakeRate->Divide(histogramTauIdDenominator);
-  std::cout << "--> histogramFakeRate = " << histogramFakeRate << std::endl;
+  std::cout << "--> histogramFakeRate = " << histogramFakeRate 
+	    << " integral = " << histogramFakeRate->Integral() << std::endl;
 
   histogramFakeRate->SetTitle(varName.data());
   histogramFakeRate->SetStats(false);
-  histogramFakeRate->SetMinimum(1.e-3);
+  histogramFakeRate->SetMinimum(1.e-4);
   histogramFakeRate->SetMaximum(1.e+1);
   histogramFakeRate->SetLineColor(2);
   histogramFakeRate->SetLineWidth(2);
