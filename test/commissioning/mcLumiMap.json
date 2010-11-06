@@ -1082,5 +1082,13 @@
             "tauIdEffEDNtuple_qcdDiJet_9_2_AfJ.root"
         ], 
         "int_lumi": 1690000.0
-    }    
+    },
+    "ZllPU156bx": {
+        "allEvents": 6564772, 
+        "directory": "rfio:/castor/cern.ch/user/v/veelken/TauIdCommissioning/qcdDiJet/v3_0/mcDYllPU156bx/",
+        "files": [
+            "tauIdEffEDNtuple_qcdDiJet_*.root"
+        ], 
+        "int_lumi": 1315000.0
+    }
 }
