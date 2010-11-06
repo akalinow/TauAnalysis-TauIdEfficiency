@@ -91,7 +91,6 @@ pfTausShrinkingCone_recInfo = cms.PSet(
         byTaNCfrHalfPercent = cms.string("tauID('byTaNCfrHalfPercent')"),
         byTaNCfrQuarterPercent = cms.string("tauID('byTaNCfrQuarterPercent')"),        
         byTaNCfrTenthPercent = cms.string("tauID('byTaNCfrTenthPercent')"),
-        ##transformedTaNCoutput = cms.string("tauID('transformedTaNCoutput')")
         
         # discriminators against electrons/muons
         againstElectron = cms.string("tauID('againstElectron')"),
@@ -133,4 +132,14 @@ pfTausShrinkingCone_genInfo = pfTausShrinkingCone_recInfo.clone(
     
     srcGenParticles = cms.InputTag('genParticles'),
     skipPdgIdsGenParticleMatch = cms.vint32( 12, 14, 16 )
+)    
+
+pfTausShrinkingCone_mcEmbeddingInfo = pfTausShrinkingCone_recInfo.clone(
+    pluginType = cms.string("PATTauVectorValExtractor"),
+
+    columns = cms.PSet(
+        # flags for tag/probe
+        tag = cms.string("userFloat('tag')"),
+        probe = cms.string("userFloat('probe')"),
+    )
 )    

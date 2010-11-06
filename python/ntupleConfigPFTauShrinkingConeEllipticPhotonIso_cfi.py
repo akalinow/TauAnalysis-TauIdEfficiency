@@ -94,4 +94,15 @@ pfTausShrinkingConeEllipticPhotonIso_genInfo = pfTausShrinkingConeEllipticPhoton
         
         genDecayMode = cms.string("genDecayMode")
     )
+)
+
+pfTausShrinkingConeEllipticPhotonIso_mcEmbeddingInfo = pfTausShrinkingConeEllipticPhotonIso_recInfo.clone(
+    pluginType = cms.string("PATTauVectorValExtractor"),
+
+    columns = cms.PSet(
+        # flags for tag/probe
+        tag = cms.string("userFloat('tag')"),
+        probe = cms.string("userFloat('probe')"),
+    )
 )    
+

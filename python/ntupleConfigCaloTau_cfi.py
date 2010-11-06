@@ -90,4 +90,15 @@ caloTaus_genInfo = caloTaus_recInfo.clone(
     
     srcGenParticles = cms.InputTag('genParticles'),
     skipPdgIdsGenParticleMatch = cms.vint32( 12, 14, 16 )
+)
+
+caloTaus_mcEmbeddingInfo = caloTaus_recInfo.clone(
+    pluginType = cms.string("PATTauVectorValExtractor"),
+
+    columns = cms.PSet(
+        # flags for tag/probe
+        tag = cms.string("userFloat('tag')"),
+        probe = cms.string("userFloat('probe')"),
+    )
 )    
+

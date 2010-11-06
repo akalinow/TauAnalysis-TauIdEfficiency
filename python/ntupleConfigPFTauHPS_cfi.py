@@ -79,4 +79,15 @@ pfTausHPS_genInfo = pfTausHPS_recInfo.clone(
     
     srcGenParticles = cms.InputTag('genParticles'),
     skipPdgIdsGenParticleMatch = cms.vint32( 12, 14, 16 )
+)
+
+pfTausHPS_mcEmbeddingInfo = pfTausHPS_recInfo.clone(
+    pluginType = cms.string("PATTauVectorValExtractor"),
+
+    columns = cms.PSet(
+        # flags for tag/probe
+        tag = cms.string("userFloat('tag')"),
+        probe = cms.string("userFloat('probe')"),
+    )
 )    
+
