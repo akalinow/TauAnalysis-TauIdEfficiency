@@ -132,7 +132,8 @@ if __name__ == "__main__":
     ROOT.gStyle.SetOptStat(0)
 
     # Get ZTT samples
-    ztt = samples.ztautau_mc
+    ##ztt = samples.ztautau_mc
+    ztt = samples.zllPU156bx_mc
 
     # Get the ntuple we produced
     ntuple_manager = ztt.build_ntuple_manager("tauIdEffNtuple")
@@ -141,11 +142,12 @@ if __name__ == "__main__":
     genTaus = ntuple_manager.get_ntuple("tauGenJets")
 
     # Binning for PT
-    pt_bins = (
-        0, 2.5, 5., 7.5, 10, 12.5, 15, 17.5, 20, 22.5, 25, 27.5, 30, 32.5, 
-        35, 37.5, 40, 42.5, 45, 47.5, 50, 52.5, 55, 57.5, 60, 63, 66, 69, 72, 
-        76, 80, 85, 90, 95, 100, 110, 120, 130, 140, 150
-    )
+    ##pt_bins = (
+    ##    0, 2.5, 5., 7.5, 10, 12.5, 15, 17.5, 20, 22.5, 25, 27.5, 30, 32.5, 
+    ##    35, 37.5, 40, 42.5, 45, 47.5, 50, 52.5, 55, 57.5, 60, 63, 66, 69, 72, 
+    ##    76, 80, 85, 90, 95, 100, 110, 120, 130, 140, 150
+    ##)
+    pt_bins = ( 0, 10, 15, 20, 25, 30, 40, 60, 80, 100, 150 )
 
     # Define styles of all of the numerators
     numerators = {
@@ -227,7 +229,8 @@ if __name__ == "__main__":
         }, 
         'eta' : {
             'expr_str': '$genEta',
-            'binning': (50, -2.5, 2.5),
+            ##'binning': (50, -2.5, 2.5),
+            'binning': (10, -2.5, 2.5),
             'label': 'Generated #tau visible #eta',
             'cutLabel': style.PTVIS_CUT_LABEL_UPPER_LEFT,
         }
@@ -287,14 +290,8 @@ if __name__ == "__main__":
         "calo": "patCaloTausDijetTagAndProbe"
     }
 
-    #denom_selection = genTaus.expr(
-    #    '$genPt > 5 && abs($genEta) < 2.5 && $genDecayMode > 1.5')
-    denom_selection = genTaus.expr(
-        '$genPt > 10 && abs($genEta) < 2.5 && $genDecayMode > 1.5')
-    
-    #denom_selection_from_reco_str = '$jetPt > 15 && abs($jetEta) < 2.5 && $genMatch > 0.5 && $genDecayMode > 1.5 && $genPt > 5 && abs($genEta) < 2.5'
-    #denom_selection_from_reco_str = \
-    #        '$pt > 10 && abs($eta) < 2.5 && $genMatch > 0.5 && $genDecayMode > 1.5 && $genPt > 10 && abs($genEta) < 2.5'
+    denom_selection = genTaus.expr('$genDecayMode > 1.5 && $genPt > 10 && abs($genEta) < 2.5')
+
     denom_selection_from_reco_str = '$genMatch > 0.5 && $genDecayMode > 1.5 && $genPt > 10 && abs($genEta) < 2.5'
 
     ztt_events = list(ztt.events_and_weights())[0][0]
