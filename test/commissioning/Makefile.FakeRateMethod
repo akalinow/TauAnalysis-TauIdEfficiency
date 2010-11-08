@@ -17,10 +17,10 @@ NUM = " \$$byTaNCfrQuarterPercent > 0.5 \
 ##DEN = " \$$jetPt > 10. && abs(\$$jetEta) < 2.5 && \$$probe > 0.5"
 ##NUM = " \$$byTaNCfrHalfPercent > 0.5"
 
-DEN_qcdDiJet1st = ${DEN}" && ptIndex == 0"
-NUM_qcdDiJet1st = ${NUM}" && ptIndex == 0"
-DEN_qcdDiJet2nd = ${DEN}" && ptIndex == 1"
-NUM_qcdDiJet2nd = ${NUM}" && ptIndex == 1"
+DEN_qcdDiJet1st = ${DEN}" && \$$ptIndex == 0"
+NUM_qcdDiJet1st = ${NUM}" && \$$ptIndex == 0"
+DEN_qcdDiJet2nd = ${DEN}" && \$$ptIndex == 1"
+NUM_qcdDiJet2nd = ${NUM}" && \$$ptIndex == 1"
 
 DIR_qcdDiJet1st = FakeRate_qcdDiJet1st
 DIR_qcdDiJet2nd = FakeRate_qcdDiJet2nd
