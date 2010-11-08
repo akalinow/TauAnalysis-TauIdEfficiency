@@ -1,7 +1,11 @@
 import TauAnalysis.TauIdEfficiency.tools.castor_mirror as mirror
 
 # Import the samples into this namespace
-from samples import minbias_mc_pythia6, minbias_mc_pythia8, qcd_mc_pythia6, qcd_mc_pythia6_recoTrackDowngrade, qcd_mc_pythia8, qcd_mc_pythia8_recoTrackDowngrade, ztautau_mc, zllPU156bx_mc, data, data_runs132440to133802, data_runs135821to141887, data_runs141950to144114
+from samples import minbias_mc_pythia6, minbias_mc_pythia8, qcd_mc_pythia6, \
+        qcd_mc_pythia6_recoTrackDowngrade, qcd_mc_pythia8, \
+        qcd_mc_pythia8_recoTrackDowngrade, ztautau_mc, \
+        zllPU156bx_mc, data, data_runs132440to133802, data_runs135821to141887, \
+        data_runs141950to144114
 
 #mirror.LOCAL_DIRECTORY = "/tmp/tau_commissioning_friis"
 mirror.LOCAL_DIRECTORY = "/tmp/tau_commissioning_veelken"
@@ -19,7 +23,7 @@ _sample_list = [ data ]
 for sample in _sample_list:
     mirror.update_sample_to_use_local_files(sample)
 
-# Script usage - copy all files 
+# Script usage - copy all files
 if __name__ == "__main__":
     print "Copying CASTOR files to local area:", mirror.LOCAL_DIRECTORY
     # 20 concurrent rfcp jobs
