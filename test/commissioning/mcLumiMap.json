@@ -996,7 +996,7 @@
             "tauIdEffEDNtuple_qcdDiJet_64_1_jao.root",
             "tauIdEffEDNtuple_qcdDiJet_65_1_MTE.root",
             "tauIdEffEDNtuple_qcdDiJet_66_1_NuM.root",
-            "tauIdEffEDNtuple_qcdDiJet_67_1_5AO.root",
+            "tauIdEffEDNtuple_qcdDiJet_67_1_5AO.r./printBadCastorFiles.sh > badfiles.listoot",
             "tauIdEffEDNtuple_qcdDiJet_68_1_UNd.root",
             "tauIdEffEDNtuple_qcdDiJet_69_1_KAt.root",
             "tauIdEffEDNtuple_qcdDiJet_6_1_1GZ.root",
@@ -1090,5 +1090,13 @@
             "tauIdEffEDNtuple_qcdDiJet_*.root"
         ], 
         "int_lumi": 1315000.0
+    },
+    "ZttPU156bx": {
+        "allEvents": 2011186, 
+        "directory": "rfio:/castor/cern.ch/user/v/veelken/TauIdCommissioning/qcdDiJet/v3_0/mcDYttPU156bx/",
+        "files": [
+            "tauIdEffEDNtuple_qcdDiJet_*.root"
+        ], 
+        "int_lumi": 1208645.0
     }
 }

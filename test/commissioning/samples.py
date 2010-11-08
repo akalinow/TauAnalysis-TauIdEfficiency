@@ -7,7 +7,7 @@ samples.py
 
 Central defintion of data sources for commissioning.
 
-$Id: samples.py,v 1.14 2010/11/03 09:46:24 veelken Exp $
+$Id: samples.py,v 1.15 2010/11/06 14:35:50 veelken Exp $
 
 '''
 
@@ -39,6 +39,9 @@ ztautau_mc = build_sample(_MC_LUMI_MAP_FILE, "mc_ztt",
 
 zllPU156bx_mc = build_sample(_MC_LUMI_MAP_FILE, "mc_zllPU156bx",
                              "merge", datasets = ["ZllPU156bx"],
+                             alias_map=dijetSampleAliasMap)
+zttPU156bx_mc = build_sample(_MC_LUMI_MAP_FILE, "mc_zttPU156bx",
+                             "merge", datasets = ["ZttPU156bx"],
                              alias_map=dijetSampleAliasMap)
 
 # Merge multiple pt hat bins
