@@ -1,83 +1,31 @@
-#--------------------------------------------------------------------------------
 # Automation of the Fake rate method workflow
 #
 # Author: Evan K. Friis, Christian Veelken (UC Davis)
-#--------------------------------------------------------------------------------
 
-# Define your numerator and denominator and HLT selection.  
-# Note: you need to escape the '$' character !!
-HLT = " \$$hltJet15Ubit > 0.5 "
+# Define your numerator and denominator and HLT selection configuration file.  
+CFG = fakerate_qcdDiJet1st.cfg
+DIR = $(subst .cfg,,${CFG})
 
-# use for background estimation in EWK tau analysis
-DEN = " \$$jetPt > 20. && abs(\$$jetEta) < 2.1 && \$$probe > 0.5 && \$$byLeadTrackFinding > 0.5 && \$$byLeadTrackPtCut > 0.5"
-NUM = " \$$byTaNCfrQuarterPercent > 0.5 \
-       && (\$$numChargedParticlesSignalCone == 1 || \$$numChargedParticlesSignalCone == 3) && abs(\$$charge) == 1"
-
-# use for reproducing ICHEP results
-##DEN = " \$$jetPt > 10. && abs(\$$jetEta) < 2.5 && \$$probe > 0.5"
-##NUM = " \$$byTaNCfrHalfPercent > 0.5"
-
-DEN_qcdDiJet1st = ${DEN}" && \$$ptIndex == 0"
-NUM_qcdDiJet1st = ${NUM}" && \$$ptIndex == 0"
-DEN_qcdDiJet2nd = ${DEN}" && \$$ptIndex == 1"
-NUM_qcdDiJet2nd = ${NUM}" && \$$ptIndex == 1"
-
-DIR_qcdDiJet1st = FakeRate_qcdDiJet1st
-DIR_qcdDiJet2nd = FakeRate_qcdDiJet2nd
-
+# The algorithm to determine fake rates for.
 ALGO = shrinking
 XML = fakeRateMVADef.xml
 
-SAMPLE = data
-
-all: ${DIR_qcdDiJet1st}/fakeRate.db ${DIR_qcdDiJet2nd}/fakeRate.db
-
-#--------------------------------------------------------------------------------
-# Fill k-NearestNeighbour tree 
-# for fake-rate of highest Pt jet in QCD multi-Jet events
-#--------------------------------------------------------------------------------
-
 # Train the MVA
-${DIR_qcdDiJet1st}/fakeRate.db: ${XML} ${DIR_qcdDiJet1st}/pass.root ${DIR_qcdDiJet1st}/fail.root 
+${DIR}/fakeRate.db: ${XML} ${DIR}/pass.root ${DIR}/fail.root 
 	mkdir -p train
 	rm -f $@.temp.db
-	./trainTauFakeRate_cfg.py xml=fakeRateMVADef.xml passing=${DIR_qcdDiJet1st}/pass.root \
-	  failing=${DIR_qcdDiJet1st}/fail.root outputFile=$@.temp.db
+	./trainTauFakeRate_cfg.py xml=fakeRateMVADef.xml passing=${DIR}/pass.root \
+	  failing=${DIR}/fail.root outputFile=$@.temp.db
 	mv $@.temp.db $@
 
 # Build the 'numerator'
-${DIR_qcdDiJet1st}/pass.root: fakeratemethod_ntuplize.py samples.py samples_cache.py 
-	mkdir -p ${DIR_qcdDiJet1st}
-	./fakeratemethod_ntuplize.py -passing --ntuple ${ALGO} --hlt ${HLT} \
-	  --num ${NUM_qcdDiJet1st} --den ${DEN_qcdDiJet1st} --sample ${SAMPLE} --output $@ 
+${DIR}/pass.root: fakeratemethod_ntuplize.py samples.py samples_cache.py 
+	mkdir -p ${DIR}
+	./fakeratemethod_ntuplize.py -passing --ntuple ${ALGO} \
+	  --config ${CFG} --output $@ 
 
 # Build the 'denominator'
-${DIR_qcdDiJet1st}/fail.root: fakeratemethod_ntuplize.py samples.py samples_cache.py 
-	mkdir -p ${DIR_qcdDiJet1st}
-	./fakeratemethod_ntuplize.py -failing --ntuple ${ALGO} --hlt ${HLT} \
-	  --num ${NUM_qcdDiJet1st} --den ${DEN_qcdDiJet1st} --sample ${SAMPLE} --output $@
-
-#--------------------------------------------------------------------------------
-# Fill k-NearestNeighbour tree 
-# for fake-rate of second highest Pt jet in QCD multi-Jet events
-#--------------------------------------------------------------------------------
-
-# Train the MVA
-${DIR_qcdDiJet2nd}/fakeRate.db: ${XML} ${DIR_qcdDiJet2nd}/pass.root ${DIR_qcdDiJet2nd}/fail.root 
-	mkdir -p train
-	rm -f $@.temp.db
-	./trainTauFakeRate_cfg.py xml=fakeRateMVADef.xml passing=${DIR_qcdDiJet2nd}/pass.root \
-	  failing=${DIR_qcdDiJet2nd}/fail.root outputFile=$@.temp.db
-	mv $@.temp.db $@
-
-# Build the 'numerator'
-${DIR_qcdDiJet2nd}/pass.root: fakeratemethod_ntuplize.py samples.py samples_cache.py 
-	mkdir -p ${DIR_qcdDiJet2nd}
-	./fakeratemethod_ntuplize.py -passing --ntuple ${ALGO} --hlt ${HLT} \
-	  --num ${NUM_qcdDiJet2nd} --den ${DEN_qcdDiJet2nd} --sample ${SAMPLE} --output $@ 
-
-# Build the 'denominator'
-${DIR_qcdDiJet2nd}/fail.root: fakeratemethod_ntuplize.py samples.py samples_cache.py 
-	mkdir -p ${DIR_qcdDiJet2nd}
-	./fakeratemethod_ntuplize.py -failing --ntuple ${ALGO} --hlt ${HLT} \
-	  --num ${NUM_qcdDiJet2nd} --den ${DEN_qcdDiJet2nd} --sample ${SAMPLE} --output $@
+${DIR}/fail.root: fakeratemethod_ntuplize.py samples.py samples_cache.py 
+	mkdir -p ${DIR}
+	./fakeratemethod_ntuplize.py -failing --ntuple ${ALGO} \
+	  --config ${CFG} --output $@

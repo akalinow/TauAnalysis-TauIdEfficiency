@@ -11,21 +11,19 @@ Authors: Evan K. Friis, Christian Veelken (UC Davis)
 
 # cheating
 from RecoLuminosity.LumiDB import argparse
+import ConfigParser
 
 parser = argparse.ArgumentParser(
     description = "Build an output ntuple of jetPt, eta and width"
     " given an algorithm and numerator/denominator selection."
 )
 parser.add_argument('--ntuple', help="Name of ntuple")
-parser.add_argument('--sample', help="Name of sample")
-parser.add_argument('--num', help="Numerator")
-parser.add_argument('--den', help="Denominator")
-parser.add_argument('--hlt', help="HLT ntuple selection")
 parser.add_argument('-passing', action='store_true', default=False,
                     help="Build ntuple for events that pass")
 parser.add_argument('-failing', action='store_true', default=False,
                     help="Build ntuple for events that fail")
 parser.add_argument('--output', help="Output file")
+parser.add_argument('--config', help="Configuration file")
 
 options=parser.parse_args()
 
@@ -34,6 +32,21 @@ import sys
 sys.argv = []
 import ROOT
 ROOT.gROOT.SetBatch(True)
+
+# Load configuration file
+config = ConfigParser.ConfigParser()
+config.read(options.config)
+
+options.sample = config.get('fake_rate', 'sample')
+options.num = config.get('fake_rate', 'numerator')
+options.den = config.get('fake_rate', 'denominator')
+options.hlt = config.get('fake_rate', 'hlt')
+
+print "Building fake rate mini-ntuple with options:"
+print " sample =", options.sample
+print " numerator =", options.num
+print " denominator =", options.den
+print " hlt bit =", options.hlt
 
 # Definition of input files.
 import samples_cache as samples
@@ -54,6 +67,19 @@ denominator = hlt.expr(options.hlt) & \
 # Build the queries for passing and failing
 passing = ntuple.expr(options.num) & denominator
 failing = ntuple.expr(options.num).false() & denominator
+
+# Make sure no spurious quotes have entered the strings
+def check_for_quotes(my_string):
+    my_string = str(my_string)
+    " Make sure there aren't any quotes in a string "
+    if my_string.find('"') != -1 or my_string.find("'") != -1:
+        print "Either the numerator, denominator or HLT bit contains" \
+                " extra quotation marks, please remove them."
+        print " Offending string:", my_string
+        sys.exit(1)
+
+check_for_quotes(passing)
+check_for_quotes(failing)
 
 draw_string = ntuple.expr('$jetWidth:$jetEta:$jetPt')
 
