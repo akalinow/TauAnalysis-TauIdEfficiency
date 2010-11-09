@@ -19,13 +19,13 @@ ${DIR}/fakeRate.db: ${XML} ${DIR}/pass.root ${DIR}/fail.root
 	mv $@.temp.db $@
 
 # Build the 'numerator'
-${DIR}/pass.root: fakeratemethod_ntuplize.py samples.py samples_cache.py 
+${DIR}/pass.root: fakeratemethod_ntuplize.py samples.py samples_cache.py ${CFG}
 	mkdir -p ${DIR}
 	./fakeratemethod_ntuplize.py -passing --ntuple ${ALGO} \
 	  --config ${CFG} --output $@ 
 
 # Build the 'denominator'
-${DIR}/fail.root: fakeratemethod_ntuplize.py samples.py samples_cache.py 
+${DIR}/fail.root: fakeratemethod_ntuplize.py samples.py samples_cache.py ${CFG}
 	mkdir -p ${DIR}
 	./fakeratemethod_ntuplize.py -failing --ntuple ${ALGO} \
 	  --config ${CFG} --output $@
