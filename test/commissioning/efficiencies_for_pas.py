@@ -133,7 +133,7 @@ if __name__ == "__main__":
 
     # Get ZTT samples
     ##ztt = samples.ztautau_mc
-    ztt = samples.zllPU156bx_mc
+    ztt = samples.zttPU156bx_mc
 
     # Get the ntuple we produced
     ntuple_manager = ztt.build_ntuple_manager("tauIdEffNtuple")
@@ -332,6 +332,7 @@ if __name__ == "__main__":
                 binning = x_var_info['binning'],
                 output_name = '_'.join(["denom", x_var, algorithm]),
             )
+            print "denominator: entries = %i" % denominator.GetEntries()
             
             # Loop over sequence of numerators
             numerator_effs = []
@@ -353,6 +354,7 @@ if __name__ == "__main__":
                     binning = x_var_info['binning'],
                     output_name = '_'.join([numerator_name, x_var, algorithm]),
                 )
+                print "numerator: entries = %i" % numerator.GetEntries()
                 
                 # FIXME: clean this up
                 from math import sqrt
