@@ -46,6 +46,10 @@ def configurePatTupleProduction(process, patSequenceBuilder = None,
 
     if not addGenInfo:
         removeMCMatching(process)
+    else:
+        # match pat::Taus to all genJets
+        # (including to genJets build from electrons/muons produced in tau --> e/mu decays)
+        process.tauGenJetMatch.matched = cms.InputTag("tauGenJets")
 
     #--------------------------------------------------------------------------------
     # configure PAT trigger matching
@@ -139,19 +143,6 @@ def configurePatTupleProduction(process, patSequenceBuilder = None,
     process.load("RecoTauTag.Configuration.ShrinkingConePFTaus_cfi")
     process.load("RecoTauTag.TauTagTools.PFTauMVAInputDiscriminatorTranslator_cfi")
     loadMVAInputsIntoPatTauDiscriminants(process.patPFTauProducerShrinkingCone)
-    # enable embedding of decay mode from PFTauDecayMode data format
-    process.patPFTauProducerShrinkingCone.addDecayMode = cms.bool(True)
-
-    # load PFTau Decay mode kinematic information into pat::Tau
-    process.load("RecoTauTag.RecoTau.PFRecoTauDecayModeValueExtractor_cfi")
-    process.patPFTauProducerShrinkingCone.tauIDSources.decayModePt = cms.InputTag(
-        "shrinkingConePFTauDecayModePtExtractor")
-    process.patPFTauProducerShrinkingCone.tauIDSources.decayModeEta = cms.InputTag(
-        "shrinkingConePFTauDecayModeEtaExtractor")
-    process.patPFTauProducerShrinkingCone.tauIDSources.decayModePhi = cms.InputTag(
-        "shrinkingConePFTauDecayModePhiExtractor")
-    process.patPFTauProducerShrinkingCone.tauIDSources.decayModeMass = cms.InputTag(
-        "shrinkingConePFTauDecayModeMassExtractor")
 
     retVal_pfTauShrinkingCone = patSequenceBuilder(
         process,
@@ -268,10 +259,8 @@ def configurePatTupleProduction(process, patSequenceBuilder = None,
         process.patDefaultSequence
        ##+ process.patTrigger + process.patTriggerEvent
        + process.caloTauSequence
-       # recompute decay modes and embed TaNC inputs
-       + process.shrinkingConePFTauDecayModeProducer               
+       # store TaNC inputs as discriminators
        + process.produceTancMVAInputDiscriminators
-       + process.shrinkingConePFTauDecayModeExtractors
        + process.pfTauSequenceFixedCone + process.pfTauSequenceShrinkingCone + process.pfTauSequenceHPS
        + process.pfTauSequenceShrinkingConeEllipticPhotonIso
        + process.patMuonCaloTauPairs

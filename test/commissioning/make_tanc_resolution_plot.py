@@ -48,7 +48,7 @@ if __name__ == "__main__":
     canvas = ROOT.TCanvas("example", "example", 500, 500)
     
     pt_resol = plotter.distribution(
-        expression=shrinking_ntuple.expr('($decayModePt-$genPt)/$genPt'),
+        expression=shrinking_ntuple.expr('($pt-$genPt)/$genPt'),
         selection=theSelection,
         extra_labels = [style.ETA_CUT_LABEL_UPPER_LEFT],
         binning=(200, -0.5, 0.5),
@@ -65,7 +65,7 @@ if __name__ == "__main__":
     canvas.SaveAs("plots/tanc_pt_resolution.pdf")
     
 #    mass_resol = plotter.distribution(
-#        expression=shrinking_ntuple.expr('($decayModeMass-$genMass)'),
+#        expression=shrinking_ntuple.expr('($mass-$genMass)'),
 #        selection=theSelection,
 #        extra_labels = [style.ETA_CUT_LABEL_UPPER_LEFT],
 #        binning=(200, -0.5, 0.5),
@@ -82,7 +82,7 @@ if __name__ == "__main__":
 #    canvas.SaveAs("plots/tanc_mass_resolution.pdf")
     
     eta_resol = plotter.distribution(
-        expression=shrinking_ntuple.expr('$decayModeEta-$genEta'),
+        expression=shrinking_ntuple.expr('$eta-$genEta'),
         selection=theSelection,
         extra_labels = [style.ETA_CUT_LABEL_UPPER_LEFT],
         binning=(100, -0.01, 0.01),
@@ -98,7 +98,7 @@ if __name__ == "__main__":
     canvas.SaveAs("plots/tanc_eta_resolution.pdf")
     
     phi_resol = plotter.distribution(
-        expression=shrinking_ntuple.expr('$decayModePhi-$genPhi'),
+        expression=shrinking_ntuple.expr('$phi-$genPhi'),
         selection=theSelection,
         extra_labels = [style.ETA_CUT_LABEL_UPPER_LEFT],
         binning=(100, -0.01, 0.01),

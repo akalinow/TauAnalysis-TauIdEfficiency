@@ -80,12 +80,6 @@ pfTausShrinkingCone_recInfo = cms.PSet(
         # additional TaNC (neural network) based discriminators
         decayMode = cms.string('decayMode()'),
 
-        # Load decay mode kinematic information (hacked into the discriminators)
-        decayModePt = cms.string("tauID('decayModePt')"),
-        decayModeEta = cms.string("tauID('decayModeEta')"),
-        decayModePhi = cms.string("tauID('decayModePhi')"),
-        decayModeMass = cms.string("tauID('decayModeMass')"),
-
         byTaNC = cms.string("tauID('byTaNC')"),
         byTaNCfrOnePercent = cms.string("tauID('byTaNCfrOnePercent')"),
         byTaNCfrHalfPercent = cms.string("tauID('byTaNCfrHalfPercent')"),
