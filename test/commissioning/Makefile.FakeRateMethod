@@ -9,10 +9,10 @@
 #
 # You can update all of them at once with the command:
 #
-# ls fakerate*cfg | xargs -P 10 -I % make -f Makefile.FakeRateMethod -j 2 CFG=%
+# ls fakerate*cfg | xargs -P 5 -I % make -f Makefile.FakeRateMethod -j 2 CFG=%
 #
 # if you append '-n' to the end, it will just show you what it will do before it
-# does it. Note that this will run up to 10 'make's simulataneously, and each
+# does it. Note that this will run up to 5 'make's simulataneously, and each
 # make instance will use up to two processes at once.
 #
 # The output directory will have the same name as the cfg file, without the
@@ -26,12 +26,19 @@ DIR = $(subst .cfg,,${CFG})
 ALGO = shrinking
 XML = fakeRateMVADef.xml
 
+# Make the validation plot
+${DIR}/validateTauFakeRateKNN_JetPt.png: ../../macros/validateTauFakeRateKNN.C ${DIR}/fakeRate.db 
+	cp ../../macros/validateTauFakeRateKNN.C ${DIR}/validateTauFakeRateKNN.C 
+	cd ${DIR} && root -b -q 'validateTauFakeRateKNN.C+("train")'
+
 # Train the MVA
 ${DIR}/fakeRate.db: ${XML} ${DIR}/pass.root ${DIR}/fail.root 
-	mkdir -p train
 	rm -f $@.temp.db
-	./trainTauFakeRate_cfg.py xml=fakeRateMVADef.xml passing=${DIR}/pass.root \
-	  failing=${DIR}/fail.root outputFile=$@.temp.db
+	cd ${DIR} && mkdir -p train && \
+	../trainTauFakeRate_cfg.py xml=../fakeRateMVADef.xml \
+	  passing=pass.root \
+	  failing=fail.root \
+	  outputFile=$(@F).temp.db
 	mv $@.temp.db $@
 
 # Build the 'numerator'
