@@ -40,13 +40,15 @@ config.read(options.config)
 options.sample = config.get('fake_rate', 'sample')
 options.num = config.get('fake_rate', 'numerator')
 options.den = config.get('fake_rate', 'denominator')
-options.hlt = config.get('fake_rate', 'hlt')
+# Allow missing HLT value - no cut will be applied
+options.hlt = (config.has_option('fake_rate', 'hlt') and
+               config.get('fake_rate', 'hlt') or None)
 
 print "Building fake rate mini-ntuple with options:"
 print " sample =", options.sample
 print " numerator =", options.num
 print " denominator =", options.den
-print " hlt bit =", options.hlt
+print " hlt bit =", (options.hlt is not None and options.hlt or "NO SELECTION")
 
 # Definition of input files.
 import samples_cache as samples
@@ -57,12 +59,14 @@ ntuple_manager = getattr(
 # Get our specific ntuple
 ntuple = ntuple_manager.get_ntuple(options.ntuple)
 
-# Get the HLT ntuple
-hlt = ntuple_manager.get_ntuple("patTriggerEvent")
-
 # Build the denominator query
-denominator = hlt.expr(options.hlt) & \
-        ntuple.expr(options.den)
+denominator = None
+if options.hlt:
+    # Get the HLT ntuple
+    hlt = ntuple_manager.get_ntuple("patTriggerEvent")
+    denominator = hlt.expr(options.hlt) & ntuple.expr(options.den)
+else:
+    denominator = ntuple.expr(options.den)
 
 # Build the queries for passing and failing
 passing = ntuple.expr(options.num) & denominator
@@ -86,7 +90,7 @@ draw_string = ntuple.expr('$jetWidth:$jetEta:$jetPt')
 output_file = ROOT.TFile(options.output, "RECREATE")
 output_file.cd()
 
-events_list = list(samples.data.events_and_weights())
+events_list = list(getattr(samples, options.sample).events_and_weights())
 
 # WARNING: current method of filling k-NN tree using TPolyMarker3D objects
 #          does not support event weights
