@@ -30,6 +30,8 @@ XML = fakeRateMVADef.xml
 
 SAMPLE = data
 
+all: ${DIR_qcdDiJet1st}/fakeRate.db ${DIR_qcdDiJet2nd}/fakeRate.db
+
 #--------------------------------------------------------------------------------
 # Fill k-NearestNeighbour tree 
 # for fake-rate of highest Pt jet in QCD multi-Jet events
