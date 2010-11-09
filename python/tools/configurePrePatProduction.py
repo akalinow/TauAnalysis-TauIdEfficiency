@@ -1,7 +1,7 @@
 import FWCore.ParameterSet.Config as cms
-import copy
 
-def configurePrePatProduction(process, pfCandidateCollection = "particleFlow", addGenInfo = False):
+def configurePrePatProduction(process, pfCandidateCollection = "particleFlow",
+                              addGenInfo = False):
 
     #--------------------------------------------------------------------------------
     # PFCandidate pile-up removal
@@ -15,9 +15,20 @@ def configurePrePatProduction(process, pfCandidateCollection = "particleFlow", a
 
     #--------------------------------------------------------------------------------
     # recreate collection of PFTaus
-    # with latest tags of RecoTauTag package used by TauAnalysis software    
+    # with latest tags of RecoTauTag package used by TauAnalysis software
     process.load("RecoTauTag.Configuration.RecoPFTauTag_cff")
-    process.pfRecoTauTagInfoProducer.PFCandidateProducer = cms.InputTag(pfCandidateCollection)
+    process.pfRecoTauTagInfoProducer.PFCandidateProducer = cms.InputTag(
+        pfCandidateCollection)
+    tau_producers = ['shrinkingConePFTauProducer', 'combinatoricRecoTaus']
+    # Update the pfCandidate collection for each builder
+    for producer in tau_producers:
+        if hasattr(process, producer):
+            my_producer = getattr(process, producer)
+            if hasattr(my_producer, 'builders'):
+                # Loop over the tau builders
+                builders = getattr(process, producer).builders
+                for builder in builders:
+                    builder.pfCandSrc = cms.InputTag(pfCandidateCollection)
     process.prePatProductionSequence += process.PFTau
     #--------------------------------------------------------------------------------
 
@@ -59,4 +70,4 @@ def configurePrePatProduction(process, pfCandidateCollection = "particleFlow", a
         process.load("RecoJets.JetProducers.ak5GenJets_cfi")
         process.prePatProductionSequenceGen = cms.Sequence(process.genParticlesForJets * process.ak5GenJets)
         process.prePatProductionSequence += process.prePatProductionSequenceGen
-    #--------------------------------------------------------------------------------    
+    #--------------------------------------------------------------------------------
