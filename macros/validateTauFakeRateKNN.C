@@ -151,7 +151,7 @@ void makePlot(TCanvas* canvas, const std::string& outputFileName, TTree* testTre
   canvas->Print(outputFileName.data());
 }
 
-void validateTauFakeRateKNN()
+void validateTauFakeRateKNN(TString inputFilePath)
 {
   TCanvas* canvas = new TCanvas("canvas", "canvas", 1, 1, 800, 600);
   canvas->SetFillColor(10);
@@ -159,7 +159,7 @@ void validateTauFakeRateKNN()
   
   canvas->SetLogy();
 
-  TString inputFilePath = "/afs/cern.ch/user/v/veelken/scratch0/CMSSW_3_8_5/src/TauAnalysis/TauIdEfficiency/test/commissioning/train";
+  //TString inputFilePath = "/afs/cern.ch/user/v/veelken/scratch0/CMSSW_3_8_5/src/TauAnalysis/TauIdEfficiency/test/commissioning/train";
   TString inputFileName = "train_FakeRateMethod_output.root";
 
   TFile* file = TFile::Open(TString(inputFilePath).Append("/").Append(inputFileName));
