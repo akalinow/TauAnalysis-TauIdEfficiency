@@ -7,6 +7,14 @@
 # Example:
 # make CFG=fakerate_zttEff.cfg -f Makefile.FakeRateMethod -j 3
 #
+# You can update all of them at once with the command:
+#
+# ls fakerate*cfg | xargs -P 10 -I % make -f Makefile.FakeRateMethod -j 2 CFG=%
+#
+# if you append '-n' to the end, it will just show you what it will do before it
+# does it. Note that this will run up to 10 'make's simulataneously, and each
+# make instance will use up to two processes at once.
+#
 # The output directory will have the same name as the cfg file, without the
 # suffix.
 
