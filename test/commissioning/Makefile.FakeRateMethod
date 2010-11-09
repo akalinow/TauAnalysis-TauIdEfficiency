@@ -1,8 +1,16 @@
 # Automation of the Fake rate method workflow
 #
 # Author: Evan K. Friis, Christian Veelken (UC Davis)
+#
+# You can substitue a different configuration (cfg) file on the command line.
+#
+# Example:
+# make CFG=fakerate_zttEff.cfg -f Makefile.FakeRateMethod -j 3
+#
+# The output directory will have the same name as the cfg file, without the
+# suffix.
 
-# Define your numerator and denominator and HLT selection configuration file.  
+# Define your numerator, denominator and HLT selection configuration file.  
 CFG = fakerate_qcdDiJet1st.cfg
 DIR = $(subst .cfg,,${CFG})
 
