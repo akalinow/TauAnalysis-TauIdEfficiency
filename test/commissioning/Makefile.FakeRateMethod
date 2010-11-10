@@ -42,13 +42,17 @@ ${DIR}/fakeRate.db: ${XML} ${DIR}/pass.root ${DIR}/fail.root
 	mv $@.temp.db $@
 
 # Build the 'numerator'
-${DIR}/pass.root: fakeratemethod_ntuplize.py samples.py samples_cache.py ${CFG}
+${DIR}/pass.root: fakeratemethod_ntuplize.py samples.py samples_cache.py ${DIR}/${CFG}
 	mkdir -p ${DIR}
 	./fakeratemethod_ntuplize.py -passing --ntuple ${ALGO} \
-	  --config ${CFG} --output $@ 
+	  --config ${DIR}/${CFG} --output $@ 
 
 # Build the 'denominator'
-${DIR}/fail.root: fakeratemethod_ntuplize.py samples.py samples_cache.py ${CFG}
+${DIR}/fail.root: fakeratemethod_ntuplize.py samples.py samples_cache.py ${DIR}/${CFG}
 	mkdir -p ${DIR}
 	./fakeratemethod_ntuplize.py -failing --ntuple ${ALGO} \
-	  --config ${CFG} --output $@
+	  --config ${DIR}/${CFG} --output $@
+
+# Copy the cfg used to select the ntuples into the folder for persistence
+${DIR}/${CFG}: ${CFG}
+	cp $< $@
