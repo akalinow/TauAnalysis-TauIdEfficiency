@@ -27,7 +27,7 @@ genJets_genInfo = cms.PSet(
     pluginType = cms.string("GenJetVectorValExtractor"),
     vector=cms.bool(True),
 
-    src = cms.InputTag("tauGenJets"),
+    src = cms.InputTag("ak5GenJets"),
 
     columns = cms.PSet(
         # generator level information
