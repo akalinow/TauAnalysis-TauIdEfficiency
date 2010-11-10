@@ -26,10 +26,10 @@ process.source = cms.Source("PoolSource",
         ##'file:/data1/veelken/CMSSW_3_6_x/skims/selEvents_ZtoDiTau_qcdDiJet_RECO.root'
         ##'file:/data1/veelken/CMSSW_3_6_x/skims/ppMuXPtGt20Mu15_GEN_SIM_RECO_1_1_2VK.root'
     ),
-    skipEvents = cms.untracked.uint32(0)            
+    skipEvents = cms.untracked.uint32(0)
 )
 
-# print event content 
+# print event content
 process.printEventContent = cms.EDAnalyzer("EventContentAnalyzer")
 
 process.maxEvents = cms.untracked.PSet(
@@ -50,9 +50,9 @@ pfCandidateCollection = "particleFlow" # pile-up removal disabled
 # (only relevant for HPS tau reconstruction algorithm)
 if isMC:
     process.GlobalTag.globaltag = cms.string('START38_V12::All')
-else:   
+else:
     process.GlobalTag.globaltag = cms.string('GR_R_38X_V13::All')
-#--------------------------------------------------------------------------------    
+#--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
 # define skimming criteria
@@ -127,9 +127,9 @@ process.load("TauAnalysis.TauIdEfficiency.ntupleConfigGenJets_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigGenPhaseSpaceEventInfo_cfi")
 
 process.ntupleProducer = cms.EDProducer("ObjValEDNtupleProducer",
-                                        
+
     ntupleName = cms.string("tauIdEffNtuple"),
-                                        
+
     sources = cms.PSet(
         # Grouping of sources is for convenience of specifying pluginTypes, etc
 
@@ -144,59 +144,59 @@ process.ntupleProducer = cms.EDProducer("ObjValEDNtupleProducer",
         vertexMultiplicity = process.vertexMultiplicity_template,
 
         # global variables describing the underlying event/
-        # amount of hadronic activity                                            
+        # amount of hadronic activity
         jets = process.jets_template,
         caloMet_rec = process.caloMet_template,
         pfMet_rec = process.pfMet_template,
 
-        # variables specific to CaloTaus                                            
+        # variables specific to CaloTaus
         caloTaus_rec01 = process.caloTaus_recInfo.clone(
-            src = cms.InputTag(retVal["caloTauCollection"])                       
+            src = cms.InputTag(retVal["caloTauCollection"])
         ),
         caloTaus_rec02 = process.tauTrackVariables_template.clone(
-            src = cms.InputTag(retVal["caloTauCollection"])                       
+            src = cms.InputTag(retVal["caloTauCollection"])
         ),
 
-        # variables specific to fixed cone PFTaus                                            
+        # variables specific to fixed cone PFTaus
         pfTausFixedCone_rec01 = process.pfTausFixedCone_recInfo.clone(
-            src = cms.InputTag(retVal["pfTauCollectionFixedCone"])                       
+            src = cms.InputTag(retVal["pfTauCollectionFixedCone"])
         ),
         pfTausFixedCone_rec02 = process.extraTauCandVariables_template.clone(
-            src = cms.InputTag(retVal["pfTauCollectionFixedCone"])                       
+            src = cms.InputTag(retVal["pfTauCollectionFixedCone"])
         ),
         pfTausFixedCone_rec03 = process.tauTrackVariables_template.clone(
-            src = cms.InputTag(retVal["pfTauCollectionFixedCone"])                       
+            src = cms.InputTag(retVal["pfTauCollectionFixedCone"])
         ),
 
-        # variables specific to shrinking cone PFTaus                                            
+        # variables specific to shrinking cone PFTaus
         pfTausShrinkingCone_rec01 = process.pfTausShrinkingCone_recInfo.clone(
-            src = cms.InputTag(retVal["pfTauCollectionShrinkingCone"])                       
+            src = cms.InputTag(retVal["pfTauCollectionShrinkingCone"])
         ),
         pfTausShrinkingCone_rec02 = process.extraTauCandVariables_template.clone(
-            src = cms.InputTag(retVal["pfTauCollectionShrinkingCone"])                       
-        ),                                
+            src = cms.InputTag(retVal["pfTauCollectionShrinkingCone"])
+        ),
         pfTausShrinkingCone_rec03 = process.tauTrackVariables_template.clone(
-            src = cms.InputTag(retVal["pfTauCollectionShrinkingCone"])                       
+            src = cms.InputTag(retVal["pfTauCollectionShrinkingCone"])
         ),
 
-        # variables specific to PFTaus reconstructed by hadron + strips (HPS) algorithm                                           
+        # variables specific to PFTaus reconstructed by hadron + strips (HPS) algorithm
         pfTausHPS_rec01 = process.pfTausHPS_recInfo.clone(
-            src = cms.InputTag(retVal["pfTauCollectionHPS"])                       
+            src = cms.InputTag(retVal["pfTauCollectionHPS"])
         ),
         pfTausHPS_rec02 = process.tauTrackVariables_template.clone(
-            src = cms.InputTag(retVal["pfTauCollectionHPS"])                       
+            src = cms.InputTag(retVal["pfTauCollectionHPS"])
         ),
 
         # variables specific to shrinking cone PFTaus
         # reconstructed using ellipse for photon isolation
         pfTausShrinkingConeEllPhotonIso_rec01 = process.pfTausShrinkingConeEllipticPhotonIso_recInfo.clone(
-            src = cms.InputTag(retVal["pfTauCollectionShrinkingConeEllipticPhotonIso"])                       
+            src = cms.InputTag(retVal["pfTauCollectionShrinkingConeEllipticPhotonIso"])
         ),
         pfTausShrinkingConeEllPhotonIso_rec02 = process.extraTauCandVariables_template.clone(
-            src = cms.InputTag(retVal["pfTauCollectionShrinkingConeEllipticPhotonIso"])                       
-        ),                                
+            src = cms.InputTag(retVal["pfTauCollectionShrinkingConeEllipticPhotonIso"])
+        ),
         pfTausShrinkingConeEllPhotonIso_rec03 = process.tauTrackVariables_template.clone(
-            src = cms.InputTag(retVal["pfTauCollectionShrinkingConeEllipticPhotonIso"])                       
+            src = cms.InputTag(retVal["pfTauCollectionShrinkingConeEllipticPhotonIso"])
         )
     )
 )
@@ -228,8 +228,8 @@ if HLTprocessName != "HLT":
     process.patCaloTausTriggerEvent.processName = cms.string(HLTprocessName)
     process.patPFTausTriggerEventFixedCone.processName = cms.string(HLTprocessName)
     process.patPFTausTriggerEventShrinkingCone.processName = cms.string(HLTprocessName)
-    process.patPFTausTriggerEventHPS.processName = cms.string(HLTprocessName)    
-#--------------------------------------------------------------------------------    
+    process.patPFTausTriggerEventHPS.processName = cms.string(HLTprocessName)
+#--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
 #
@@ -240,11 +240,11 @@ process.ntupleOutputModule = cms.OutputModule("PoolOutputModule",
         outputCommands = cms.untracked.vstring(
             "drop *",
             "keep *_*ntupleProducer*_*_*"
-        )                               
+        )
     ),
-    process.qcdDiJetEventSelection, # comment-out to disable filtering of events put in Tau Ntuple                         
+    process.qcdDiJetEventSelection, # comment-out to disable filtering of events put in Tau Ntuple
     verbose = cms.untracked.bool(False),
-    fileName = cms.untracked.string("tauIdEffEDNtuple_qcdDiJet.root")      
+    fileName = cms.untracked.string("tauIdEffEDNtuple_qcdDiJet.root")
 )
 #--------------------------------------------------------------------------------
 
