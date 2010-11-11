@@ -8,6 +8,7 @@
 #include "PhysicsTools/JetMCUtils/interface/JetMCTag.h"
 
 #include "TauAnalysis/GenSimTools/interface/genParticleAuxFunctions.h"
+#include "TauAnalysis/DQMTools/interface/generalAuxFunctions.h"
 
 #include <string>
 
@@ -56,11 +57,15 @@ VectorGenJetValExtractor<T>::VectorGenJetValExtractor(const edm::ParameterSet& c
 template<typename T>
 std::vector<double> VectorGenJetValExtractor<T>::operator()(const edm::Event& evt) const
 {
+  //std::cout << "<VectorGenJetValExtractor::operator()>:" << std::endl;
+  //std::cout << " src = " << src_.label() << std::endl;
+  //std::cout << " value = " << value_ << std::endl;
+
   std::vector<double> vec;
   typedef edm::View<T> inputCollectionType;
   edm::Handle<inputCollectionType> input;
   evt.getByLabel(src_, input);
-
+  
   edm::Handle<reco::GenParticleCollection> genParticles;
   if ( srcGenParticles_.label() != "" ) evt.getByLabel(srcGenParticles_, genParticles);
 
@@ -105,6 +110,8 @@ std::vector<double> VectorGenJetValExtractor<T>::operator()(const edm::Event& ev
 
     vec.push_back(vec_i);
   }
+
+  //std::cout << "--> vec = " << format_vdouble(vec) << std::endl;
 
   return vec;
 }

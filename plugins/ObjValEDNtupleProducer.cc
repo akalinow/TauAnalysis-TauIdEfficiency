@@ -92,11 +92,15 @@ ObjValEDNtupleProducer::ObjValEDNtupleProducer(const edm::ParameterSet& cfg)
     }
   }
 
-  // Count how many times we register our products
+//--- add run, luminosity section and event numbers
+  produces<edm::RunNumber_t>("run").setBranchAlias("run");
+  produces<edm::LuminosityBlockNumber_t>("lumisection").setBranchAlias("lumisection");
+  produces<edm::EventNumber_t>("event").setBranchAlias("event");
+
+//--- register all the products with the framework
+//    EK: count how many times we register each product
   std::map<std::string, int> name_counter;
 
-  std::cout << "registering products... ";
-  // Register all the products with the framework
   for ( std::vector<ntupleEntryType*>::const_iterator entry = ntupleEntries_.begin();
        entry != ntupleEntries_.end(); ++entry ) {
     std::string name = (*entry)->ntupleName_;
@@ -111,13 +115,13 @@ ObjValEDNtupleProducer::ObjValEDNtupleProducer(const edm::ParameterSet& cfg)
     produces<std::vector<double> >(name).setBranchAlias(name);
   }
 
-  // Make sure now variable is declared twice
-  for (std::map<std::string, int>::iterator imap = name_counter.begin();
-       imap != name_counter.end(); ++imap) {
-    if (imap->second > 1) {
+//--- make sure no variable is declared twice
+  for ( std::map<std::string, int>::iterator imap = name_counter.begin();
+	imap != name_counter.end(); ++imap ) {
+    if ( imap->second > 1 ) {
       throw cms::Exception("DuplicateNtupleColumn") <<
-          "the ntuple variable: " << imap->first << " is declared " <<
-          imap->second << " times.  It can only be declared once!  Please fix.";
+	"the ntuple variable: " << imap->first << " is declared " <<
+	imap->second << " times.  It can only be declared once!  Please fix.";
     }
   }
   std::cout << "done." << std::endl;
@@ -137,33 +141,41 @@ void ObjValEDNtupleProducer::beginJob() {}
 
 void ObjValEDNtupleProducer::produce(edm::Event& evt, const edm::EventSetup& es)
 {
+//--- add run, luminosity section and event number
+  std::auto_ptr<edm::RunNumber_t> runNumberPtr(new edm::RunNumber_t(evt.id().run()));
+  evt.put(runNumberPtr, "run");
+  std::auto_ptr<edm::LuminosityBlockNumber_t> lumiSectionPtr(new edm::LuminosityBlockNumber_t(evt.id().luminosityBlock()));
+  evt.put(lumiSectionPtr, "lumisection");
+  std::auto_ptr<edm::EventNumber_t> eventNumberPtr(new edm::EventNumber_t(evt.id().event()));
+  evt.put(eventNumberPtr, "event");
+
   typedef std::vector<double> vdouble;
-  //--- compute values to be filled in ntuple
+
+//--- compute values to be filled in ntuple
   for ( std::vector<ntupleEntryType*>::iterator ntupleEntry = ntupleEntries_.begin();
-       ntupleEntry != ntupleEntries_.end(); ++ntupleEntry ) {
+	ntupleEntry != ntupleEntries_.end(); ++ntupleEntry ) {
     if ( !(*ntupleEntry)->objValExtractor_ ) {
       edm::LogError ("ObjValEDNtupleProducer::fillntuplees")
-          << " No ObjValExtractor set for ntuple = " << (*ntupleEntry)->ntupleName_
-          << " --> skipping !!";
+	<< " No ObjValExtractor set for ntuple = " << (*ntupleEntry)->ntupleName_
+	<< " --> skipping !!";
       continue;
     }
     std::auto_ptr<double> toPut = std::auto_ptr<double>(new double);
     *toPut = (*(*ntupleEntry)->objValExtractor_)(evt);
     evt.put(toPut, (*ntupleEntry)->ntupleName_);
   }
-
+  
   for ( std::vector<ntupleVectorEntryType*>::iterator ntupleEntry = ntupleVectorEntries_.begin();
-       ntupleEntry != ntupleVectorEntries_.end(); ++ntupleEntry) {
-
+	ntupleEntry != ntupleVectorEntries_.end(); ++ntupleEntry) {
     if ( !(*ntupleEntry)->objValExtractor_ ) {
       edm::LogError ("ObjValEDNtupleProducer::fillntuplees")
-          << " No ObjValExtractor set for ntuple = " << (*ntupleEntry)->ntupleName_
-          << " --> skipping !!";
+	<< " No ObjValExtractor set for ntuple = " << (*ntupleEntry)->ntupleName_
+	<< " --> skipping !!";
       continue;
     }
-
+    
     std::auto_ptr<vdouble> toPut = std::auto_ptr<vdouble>(new vdouble((*(*ntupleEntry)->objValExtractor_)(evt)));
-
+    
     evt.put(toPut, (*ntupleEntry)->ntupleName_);
   }
 
