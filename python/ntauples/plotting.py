@@ -7,7 +7,7 @@ Functions to produce plots using TauNtuples
 Author: Evan K. Friis, UC Davis
 '''
 
-def draw(events, expression, selection="", output_name="", binning=(), options="goff"):
+def draw(events, expression, selection = "", output_name = "", binning = (), options = "goff", maxNumEntries = 1000000000):
     ''' Plot a histogram of [expression] given [events].
 
     If [events] is given as list of tuples of type (TTree, weight), the output
@@ -31,33 +31,33 @@ def draw(events, expression, selection="", output_name="", binning=(), options="
         expression_str = str(expression.value)
         selection_with_weight = str(selection*weight)
 
-        # Check if this is the first event
+        # Check if this is the first event source
         if event_source_index == 0:
             # Determine how to build the histogram
             if not binning:
                 # If no binning information is provided
                 event_source.Draw(expression_str + ">>" + output_name, 
-                                  selection_with_weight, options)
+                                  selection_with_weight, options, maxNumEntries)
             elif len(binning) == 3: 
                 # Fixed bins
                 event_source.Draw(expression_str + ">>" + output_name + "(" + 
                                   ','.join(str(x) for x in binning) + ")",
-                                  selection_with_weight, options)
+                                  selection_with_weight, options, maxNumEntries)
             else: 
                 # Variable bin sizes, must pre-build histo
                 histogram = ROOT.TH1F(output_name, output_name, 
                                       len(binning)-1, array.array('d', binning))
                 # Append to histogram
                 event_source.Draw(expression_str + ">>+" + output_name, 
-                                  selection_with_weight, options)
+                                  selection_with_weight, options, maxNumEntries)
         else:
             # Otherwise we are appending to an existing histogram
             event_source.Draw(expression_str+">>+">>output_name, 
-                              selection_with_weight, options)
+                              selection_with_weight, options, maxNumEntries)
             
     return ROOT.gDirectory.Get(output_name)
 
-def efficiency(events, expression, numerator="", denominator="", output_name="", **kwargs):
+def efficiency(events, expression, numerator = "", denominator = "", output_name="", maxNumEntries = 1000000000, **kwargs):
     ''' Compute the efficiency versus expression
 
     Returns a tuple containing a background TH1F (used to draw the axis)
@@ -67,8 +67,8 @@ def efficiency(events, expression, numerator="", denominator="", output_name="",
     '''
     if not output_name:
         output_name = "eff_temp"
-    numerator_h = draw(events, expression, numerator, "numerator_temp", **kwargs)
-    denominator_h = draw(events, expression, denominator, "denominator_temp", **kwargs)
+    numerator_h = draw(events, expression, numerator, "numerator_temp", maxNumEntries, **kwargs)
+    denominator_h = draw(events, expression, denominator, "denominator_temp", maxNumEntries, **kwargs)
     #FIXME clean this up
     from math import sqrt
     nNum = float(numerator_h.Integral())

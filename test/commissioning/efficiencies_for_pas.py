@@ -37,6 +37,9 @@ algo_label_hps.AddText("HPS")
 algo_label_calo = copy.deepcopy(algo_label_template)
 algo_label_calo.AddText("TCTau")
 
+maxNumEntries = 1000000000 # draw all evevnts
+#maxNumEntries = 5         # to be used for debugging purposes only
+
 def drawEfficiency(graph, isFirst):
 
     if isFirst:
@@ -292,7 +295,8 @@ if __name__ == "__main__":
 
     denom_selection = genTaus.expr('$genDecayMode > 1.5 && $genPt > 10 && abs($genEta) < 2.5')
 
-    denom_selection_from_reco_str = '$genMatch > 0.5 && $genDecayMode > 1.5 && $genPt > 10 && abs($genEta) < 2.5'
+    ##denom_selection_from_reco_str = '$genMatch > 0.5 && $genDecayMode > 1.5 && $genPt > 10 && abs($genEta) < 2.5'
+    denom_selection_from_reco_str = '$genDecayMode > 1.5 && $genPt > 10 && abs($genEta) < 2.5'
 
     ztt_events = list(ztt.events_and_weights())[0][0]
 
@@ -331,6 +335,7 @@ if __name__ == "__main__":
                 selection = denom_selection,
                 binning = x_var_info['binning'],
                 output_name = '_'.join(["denom", x_var, algorithm]),
+                maxNumEntries = maxNumEntries
             )
             print "denominator: entries = %i" % denominator.GetEntries()
             
@@ -353,8 +358,11 @@ if __name__ == "__main__":
                     selection = running_cut,
                     binning = x_var_info['binning'],
                     output_name = '_'.join([numerator_name, x_var, algorithm]),
+                    maxNumEntries = maxNumEntries
                 )
                 print "numerator: entries = %i" % numerator.GetEntries()
+
+                #raise ValueError("STOPped for debugging")
                 
                 # FIXME: clean this up
                 from math import sqrt

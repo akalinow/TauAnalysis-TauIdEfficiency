@@ -92,7 +92,7 @@ class PlotManager(object):
         """
         self.int_lumi = target_int_lumi
 
-    def distribution(self, expression, selection, binning=(), normalize = None, verbose=True, **options):
+    def distribution(self, expression, selection, binning = (), maxNumEntries = 1000000000, normalize = None, verbose = True, **options):
         " Compare a distribution from the different samples "
         if verbose: print "Plotting", str(expression), str(selection)
         # Get a unique name for the ROOT name
@@ -117,8 +117,9 @@ class PlotManager(object):
                 # events for this sample
                 list(sample_info['sample'].events_and_weights(self.int_lumi)),
                 expression, selection, 
-                output_name="%s%s" % (sample_name,unique_name),
-                binning=binning
+                output_name = "%s%s" % (sample_name,unique_name),
+                binning = binning,
+                maxNumEntries = maxNumEntries
             )
             if my_plot == None: raise StandardError, "Error drawing '%s' for '%s' with selection '%s' no histogram was created!"%( expression, sample_name, selection)
             if verbose: print " * * - got plot", my_plot, "integral:", my_plot.Integral()
@@ -171,7 +172,7 @@ class PlotManager(object):
         return result_dict
 
     def efficiency(self, expression, numerator, denominator,
-                   binning=(), verbose=True, x_error_bars=True, **options):
+                   binning = (), maxNumEntries, verbose = True, x_error_bars = True, **options):
         ''' Compare efficiencies for different samples 
 
         Compute the efficiency of the [numerator] selection with respect
@@ -207,8 +208,9 @@ class PlotManager(object):
             my_bkg_hist, my_eff = plot.efficiency(
                 #list(sample_info['sample'].events_and_weights(self.int_lumi)),
                 list(sample_info['sample'].events_and_weights(None)),
-                expression, numerator, denominator, binning=binning,
-                output_name="%s%s"%(sample_name, unique_name))
+                expression, numerator, denominator, binning = binning,
+                output_name = "%s%s"%(sample_name, unique_name),
+                maxNumEntries = maxNumEntries)
 
             # If this is the first histogram drawn, add the background
             if result_dict['background'] is None:
