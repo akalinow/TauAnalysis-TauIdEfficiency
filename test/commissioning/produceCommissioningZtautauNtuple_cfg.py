@@ -21,7 +21,8 @@ process.source = cms.Source("PoolSource",
         #'/store/relval/CMSSW_3_6_1/RelValZTT/GEN-SIM-RECO/START36_V7-v1/0021/F405BC9A-525D-DF11-AB96-002618943811.root',
         #'/store/relval/CMSSW_3_6_1/RelValZTT/GEN-SIM-RECO/START36_V7-v1/0020/EE3E8F74-365D-DF11-AE3D-002618FDA211.root'
         ##'file:/data1/veelken/CMSSW_3_6_x/skims/pseudoData_Ztautau.root'
-        'file:/data1/veelken/CMSSW_3_6_x/skims/Ztautau_1_1_sXK.root'
+        ##'file:/data1/veelken/CMSSW_3_6_x/skims/Ztautau_1_1_sXK.root'
+        'file:/data1/veelken/CMSSW_3_8_x/skims/test/mcDYttPU156bx_GEN_SIM_RECO_1_1_1VV.root'
     ),
     skipEvents = cms.untracked.uint32(0)            
 )
@@ -29,8 +30,14 @@ process.source = cms.Source("PoolSource",
 # print event content 
 process.printEventContent = cms.EDAnalyzer("EventContentAnalyzer")
 
+# print gen. particle information
+process.printGenParticleList = cms.EDAnalyzer("ParticleListDrawer",
+    src = cms.InputTag("genParticles"),
+    maxEventsToPrint = cms.untracked.int32(100)
+)
+
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(1000)
+    input = cms.untracked.int32(10)
 )
 
 isMC = True # use for MC
@@ -40,8 +47,9 @@ addMCEmbeddingFlags = True # use for MC samples generated using MCEmbedding tech
 HLTprocessName = "HLT" # use for non-reprocessed MC samples and Data
 ##HLTprocessName = "REDIGI36X" # use for Spring'10 reprocessed MC
 ##HLTprocessName = "REDIGI38XPU" # use for Fall'10 reprocessed MC with pile-up
-##pfCandidateCollection = "particleFlow" # pile-up removal disabled
-pfCandidateCollection = "pfNoPileUp" # pile-up removal enabled
+##HLTprocessName = "REDIGI38X" # use for Fall'10 reprocessed MC without pile-up
+pfCandidateCollection = "particleFlow" # pile-up removal disabled
+##pfCandidateCollection = "pfNoPileUp" # pile-up removal enabled
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
@@ -124,6 +132,7 @@ process.load("TauAnalysis.TauIdEfficiency.ntupleConfigGlobalVariables_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigTrackVariables_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigGenJets_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigGenPhaseSpaceEventInfo_cfi")
+process.load("TauAnalysis.TauIdEfficiency.ntupleConfigGenPileUpEventInfo_cfi")
 
 process.ntupleProducer = cms.EDProducer("ObjValEDNtupleProducer",
                                         
@@ -215,6 +224,7 @@ if isMC:
     setattr(process.ntupleProducer.sources, "tauGenJets", process.tauGenJets_genInfo)
     setattr(process.ntupleProducer.sources, "genJets", process.genJets_genInfo)
     setattr(process.ntupleProducer.sources, "genPhaseSpaceEventInfo", process.genPhaseSpaceEventInfo_template)
+    setattr(process.ntupleProducer.sources, "genPileUpEventInfo", process.genPileUpEventInfo_template)
 
 if addMCEmbeddingFlags:
     process.caloTaus_mcEmbeddingInfo.src = cms.InputTag(retVal["caloTauCollection"])
@@ -294,6 +304,7 @@ process.p = cms.Path(
     process.prePatProductionSequence
    + process.patTupleProductionSequence
    #+ process.printEventContent
+   #+ process.printGenParticleList
    + process.ntupleProducer
 )
 
