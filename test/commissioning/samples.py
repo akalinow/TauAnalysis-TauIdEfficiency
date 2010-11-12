@@ -7,7 +7,7 @@ samples.py
 
 Central defintion of data sources for commissioning.
 
-$Id: samples.py,v 1.19 2010/11/12 14:26:57 veelken Exp $
+$Id: samples.py,v 1.20 2010/11/12 16:35:32 veelken Exp $
 
 '''
 
@@ -46,11 +46,12 @@ _MC_LUMI_MAP_FILE = os.path.join(
 # to take from the JSON file
 print "loading definition of Ztautau signal Monte Carlo samples..."
 ## CV: sample has not finished processing yet (11/12/10)
-##ztautau_mc = build_sample(
-##    _MC_LUMI_MAP_FILE, "mc_ztautau",
-##    "merge", datasets = ["Ztautau"],
-##    alias_map=dijetSampleAliasMap)
-ztautau_mc = None
+## EK: enabling it anyway!
+ztautau_mc = build_sample(
+    _MC_LUMI_MAP_FILE, "mc_ztautau",
+    "merge", datasets = ["Ztautau"],
+    alias_map=dijetSampleAliasMap)
+#ztautau_mc = None
 zttPU156bx_mc = build_sample(
     _MC_LUMI_MAP_FILE, "mc_zttPU156bx",
     "merge", datasets = ["ZtautauPU156bx"],
