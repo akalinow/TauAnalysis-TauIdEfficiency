@@ -7,7 +7,7 @@ samples.py
 
 Central defintion of data sources for commissioning.
 
-$Id: samples.py,v 1.18 2010/11/09 17:07:10 friis Exp $
+$Id: samples.py,v 1.19 2010/11/12 14:26:57 veelken Exp $
 
 '''
 
@@ -50,11 +50,13 @@ print "loading definition of Ztautau signal Monte Carlo samples..."
 ##    _MC_LUMI_MAP_FILE, "mc_ztautau",
 ##    "merge", datasets = ["Ztautau"],
 ##    alias_map=dijetSampleAliasMap)
+ztautau_mc = None
 zttPU156bx_mc = build_sample(
     _MC_LUMI_MAP_FILE, "mc_zttPU156bx",
-    "merge", datasets = ["ZttPU156bx"],
+    "merge", datasets = ["ZtautauPU156bx"],
     alias_map=dijetSampleAliasMap)
 
+print "loading definition of QCD background Monte Carlo samples..."
 qcddijet_mc = build_sample(
     _MC_LUMI_MAP_FILE, "mc_qcddijet", "merge",
     take_every=1, datasets = [
@@ -67,18 +69,21 @@ qcddijet_mc = build_sample(
 ##    _MC_LUMI_MAP_FILE, "mc_ppmux", "merge",
 ##    take_every=1, datasets = ["mcQCDppMuXPtHatGt20PtMuGt10"],
 ##    alias_map = muEnrichedSampleAliasMap)
+ppmux_mc = None
 
+print "loading definition of W + jets background Monte Carlo samples..."
 ## CV: sample has not finished processing yet (11/12/10)
 ##wmunu_mc = build_sample(
 ##    _MC_LUMI_MAP_FILE, "mc_wmunu", "merge",
 ##    take_every=1, datasets = ["mcWtoMuNu"],
 ##    alias_map = wJetsSampleAliasMap)
+wmunu_mc = None
 
 # For data, we use the add mode, to concatenate data
 print "loading definition of Data samples..."
 data_dijet_runs132440to133802 = build_sample(
     _DATA_LUMI_MAP_FILE, "qcdDiJet_data_runs132440to133802", "add",
-    take_every=1, datasets = ["data_runs132440_133802"],
+    take_every=1, datasets = ["qcdDiJet_data_runs132440_133802"],
     alias_map = dijetSampleAliasMap)
 data_dijet_runs135821to141887 = build_sample(
     _DATA_LUMI_MAP_FILE, "qcdDiJet_data_runs135821to141887", "add",
@@ -105,12 +110,12 @@ data_ppmux_runs145762_147116 = build_sample(
     alias_map = muEnrichedSampleAliasMap)
 data_ppmux_runs147117_149442 = build_sample(
     _DATA_LUMI_MAP_FILE, "qcdMuEnriched_data_runs147117to149442", "add",
-    take_every=1, datasets = ["qcdMuEnriched_data_runs147117to149442"],
+    take_every=1, datasets = ["qcdMuEnriched_data_runs147117_149442"],
     alias_map = muEnrichedSampleAliasMap)
 data_ppmux = build_sample(
     _DATA_LUMI_MAP_FILE, "qcdMuEnriched_data", "add",
     take_every=1, datasets = [
-      "qcdMuEnriched_data_runs132440_145761", "qcdMuEnriched_data_runs145762_147116", "qcdMuEnriched_data_runs147117to149442"
+      "qcdMuEnriched_data_runs132440_145761", "qcdMuEnriched_data_runs145762_147116", "qcdMuEnriched_data_runs147117_149442"
     ],
     alias_map = muEnrichedSampleAliasMap)
 
@@ -124,11 +129,11 @@ data_wjets_runs145762_147116 = build_sample(
     alias_map = wJetsSampleAliasMap)
 data_wjets_runs147117_149442 = build_sample(
     _DATA_LUMI_MAP_FILE, "wJets_data_runs147117to149442", "add",
-    take_every=1, datasets = ["wJets_data_runs147117to149442"],
+    take_every=1, datasets = ["wJets_data_runs147117_149442"],
     alias_map = wJetsSampleAliasMap)
 data_wjets = build_sample(
     _DATA_LUMI_MAP_FILE, "wJets_data", "add",
     take_every=1, datasets = [
-      "wJets_data_runs132440_145761", "wJets_data_runs145762_147116", "wJets_data_runs147117to149442"
+      "wJets_data_runs132440_145761", "wJets_data_runs145762_147116", "wJets_data_runs147117_149442"
     ],
     alias_map = wJetsSampleAliasMap)

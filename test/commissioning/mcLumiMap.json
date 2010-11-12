@@ -23,7 +23,7 @@
         ],
         "int_lumi": 501.9
     },
-    "mcQCDppMuXPtHatGt20PtMuGt10" :
+    "mcQCDppMuXPtHatGt20PtMuGt10" : {
         "allEvents": 8063288.0, 
         "directory": "rfio:/castor/cern.ch/user/v/veelken/TauIdCommissioning/qcdMuEnriched/v3_0/mcQCDmuEnriched/",
 	"files": [
@@ -31,7 +31,7 @@
         ],
         "int_lumi": 23040.0
     },
-    "mcWtoMuNu" : :
+    "mcWtoMuNu" : {
         "allEvents": 5330940.0, 
         "directory": "rfio:/castor/cern.ch/user/v/veelken/TauIdCommissioning/qcdMuEnriched/v3_0/mcWplusJets/",
 	"files": [
