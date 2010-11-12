@@ -172,7 +172,7 @@ class PlotManager(object):
         return result_dict
 
     def efficiency(self, expression, numerator, denominator,
-                   binning = (), maxNumEntries, verbose = True, x_error_bars = True, **options):
+                   binning = (), maxNumEntries = 1000000000, verbose = True, x_error_bars = True, **options):
         ''' Compare efficiencies for different samples 
 
         Compute the efficiency of the [numerator] selection with respect
