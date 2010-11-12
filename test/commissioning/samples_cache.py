@@ -1,5 +1,10 @@
 import TauAnalysis.TauIdEfficiency.tools.castor_mirror as mirror
 
+#--------------------------------------------------------------------------------
+# Script usage: python samples_cache.py
+#              to copy all files referenced by sample_list to local disk
+#--------------------------------------------------------------------------------
+
 # Import the samples into this namespace
 from samples import minbias_mc_pythia6, minbias_mc_pythia8, \
         qcd_mc_pythia6, qcd_mc_pythia8, \
@@ -34,20 +39,37 @@ for name in current_objects:
         globals()[name] = SampleWrapper(the_object)
 
 
-# Script usage - copy all files
-#_sample_list = [ data, ztautau_mc, minbias_mc_pythia6, minbias_mc_pythia8, qcd_mc_pythia6, qcd_mc_pythia8 ]
-#_sample_list = [ data, ztautau_mc, qcd_mc_pythia6, qcd_mc_pythia8 ]
-#_sample_list = [ data, qcd_mc_pythia8 ]
+#--------------------------------------------------------------------------------
+# define QCD di-jet samples
+#_sample_list = [ qcddijet_mc, data_dijet ]
+#_sample_list = [ qcddijet_mc ]
+#_sample_list = [ data_dijet ]
+#--------------------------------------------------------------------------------
+
+#--------------------------------------------------------------------------------
+# define QCD muon-enriched samples
+#_sample_list = [ ppmux_mc, data_ppmux ]
+#_sample_list = [ ppmux_mc ]
+#_sample_list = [ data_ppmux ]
+#--------------------------------------------------------------------------------
+
+#--------------------------------------------------------------------------------
+# define W + jets samples
+#_sample_list = [ wmunu_mc, data_wjets ]
+#_sample_list = [ wmunu_mc ]
+#_sample_list = [ data_wjets ]
+#--------------------------------------------------------------------------------
+
+#--------------------------------------------------------------------------------
+# define Z --> tau+ tau- samples for tau id. efficiency plots
+#_sample_list = [ ztautau_mc, zttPU156bx_mc ]
 #_sample_list = [ ztautau_mc ]
-#_sample_list = [ data, qcd_mc_pythia8, ztautau_mc ]
-#_sample_list = [ data_runs132440to133802, data_runs135821to141887, data_runs141950to144114, data ]
-#_sample_list = [ data ]
-#_sample_list = [ zllPU156bx_mc ]
 _sample_list = [ zttPU156bx_mc ]
-#_sample_list = [ zttPU156bx_mc, data_runs132440to133802, data_runs135821to141887, data_runs141950to144114, data ]
+#--------------------------------------------------------------------------------
+
 if __name__ == "__main__":
     print "Copying CASTOR files to local area:", mirror.LOCAL_DIRECTORY
-    # 20 concurrent rfcp jobs
+    # run up to 20 rfcp jobs concurrently
     mirror.mirror_samples(_sample_list, max_jobs = 20)
 
 
