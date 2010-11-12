@@ -38,12 +38,12 @@ for name in current_objects:
 #_sample_list = [ data, ztautau_mc, minbias_mc_pythia6, minbias_mc_pythia8, qcd_mc_pythia6, qcd_mc_pythia8 ]
 #_sample_list = [ data, ztautau_mc, qcd_mc_pythia6, qcd_mc_pythia8 ]
 #_sample_list = [ data, qcd_mc_pythia8 ]
-_sample_list = [ ztautau_mc ]
+#_sample_list = [ ztautau_mc ]
 #_sample_list = [ data, qcd_mc_pythia8, ztautau_mc ]
 #_sample_list = [ data_runs132440to133802, data_runs135821to141887, data_runs141950to144114, data ]
 #_sample_list = [ data ]
 #_sample_list = [ zllPU156bx_mc ]
-#_sample_list = [ zttPU156bx_mc ]
+_sample_list = [ zttPU156bx_mc ]
 #_sample_list = [ zttPU156bx_mc, data_runs132440to133802, data_runs135821to141887, data_runs141950to144114, data ]
 if __name__ == "__main__":
     print "Copying CASTOR files to local area:", mirror.LOCAL_DIRECTORY
