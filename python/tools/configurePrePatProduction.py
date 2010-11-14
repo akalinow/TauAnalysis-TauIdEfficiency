@@ -6,6 +6,7 @@ def configurePrePatProduction(process, pfCandidateCollection = "particleFlow",
     #--------------------------------------------------------------------------------
     # PFCandidate pile-up removal
     process.load("PhysicsTools.PFCandProducer.pfNoPileUp_cff")
+    process.pfPileUp.Enable = cms.bool(True)
     process.prePatProductionSequence = process.pfNoPileUpSequence
 
     process.load("RecoJets.JetProducers.ak5PFJets_cfi")
@@ -47,18 +48,9 @@ def configurePrePatProduction(process, pfCandidateCollection = "particleFlow",
     #--------------------------------------------------------------------------------
 
     #--------------------------------------------------------------------------------
-    # produce collection of PFTaus reconstructed by hadron + strips (HPS) algorithm
-    # "on-the-fly", as it is not contained in data taken with CMSSW_3_5_x
-    # EK: no longer necessary, runs in PFTau sequence
-    #process.load("RecoTauTag.Configuration.HPSPFTaus_cfi")
-    #process.prePatProductionSequence += process.produceAndDiscriminateHPSPFTaus
-    #--------------------------------------------------------------------------------
-
-    #--------------------------------------------------------------------------------
     # produce collection of PFTaus reconstructed using ellipse for photon isolation
     process.load("TauAnalysis.TauIdEfficiency.ShrinkingConePFTausEllipticPhotonIso_cfi")
     process.prePatProductionSequence += process.produceAndDiscriminateShrinkingConePFTausEllipticPhotonIso
-    ##process.prePatProductionSequence += process.produceShrinkingConePFTauEllipticPhotonIsoDiscriminationByTauNeuralClassifier
     #--------------------------------------------------------------------------------
 
     #--------------------------------------------------------------------------------
