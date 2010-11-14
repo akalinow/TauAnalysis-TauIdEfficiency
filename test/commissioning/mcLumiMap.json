@@ -54,5 +54,13 @@
             "tauIdEffEDNtuple_qcdDiJet_*.root"
         ], 
         "int_lumi": 1208645.0
+    },
+    "ZtautauPU156bxPFnoPileUp" : {
+        "allEvents": 2011186, 
+        "directory": "rfio:/castor/cern.ch/user/v/veelken/TauIdCommissioning/qcdDiJet/v3_0/mcDYttPU156bx_pfNoPileUp/",
+        "files": [
+            "tauIdEffEDNtuple_qcdDiJet_*.root"
+        ], 
+        "int_lumi": 1208645.0
     }
 }
