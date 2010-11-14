@@ -69,10 +69,6 @@ patTauPrototype = cms.EDProducer(
         # Added in by different functions
     ),
 
-    # tau decay mode configurables
-    addDecayMode = cms.bool(False),
-    decayModeSrc = cms.InputTag("shrinkingConePFTauDecayModeProducer"),                    
-
     # mc matching configurables
     addGenMatch      = cms.bool(False),
     embedGenMatch    = cms.bool(False),

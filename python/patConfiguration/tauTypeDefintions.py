@@ -10,7 +10,6 @@ Author: Evan K. Friis (UC Davis)
 
 _shrinkingConeOptions = {
     # off for now so we dont' need to rerun PFT sequence
-    #'addDecayMode' : cms.bool(True),
     'tauSource' : cms.InputTag('shrinkingConePFTauProducer'),
     'tauIDSources' : cms.PSet(
         leadingTrackFinding = cms.InputTag("shrinkingConePFTauDiscriminationByLeadingTrackFinding"),
