@@ -25,6 +25,7 @@ process.source = cms.Source("PoolSource",
         ##'file:/data1/veelken/CMSSW_3_6_x/skims/selEvents_ZtoDiTau_qcdDiJet_RECO.root'
         ##'file:/data1/veelken/CMSSW_3_6_x/skims/ppMuXPtGt20Mu15_GEN_SIM_RECO_1_1_2VK.root'
         'file:/data1/veelken/CMSSW_3_8_x/skims/test/mcDYttPU156bx_GEN_SIM_RECO_1_1_1VV.root'
+        ##'file:/data1/veelken/CMSSW_3_6_x/skims/selEvents_ZtoDiTau_qcdDiJet_RECO.root'
     ),
     skipEvents = cms.untracked.uint32(0)
 )
