@@ -1,14 +1,14 @@
 #ifndef TauAnalysis_TauIdEfficiency_PATTriggerInfoExtractor_h  
 #define TauAnalysis_TauIdEfficiency_PATTriggerInfoExtractor_h
 
-/** \class HLTInfoExtractor
+/** \class PATTriggerInfoExtractor
  *
  * Auxiliary class for extracting trigger bit and prescale information for the event
  * (used for Ntuple filling)
  *
  * \author Christian, UC Davis
  *
- * \version $Revision: 1.1 $
+ * \version $Revision: 1.2 $
  */
 
 #include "FWCore/Framework/interface/Event.h"
