@@ -66,14 +66,10 @@ _sample_list.append(data_wjets)
 #_sample_list.extend([ ztautau_mc, zttPU156bx_mc, zttPU156bxPFnoPileUp_mc ])
 #_sample_list.append(ztautau_mc)
 #_sample_list.extend([ zttPU156bx_mc, zttPU156bxPFnoPileUp_mc ])
-_sample_list = [ zttPU156bx_mc, zttPU156bxPFnoPileUp_mc ]
+_sample_list.extend([ zttPU156bx_mc, zttPU156bxPFnoPileUp_mc ])
 #--------------------------------------------------------------------------------
 
 if __name__ == "__main__":
     print "Copying CASTOR files to local area:", mirror.LOCAL_DIRECTORY
     # run up to 20 rfcp jobs concurrently
     mirror.mirror_samples(_sample_list, max_jobs = 20)
-
-
-
-
