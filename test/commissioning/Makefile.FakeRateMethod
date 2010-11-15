@@ -55,4 +55,5 @@ ${DIR}/fail.root: fakeratemethod_ntuplize.py samples.py samples_cache.py ${DIR}/
 
 # Copy the cfg used to select the ntuples into the folder for persistence
 ${DIR}/${CFG}: ${CFG}
+	mkdir -p ${DIR}
 	cp $< $@
