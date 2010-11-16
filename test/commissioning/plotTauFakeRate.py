@@ -147,7 +147,7 @@ def makeJetEffPlot(expression, denominator,numerator,
   
 ### Why is this needed ???
     eff_result['background'].GetYaxis().SetTitle("Efficiency" ) 
-    eff_result['background'].Draw('a') 
+    eff_result['background'].Draw() 
     eff_result['samples']['data2'].Draw('ep same') 
     eff_result['samples']['qcd'].Draw('ep same') 
     eff_result['samples']['ppMuX'].Draw('ep same') 
@@ -302,7 +302,6 @@ if __name__ == "__main__":
         y_min = 0, y_max = 1.2, logy =False,
         filename = "pfJetPhiEcalEff"
     )
-    pfTau_base_selection = pfTau_ntuple.expr('$jetPt > 10 & abs( $jetEta) < 2.5 ')
     makeJetEffPlot(
         expression = pfTau_ntuple.expr('$jetPt'),
 	denominator =  pfTau_base_selection,
@@ -417,14 +416,3 @@ if __name__ == "__main__":
         filename = "pfJetEtaTrackerIso"
     )
 
-    pfTau_base_selection = pfTau_base_selection + pfTau_ntuple.expr('$jetPt@.at(0)')
-    makeJetEffPlot(
-        expression = pfTau_ntuple.expr('$jetPhi'),
-	denominator =  pfTau_base_selection,
-        numerator = pfTau_ntuple.expr('$byLeadPionPtCut') & pfTau_ntuple.expr('$byIsolationUsingLeadingPion') & pfTau_ntuple.expr('$againstMuon') & pfTau_ntuple.expr('$againstElectron') & ( pfTau_ntuple.expr('$numChargedParticlesSignalCone == 1') | pfTau_ntuple.expr('$numChargedParticlesSignalCone == 3') ) & pfTau_base_selection,
-        extra_labels = [ jets_PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT ],
-        binning = (20,-3.2,3.2),
-        x_axis_title = "Jet #phi",
-        y_min = 1.1e-5, y_max = 100., logy =True,
-        filename = "pfLeadJetPhiEff"
-    )
