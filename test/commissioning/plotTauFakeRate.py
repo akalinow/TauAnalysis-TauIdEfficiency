@@ -145,6 +145,15 @@ def makeJetEffPlot(expression, denominator,numerator,
     eff_result['background'].GetYaxis().SetTitleSize(0.05) 
     eff_result['background'].GetYaxis().SetLabelSize(0.05)
   
+### Why is this needed ???
+    eff_result['background'].GetYaxis().SetTitle("Efficiency" ) 
+    eff_result['background'].Draw('a') 
+    eff_result['samples']['data2'].Draw('ep same') 
+    eff_result['samples']['qcd'].Draw('ep same') 
+    eff_result['samples']['ppMuX'].Draw('ep same') 
+    eff_result['samples']['minBias'].Draw('ep same') 
+### Fix it later!
+
     # Draw the legend - you can pass NDC xl, yl, xh, yh coordinates to make_legend(...)
     legend_x1 = 0.58
     legend_y1 = 0.69
@@ -172,13 +181,17 @@ def makeJetEffPlot(expression, denominator,numerator,
     bottomPad_diff.cd()
 
     h_data = plot2.draw(list(plotter.samples['data2']['sample'].events_and_weights(None)),expression, numerator, "data2Num", binning=binning ) # muon stream data
-    h_data.Divide(plot2.draw(list(plotter.samples['data2']['sample'].events_and_weights(None)),expression, denominator, "data2Den", binning=binning ) )
+    h_dataDen = plot2.draw(list(plotter.samples['data2']['sample'].events_and_weights(None)),expression, denominator, "data2Den", binning=binning )
+    h_data.Divide(h_dataDen)
     h_mc = plot2.draw(list(plotter.samples['ppMuX']['sample'].events_and_weights(None)),expression, numerator, "ppMuXNum", binning=binning )
-    h_mc.Divide(plot2.draw(list(plotter.samples['ppMuX']['sample'].events_and_weights(None)),expression, denominator, "ppMuXDen", binning=binning ) )
+    h_mcDen = plot2.draw(list(plotter.samples['ppMuX']['sample'].events_and_weights(None)),expression, denominator, "ppMuXDen", binning=binning )
+    h_mc.Divide(h_mcDen)
     h_mc0 = plot2.draw(list(plotter.samples['minBias']['sample'].events_and_weights(None)),expression, numerator, "minBiasNum", binning=binning )
-    h_mc0.Divide(plot2.draw(list(plotter.samples['minBias']['sample'].events_and_weights(None)),expression, denominator, "minBiasDen", binning=binning ) )
+    h_mc0Den = plot2.draw(list(plotter.samples['minBias']['sample'].events_and_weights(None)),expression, denominator, "minBiasDen", binning=binning )
+    h_mc0.Divide(h_mc0Den)
     h_mc2 = plot2.draw(list(plotter.samples['qcd']['sample'].events_and_weights(None)),expression, numerator, "qcdNum", binning=binning )
-    h_mc2.Divide(plot2.draw(list(plotter.samples['qcd']['sample'].events_and_weights(None)),expression, denominator, "qcdDen", binning=binning ) )
+    h_mc2Den = plot2.draw(list(plotter.samples['qcd']['sample'].events_and_weights(None)),expression, denominator, "qcdDen", binning=binning )
+    h_mc2.Divide(h_mc2Den)
 
 # muon stream and ppmux
     diff_ppMuX = plot_ratio_deviations(h_data, h_mc)
@@ -219,6 +232,15 @@ def makeJetEffPlot(expression, denominator,numerator,
     canvas_diff.Update()
     canvas_diff.SaveAs("plots/" + filename  + "_muon_jetmettau_diff.pdf")
 
+    h_data.Delete()
+    h_mc.Delete()
+    h_mc2.Delete()
+    h_mc0.Delete()
+    h_dataDen.Delete()
+    h_mcDen.Delete()
+    h_mc2Den.Delete()
+    h_mc0Den.Delete()
+
     canvas_diff.IsA().Destructor(canvas_diff)
 
 if __name__ == "__main__":
@@ -257,7 +279,8 @@ if __name__ == "__main__":
 #phi_binning_fine = (25, -3.14, 3.14)
 
     pfTau_ntuple = ntuple_manager.get_ntuple(
-        "patPFTausCleanedShrinkingCone")
+        "shrinking")
+        #"patPFTausCleanedShrinkingCone")
     pfTau_base_selection = pfTau_ntuple.expr('$jetPt > 10 & abs( $jetEta) < 2.5') #& ( pfTau_ntuple.expr('$numChargedParticlesSignalCone == 1') | pfTau_ntuple.expr('$numChargedParticlesSignalCone == 3') )# & hlt.expr('$hltMu5 == 1')
     makeJetEffPlot(
         expression = pfTau_ntuple.expr('$jetPhi'),
