@@ -22,7 +22,8 @@ process.source = cms.Source("PoolSource",
         #'/store/relval/CMSSW_3_6_1/RelValZTT/GEN-SIM-RECO/START36_V7-v1/0020/EE3E8F74-365D-DF11-AE3D-002618FDA211.root'
         ##'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/data/muTauSkim_1_1.root'
         ##'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/mcMinBias/muTauSkim_1_1.root'
-        'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/mcQCDpt15/muTauSkim_1_1.root'
+        ##'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/mcQCDpt15/muTauSkim_1_1.root'
+        'file:/tmp/abdollah/Wtaunu_Summer10.root'
     ),
     skipEvents = cms.untracked.uint32(0)            
 )
@@ -36,8 +37,8 @@ process.maxEvents = cms.untracked.PSet(
 
 isMC = True # use for MC
 ##isMC = False # use for Data
-HLTprocessName = "HLT" # use for non-reprocessed MC samples and Data
-##HLTprocessName = "REDIGI36X" # use for Spring'10 reprocessed MC
+##HLTprocessName = "HLT" # use for non-reprocessed MC samples and Data
+HLTprocessName = "REDIGI36X" # use for Spring'10 reprocessed MC
 ##HLTprocessName = "REDIGI38XPU" # use for Fall'10 reprocessed MC with pile-up
 ##HLTprocessName = "REDIGI38X" # use for Fall'10 reprocessed MC without pile-up
 pfCandidateCollection = "particleFlow" # pile-up removal disabled
@@ -136,6 +137,7 @@ retVal = configurePatTupleProduction(
     process, patSequenceBuilder = buildWplusJetsEnrichedTauSequence,
     patPFTauCleanerPrototype = patPFTauCleanerPrototype,
     patCaloTauCleanerPrototype = patCaloTauCleanerPrototype,
+    hltProcess = HLTprocessName,
     addGenInfo = isMC
 )
 #--------------------------------------------------------------------------------
@@ -243,6 +245,8 @@ if isMC:
 #
 if HLTprocessName != "HLT":
     process.hltMu.selector.src = cms.InputTag('TriggerResults::' + HLTprocessName)
+    process.patTrigger.processName = HLTprocessName
+    process.patTriggerEvent.processName = HLTprocessName
     process.patCaloTausTriggerEvent.processName = cms.string(HLTprocessName)
     process.patPFTausTriggerEventFixedCone.processName = cms.string(HLTprocessName)
     process.patPFTausTriggerEventShrinkingCone.processName = cms.string(HLTprocessName)
@@ -289,5 +293,5 @@ process.schedule = cms.Schedule(
 )
 
 # print-out all python configuration parameter information
-#print process.dumpPython()
+print process.dumpPython()
 
