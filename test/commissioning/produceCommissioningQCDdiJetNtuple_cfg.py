@@ -229,6 +229,8 @@ if isMC:
 #
 if HLTprocessName != "HLT":
     process.hltJet15U.selector.src = cms.InputTag('TriggerResults::' + HLTprocessName)
+    process.patTrigger.processName = HLTprocessName
+    process.patTriggerEvent.processName = HLTprocessName
     process.patCaloTausTriggerEvent.processName = cms.string(HLTprocessName)
     process.patPFTausTriggerEventFixedCone.processName = cms.string(HLTprocessName)
     process.patPFTausTriggerEventShrinkingCone.processName = cms.string(HLTprocessName)
