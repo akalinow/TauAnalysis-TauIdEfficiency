@@ -23,7 +23,8 @@ class SampleWrapper(object):
     def __getattr__(self, attribute):
         if not self.mirrored:
             print "samples_cache is updating", self.wrapped.name
-            mirror.update_sample_to_use_local_files(self.wrapped)
+            mirror.update_sample_to_use_local_files(self.wrapped,
+                                                    only_local=True)
             self.mirrored = True
         return getattr(self.wrapped, attribute)
     #def __setattr__(self, attribute):
@@ -41,24 +42,17 @@ for name in current_objects:
 
 _sample_list = []
 #--------------------------------------------------------------------------------
-# define QCD di-jet samples
-#_sample_list.extend([ qcddijet_mc, data_dijet ])
-#_sample_list.append(qcddijet_mc)
-_sample_list.append(data_dijet)
-#--------------------------------------------------------------------------------
-
-#--------------------------------------------------------------------------------
 # define QCD muon-enriched samples
 #_sample_list.extend([ ppmux_mc, data_ppmux ])
-#_sample_list.append(ppmux_mc ])
-_sample_list.append(data_ppmux)
+#_sample_list.append(ppmux_mc)
+#_sample_list.append(data_ppmux)
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
 # define W + jets samples
 #_sample_list.extend([ wmunu_mc, data_wjets ])
-#_sample_list.append(wmunu_mc ])
-_sample_list.append(data_wjets)
+_sample_list.append(wmunu_mc)
+#_sample_list.append(data_wjets)
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
@@ -66,10 +60,18 @@ _sample_list.append(data_wjets)
 #_sample_list.extend([ ztautau_mc, zttPU156bx_mc, zttPU156bxPFnoPileUp_mc ])
 #_sample_list.append(ztautau_mc)
 #_sample_list.extend([ zttPU156bx_mc, zttPU156bxPFnoPileUp_mc ])
-_sample_list.extend([ zttPU156bx_mc, zttPU156bxPFnoPileUp_mc ])
+#_sample_list.extend([ zttPU156bx_mc, zttPU156bxPFnoPileUp_mc ])
 #--------------------------------------------------------------------------------
+
+#--------------------------------------------------------------------------------
+# define QCD di-jet samples
+#_sample_list.extend([ qcddijet_mc, data_dijet ])
+#_sample_list.append(qcddijet_mc)
+#_sample_list.append(data_dijet)
+#--------------------------------------------------------------------------------
+
 
 if __name__ == "__main__":
     print "Copying CASTOR files to local area:", mirror.LOCAL_DIRECTORY
     # run up to 20 rfcp jobs concurrently
-    mirror.mirror_samples(_sample_list, max_jobs = 20)
+    mirror.mirror_samples(_sample_list, max_jobs = 30)
