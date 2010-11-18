@@ -33,7 +33,7 @@
     },
     "mcWtoMuNu" : {
         "allEvents": 5330940.0, 
-        "directory": "rfio:/castor/cern.ch/user/v/veelken/TauIdCommissioning/qcdMuEnriched/v3_0/mcWplusJets/",
+        "directory": "rfio:/castor/cern.ch/user/v/veelken/TauIdCommissioning/WplusJets/v3_0/mcWplusJets/",
 	"files": [
 	    "tauIdEffEDNtuple_wPlusJetsEnriched_*.root"
         ],
