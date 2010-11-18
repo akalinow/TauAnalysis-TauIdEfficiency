@@ -55,7 +55,7 @@ def local_version_current(castor_file):
 def mirror_file(castor_file):
     ''' Initiate copy a castor file to the local directory.
 
-    Returns a dictionary containing the background subprocess 
+    Returns a dictionary containing the background subprocess
     and information about the file.
     '''
     # Get file path for new file
@@ -67,7 +67,7 @@ def mirror_file(castor_file):
         os.makedirs(local_dirname)
     command = ['rfcp', castor_file, local_path]
     print "Requesting %s" % (castor_file, )
-    subproc = subprocess.Popen(command, stdout=subprocess.PIPE, 
+    subproc = subprocess.Popen(command, stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE)
     return { "proc" : subproc,
             "pid" : subproc.pid,
@@ -94,17 +94,19 @@ def wait_for_completion(current_jobs, finished_jobs, max_running_jobs):
                     raise IOError, " target directory is out of space!  No more files can be copied"
                 # Move process to finished jobs
                 finished_jobs[pid] = proc_info
+                del proc_info['proc']
                 # Remove from running jobs list
                 del current_jobs[pid]
 
 
 def stage_files(castor_files):
     ''' Request that castor stage the relevant files '''
+    return
     for castor_file in castor_files:
         # Don't care about keeping track of output
-        try: 
-            stager = subprocess.Popen(['stager_get', '-M', castor_file], 
-                                      stdout=subprocess.PIPE, 
+        try:
+            stager = subprocess.Popen(['stager_get', '-M', castor_file],
+                                      stdout=subprocess.PIPE,
                                       stderr=subprocess.PIPE)
             stager.wait()
         except OSError: # File doesn't exist
@@ -189,7 +191,7 @@ def mirror_samples(samples, max_jobs=20):
                     for sample in samples]
     mirror_files(itertools.chain(*sample_files), max_jobs)
 
-def update_sample_to_use_local_files(sample, tiny_mode=False):
+def update_sample_to_use_local_files(sample, tiny_mode=False, only_local=False):
     ''' Update a sample to use any available local files '''
     if tiny_mode:
         print "Warning, tiny mode is on! Only taking 1 file"
@@ -197,11 +199,12 @@ def update_sample_to_use_local_files(sample, tiny_mode=False):
         count = 0
         new_file_list = []
         local_count = 0
+        skipped_count = 0
         for input_file in expand_file_list(subsample.files):
-            count += 1            
+            count += 1
             if tiny_mode:
                 if count > 1:
-                    break                
+                    break
             if is_on_castor(input_file):
                 # strip rfio:
                 clean_file = clean_name(input_file)
@@ -210,11 +213,17 @@ def update_sample_to_use_local_files(sample, tiny_mode=False):
                     local_count += 1
                     input_file = "file:%s" % local_version(clean_file)
                 else:
+                    if only_local:
+                        skipped_count += 1
+                        continue
                     # Request CASTOR stage this file
-                    stage_files([clean_file])                    
+                    stage_files([clean_file])
             new_file_list.append(input_file)
         # Update the files for this sample
         subsample.files = new_file_list
         print "Subsample %s has (%i/%i) files cached locally" % (
-            subsample.name, local_count, len(subsample.files))
+            subsample.name, local_count, len(subsample.files)+skipped_count)
+        if only_local and skipped_count:
+            print "WARNING: the [only_local] option is enabled,"\
+                    " and %i files have been skipped!" % skipped_count
 
