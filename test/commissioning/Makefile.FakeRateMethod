@@ -34,24 +34,27 @@ ${DIR}/validateTauFakeRateKNN_JetPt.png: ../../macros/validateTauFakeRateKNN.C $
 # Train the MVA
 ${DIR}/fakeRate.db: ${XML} ${DIR}/pass.root ${DIR}/fail.root 
 	rm -f $@.temp.db
+	rm -f ${DIR}/train.log
 	cd ${DIR} && mkdir -p train && \
 	../trainTauFakeRate_cfg.py xml=../fakeRateMVADef.xml \
 	  passing=pass.root \
 	  failing=fail.root \
-	  outputFile=$(@F).temp.db
+	  outputFile=$(@F).temp.db >& train.log
 	mv $@.temp.db $@
 
 # Build the 'numerator'
 ${DIR}/pass.root: fakeratemethod_ntuplize.py samples.py samples_cache.py ${DIR}/${CFG}
 	mkdir -p ${DIR}
+	rm -f ${DIR}/pass.log
 	./fakeratemethod_ntuplize.py -passing --ntuple ${ALGO} \
-	  --config ${DIR}/${CFG} --output $@ 
+	  --config ${DIR}/${CFG} --output $@ >& ${DIR}/pass.log
 
 # Build the 'denominator'
 ${DIR}/fail.root: fakeratemethod_ntuplize.py samples.py samples_cache.py ${DIR}/${CFG}
 	mkdir -p ${DIR}
+	rm -f ${DIR}/fail.log
 	./fakeratemethod_ntuplize.py -failing --ntuple ${ALGO} \
-	  --config ${DIR}/${CFG} --output $@
+	  --config ${DIR}/${CFG} --output $@ >& ${DIR}/fail.log
 
 # Copy the cfg used to select the ntuples into the folder for persistence
 ${DIR}/${CFG}: ${CFG}
