@@ -57,7 +57,11 @@ ntuple_manager = getattr(
     samples, options.sample).build_ntuple_manager("tauIdEffNtuple")
 
 # Get our specific ntuple
-ntuple = ntuple_manager.get_ntuple(options.ntuple)
+try:
+    ntuple = ntuple_manager.get_ntuple(options.ntuple)
+except:
+    print ntuple_manager
+    raise
 
 # Build the denominator query
 denominator = None
@@ -116,7 +120,9 @@ elif len(events_list) > 1:
             if weight != entry[1]:
                 raise ValueError("Events with different weights not supported yet !!")
         print("--> adding %s events to TChain..." % entry[0].GetEntries())
+        print entry[0]
         events.Add(entry[0])
+
 if events is None:
     raise ValueError("Failed to access TChain !!")
 
@@ -126,7 +132,8 @@ events.SetEstimate(100000000L)
 
 if options.passing:
     # Build a TPolyMaker3D with our points
-    events.Draw(str(draw_string), str(passing))
+    selected_events = events.Draw(str(draw_string), str(passing))
+    print "TTree::Drew ntuple with %i events" % selected_events
     numerator_tuple = ROOT.gPad.GetPrimitive("TPolyMarker3D")
     numerator_tuple.SetName("passing")
 
@@ -142,6 +149,7 @@ if options.passing:
 if options.failing:
     # Build a TPolyMaker3D with our points
     drawn = events.Draw(str(draw_string), str(failing))
+    print "TTree::Drew ntuple with %i events" % drawn
     denominator_tuple = ROOT.gPad.GetPrimitive("TPolyMarker3D")
     denominator_tuple.SetName("failing")
     print "Built 'failing' pre-ntuple with %i entries" % \
