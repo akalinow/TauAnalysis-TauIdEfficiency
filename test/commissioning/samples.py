@@ -7,7 +7,7 @@ samples.py
 
 Central defintion of data sources for commissioning.
 
-$Id: samples.py,v 1.21 2010/11/12 17:05:51 friis Exp $
+$Id: samples.py,v 1.22 2010/11/14 11:05:40 veelken Exp $
 
 '''
 
@@ -22,15 +22,15 @@ dijetSampleAliasMap = {
 }
 
 muEnrichedSampleAliasMap = {
-    'patPFTausHPS': 'hps',
-    'patPFTausShrinkingCone': 'shrinking',
-    'patPFTausFixedCone': 'fixed',
+    'patPFTausCleanedHPS': 'hps',
+    'patPFTausCleanedShrinkingCone': 'shrinking',
+    'patPFTausCleanedFixedCone': 'fixed',
 }
 
 wJetsSampleAliasMap = {
-    'patPFTausHPS': 'hps',
-    'patPFTausShrinkingCone': 'shrinking',
-    'patPFTausFixedCone': 'fixed',
+    'patPFTausCleanedHPS': 'hps',
+    'patPFTausCleanedShrinkingCone': 'shrinking',
+    'patPFTausCleanedFixedCone': 'fixed',
 }
 
 # Locations of the luminosity maps
@@ -70,19 +70,19 @@ qcddijet_mc = build_sample(
     alias_map = dijetSampleAliasMap)
 
 ## CV: sample has not finished processing yet (11/12/10)
-##ppmux_mc = build_sample(
-##    _MC_LUMI_MAP_FILE, "mc_ppmux", "merge",
-##    take_every=1, datasets = ["mcQCDppMuXPtHatGt20PtMuGt10"],
-##    alias_map = muEnrichedSampleAliasMap)
-ppmux_mc = None
+ppmux_mc = build_sample(
+   _MC_LUMI_MAP_FILE, "mc_ppmux", "merge",
+   take_every=1, datasets = ["mcQCDppMuXPtHatGt20PtMuGt10"],
+   alias_map = muEnrichedSampleAliasMap)
+#ppmux_mc = None
 
 print "loading definition of W + jets background Monte Carlo samples..."
 ## CV: sample has not finished processing yet (11/12/10)
-##wmunu_mc = build_sample(
-##    _MC_LUMI_MAP_FILE, "mc_wmunu", "merge",
-##    take_every=1, datasets = ["mcWtoMuNu"],
-##    alias_map = wJetsSampleAliasMap)
-wmunu_mc = None
+wmunu_mc = build_sample(
+   _MC_LUMI_MAP_FILE, "mc_wmunu", "merge",
+   take_every=1, datasets = ["mcWtoMuNu"],
+   alias_map = wJetsSampleAliasMap)
+#wmunu_mc = None
 
 # For data, we use the add mode, to concatenate data
 print "loading definition of Data samples..."
