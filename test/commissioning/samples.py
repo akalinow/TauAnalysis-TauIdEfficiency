@@ -7,7 +7,7 @@ samples.py
 
 Central defintion of data sources for commissioning.
 
-$Id: samples.py,v 1.22 2010/11/14 11:05:40 veelken Exp $
+$Id: samples.py,v 1.23 2010/11/18 11:12:28 friis Exp $
 
 '''
 
@@ -86,9 +86,9 @@ wmunu_mc = build_sample(
 
 # For data, we use the add mode, to concatenate data
 print "loading definition of Data samples..."
-data_dijet_runs132440to133802 = build_sample(
-    _DATA_LUMI_MAP_FILE, "qcdDiJet_data_runs132440to133802", "add",
-    take_every=1, datasets = ["qcdDiJet_data_runs132440_133802"],
+data_dijet_runs132440to135802 = build_sample(
+    _DATA_LUMI_MAP_FILE, "qcdDiJet_data_runs132440to135802", "add",
+    take_every=1, datasets = ["qcdDiJet_data_runs132440_135802"],
     alias_map = dijetSampleAliasMap)
 data_dijet_runs135821to141887 = build_sample(
     _DATA_LUMI_MAP_FILE, "qcdDiJet_data_runs135821to141887", "add",
@@ -101,7 +101,7 @@ data_dijet_runs141950to144114 = build_sample(
 data_dijet = build_sample(
     _DATA_LUMI_MAP_FILE, "qcdDiJet_data", "add",
     take_every=1, datasets = [
-      "qcdDiJet_data_runs132440_133802", "qcdDiJet_data_runs135821_141887", "qcdDiJet_data_runs141950_144114"
+      "qcdDiJet_data_runs132440_135802", "qcdDiJet_data_runs135821_141887", "qcdDiJet_data_runs141950_144114"
     ],
     alias_map = dijetSampleAliasMap)
 
