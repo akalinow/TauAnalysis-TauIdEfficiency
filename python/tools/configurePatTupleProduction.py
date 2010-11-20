@@ -268,7 +268,7 @@ def configurePatTupleProduction(process, patSequenceBuilder = None,
 
     #--------------------------------------------------------------------------------
     # replace caloJets by pfJets
-    switchJetCollection(process, jetCollection = cms.InputTag("iterativeCone5PFJets"))
+    switchJetCollection(process, jetCollection = cms.InputTag("iterativeCone5PFJets"), outputModule = '')
     #
     # NOTE: need to delete empty sequence produced by call to "switchJetCollection"
     #       in order to avoid error when calling "process.dumpPython"
