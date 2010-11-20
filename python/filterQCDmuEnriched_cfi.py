@@ -41,8 +41,34 @@ diMuonVeto = cms.EDFilter("PATCandViewCountFilter",
 #
 selectedMuons = cms.EDFilter("PATMuonSelector",
     src = cms.InputTag('patMuons'),
-    cut = cms.string("isGlobalMuon & pt > 10. & abs(eta) < 2.5 & userIsolation('pfmuIsoDepositPFCandidates') > 0.5*pt"),
+    cut = cms.string("isGlobalMuon & pt > 10. & abs(eta) < 2.1"),
     filter = cms.bool(True)
+)
+
+selectedNonIsoMuons = cms.EDFilter("PATMuonPFIsolationSelector",
+    src = cms.InputTag('selectedMuons'),
+    pfCandidateSource = cms.InputTag('pfNoPileUp'),
+    chargedHadronIso = cms.PSet(
+        ptMin = cms.double(-1.),        
+        dRvetoCone = cms.double(-1.),
+        dRisoCone = cms.double(0.4)
+    ),
+    neutralHadronIso = cms.PSet(
+        ptMin = cms.double(0.5),        
+        dRvetoCone = cms.double(0.08),        
+        dRisoCone = cms.double(0.4)
+    ),
+    photonIso = cms.PSet(
+        ptMin = cms.double(0.5),        
+        dPhiVeto = cms.double(-1.),
+        dEtaVeto = cms.double(-1.),
+        dRvetoCone = cms.double(-1.),
+        dRisoCone = cms.double(0.4)
+    ),
+    sumPtMin = cms.double(0.25),
+    sumPtMax = cms.double(1000.),                               
+    sumPtMethod = cms.string("relative"),
+    filter = cms.bool(True)                    
 )
 #--------------------------------------------------------------------------------
 
@@ -59,12 +85,11 @@ selectedCaloTaus = cms.EDFilter("CaloTauSelector",
 
 muonCaloTauPairs = cms.EDProducer("DiCandidatePairProducer",
     useLeadingTausOnly = cms.bool(False),
-    srcLeg1 = cms.InputTag('patSelectedMuons'),
+    srcLeg1 = cms.InputTag('selectedNonIsoMuons'),
     srcLeg2 = cms.InputTag('selectedCaloTaus'),
     dRmin12 = cms.double(0.),
     srcMET = cms.InputTag('metJESCorAK5CaloJetMuons'),
     recoMode = cms.string(""),
-    scaleFuncImprovedCollinearApprox = cms.string('1'),                                  
     verbosity = cms.untracked.int32(0)                                       
 )
 
@@ -76,7 +101,7 @@ selectedMuonCaloTauPairs = cms.EDFilter("DiCandidatePairSelector",
 
 muonCaloTauSkimPath = cms.Path(
     hltMu
-   + globalMuons + diMuonVeto + selectedMuons
+   + globalMuons + diMuonVeto + selectedMuons + selectedNonIsoMuons
    + selectedCaloTaus + muonCaloTauPairs + selectedMuonCaloTauPairs
    + dataQualityFilters
 )
@@ -95,12 +120,11 @@ selectedPFTaus = cms.EDFilter("PFTauSelector",
 
 muonPFTauPairs = cms.EDProducer("DiCandidatePairProducer",
     useLeadingTausOnly = cms.bool(False),
-    srcLeg1 = cms.InputTag('patSelectedMuons'),
+    srcLeg1 = cms.InputTag('selectedNonIsoMuons'),
     srcLeg2 = cms.InputTag('selectedPFTaus'),
     dRmin12 = cms.double(0.),
-    srcMET = cms.InputTag('pfType1MET'),
+    srcMET = cms.InputTag('pfMet'),
     recoMode = cms.string(""),
-    scaleFuncImprovedCollinearApprox = cms.string('1'),                                  
     verbosity = cms.untracked.int32(0)                                       
 )
 
@@ -112,7 +136,7 @@ selectedMuonPFTauPairs = cms.EDFilter("DiCandidatePairSelector",
 
 muonPFTauSkimPath = cms.Path(    
     hltMu
-   + globalMuons + diMuonVeto + selectedMuons
+   + globalMuons + diMuonVeto + selectedMuons + selectedNonIsoMuons
    + selectedPFTaus + muonPFTauPairs + selectedMuonPFTauPairs
    + dataQualityFilters
 )
