@@ -22,9 +22,9 @@ process.source = cms.Source("PoolSource",
         #'/store/relval/CMSSW_3_6_1/RelValZTT/GEN-SIM-RECO/START36_V7-v1/0020/EE3E8F74-365D-DF11-AE3D-002618FDA211.root'
         ##'file:/data1/veelken/CMSSW_3_6_x/skims/pseudoData_Ztautau.root'
         ##'file:/data1/veelken/CMSSW_3_6_x/skims/Ztautau_1_1_sXK.root'
-        ##'file:/data1/veelken/CMSSW_3_6_x/skims/selEvents_ZtoDiTau_qcdDiJet_RECO.root'
+        'file:/data1/veelken/CMSSW_3_6_x/skims/selEvents_ZtoDiTau_qcdDiJet_RECO.root'
         ##'file:/data1/veelken/CMSSW_3_6_x/skims/ppMuXPtGt20Mu15_GEN_SIM_RECO_1_1_2VK.root'
-        'file:/data1/veelken/CMSSW_3_8_x/skims/test/mcDYttPU156bx_GEN_SIM_RECO_1_1_1VV.root'
+        ##'file:/data1/veelken/CMSSW_3_8_x/skims/test/mcDYttPU156bx_GEN_SIM_RECO_1_1_1VV.root'
         ##'file:/data1/veelken/CMSSW_3_6_x/skims/selEvents_ZtoDiTau_qcdDiJet_RECO.root'
     ),
     skipEvents = cms.untracked.uint32(0)
@@ -40,8 +40,8 @@ process.maxEvents = cms.untracked.PSet(
 isMC = True # use for MC
 ##isMC = False # use for Data
 ##HLTprocessName = "HLT" # use for non-reprocessed MC samples and Data
-##HLTprocessName = "REDIGI36X" # use for Spring'10 reprocessed MC
-HLTprocessName = "REDIGI38XPU" # use for Fall'10 reprocessed MC with pile-up
+HLTprocessName = "REDIGI36X" # use for Spring'10 reprocessed MC
+##HLTprocessName = "REDIGI38XPU" # use for Fall'10 reprocessed MC with pile-up
 ##HLTprocessName = "REDIGI38X" # use for Fall'10 reprocessed MC without pile-up
 pfCandidateCollection = "particleFlow" # pile-up removal disabled
 ##pfCandidateCollection = "pfNoPileUp" # pile-up removal enabled
@@ -49,7 +49,6 @@ pfCandidateCollection = "particleFlow" # pile-up removal disabled
 
 #--------------------------------------------------------------------------------
 # define GlobalTag to be used for event reconstruction
-# (only relevant for HPS tau reconstruction algorithm)
 if isMC:
     process.GlobalTag.globaltag = cms.string('START38_V12::All')
 else:
@@ -122,6 +121,7 @@ process.load("TauAnalysis.TauIdEfficiency.ntupleConfigCaloTau_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigPFTauFixedCone_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigPFTauShrinkingCone_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigPFTauHPS_cfi")
+process.load("TauAnalysis.TauIdEfficiency.ntupleConfigPFTauHPSpTaNC_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigPFTauShrinkingConeEllipticPhotonIso_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigGlobalVariables_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigTrackVariables_cfi")
@@ -190,6 +190,14 @@ process.ntupleProducer = cms.EDProducer("ObjValEDNtupleProducer",
             src = cms.InputTag(retVal["pfTauCollectionHPS"])
         ),
 
+        # variables specific to PFTaus reconstructed by HPS + TaNC combined tau id. algorithm
+        pfTausHPSpTaNC_rec01 = process.pfTausHPSpTaNC_recInfo.clone(
+            src = cms.InputTag(retVal["pfTauCollectionHPSpTaNC"])
+        ),
+        pfTausHPSpTaNC_rec02 = process.tauTrackVariables_template.clone(
+            src = cms.InputTag(retVal["pfTauCollectionHPSpTaNC"])
+        ),
+
         # variables specific to shrinking cone PFTaus
         # reconstructed using ellipse for photon isolation
         pfTausShrinkingConeEllPhotonIso_rec01 = process.pfTausShrinkingConeEllipticPhotonIso_recInfo.clone(
@@ -213,6 +221,8 @@ if isMC:
     setattr(process.ntupleProducer.sources, "pfTausShrinkingCone_gen", process.pfTausShrinkingCone_genInfo)
     process.pfTausHPS_genInfo.src = cms.InputTag(retVal["pfTauCollectionHPS"])
     setattr(process.ntupleProducer.sources, "pfTausHPS_gen", process.pfTausHPS_genInfo)
+    process.pfTausHPSpTaNC_genInfo.src = cms.InputTag(retVal["pfTauCollectionHPSpTaNC"])
+    setattr(process.ntupleProducer.sources, "pfTausHPSpTaNC_gen", process.pfTausHPSpTaNC_genInfo)
     process.pfTausShrinkingConeEllipticPhotonIso_genInfo.src = cms.InputTag(retVal["pfTauCollectionShrinkingConeEllipticPhotonIso"])
     setattr(process.ntupleProducer.sources, "pfTausShrinkingConeEllPhotonIso_gen", process.pfTausShrinkingConeEllipticPhotonIso_genInfo)
     # add in information about generator level visible taus and all generator level jets
@@ -235,6 +245,7 @@ if HLTprocessName != "HLT":
     process.patPFTausTriggerEventFixedCone.processName = cms.string(HLTprocessName)
     process.patPFTausTriggerEventShrinkingCone.processName = cms.string(HLTprocessName)
     process.patPFTausTriggerEventHPS.processName = cms.string(HLTprocessName)
+    process.patPFTausTriggerEventHPSpTaNC.processName = cms.string(HLTprocessName)
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------

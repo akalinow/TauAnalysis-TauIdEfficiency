@@ -21,9 +21,9 @@ process.source = cms.Source("PoolSource",
         #'/store/relval/CMSSW_3_6_1/RelValZTT/GEN-SIM-RECO/START36_V7-v1/0021/F405BC9A-525D-DF11-AB96-002618943811.root',
         #'/store/relval/CMSSW_3_6_1/RelValZTT/GEN-SIM-RECO/START36_V7-v1/0020/EE3E8F74-365D-DF11-AE3D-002618FDA211.root'
         ##'file:/data1/veelken/CMSSW_3_6_x/skims/pseudoData_Ztautau.root'
-        'file:/data1/veelken/CMSSW_3_6_x/skims/Ztautau_1_1_sXK.root'
+        ##'file:/data1/veelken/CMSSW_3_6_x/skims/Ztautau_1_1_sXK.root'
         ##'file:/data1/veelken/CMSSW_3_6_x/skims/selEvents_ZtoDiTau_qcdDiJet_RECO.root'
-        ##'file:/data1/veelken/CMSSW_3_6_x/skims/ppMuXPtGt20Mu15_GEN_SIM_RECO_1_1_2VK.root'
+        'file:/data1/veelken/CMSSW_3_6_x/skims/ppMuXPtGt20Mu15_GEN_SIM_RECO_1_1_2VK.root'
     ),
     skipEvents = cms.untracked.uint32(0)            
 )
@@ -37,8 +37,8 @@ process.maxEvents = cms.untracked.PSet(
 
 isMC = True # use for MC
 ##isMC = False # use for Data
-HLTprocessName = "HLT" # use for non-reprocessed MC samples and Data
-##HLTprocessName = "REDIGI36X" # use for Spring'10 reprocessed MC
+##HLTprocessName = "HLT" # use for non-reprocessed MC samples and Data
+HLTprocessName = "REDIGI36X" # use for Spring'10 reprocessed MC
 ##HLTprocessName = "REDIGI38XPU" # use for Fall'10 reprocessed MC with pile-up
 ##HLTprocessName = "REDIGI38X" # use for Fall'10 reprocessed MC without pile-up
 pfCandidateCollection = "particleFlow" # pile-up removal disabled
@@ -47,7 +47,6 @@ pfCandidateCollection = "particleFlow" # pile-up removal disabled
 
 #--------------------------------------------------------------------------------
 # define GlobalTag to be used for event reconstruction
-# (only relevant for HPS tau reconstruction algorithm)
 if isMC:
     process.GlobalTag.globaltag = cms.string('START38_V12::All')
 else:  
@@ -82,25 +81,16 @@ configurePrePatProduction(process, pfCandidateCollection = pfCandidateCollection
 from TauAnalysis.TauIdEfficiency.tools.configurePatTupleProduction import configurePatTupleProduction
 from TauAnalysis.TauIdEfficiency.tools.sequenceBuilder import buildQCDmuEnrichedTauSequence
 
-# define muon selection criteria
-# (used for "cleaning" of CaloTau/PFTau collection)
-#
-# NOTE: only muons passing selection will be written to Tau Ntuple
-#
-##process.load("PhysicsTools.PatAlgos.selectionLayer1.muonSelector_cfi")
-##process.selectedPatMuons.cut = cms.string("isGlobalMuon & pt > 3 & abs(eta) < 2.5")
-
+# add muon isolation variables
 process.load("PhysicsTools.PFCandProducer.Isolation.pfMuonIsolation_cff")
 from PhysicsTools.PFCandProducer.Isolation.tools_cfi import *
 process.pfmuIsoDepositPFCandidates = isoDepositReplace("muons", "particleFlow")
 process.prePatProductionSequence._seq = process.prePatProductionSequence._seq * process.pfmuIsoDepositPFCandidates
 
 process.load("PhysicsTools.PatAlgos.producersLayer1.muonProducer_cfi")
-process.patMuons.userIsolation.user = cms.VPSet(
-    cms.PSet( 
-        src = cms.InputTag("pfmuIsoDepositPFCandidates"),
-        deltaR = cms.double(0.4)
-    )
+process.patMuons.userIsolation.pfAllParticles = cms.PSet( 
+    src = cms.InputTag("pfmuIsoDepositPFCandidates"),
+    deltaR = cms.double(0.4)
 )
 
 # "clean" CaloTau/PFTau collections
@@ -153,6 +143,7 @@ process.load("TauAnalysis.TauIdEfficiency.ntupleConfigCaloTau_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigPFTauFixedCone_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigPFTauShrinkingCone_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigPFTauHPS_cfi")
+process.load("TauAnalysis.TauIdEfficiency.ntupleConfigPFTauHPSpTaNC_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigPFTauShrinkingConeEllipticPhotonIso_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigGenJets_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigGenPhaseSpaceEventInfo_cfi")
@@ -170,6 +161,10 @@ process.ntupleProducer = cms.EDProducer("ObjValEDNtupleProducer",
 
         # variables specifying x,y,z coordinates of primary event vertices
         vertex = process.vertex_template,
+
+        # number of reconstructed primary event vertices
+        # with sum(trackPt) exceeding different thresholds
+        vertexMultiplicity = process.vertexMultiplicity_template,
 
         # variables specific to Muons
         muons_rec = process.muons_recInfo,              
@@ -194,6 +189,11 @@ process.ntupleProducer = cms.EDProducer("ObjValEDNtupleProducer",
             src = cms.InputTag(retVal["pfTauCollectionHPS"])                       
         ),
 
+        # variables specific to PFTaus reconstructed by HPS + TaNC combined tau id. algorithm
+        pfTausHPSpTaNC_rec01 = process.pfTausHPSpTaNC_recInfo.clone(
+            src = cms.InputTag(retVal["pfTauCollectionHPSpTaNC"])
+        ),
+
         # variables specific to shrinking cone PFTaus
         # reconstructed using ellipse for photon isolation
         pfTausShrinkingConeEllPhotonIso_rec = process.pfTausShrinkingConeEllipticPhotonIso_recInfo.clone(
@@ -212,6 +212,8 @@ if isMC:
     setattr(process.ntupleProducer.sources, "pfTausShrinkingCone_gen", process.pfTausShrinkingCone_genInfo)
     process.pfTausHPS_genInfo.src = cms.InputTag(retVal["pfTauCollectionHPS"])
     setattr(process.ntupleProducer.sources, "pfTausHPS_gen", process.pfTausHPS_genInfo)
+    process.pfTausHPSpTaNC_genInfo.src = cms.InputTag(retVal["pfTauCollectionHPSpTaNC"])
+    setattr(process.ntupleProducer.sources, "pfTausHPSpTaNC_gen", process.pfTausHPSpTaNC_genInfo)    
     process.pfTausShrinkingConeEllipticPhotonIso_genInfo.src = cms.InputTag(retVal["pfTauCollectionShrinkingConeEllipticPhotonIso"])
     setattr(process.ntupleProducer.sources, "pfTausShrinkingConeEllPhotonIso_gen", process.pfTausShrinkingConeEllipticPhotonIso_genInfo)
     # add in information about generator level visible taus and all generator level jets
@@ -233,7 +235,8 @@ if HLTprocessName != "HLT":
     process.patCaloTausTriggerEvent.processName = cms.string(HLTprocessName)
     process.patPFTausTriggerEventFixedCone.processName = cms.string(HLTprocessName)
     process.patPFTausTriggerEventShrinkingCone.processName = cms.string(HLTprocessName)
-    process.patPFTausTriggerEventHPS.processName = cms.string(HLTprocessName)    
+    process.patPFTausTriggerEventHPS.processName = cms.string(HLTprocessName)
+    process.patPFTausTriggerEventHPSpTaNC.processName = cms.string(HLTprocessName)
 #--------------------------------------------------------------------------------    
 
 #--------------------------------------------------------------------------------

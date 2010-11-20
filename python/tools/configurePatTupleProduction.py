@@ -194,7 +194,36 @@ def configurePatTupleProduction(process, patSequenceBuilder = None,
         doSVreco = cms.bool(False)
     )
     #--------------------------------------------------------------------------------
-    
+
+    #--------------------------------------------------------------------------------
+    #
+    # produce collection of pat::Tau objects representing PFTaus
+    # reconstructed by HPS + TaNC combined tau id. algorithm
+    # (plus combinations of muon + tau-jet pairs) 
+    #
+    switchToPFTauHPSpTaNC(process)
+    process.cleanPatTaus.preselection = cms.string('')
+    process.patPFTauProducerHPSpTaNC = copy.deepcopy(process.patTaus)
+
+    retVal_pfTauHPSpTaNC = patSequenceBuilder(
+        process,
+        collectionName = [ "patPFTaus", "HPSpTaNC" ],
+        patTauProducerPrototype = process.patPFTauProducerHPSpTaNC,
+        patTauCleanerPrototype = patPFTauCleanerPrototype,
+        triggerMatcherProtoType = process.patTauTriggerMatchHLTsingleJet15UprotoType,
+        addGenInfo = addGenInfo
+    )
+    process.pfTauSequenceHPSpTaNC = retVal_pfTauHPSpTaNC["sequence"]
+
+    process.patMuonPFTauPairsHPSpTaNC = process.allMuTauPairs.clone(
+        srcLeg1 = cms.InputTag('patMuons'),
+        srcLeg2 = cms.InputTag(retVal_pfTauHPSpTaNC["collection"]),
+        srcMET = cms.InputTag('patPFMETs'),
+        srcGenParticles = cms.InputTag(''),
+        doSVreco = cms.bool(False)
+    )
+    #--------------------------------------------------------------------------------
+
     #--------------------------------------------------------------------------------
     #
     # produce collection of pat::Tau objects representing PFTaus
@@ -261,9 +290,11 @@ def configurePatTupleProduction(process, patSequenceBuilder = None,
        # store TaNC inputs as discriminators
        + process.produceTancMVAInputDiscriminators
        + process.pfTauSequenceFixedCone + process.pfTauSequenceShrinkingCone + process.pfTauSequenceHPS
+       + process.pfTauSequenceHPSpTaNC
        + process.pfTauSequenceShrinkingConeEllipticPhotonIso
        + process.patMuonCaloTauPairs
        + process.patMuonPFTauPairsFixedCone + process.patMuonPFTauPairsShrinkingCone + process.patMuonPFTauPairsHPS
+       + process.patMuonPFTauPairsHPSpTaNC 
        + process.patMuonPFTauPairsShrinkingConeEllipticPhotonIso
     )
 
@@ -274,5 +305,6 @@ def configurePatTupleProduction(process, patSequenceBuilder = None,
     retVal["pfTauCollectionFixedCone"] = retVal_pfTauFixedCone["collection"]
     retVal["pfTauCollectionShrinkingCone"] = retVal_pfTauShrinkingCone["collection"]
     retVal["pfTauCollectionHPS"] = retVal_pfTauHPS["collection"]
+    retVal["pfTauCollectionHPSpTaNC"] = retVal_pfTauHPSpTaNC["collection"]
     retVal["pfTauCollectionShrinkingConeEllipticPhotonIso"] = retVal_pfTauShrinkingConeEllipticPhotonIso["collection"]
     return retVal
