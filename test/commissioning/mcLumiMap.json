@@ -39,6 +39,14 @@
         ],
         "int_lumi": 517600.0
     },
+    "mcWtoMuNuPU156bx" : {
+        "allEvents": 5330940.0, 
+        "directory": "rfio:/castor/cern.ch/user/v/veelken/TauIdCommissioning/WplusJets/v3_2/mcWplusJetsPU156bx/",
+	"files": [
+	    "tauIdEffEDNtuple_wPlusJetsEnriched_*.root"
+        ],
+        "int_lumi": 517600.0
+    },
     "Ztautau" : {
         "allEvents": 2057446, 
         "directory": "rfio:/castor/cern.ch/user/v/veelken/TauIdCommissioning/qcdDiJet/v3_2/mcDYtautau/",

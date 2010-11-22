@@ -7,7 +7,7 @@ samples.py
 
 Central defintion of data sources for commissioning.
 
-$Id: samples.py,v 1.23 2010/11/18 11:12:28 friis Exp $
+$Id: samples.py,v 1.24 2010/11/20 11:27:17 veelken Exp $
 
 '''
 
@@ -69,20 +69,20 @@ qcddijet_mc = build_sample(
     ],
     alias_map = dijetSampleAliasMap)
 
-## CV: sample has not finished processing yet (11/12/10)
 ppmux_mc = build_sample(
    _MC_LUMI_MAP_FILE, "mc_ppmux", "merge",
    take_every=1, datasets = ["mcQCDppMuXPtHatGt20PtMuGt10"],
    alias_map = muEnrichedSampleAliasMap)
-#ppmux_mc = None
 
 print "loading definition of W + jets background Monte Carlo samples..."
-## CV: sample has not finished processing yet (11/12/10)
 wmunu_mc = build_sample(
    _MC_LUMI_MAP_FILE, "mc_wmunu", "merge",
    take_every=1, datasets = ["mcWtoMuNu"],
    alias_map = wJetsSampleAliasMap)
-#wmunu_mc = None
+wmunuPU156bx_mc = build_sample(
+   _MC_LUMI_MAP_FILE, "mc_wmunuPU156bx", "merge",
+   take_every=1, datasets = ["mcWtoMuNuPU156bx"],
+   alias_map = wJetsSampleAliasMap)
 
 # For data, we use the add mode, to concatenate data
 print "loading definition of Data samples..."
