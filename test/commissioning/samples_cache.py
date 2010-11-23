@@ -13,7 +13,7 @@ from samples import ztautau_mc, zttPU156bx_mc, zttPU156bxPFnoPileUp_mc, \
      data_wjets_runs132440to145761, data_wjets_runs145762_147116, data_wjets_runs147117_149442, data_wjets
 
 #mirror.LOCAL_DIRECTORY = "/tmp/tau_commissioning_friis"
-mirror.LOCAL_DIRECTORY = "/tmp/tau_fakerate_cache"
+mirror.LOCAL_DIRECTORY = "/data1/friis/tau_fakerate_ntuples"
 
 class SampleWrapper(object):
     " Wrapper class to automatically update a sample when it is accessed "
@@ -44,30 +44,30 @@ _sample_list = []
 
 #--------------------------------------------------------------------------------
 # define QCD muon-enriched samples
-#_sample_list.extend([ ppmux_mc, data_ppmux ])
+_sample_list.extend([ ppmux_mc, data_ppmux ])
 #_sample_list.append(ppmux_mc)
 #_sample_list.append(data_ppmux)
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
 # define W + jets samples
-#_sample_list.extend([ wmunu_mc, wmunuPU156bx_mc, data_wjets ])
+_sample_list.extend([ wmunu_mc, wmunuPU156bx_mc, data_wjets ])
 #_sample_list.append(wmunu_mc)
-_sample_list.append(wmunuPU156bx_mc)
+#_sample_list.append(wmunuPU156bx_mc)
 #_sample_list.append(data_wjets)
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
 # define Z --> tau+ tau- samples for tau id. efficiency plots
 #_sample_list.extend([ ztautau_mc, zttPU156bx_mc, zttPU156bxPFnoPileUp_mc ])
-#_sample_list.append(ztautau_mc)
+_sample_list.append(ztautau_mc)
 #_sample_list.extend([ zttPU156bx_mc, zttPU156bxPFnoPileUp_mc ])
 #_sample_list = [ ztautau_mc ]
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
 # define QCD di-jet samples
-#_sample_list.extend([ qcddijet_mc, data_dijet ])
+_sample_list.extend([ qcddijet_mc, data_dijet ])
 #_sample_list.append(qcddijet_mc)
 #_sample_list.append(data_dijet)
 #--------------------------------------------------------------------------------
