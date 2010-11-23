@@ -75,7 +75,13 @@ class NtupleSample(object):
         if self.allEvents < 0:
             self.scaleFactor = 1.
         else:
-            self.scaleFactor = float(self.allEvents)/self.events.GetEntries()
+            if self.events.GetEntries():
+                self.scaleFactor = float(self.allEvents)/self.events.GetEntries()
+            else:
+                print ("Subsample %s has no entries " % self.name +
+                       "setting scale factor to 1.0!")
+                self.scaleFactor = 1.0
+        print " Subsample has %i entries" % self.events.GetEntries()
         print("<SampleManager::build_events>: setting scaleFactor = " + str(self.scaleFactor))
 
     def get_events(self):
