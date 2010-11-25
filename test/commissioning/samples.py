@@ -7,7 +7,7 @@ samples.py
 
 Central defintion of data sources for commissioning.
 
-$Id: samples.py,v 1.24 2010/11/20 11:27:17 veelken Exp $
+$Id: samples.py,v 1.25 2010/11/22 16:06:48 veelken Exp $
 
 '''
 
@@ -19,16 +19,19 @@ dijetSampleAliasMap = {
     'patPFTausDijetTagAndProbeHPS': 'hps',
     'patPFTausDijetTagAndProbeShrinkingCone': 'shrinking',
     'patPFTausDijetTagAndProbeFixedCone': 'fixed',
+    'patPFTausDijetTagAndProbeHPSpTaNC': 'hpstanc',
 }
 
 muEnrichedSampleAliasMap = {
     'patPFTausCleanedHPS': 'hps',
+    'patPFTausCleanedHPSpTaNC': 'hpstanc',
     'patPFTausCleanedShrinkingCone': 'shrinking',
     'patPFTausCleanedFixedCone': 'fixed',
 }
 
 wJetsSampleAliasMap = {
     'patPFTausCleanedHPS': 'hps',
+    'patPFTausCleanedHPSpTaNC': 'hpstanc',
     'patPFTausCleanedShrinkingCone': 'shrinking',
     'patPFTausCleanedFixedCone': 'fixed',
 }

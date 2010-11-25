@@ -23,7 +23,7 @@ CFG = fakerate_qcdDiJet1st.cfg
 DIR = $(subst .cfg,,${CFG})
 
 # The algorithm to determine fake rates for.
-ALGO = shrinking
+ALGO = hpstanc
 XML = fakeRateMVADef.xml
 
 # Make the validation plot
