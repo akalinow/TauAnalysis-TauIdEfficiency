@@ -111,11 +111,16 @@ process.patMuonsWithRunRangeTrigger = cms.EDProducer(
     src = cms.InputTag("patMuonsWithTrigger"),
     userIntName = cms.string("triggerRange"),
 )
+
 # Parse trigger matching info
 if not sample_info['add_mc']:
     # Only do the run ranges for data
     process.patMuonsWithRunRangeTrigger.config = cms.VPSet()
     for bit, range in hlt_dict.iteritems():
+        # Skip cross triggers
+        if bit.find('PFTau') != -1:
+            print "Skipping xtrigger %s period %s" % (bit, range)
+            continue
         to_add = cms.PSet(
             hltAcceptPath = cms.string(bit),
             runrange = cms.EventRange(range)
@@ -129,10 +134,69 @@ process.patMuonsWithRunRangeSequence = cms.Sequence(
     process.patMuonsWithTriggerSequence
     *process.patMuonsWithRunRangeTrigger
 )
-
 process.tagAndProbe += process.patMuonsWithRunRangeSequence
-print process.patMuonsWithRunRangeSequence
-print process.tagAndProbe
+
+_CROSS_TRIGGER_PERIOD = '148822:MIN-149442:MAX'
+# Period A is when HLT_Mu9 is unprescaled
+_PERIOD_A = '132440:MIN-147116:MAX'
+# Period B is when IsoMu9 and Mu11 are unprescaled
+_PERIOD_B = '147196:MIN-148058:MAX'
+# Period C is when IsoMu13 and Mu15 are unprescaled
+_PERIOD_C = '148059:MIN-149442:MAX'
+
+# Produce a flag indicating whether or not we are in the cross trigger period
+process.patMuonsAddXTriggerPeriodInfo = cms.EDProducer(
+    "PATMuonTriggerRangeInfoProducer",
+    src = cms.InputTag("patMuonsWithRunRangeTrigger"),
+    userIntName = cms.string("xTriggerPeriod"),
+    config = cms.VPSet(
+        cms.PSet(
+            hltAcceptPath = cms.string('*'),
+            runrange = cms.EventRange(_CROSS_TRIGGER_PERIOD)
+        ),
+    )
+)
+
+process.tagAndProbe += process.patMuonsAddXTriggerPeriodInfo
+
+process.patMuonsAddPeriodAInfo = cms.EDProducer(
+    "PATMuonTriggerRangeInfoProducer",
+    src = cms.InputTag("patMuonsAddXTriggerPeriodInfo"),
+    userIntName = cms.string("periodA"),
+    config = cms.VPSet(
+        cms.PSet(
+            hltAcceptPath = cms.string('*'),
+            runrange = cms.EventRange(_PERIOD_A)
+        ),
+    )
+)
+process.tagAndProbe += process.patMuonsAddPeriodAInfo
+
+process.patMuonsAddPeriodBInfo = cms.EDProducer(
+    "PATMuonTriggerRangeInfoProducer",
+    src = cms.InputTag("patMuonsAddPeriodAInfo"),
+    userIntName = cms.string("periodB"),
+    config = cms.VPSet(
+        cms.PSet(
+            hltAcceptPath = cms.string('*'),
+            runrange = cms.EventRange(_PERIOD_B)
+        ),
+    )
+)
+process.tagAndProbe += process.patMuonsAddPeriodBInfo
+
+process.patMuonsAddPeriodCInfo = cms.EDProducer(
+    "PATMuonTriggerRangeInfoProducer",
+    src = cms.InputTag("patMuonsAddPeriodBInfo"),
+    userIntName = cms.string("periodC"),
+    config = cms.VPSet(
+        cms.PSet(
+            hltAcceptPath = cms.string('*'),
+            runrange = cms.EventRange(_PERIOD_C)
+        ),
+    )
+)
+process.tagAndProbe += process.patMuonsAddPeriodCInfo
 
 # Change the input to the pat muons
 from MuonAnalysis.MuonAssociators.patMuonsWithTrigger_cff import \
@@ -147,7 +211,7 @@ from TauAnalysis.RecoTools.patLeptonPFIsolationSelector_cfi import \
 process.patMuonsWithEmbeddedIso = cms.EDProducer(
     "PATMuonPFIsolationEmbedder",
     patMuonPFIsolationSelector,
-    src = cms.InputTag("patMuonsWithRunRangeTrigger"),
+    src = cms.InputTag("patMuonsAddPeriodCInfo"),
     userFloatName = cms.string('absIso'),
 )
 
@@ -159,37 +223,44 @@ process.patMuonsWithEmbeddedIso.sumPtMax = 1.0
 process.patMuonsWithEmbeddedIso.sumPtMethod = "absolute"
 process.tagAndProbe += process.patMuonsWithEmbeddedIso
 
-# Do another one, using PF no pileup
-# Actually we already use PF no pileup! This is redundant.
-process.patMuonsWithEmbeddedIsoPFNoPileUp = \
-        process.patMuonsWithEmbeddedIso.clone(
-            src = cms.InputTag("patMuonsWithEmbeddedIso"),
-            userFloatName = cms.string('absIsopfNoPileup'),
-
-)
-process.tagAndProbe += process.patMuonsWithEmbeddedIsoPFNoPileUp
-
 import MuonAnalysis.TagAndProbe.common_variables_cff as common
 process.load("MuonAnalysis.TagAndProbe.common_modules_cff")
 
 # Muons that pass the pt and ID requirement
 process.tagMuons = cms.EDFilter(
     "PATMuonSelector",
-    src = cms.InputTag("patMuonsWithEmbeddedIsoPFNoPileUp"),
+    src = cms.InputTag("patMuonsWithEmbeddedIso"),
     cut = cms.string(
         "pt > 15 && "
         "userInt('triggerRange') != 0 && "
-        + common.MuonIDFlags.VBTF.value() )
+        + common.MuonIDFlags.VBTF.value() + " && " +
+        "%s < 0.1" % common.IsolationVariables.combRelIso.value()
+    )
 )
 process.tagAndProbe += process.tagMuons
 
-process.tagAndProbe += process.nverticesModule
+process.atLeastOneTag = cms.EDFilter(
+    "CandViewCountFilter",
+    src = cms.InputTag("tagMuons"),
+    minNumber = cms.uint32(1),
+)
+process.tagAndProbe += process.atLeastOneTag
 
-process.load("MuonAnalysis.TagAndProbe.common_modules_cff")
+# Load our vertex selection
+process.load("TauAnalysis.RecoTools.recoVertexSelection_cff")
+process.tagAndProbe += process.selectPrimaryVertex
+
+process.load("TauAnalysis.RecoTools.vertexMultiplicityReweight_cfi")
+process.tagAndProbe += process.selectedPrimaryVerticesTrackPtSumGt10
+
+# Use only vertices w/ pt > 10 in our vertex count
+process.nverticesModule.objects = cms.InputTag(
+    "selectedPrimaryVerticesTrackPtSumGt10")
+process.tagAndProbe += process.nverticesModule
 
 # Build probe muons (no real cut now)
 process.probeMuons = cms.EDFilter("PATMuonSelector",
-    src = cms.InputTag("patMuonsWithEmbeddedIsoPFNoPileUp"),
+    src = cms.InputTag("patMuonsWithEmbeddedIso"),
     cut = cms.string("track.isNonnull"),  # no real cut now
 )
 process.tagAndProbe += process.probeMuons
@@ -206,6 +277,10 @@ process.tagAndProbe += process.tpPairs
 process.fastFilter.TriggerResultsTag = cms.InputTag(
     "TriggerResults","", sample_info['trigger'])
 process.patTrigger.processName = sample_info['trigger']
+
+def trigger_match(*paths):
+    return " | ".join(
+        "!triggerObjectMatchesByPath('%s').empty()" % path for path in paths)
 
 # Build tag probe tree
 process.tpTree = cms.EDAnalyzer("TagProbeFitTreeProducer",
@@ -224,8 +299,17 @@ process.tpTree = cms.EDAnalyzer("TagProbeFitTreeProducer",
             "(isolationR03.emEt + isolationR03.hadEt + isolationR03.sumPt)/pt < 0.15"),
         IsolTk3 = cms.string("isolationR03.sumPt < 3"),
         CustomTrigger = cms.string("userInt('triggerRange') > 0"),
+        innerTrack = cms.string('innerTrack.isNonnull'),
+        outerTrack = cms.string('outerTrack.isNonnull'),
         AbsIso = cms.string("userFloat('absIso') < 1.0"),
-        AbsIsoPFnoPileUp = cms.string("userFloat('absIsopfNoPileup') < 1.0"),
+        RelIso = cms.string("userFloat('absIso')/pt < 0.10"),
+        PeriodA = cms.string("userInt('periodA') > 0"),
+        PeriodB = cms.string("userInt('periodB') > 0"),
+        PeriodC = cms.string("userInt('periodC') > 0"),
+        HLTMu9 = cms.string(trigger_match('HLT_Mu9')),
+        IsoMu9Mu11 = cms.string(trigger_match('HLT_IsoMu9', 'HLT_Mu11')),
+        IsoMu13Mu15 = cms.string(
+            trigger_match('HLT_IsoMu13_v3', 'HLT_IsoMu13_v4', 'HLT_Mu15_v1')),
     ),
     tagVariables = cms.PSet(
         nVertices = cms.InputTag("nverticesModule"),
@@ -261,8 +345,6 @@ if sample_info['add_mc']:
 process.tagAndProbe += process.tpPairs
 process.tagAndProbe += process.tpTree
 
-# FIXME add MC info to STA tree
-
 ##############################################################
 # Making STA collection
 # ############################################################
@@ -288,7 +370,7 @@ massSearchReplaceAnyInputTag(process.patMuonsWithTriggerSequenceSta,
 
 ## Define probes and T&P pairs
 process.probeMuonsSta = cms.EDFilter("PATMuonSelector",
-    src = cms.InputTag("patMuonsWithTrigger"),
+    src = cms.InputTag("patMuonsWithTriggerSta"),
     cut = cms.string("outerTrack.isNonnull"), # no real cut now
 )
 process.tpPairsSta = process.tpPairs.clone(decay = "tagMuons@+ probeMuonsSta@-")
@@ -358,6 +440,7 @@ process.tagAndProbeSta = cms.Path(
 )
 
 process.tagAndProbeSta += process.tagMuons
+process.tagAndProbeSta += process.atLeastOneTag
 process.tagAndProbeSta += process.nverticesModule
 process.tagAndProbeSta += process.probeMuonsSta
 
@@ -378,6 +461,90 @@ if sample_info['add_mc']:
     process.tpTreeSta.allProbes              = cms.InputTag("probeMuonsSta")
 
 process.tagAndProbeSta += process.tnpSimpleSequenceSta
+
+##############################################################
+# Making Inner collection
+# ############################################################
+
+#Now make another collection for standalone muons
+# Then make another collection for standalone muons, using standalone track to define the 4-momentum
+process.muonsInner = cms.EDProducer("RedefineMuonP4FromTrack",
+    src   = cms.InputTag("muons"),
+    track = cms.string("inner"),
+)
+
+# Match to trigger
+from PhysicsTools.PatAlgos.tools.helpers import cloneProcessingSnippet, \
+        massSearchReplaceAnyInputTag
+# Note we use our run range sequence
+process.patMuonsWithTriggerSequenceInner = cloneProcessingSnippet(
+    process, process.patMuonsWithTriggerSequence, "Inner")
+process.muonMatchHLTL2Inner.maxDeltaR = 0.5
+process.muonMatchHLTL3Inner.maxDeltaR = 0.5
+
+massSearchReplaceAnyInputTag(process.patMuonsWithTriggerSequenceInner,
+                             "mergedMuons", "muonsInner")
+
+## Define probes and T&P pairs
+process.probeMuonsInner = cms.EDFilter("PATMuonSelector",
+    src = cms.InputTag("patMuonsWithTriggerInner"),
+    cut = cms.string("innerTrack.isNonnull"), # no real cut now
+)
+process.tpPairsInner = process.tpPairs.clone(decay = "tagMuons@+ probeMuonsInner@-")
+
+## Now I have to define the passing probes for tracking
+process.tkTracks = cms.EDProducer(
+    "ConcreteChargedCandidateProducer",
+    src = cms.InputTag("generalTracks"),
+    particleType = cms.string("mu+"),
+)
+
+process.tpTreeInner = process.tpTree.clone(
+    tagProbePairs = "tpPairsInner",
+    variables = cms.PSet(
+        common.KinematicVariables,
+        common.TriggerVariables,
+    ),
+    flags = cms.PSet(
+        common.HighPtTriggerFlags,
+        common.MuonIDFlags,
+    )
+)
+
+process.tnpSimpleSequenceInner = cms.Sequence(
+    ( process.tkTracks * process.staToTkMatch * process.staPassingTk ) +
+    process.tpPairsInner      +
+    process.tpTreeInner
+)
+
+process.tagAndProbeInner = cms.Path(
+    process.fastFilter                     +
+    process.muonsInner                       +
+    process.patMuonsWithTriggerSequenceInner
+)
+
+process.tagAndProbeInner += process.tagMuons
+process.tagAndProbeInner += process.atLeastOneTag
+process.tagAndProbeInner += process.nverticesModule
+process.tagAndProbeInner += process.probeMuonsInner
+
+if sample_info['add_mc']:
+    # Build matching if this is MC
+    process.probeMuonsMCMatchInner = process.tagMuonsMCMatch.clone(
+        src = "probeMuonsInner")
+    process.tagAndProbeInner += process.tagMuonsMCMatch
+    process.tagAndProbeInner += process.probeMuonsMCMatchInner
+
+    # Update the tree
+    process.tpTreeInner.isMC = True
+    process.tpTreeInner.tagMatches = cms.InputTag("tagMuonsMCMatch")
+    process.tpTreeInner.probeMatches = cms.InputTag("probeMuonsMCMatchInner")
+    process.tpTreeInner.motherPdgId = cms.vint32(22, 23)
+    process.tpTreeInner.makeMCUnbiasTree       = cms.bool(True)
+    process.tpTreeInner.checkMotherInUnbiasEff = cms.bool(True)
+    process.tpTreeInner.allProbes              = cms.InputTag("probeMuonsInner")
+
+process.tagAndProbeInner += process.tnpSimpleSequenceInner
 
 process.TFileService = cms.Service("TFileService", fileName = cms.string(
     "/data1/friis/ZmumuEff/tagAndProbe_%s.root" % source))
