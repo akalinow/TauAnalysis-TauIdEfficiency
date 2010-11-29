@@ -135,8 +135,8 @@ if __name__ == "__main__":
     ROOT.gStyle.SetOptStat(0)
 
     # Get ZTT samples
-    ##ztt = samples.ztautau_mc
-    ztt = samples.zttPU156bx_mc
+    ztt = samples.ztautau_mc
+    ##ztt = samples.zttPU156bx_mc
 
     # Get the ntuple we produced
     ntuple_manager = ztt.build_ntuple_manager("tauIdEffNtuple")

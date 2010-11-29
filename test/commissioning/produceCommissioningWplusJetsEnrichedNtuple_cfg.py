@@ -12,7 +12,6 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 100
 process.MessageLogger.suppressWarning = cms.untracked.vstring("PATTriggerProducer",)
 process.load('Configuration/StandardSequences/GeometryIdeal_cff')
 process.load('Configuration/StandardSequences/MagneticField_cff')
-process.load('Configuration/StandardSequences/Reconstruction_cff')
 process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
 
 #--------------------------------------------------------------------------------
@@ -56,7 +55,7 @@ else:
 #--------------------------------------------------------------------------------
 # define skimming criteria
 # (in order to be able to produce Tau Ntuple directly from unskimmed Monte Carlo/datasets;
-#  HLT muon trigger passed && global muon of Pt > 3 GeV within |eta| < 2.5
+#  HLT muon trigger passed && global muon of Pt > 15 GeV within |eta| < 2.1
 #                          && either CaloJet or PFJet of Pt > 10 GeV within |eta| < 2.5)
 process.load('TauAnalysis.TauIdEfficiency.filterWplusJetsEnriched_cfi')
 if isMC:

@@ -7,7 +7,7 @@ def configurePrePatProduction(process, pfCandidateCollection = "particleFlow",
     # PFCandidate pile-up removal
     process.load("PhysicsTools.PFCandProducer.pfNoPileUp_cff")
     process.pfPileUp.Enable = cms.bool(True)
-    process.prePatProductionSequence = process.pfNoPileUpSequence
+    process.prePatProductionSequence = cms.Sequence(process.pfNoPileUpSequence)
 
     process.load("RecoJets.JetProducers.ak5PFJets_cfi")
     process.ak5PFJets.src = cms.InputTag(pfCandidateCollection)

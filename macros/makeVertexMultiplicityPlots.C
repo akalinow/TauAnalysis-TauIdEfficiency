@@ -13,32 +13,13 @@ makeVertexMultiplicityPlots()
   chainData->Add(TString(cacheFilePathData).Append("runs147117_149442/tauIdEffEDNtuple_wPlusJetsEnriched*"));
 
   chainData->Draw("double_ntupleProducer_tauIdEffNtuple#offlinePrimaryVertices#numVerticesPtGt10_prodCommissioningWplusJetsEnrichedNtuple.obj>>+histoData");
-/*
-  TString cacheFilePathData = "/tmp/tau_fakerate_cache/user/v/veelken/TauIdCommissioning/qcdMuEnriched/v3_2/";
 
-  TChain* chainData = new TChain("Events");
-  chainData->Add(TString(cacheFilePathData).Append("runs132440_145761/tauIdEffEDNtuple_qcdMuEnriched*"));
-  chainData->Add(TString(cacheFilePathData).Append("runs145762_147116/tauIdEffEDNtuple_qcdMuEnriched*"));
-  chainData->Add(TString(cacheFilePathData).Append("runs147117_149442/tauIdEffEDNtuple_qcdMuEnriched*"));
-  stc::cout << "chainData: entries = " << chainData->GetEntries() << std::endl;
-
-  chainData->Draw("double_ntupleProducer_tauIdEffNtuple#offlinePrimaryVertices#numVerticesPtGt10_prodCommissioningQDCmuEnrichedNtuple.obj");
- */
-  //TH1* histoData = (TH1*)gROOT->FindObject("htemp")->Clone("histoData");
   std::cout << histoData->GetName() << " created." << std::endl;
   if ( !histoData->GetSumw2N() ) histoData->Sumw2();
   histoData->Scale(1./histoData->Integral());
 
   delete chainData;
-/*
-  TString cacheFilePathMC = "/tmp/tau_fakerate_cache/user/v/veelken/TauIdCommissioning/qcdDiJet/v3_0/";
 
-  TChain* chainMC = new TChain("Events");
-  chainMC->Add(TString(cacheFilePathMC).Append("mcDYttPU156bx/tauIdEffEDNtuple_qcdDiJet*"));
-  stc::cout << "chainMC: entries = " << chainMC->GetEntries() << std::endl;
-
-  chainMC->Draw("double_ntupleProducer_tauIdEffNtuple#offlinePrimaryVertices#numVerticesPtGt10_prodCommissioningQDCdiJetNtuple.obj");
- */
   TString cacheFilePathMC = "/tmp/tau_fakerate_cache/user/v/veelken/TauIdCommissioning/WplusJets/v3_2/";
 
   TChain* chainMC = new TChain("Events");
@@ -46,7 +27,6 @@ makeVertexMultiplicityPlots()
 
   chainMC->Draw("double_ntupleProducer_tauIdEffNtuple#offlinePrimaryVertices#numVerticesPtGt10_prodCommissioningWplusJetsEnrichedNtuple.obj>>+histoMC");
 
-  //TH1* histoMC = (TH1*)gROOT->FindObject("htemp")->Clone("histoMC");
   std::cout << histoMC->GetName() << " created." << std::endl;
   if ( !histoMC->GetSumw2N() ) histoMC->Sumw2();
   histoMC->Scale(1./histoMC->Integral());
@@ -61,4 +41,44 @@ makeVertexMultiplicityPlots()
   histoMC->Write();
   histoReweight->Write();
   delete outputFile;
+
+  TCanvas* canvas = new TCanvas("canvas", "canvas", 800, 640);
+  canvas->SetFillColor(10);
+  canvas->SetBorderSize(2);
+/*
+  histoMC->SetTitle("Num. Vertices #Sigma trackPt > 10 GeV");
+  histoMC->SetStats(false);
+  histoMC->SetMaximum(1.);
+  histoMC->SetMarkerStyle(24);
+  histoMC->SetMarkerColor(kRed);
+  histoMC->SetLineColor(kRed);
+  histoMC->Draw("e1p");
+
+  histoData->SetMarkerStyle(20);
+  histoData->SetMarkerColor(kBlack);
+  histoData->SetLineColor(kBlack);
+  histoData->Draw("e1psame");
+
+  TLegend legend(0.64, 0.69, 0.89, 0.89, "", "brNDC"); 
+  legend.SetBorderSize(0);
+  legend.SetFillColor(0);
+
+  legend.AddEntry(histoMC, "MC 156bxPU", "p");
+  legend.AddEntry(histoData, "Data", "p");
+  legend.Draw();
+
+  canvas->Update();
+  canvas->Print("vertexMultiplicity.png");
+
+  canvas->Clear();
+ */
+  histoReweight->SetTitle("Vertex Multiplicity Reweight factors");
+  histoReweight->SetStats(false);
+  histoReweight->SetMarkerStyle(20);
+  histoReweight->SetMarkerColor(kBlack);
+  histoReweight->SetLineColor(kBlack);
+  histoReweight->Draw("e1p");
+
+  canvas->Update();
+  canvas->Print("vertexMultiplicityReweights.png");
 }
