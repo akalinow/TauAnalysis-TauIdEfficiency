@@ -132,7 +132,7 @@ muonCaloTauSkimPath = cms.Path(
     hltMu
    + produceMuonCaloTauPairs
    + diMuonVeto + selectedMuonCaloTauPairFilter
-   + selectedMuonCaloTauPairFilter + selectedCaloJetsAntiOverlapWithMuonsVeto + centralCaloJetVeto
+   + selectedCaloJetsAntiOverlapWithMuonsVeto + centralCaloJetVeto
    + dataQualityFilters
 )
 #--------------------------------------------------------------------------------
@@ -196,7 +196,8 @@ centralPFJetVeto = cms.EDFilter("CandViewCountFilter",
 muonPFTauSkimPath = cms.Path(    
     hltMu
    + produceMuonPFTauPairs
-   + diMuonVeto + selectedMuonPFTauPairFilter + selectedPFJetsAntiOverlapWithMuonsVeto + centralPFJetVeto
+   + diMuonVeto + selectedMuonPFTauPairFilter
+   + selectedPFJetsAntiOverlapWithMuonsVeto + centralPFJetVeto
    + dataQualityFilters
 )
 #--------------------------------------------------------------------------------
