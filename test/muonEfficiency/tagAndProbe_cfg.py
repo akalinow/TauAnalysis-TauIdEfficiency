@@ -1,6 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 import glob
 import sys
+import copy
 
 process = cms.Process("TagProbe")
 
@@ -208,11 +209,20 @@ from TauAnalysis.RecoTools.patLeptonPFIsolationSelector_cfi import \
         patMuonPFIsolationSelector
 
 # Embed information about the PF isolation variables about the tau
+process.patMuonsWithEmbeddedIsoForRel = cms.EDProducer(
+    "PATMuonPFIsolationEmbedder",
+    copy.deepcopy(patMuonPFIsolationSelector),
+    src = cms.InputTag("patMuonsAddPeriodCInfo"),
+    userFloatName = cms.string('isoActivityForRel'),
+)
+process.tagAndProbe += process.patMuonsWithEmbeddedIsoForRel
+
+# Raise thresholds
 process.patMuonsWithEmbeddedIso = cms.EDProducer(
     "PATMuonPFIsolationEmbedder",
     patMuonPFIsolationSelector,
-    src = cms.InputTag("patMuonsAddPeriodCInfo"),
-    userFloatName = cms.string('absIso'),
+    src = cms.InputTag("patMuonsWithEmbeddedIsoForRel"),
+    userFloatName = cms.string('isoActivityForAbs'),
 )
 
 process.patMuonsWithEmbeddedIso.chargedHadronIso.ptMin = 1.0
@@ -301,8 +311,10 @@ process.tpTree = cms.EDAnalyzer("TagProbeFitTreeProducer",
         CustomTrigger = cms.string("userInt('triggerRange') > 0"),
         innerTrack = cms.string('innerTrack.isNonnull'),
         outerTrack = cms.string('outerTrack.isNonnull'),
-        AbsIso = cms.string("userFloat('absIso') < 1.0"),
-        RelIso = cms.string("userFloat('absIso')/pt < 0.10"),
+        AbsIso = cms.string("userFloat('isoActivityForAbs') < 1.0"),
+        LooseAbsIso = cms.string("userFloat('isoActivityForAbs') < 2.5"),
+        RelIso = cms.string("userFloat('isoActivityForRel') < (0.10*pt)"),
+        LooseRelIso = cms.string("userFloat('isoActivityForRel') < (0.15*pt)"),
         PeriodA = cms.string("userInt('periodA') > 0"),
         PeriodB = cms.string("userInt('periodB') > 0"),
         PeriodC = cms.string("userInt('periodC') > 0"),
