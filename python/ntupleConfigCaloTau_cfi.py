@@ -39,6 +39,11 @@ caloTaus_recInfo = cms.PSet(
         caloJetEta = cms.string("caloTauTagInfoRef().calojetRef().eta()"),
         caloJetPhi = cms.string("caloTauTagInfoRef().calojetRef().phi()"),
 
+        # loose PFIsolation Pt sum
+        # (computed by summing PFChargedHadrons of Pt > 1.0 GeV + PFGammas of Pt > 1.5 GeV
+        #  in pfNoPileUp collection within region 0.15 < dR < 0.6 centered on PFTau direction)
+        ptSumLooseIsolation = cms.string("userFloat('pfLooseIsoPt')"),
+
         # momentum of leading charged/neutral particle within signal cone
         leadTrackPt = cms.string("? leadTrack().isNonnull() ? leadTrack().pt() : 0."),
 

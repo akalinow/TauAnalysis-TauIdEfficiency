@@ -58,6 +58,11 @@ pfTausShrinkingCone_recInfo = cms.PSet(
         # jet width
         jetWidth = cms.string("sqrt(etaetaMoment() + phiphiMoment())"),
 
+        # loose PFIsolation Pt sum
+        # (computed by summing PFChargedHadrons of Pt > 1.0 GeV + PFGammas of Pt > 1.5 GeV
+        #  in pfNoPileUp collection within region 0.15 < dR < 0.6 centered on PFTau direction)
+        ptSumLooseIsolation = cms.string("userFloat('pfLooseIsoPt')"),
+
         # flags for tag/probe and Pt_index for distinguishing between
         # highest Pt, second highest Pt and third highest Pt jet
         tag = cms.string("userFloat('tag')"),

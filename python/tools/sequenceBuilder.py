@@ -101,13 +101,40 @@ def buildTauSequence(
     setattr(process, patTauCleanerName, patTauCleaner)
     outputSequence += getattr(process, patTauCleanerName)
 
+    # embed loose PFIsolation sums into pat::Tau objects
+    patTauLoosePFIsoEmbedder = cms.EDProducer("PATTauPFIsolationEmbedder",
+        src = cms.InputTag(patTauCleanerName),                                       
+        userFloatName = cms.string('pfLooseIsoPt'),
+        pfCandidateSource = cms.InputTag('pfNoPileUp'),
+        chargedHadronIso = cms.PSet(
+            ptMin = cms.double(1.0),        
+            dRvetoCone = cms.double(0.15),
+            dRisoCone = cms.double(0.6)
+        ),
+        neutralHadronIso = cms.PSet(
+            ptMin = cms.double(1000.),        
+            dRvetoCone = cms.double(0.15),        
+            dRisoCone = cms.double(0.6)
+        ),
+        photonIso = cms.PSet(
+            ptMin = cms.double(1.5),        
+            dPhiVeto = cms.double(-1.),  # asymmetric Eta x Phi veto region 
+            dEtaVeto = cms.double(-1.),  # to account for photon conversions in electron isolation case        
+            dRvetoCone = cms.double(0.15),
+            dRisoCone = cms.double(0.6)
+        )
+    )
+    patTauLoosePFIsoEmbedderName = collectionName[0] + "LoosePFIsoEmbedded" + collectionName[1]
+    setattr(process, patTauLoosePFIsoEmbedderName, patTauLoosePFIsoEmbedder)
+    outputSequence += getattr(process, patTauLoosePFIsoEmbedderName)
+
     # return sequence for production of basic tau collection,
     # generator level particle and jet matches and trigger primitives embedded;
     # together with name of "cleaned" tau collection
     # to be used as InputTag for further processing
     retVal = {}
     retVal["sequence"] = outputSequence
-    retVal["collection"] = patTauCleanerName
+    retVal["collection"] = patTauLoosePFIsoEmbedderName
     return retVal
 
 def buildQCDdiJetTauSequence(
