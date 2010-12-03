@@ -12,6 +12,7 @@
 
 print("<buildFakeRateLUTs>:")
 
+import os
 import subprocess
 
 from TauAnalysis.TauIdEfficiency.fakeRateDef import fakeRateDef
@@ -20,6 +21,9 @@ for fakeRateLabel, fakeRateConfig in fakeRateDef.items():
     for sampleLabel, sampleConfig in fakeRateConfig['samples'].items():
         for numeratorLabel, numerator in fakeRateConfig['numerators'].items():
             denominator = fakeRateConfig['denominator']
+
+            if not os.path.exists("./config"):
+                os.mkdir("./config")
             
             cfgFileName = './config/fakerate_%s_%s_%s.cfg' % (numeratorLabel, fakeRateLabel, sampleLabel)
             cfgFile = open(cfgFileName, "w")
