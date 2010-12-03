@@ -34,7 +34,7 @@ class TauNtupleManager(object):
         if ntuple in self.ntuples:
             return self.ntuples[ntuple]
         else: 
-            raise KeyError, "Attempt to get non-existent ntuple", ntuple
+            raise KeyError, "Attempt to get non-existent ntuple %s" % ntuple
 
     def __repr__(self):
         output = ""

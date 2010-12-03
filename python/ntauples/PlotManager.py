@@ -121,7 +121,9 @@ class PlotManager(object):
                 binning = binning,
                 maxNumEntries = maxNumEntries
             )
-            if my_plot == None: raise StandardError, "Error drawing '%s' for '%s' with selection '%s' no histogram was created!"%( expression, sample_name, selection)
+            if my_plot == None:
+                raise StandardError, "Error drawing '%s' for '%s' with selection '%s' no histogram was created!" \
+                        % ( expression, sample_name, selection)
             if verbose: print " * * - got plot", my_plot, "integral:", my_plot.Integral()
             all_plots[sample_name] = my_plot
             plot_dict['plot'] = my_plot
