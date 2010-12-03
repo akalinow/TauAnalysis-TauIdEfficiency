@@ -7,7 +7,7 @@ samples.py
 
 Central defintion of data sources for commissioning.
 
-$Id: samples.py,v 1.25 2010/11/22 16:06:48 veelken Exp $
+$Id: samples.py,v 1.26 2010/11/25 21:09:00 friis Exp $
 
 '''
 
@@ -20,6 +20,7 @@ dijetSampleAliasMap = {
     'patPFTausDijetTagAndProbeShrinkingCone': 'shrinking',
     'patPFTausDijetTagAndProbeFixedCone': 'fixed',
     'patPFTausDijetTagAndProbeHPSpTaNC': 'hpstanc',
+    'patCaloTausDijetTagAndProbe': 'calo'
 }
 
 muEnrichedSampleAliasMap = {
@@ -27,6 +28,7 @@ muEnrichedSampleAliasMap = {
     'patPFTausCleanedHPSpTaNC': 'hpstanc',
     'patPFTausCleanedShrinkingCone': 'shrinking',
     'patPFTausCleanedFixedCone': 'fixed',
+    'patCaloTausCleaned': 'calo'
 }
 
 wJetsSampleAliasMap = {
@@ -34,6 +36,7 @@ wJetsSampleAliasMap = {
     'patPFTausCleanedHPSpTaNC': 'hpstanc',
     'patPFTausCleanedShrinkingCone': 'shrinking',
     'patPFTausCleanedFixedCone': 'fixed',
+    'patCaloTausCleaned': 'calo'
 }
 
 # Locations of the luminosity maps
@@ -74,7 +77,11 @@ qcddijet_mc = build_sample(
 
 ppmux_mc = build_sample(
    _MC_LUMI_MAP_FILE, "mc_ppmux", "merge",
-   take_every=1, datasets = ["mcQCDppMuXPtHatGt20PtMuGt10"],
+   take_every=1, datasets = ["mcQCDppMuXptHatGt20PtMuGt10"],
+   alias_map = muEnrichedSampleAliasMap)
+ppmuxPU156bx_mc = build_sample(
+   _MC_LUMI_MAP_FILE, "mc_ppmuxPU156bx", "merge",
+   take_every=1, datasets = ["mcQCDppMuXptHatGt20PtMuGt10PU156bx"],
    alias_map = muEnrichedSampleAliasMap)
 
 print "loading definition of W + jets background Monte Carlo samples..."
