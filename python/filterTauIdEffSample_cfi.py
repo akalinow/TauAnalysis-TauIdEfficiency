@@ -125,7 +125,7 @@ selectedPatTausForMuTauEcalCrackVeto.cut = cms.string("abs(eta) < 1.460 | abs(et
 
 patTauSelConfiguratorForMuTau = objSelConfigurator(
     [ selectedPatTausForMuTauAntiOverlapWithMuonsVeto,
-      selectedPatTausForMuTauEta21,
+      selectedPatTausForMuTauEta23,
       selectedPatTausForMuTauPt20,
       selectedPatTausForMuTauLeadTrk,
       selectedPatTausForMuTauLeadTrkPt,
