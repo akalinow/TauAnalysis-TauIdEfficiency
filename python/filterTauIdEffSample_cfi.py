@@ -27,20 +27,43 @@ hltMu = cms.EDFilter("EventSelPluginFilter",
 # define Muon selection
 #--------------------------------------------------------------------------------
 
+patMuonsLoosePFIsoEmbedded = cms.EDProducer("PATTauPFIsolationEmbedder",
+    src = cms.InputTag('cleanPatMuons'),                                       
+    userFloatName = cms.string('pfLooseIsoPt'),
+    pfCandidateSource = cms.InputTag('pfNoPileUp'),
+    chargedHadronIso = cms.PSet(
+        ptMin = cms.double(0.5),        
+        dRvetoCone = cms.double(-1.),
+        dRisoCone = cms.double(0.6)
+    ),
+    neutralHadronIso = cms.PSet(
+        ptMin = cms.double(1000.),        
+        dRvetoCone = cms.double(0.08),        
+        dRisoCone = cms.double(0.6)
+    ),
+    photonIso = cms.PSet(
+        ptMin = cms.double(0.5),        
+        dPhiVeto = cms.double(-1.),  # asymmetric Eta x Phi veto region 
+        dEtaVeto = cms.double(-1.),  # to account for photon conversions in electron isolation case        
+        dRvetoCone = cms.double(-1.),
+        dRisoCone = cms.double(0.6)
+    )
+)
+
 selectedPatMuonsGlobal.cut = cms.string('isGlobalMuon()')
 selectedPatMuonsEta21.cut = cms.string('abs(eta) < 2.1')
-selectedPatMuonsPt10.cut = cms.string('pt > 15.')
+selectedPatMuonsPt15.cut = cms.string('pt > 15.')
 selectedPatMuonsVbTfId.beamSpotSource = cms.InputTag("offlineBeamSpot")
-selectedPatMuonsPFRelIso.chargedHadronIso.ptMin = cms.double(-1.)
-selectedPatMuonsPFRelIso.chargedHadronIso.dRvetoCone = cms.double(-1.)
-selectedPatMuonsPFRelIso.chargedHadronIso.dRisoCone = cms.double(0.6)
-selectedPatMuonsPFRelIso.neutralHadronIso.ptMin = cms.double(0.5)
-selectedPatMuonsPFRelIso.neutralHadronIso.dRvetoCone = cms.double(0.08)
-selectedPatMuonsPFRelIso.neutralHadronIso.dRisoCone = cms.double(0.6)
-selectedPatMuonsPFRelIso.photonIso.ptMin = cms.double(0.5)
-selectedPatMuonsPFRelIso.photonIso.dRvetoCone = cms.double(-1.)
-selectedPatMuonsPFRelIso.photonIso.dRisoCone = cms.double(0.6)
-selectedPatMuonsPFRelIso.sumPtMax = cms.double(0.10)
+selectedPatMuonsPFRelIso.chargedHadronIso.ptMin = patMuonsLoosePFIsoEmbedded.chargedHadronIso.ptMin
+selectedPatMuonsPFRelIso.chargedHadronIso.dRvetoCone = patMuonsLoosePFIsoEmbedded.chargedHadronIso.dRvetoCone
+selectedPatMuonsPFRelIso.chargedHadronIso.dRisoCone = patMuonsLoosePFIsoEmbedded.chargedHadronIso.dRisoCone
+selectedPatMuonsPFRelIso.neutralHadronIso.ptMin = patMuonsLoosePFIsoEmbedded.neutralHadronIso.ptMin 
+selectedPatMuonsPFRelIso.neutralHadronIso.dRvetoCone = patMuonsLoosePFIsoEmbedded.neutralHadronIso.dRvetoCone
+selectedPatMuonsPFRelIso.neutralHadronIso.dRisoCone = patMuonsLoosePFIsoEmbedded.neutralHadronIso.dRisoCone
+selectedPatMuonsPFRelIso.photonIso.ptMin = patMuonsLoosePFIsoEmbedded.photonIso.ptMin
+selectedPatMuonsPFRelIso.photonIso.dRvetoCone = patMuonsLoosePFIsoEmbedded.photonIso.dRvetoCone
+selectedPatMuonsPFRelIso.photonIso.dRisoCone = patMuonsLoosePFIsoEmbedded.photonIso.dRisoCone
+selectedPatMuonsPFRelIso.sumPtMax = cms.double(0.30)
 selectedPatMuonsPFRelIso.sumPtMethod = cms.string("relative")
 selectedPatMuonsTrk.cut = cms.string('innerTrack.isNonnull')
 selectedPatMuonsTrkIP.vertexSource = cms.InputTag("selectedPrimaryVertexHighestPtTrackSum")
@@ -49,12 +72,12 @@ selectedPatMuonsTrkIP.IpMax = cms.double(0.05)
 patMuonSelConfigurator = objSelConfigurator(
     [ selectedPatMuonsGlobal,
       selectedPatMuonsEta21,
-      selectedPatMuonsPt10,
+      selectedPatMuonsPt15,
       selectedPatMuonsVbTfId,
       selectedPatMuonsPFRelIso,
       selectedPatMuonsTrk,
       selectedPatMuonsTrkIP ],
-    src = "cleanPatMuons",
+    src = "patMuonsLoosePFIsoEmbedded",
     pyModuleName = __name__,
     doSelIndividual = False
 )
@@ -90,7 +113,7 @@ patTausLoosePFIsoEmbedded = cms.EDProducer("PATTauPFIsolationEmbedder",
 
 selectedPatTausForMuTauAntiOverlapWithMuonsVeto.dRmin = cms.double(0.7)
 selectedPatTausForMuTauAntiOverlapWithMuonsVeto.srcNotToBeFiltered = cms.VInputTag("selectedPatMuonsGlobalCumulative")
-selectedPatTausForMuTauEta21.cut = cms.string("abs(eta) < 2.3")
+selectedPatTausForMuTauEta23.cut = cms.string("abs(eta) < 2.3")
 selectedPatTausForMuTauPt20.cut = cut = cms.string("pt > 20.")
 selectedPatTausForMuTauLeadTrk.cut = cms.string('tauID("leadingTrackFinding") > 0.5')
 selectedPatTausForMuTauLeadTrkPt.cut = cms.string('tauID("leadingTrackPtCut") > 0.5')
@@ -131,11 +154,13 @@ muTauPairsForTauIdEff = allMuTauPairs.clone(
 selectedMuTauPairsAntiOverlapVeto.cut = cms.string('dR12 > 0.7')
 selectedMuTauPairsMt1MET.cut = cms.string('mt1MET < 40.')
 selectedMuTauPairsPzetaDiff.cut = cms.string('(pZeta - 1.5*pZetaVis) > -20.')
+selectedMuTauPairsZeroCharge.cut = cms.string('(leg1.charge + leg2.leadPFChargedHadrCand.charge) = 0')
 
 patMuTauPairSelConfigurator = objSelConfigurator(
     [ selectedMuTauPairsAntiOverlapVeto,
       selectedMuTauPairsMt1MET,
-      selectedMuTauPairsPzetaDiff ],
+      selectedMuTauPairsPzetaDiff,
+      selectedMuTauPairsZeroCharge ],
     src = "muTauPairsForTauIdEff",
     pyModuleName = __name__,
     doSelIndividual = True
@@ -144,7 +169,7 @@ patMuTauPairSelConfigurator = objSelConfigurator(
 selectMuTauPairs = patMuTauPairSelConfigurator.configure(pyNameSpace = locals())
 
 selectedMuTauPairFilter = cms.EDFilter("CandViewCountFilter",
-    src = cms.InputTag('selectedMuTauPairsPzetaDiffCumulative'),
+    src = cms.InputTag('selectedMuTauPairsAntiOverlapVetoCumulative'),      
     minNumber = cms.uint32(1),
     maxNumber = cms.uint32(1)                                   
 )
@@ -156,7 +181,7 @@ selectedMuTauPairFilter = cms.EDFilter("CandViewCountFilter",
 muonPFTauSkimPath = cms.Path(
     hltMu
    + selectPrimaryVertex
-   + selectPatMuons
+   + patMuonsLoosePFIsoEmbedded + selectPatMuons
    + patTausLoosePFIsoEmbedded + selectPatTausForMuTau
    + muTauPairsForTauIdEff + selectMuTauPairs
    + selectedMuTauPairFilter
