@@ -52,7 +52,7 @@ def draw(events, expression, selection = "", output_name = "", binning = (), opt
                                   selection_with_weight, options, maxNumEntries)
         else:
             # Otherwise we are appending to an existing histogram
-            event_source.Draw(expression_str+">>+">>output_name, 
+            event_source.Draw(expression_str + ">>+" + output_name, 
                               selection_with_weight, options, maxNumEntries)
             
     return ROOT.gDirectory.Get(output_name)
