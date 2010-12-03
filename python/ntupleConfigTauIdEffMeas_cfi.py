@@ -1,52 +1,35 @@
 import FWCore.ParameterSet.Config as cms
 
+#--------------------------------------------------------------------------------
+# Muon quantities
+#--------------------------------------------------------------------------------
+
 tauIdEffMeas_template01 = cms.PSet(
     # Select multiplicy of object(s) to store
     vector = cms.bool(True), # Store a value for all objects in this collection
     #indices = cms.vuint_32([0, 1, 2]) # Store values for first, second, third objects
     
     # Extractor plugin
-    pluginType = cms.string("PATMuTauPairVectorValExtractor"),
+    pluginType = cms.string("PATMuonVectorValExtractor"),
     
     # Collection to extract from
     src = cms.InputTag(""),
 
     # Variables to compute for this source
     columns = cms.PSet(
-        muonPt = cms.string("leg1.pt()"),
-        muonEta = cms.string("leg1.eta()"),
-        muonPhi = cms.string("leg1.phi()"),
-        
-        tauPt = cms.string("leg2.pt()"),
-        tauEta = cms.string("leg2.eta()"),
-        tauPhi = cms.string("leg2.phi()"),
-        tauJetPt = cms.string("leg2.pfTauTagInfoRef().pfjetRef().pt()"),
-        tauJetEta = cms.string("leg2.pfTauTagInfoRef().pfjetRef().eta()"),
-        tauJetPhi = cms.string("leg2.pfTauTagInfoRef().pfjetRef().phi()"),
-        tauLeadPFChargedHadrPt = cms.string("leg2.leadPFChargedHadrCand.pt()"),
-        tauLooseIsolationPt = cms.string("leg2.userFloat('pfLooseIsoPt')"),        
-        ##tauDiscrByTaNCraw = cms.string("leg2.tauID('byTaNCraw') > 0.5"),
-        ##tauDiscrByTaNC = cms.string("leg2.tauID('byTaNC') > 0.5"),
-        ##tauDiscrByTaNCloose = cms.string("leg2.tauID('byTaNCloose') > 0.5"),
-        ##tauDiscrByTaNCmedium = cms.string("leg2.tauID('byTaNCmedium') > 0.5"),
-        ##tauDiscrByTaNCtight = cms.string("leg2.tauID('byTaNCtight') > 0.5"),
-        ##tauDiscrByDecayMode = cms.string("leg2.tauID('byDecayMode') > 0.5"),
-        ##tauDiscrByHPSloose = cms.string("leg2.tauID('byHPSloose') > 0.5"),
-        ##tauDiscrByHPSmedium = cms.string("leg2.tauID('byHPSmedium') > 0.5"),
-        ##tauDiscrByHPStight = cms.string("leg2.tauID('byHPStight') > 0.5"),
-        tauNumSignalPFChargedHadrons = cms.string("leg2.signalPFChargedHadrCands.size()"),
-        tauNumIsolationPFChargedHadrons = cms.string("leg2.isolationPFChargedHadrCands.size()"),
-        tauNumPFChargedHadrons = cms.string("leg2.signalPFChargedHadrCands.size() + leg2.isolationPFChargedHadrCands.size()"),
+        # kinematic variables for Muon
+        pt = cms.string("leg1.pt()"),
+        eta = cms.string("leg1.eta()"),
+        phi = cms.string("leg1.phi()"),
 
-        muTauCharge = cms.string("leg1.charge() + leg2.leadPFChargedHadrCand.charge()"),
-        
-        visMass = cms.string("p4Vis.mass()"),
-        SVfitMass1 = cms.string("svFitSolution('psKine_MEt').mass()"),
-        SVfitMass2 = cms.string("svFitSolution('psKine_MEt_ptBalance').mass()"),
-        Mt = cms.string("mt1MET()"),
-        Ht = cms.string("leg1.pt() + leg2.pt() + met.pt()")
+        # loose isolation
+        ptSumLooseIsolation = cms.string("leg2.userFloat('pfLooseIsoPt')")
     )
 )
+
+#--------------------------------------------------------------------------------
+# PFTau quantities
+#--------------------------------------------------------------------------------
 
 tauIdEffMeas_template02 = cms.PSet(
     # Select multiplicy of object(s) to store
@@ -98,7 +81,9 @@ tauIdEffMeas_template02 = cms.PSet(
         # jet width
         jetWidth = cms.string("sqrt(etaetaMoment() + phiphiMoment())"),
 
-        # loose isolation
+        # loose PFIsolation Pt sum
+        # (computed by summing PFChargedHadrons of Pt > 1.0 GeV + PFGammas of Pt > 1.5 GeV
+        #  in pfNoPileUp collection within region 0.15 < dR < 0.6 centered on PFTau direction)
         ptSumLooseIsolation = cms.string("userFloat('pfLooseIsoPt')"),
 
         # tau id. discriminators based on leading track/PFChargedHadron                                                 
@@ -131,3 +116,29 @@ tauIdEffMeas_template02 = cms.PSet(
     )
 )
 
+#--------------------------------------------------------------------------------
+# Muon + PFTau quantities (extracted from diTau object)
+#--------------------------------------------------------------------------------
+
+tauIdEffMeas_template03 = cms.PSet(
+    # Select multiplicy of object(s) to store
+    vector = cms.bool(True), # Store a value for all objects in this collection
+    #indices = cms.vuint_32([0, 1, 2]) # Store values for first, second, third objects
+    
+    # Extractor plugin
+    pluginType = cms.string("PATMuTauPairVectorValExtractor"),
+    
+    # Collection to extract from
+    src = cms.InputTag(""),
+
+    # Variables to compute for this source
+    columns = cms.PSet(
+        charge = cms.string("leg1.charge() + leg2.leadPFChargedHadrCand.charge()"),
+        
+        visMass = cms.string("p4Vis.mass()"),
+        SVfitMass1 = cms.string("svFitSolution('psKine_MEt').mass()"),
+        SVfitMass2 = cms.string("svFitSolution('psKine_MEt_ptBalance').mass()"),
+        Mt = cms.string("mt1MET()"),
+        Ht = cms.string("leg1.pt() + leg2.pt() + met.pt()")
+    )
+)

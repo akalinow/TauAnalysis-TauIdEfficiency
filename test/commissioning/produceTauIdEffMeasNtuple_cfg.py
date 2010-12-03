@@ -177,10 +177,13 @@ process.ntupleProducer = cms.EDProducer("ObjValEDNtupleProducer",
 
         # variables specific to tau id. efficiency measurement
         tauIdEffMeas01 = process.tauIdEffMeas_template01.clone(
-            src = cms.InputTag('selectedMuTauPairsPzetaDiffCumulative')
+            src = cms.InputTag('selectedPatMuonsTrkIPcumulative')
         ),
         tauIdEffMeas02 = process.tauIdEffMeas_template02.clone(
             src = cms.InputTag('selectedPatTausForMuTauEcalCrackVetoCumulative')
+        ),
+        tauIdEffMeas03 = process.tauIdEffMeas_template03.clone(
+            src = cms.InputTag('selectedMuTauPairsAntiOverlapVetoCumulative')
         )
     )
 )
