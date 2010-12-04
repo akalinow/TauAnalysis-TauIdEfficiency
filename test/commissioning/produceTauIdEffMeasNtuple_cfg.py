@@ -234,9 +234,9 @@ process.o = cms.EndPath(process.ntupleOutputModule)
 
 # define order in which different paths are run
 process.schedule = cms.Schedule(
-   process.p,
-   process.muonPFTauSkimPath,
-   process.o
+    process.p,
+    process.muonPFTauSkimPath,
+    process.o
 )
 
 # print-out all python configuration parameter information
