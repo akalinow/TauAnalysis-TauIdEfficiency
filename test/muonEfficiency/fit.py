@@ -12,7 +12,10 @@ process.MessageLogger.destinations = ['cout', 'cerr']
 process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 
 _PT_BINS = [10, 15, 20, 30, 40, 50, 60, 80, 120]
+_ALL_PT = [10, 120]
 _ETA_BINS = [2.1/10*i for i in range(11)]
+# Special binning for trigger measurement, taken from Manuel Zeise's EWK talk
+_ETA_BINS_TRG = [0, 0.9, 1.2, 2.1]
 _VTX_BINS = [0.5, 1.5, 2.5, 4.5, 10.5]
 
 sources = {
@@ -68,7 +71,9 @@ process.TagProbeFitTreeAnalyzer = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
         mcTrue = cms.vstring("MC true", "dummy[pass=1,fail=0]"),
         #passing = cms.vstring("isMuon", "dummy[pass=1,fail=0]"),
         AbsIso = cms.vstring("Absolute isolation", "dummy[pass=1,fail=0]"),
+        LooseAbsIso = cms.vstring("Loose absolute isolation", "dummy[pass=1,fail=0]"),
         RelIso = cms.vstring("Relative isolation", "dummy[pass=1,fail=0]"),
+        LooseRelIso = cms.vstring("Loose relative isolation", "dummy[pass=1,fail=0]"),
         Glb = cms.vstring("GlobalMuon", "dummy[pass=1,fail=0]"),
         TM = cms.vstring('Tracker Muon', "dummy[pass=1,fail=0]"),
         STA = cms.vstring('Standalone Muon', "dummy[pass=1,fail=0]"),
@@ -136,20 +141,30 @@ def append_pset(x_axis, eff_info, append_to):
     # Add all the selections
     for selection in eff_info[2]:
         setattr(new_pset.BinnedVariables, selection, cms.vstring("pass"))
-    setattr(new_pset.BinnedVariables, x_axis[0], cms.vdouble(x_axis[1]))
-    new_name = eff_info[0] + "_" + x_axis[0]
+    setattr(new_pset.BinnedVariables, x_axis[1], cms.vdouble(x_axis[2]))
+    new_name = x_axis[0] + "_" + eff_info[0] + "_" + x_axis[1]
     print "Build efficiency:", new_name
     setattr(append_to, new_name, new_pset)
 
 variables = [
-    ('pt', _PT_BINS),
-    ('abseta', _ETA_BINS),
-    ('tag_nVertices', _VTX_BINS),
+    ('avg', 'pt', _ALL_PT),
+    ('pt', 'pt', _PT_BINS),
+    ('eta', 'abseta', _ETA_BINS),
+]
+
+iso_vars = [
+    ('vtx', 'tag_nVertices', _VTX_BINS),
+]
+
+trig_vars = [
+    ('etatrig', 'abseta', _ETA_BINS_TRG),
 ]
 
 efficiencies = [
     ('iso', 'AbsIso', ['Glb', 'VBTF']),
+    ('looseiso', 'LooseAbsIso', ['Glb', 'VBTF']),
     ('reliso', 'RelIso', ['Glb', 'VBTF']),
+    ('loosereliso', 'LooseRelIso', ['Glb', 'VBTF']),
     ('id', 'VBTF', ['Glb']),
 ]
 
@@ -171,20 +186,23 @@ outer_efficiencies = [
     ('linking', 'Glb', ['outerTrack', 'innerTrack']),
 ]
 
-for variable in variables:
-    for eff in efficiencies:
+for eff in efficiencies:
+    for variable in variables + iso_vars:
         append_pset(variable, eff, process.TagProbeFitTreeAnalyzer.Efficiencies)
 
-    if not source_info['mc']:
-        for eff in trigger_efficiencies:
+if not source_info['mc']:
+    for eff in trigger_efficiencies:
+        for variable in (variables + trig_vars):
             append_pset(variable, eff,
                         process.TagProbeFitTreeAnalyzer.Efficiencies)
 
-    for eff in inner_efficiencies:
+for eff in inner_efficiencies:
+    for variable in variables:
         append_pset(variable, eff,
                     process.TagProbeFitTreeAnalyzerSta.Efficiencies)
 
-    for eff in outer_efficiencies:
+for eff in outer_efficiencies:
+    for variable in variables:
         append_pset(variable, eff,
                     process.TagProbeFitTreeAnalyzerInner.Efficiencies)
 
