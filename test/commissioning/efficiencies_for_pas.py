@@ -106,7 +106,7 @@ def makeEfficiencyComparisonPlots(numerators):
             drawEfficiency(efficiency_hps, isFirst)
             isFirst = False
             legend.AddEntry(efficiency_hps, "HPS medium isolation", "P")
-
+            
         if numerators['calo'] != "":
             numerator_tctau = numerators['calo']     
             efficiency_tctau = efficiency_results[x_var]['calo'][numerator_tctau]
@@ -135,8 +135,8 @@ if __name__ == "__main__":
     ROOT.gStyle.SetOptStat(0)
 
     # Get ZTT samples
-    ztt = samples.ztautau_mc
-    ##ztt = samples.zttPU156bx_mc
+    ##ztt = samples.ztautau_mc
+    ztt = samples.zttPU156bx_mc
 
     # Get the ntuple we produced
     ntuple_manager = ztt.build_ntuple_manager("tauIdEffNtuple")
@@ -192,34 +192,34 @@ if __name__ == "__main__":
             'label' : "1 or 3 Prong",
         },
         # For TaNC
-        'byTaNCfrOnePercent': {
-            'expr_str': '$byTaNCfrOnePercent',
-            'label' : "TaNC 1.00%",
+        'byTaNCloose': {
+            'expr_str': '$byTaNCloose',
+            'label' : "TaNC loose",
         },
-        'byTaNCfrHalfPercent': {
-            'expr_str': '$byTaNCfrHalfPercent',
-            'label' : "TaNC 0.50%",
+        'byTaNCmedium': {
+            'expr_str': '$byTaNCmedium',
+            'label' : "TaNC medium",
         },
-        'byTaNCfrQuarterPercent': {
-            'expr_str': '$byTaNCfrQuarterPercent',
-            'label' : "TaNC 0.25%",
+        'byTaNCtight': {
+            'expr_str': '$byTaNCtight',
+            'label' : "TaNC tight",
         },
         # For HPS
         'byDecayModeFinding': {
-            'expr_str': '$byLeadTrackFinding',
+            'expr_str': '$byDecayMode',
             'label' : "Decay Mode Finding",
         },
         'byIsolationLoose' : {
-            'expr_str': '$byIsolationLoose',
-            'label': "Loose Isolation",
+            'expr_str': '$byHPSloose',
+            'label': "HPS loose",
         },
         'byIsolationMedium' : {
-            'expr_str': '$byIsolationMedium',
-            'label': "Medium Isolation",
+            'expr_str': '$byHPSmedium',
+            'label': "HPS medium",
         },
         'byIsolationTight' : {
-            'expr_str': '$byIsolationTight',
-            'label': "Tight Isolation",
+            'expr_str': '$byHPStight',
+            'label': "HPS tight",
         },
     }
 
@@ -254,17 +254,17 @@ if __name__ == "__main__":
         'matching',
         'byLeadTrackFinding',
         'byLeadTrackPtCut',
-        'byTaNCfrOnePercent',
-        'byTaNCfrHalfPercent',
-        'byTaNCfrQuarterPercent',
+        'byTaNCloose',
+        'byTaNCmedium',
+        'byTaNCtight'
     ]
 
     hps_sequence = [
         'matching',
         'byDecayModeFinding',
-        'byIsolationLoose',
-        'byIsolationMedium',
-        'byIsolationTight'
+        'byHPSloose',
+        'byHPSmedium',
+        'byHPStight'
     ]
 
     calo_sequence = [
@@ -288,8 +288,8 @@ if __name__ == "__main__":
     nTuples = {
         "shrinkingCone": "patPFTausDijetTagAndProbeShrinkingCone",
         "fixedCone": "patPFTausDijetTagAndProbeFixedCone",
-        "TaNC": "patPFTausDijetTagAndProbeShrinkingCone",
-        "hps": "patPFTausDijetTagAndProbeHPS",
+        "TaNC": "patPFTausDijetTagAndProbeHPSpTaNC",
+        "hps": "patPFTausDijetTagAndProbeHPSpTaNC",
         "calo": "patCaloTausDijetTagAndProbe"
     }
 
@@ -369,8 +369,8 @@ if __name__ == "__main__":
                 nNum = float(numerator.Integral())
                 nDenom = denominator.Integral()
                 err = 1/nDenom*sqrt(nNum*(1-nNum/nDenom) )
-                efficiencyLogHack("%s -> %s: "%(nTuples[algorithm], numerator_name),timestamp=True)
-                efficiencyLogHack( "%e / %e = %e +- %e\n"%(nNum, nDenom, nNum/nDenom,err))
+                efficiencyLogHack("%s -> %s: " % (nTuples[algorithm], numerator_name), timestamp=True)
+                efficiencyLogHack("%e / %e = %e +- %e\n" % (nNum, nDenom, nNum/nDenom,err))
                 # end cleanup
                 
                 my_eff = ROOT.TGraphAsymmErrors(numerator, denominator)
@@ -429,8 +429,8 @@ if __name__ == "__main__":
     numerators = {}
     numerators['fixedCone'] = ""
     numerators['shrinkingCone'] = 'OneOrThreeProng'
-    numerators['TaNC'] = 'byTaNCfrHalfPercent'
-    numerators['hps'] = 'byIsolationMedium'
+    numerators['TaNC'] = 'byTaNCmedium'
+    numerators['hps'] = 'byHPSmedium'
     numerators['calo'] = 'OneOrThreeProng_calo'
     makeEfficiencyComparisonPlots(numerators)
             
