@@ -6,9 +6,9 @@ import FWCore.ParameterSet.Config as cms
 
 tauIdEffMeas_template01 = cms.PSet(
     # Select multiplicy of object(s) to store
-    vector = cms.bool(True), # Store a value for all objects in this collection
-    #indices = cms.vuint_32([0, 1, 2]) # Store values for first, second, third objects
-    
+    vector = cms.bool(False),
+    indices = cms.vuint32([0]), # Store values for first object only
+        
     # Extractor plugin
     pluginType = cms.string("PATMuonVectorValExtractor"),
     
@@ -33,9 +33,9 @@ tauIdEffMeas_template01 = cms.PSet(
 
 tauIdEffMeas_template02 = cms.PSet(
     # Select multiplicy of object(s) to store
-    vector = cms.bool(True), # Store a value for all objects in this collection
-    #indices = cms.vuint_32([0, 1, 2]) # Store values for first, second, third objects
-    
+    vector = cms.bool(False),
+    indices = cms.vuint32([0]), # Store values for first object only
+        
     # Extractor plugin
     pluginType = cms.string("PATTauVectorValExtractor"),
     
@@ -122,8 +122,8 @@ tauIdEffMeas_template02 = cms.PSet(
 
 tauIdEffMeas_template03 = cms.PSet(
     # Select multiplicy of object(s) to store
-    vector = cms.bool(True), # Store a value for all objects in this collection
-    #indices = cms.vuint_32([0, 1, 2]) # Store values for first, second, third objects
+    vector = cms.bool(False),
+    indices = cms.vuint32([0]), # Store values for first object only
     
     # Extractor plugin
     pluginType = cms.string("PATMuTauPairVectorValExtractor"),
