@@ -95,7 +95,7 @@ def makeEfficiencyComparisonPlots(numerators):
             efficiency_tanc.SetLineColor(ROOT.EColor.kBlue)
             drawEfficiency(efficiency_tanc, isFirst)
             isFirst = False
-            legend.AddEntry(efficiency_tanc, "TaNC 0.50%", "P")
+            legend.AddEntry(efficiency_tanc, "TaNC medium", "P")
 
         if numerators['hps'] != "":
             numerator_hps = numerators['hps']    
@@ -105,8 +105,8 @@ def makeEfficiencyComparisonPlots(numerators):
             efficiency_hps.SetLineColor(28)
             drawEfficiency(efficiency_hps, isFirst)
             isFirst = False
-            legend.AddEntry(efficiency_hps, "HPS medium isolation", "P")
-            
+            legend.AddEntry(efficiency_hps, "HPS medium", "P")
+
         if numerators['calo'] != "":
             numerator_tctau = numerators['calo']     
             efficiency_tctau = efficiency_results[x_var]['calo'][numerator_tctau]
@@ -160,19 +160,19 @@ if __name__ == "__main__":
         },
         'byLeadTrackFinding': {
             'expr_str': '$byLeadTrackFinding',
-            'label' : "Lead Track Finding",
+            'label' : "Lead Track Finding"
         },
         'byLeadTrackPtCut': {
             'expr_str': '$byLeadTrackPtCut',
-            'label' : "Lead Track P_{T} Cut",
+            'label' : "Lead Track P_{T} Cut"
         },
         'byTrackIsolation': {
             'expr_str': '$byTrackIsolation',
-            'label' : "Charged Hadron Isolation",
+            'label' : "Charged Hadron Isolation"
         },
         'byEcalIsolation': {
             'expr_str': '$byEcalIsolation',
-            'label' : "Photon Isolation",
+            'label' : "Photon Isolation"
         },
         # For calotau
         'byIsolation' : {
@@ -181,7 +181,7 @@ if __name__ == "__main__":
         },
         'OneOrThreeProng': {
             'expr_str': '$numChargedParticlesSignalCone == 1 || $numChargedParticlesSignalCone == 3',
-            'label' : "1 or 3 Prong",
+            'label' : "1 or 3 Prong"
         },
         'byEcalIsolation_calo' : {
             'expr_str': '$etSumIsolationECAL < 5',
@@ -189,37 +189,37 @@ if __name__ == "__main__":
         },
         'OneOrThreeProng_calo': {
             'expr_str': '$numSignalTracks ==1 || $numSignalTracks ==3',
-            'label' : "1 or 3 Prong",
+            'label' : "1 or 3 Prong"
         },
         # For TaNC
         'byTaNCloose': {
             'expr_str': '$byTaNCloose',
-            'label' : "TaNC loose",
+            'label' : "TaNC loose"
         },
         'byTaNCmedium': {
             'expr_str': '$byTaNCmedium',
-            'label' : "TaNC medium",
+            'label' : "TaNC medium"
         },
         'byTaNCtight': {
             'expr_str': '$byTaNCtight',
-            'label' : "TaNC tight",
+            'label' : "TaNC tight"
         },
         # For HPS
         'byDecayModeFinding': {
             'expr_str': '$byDecayMode',
-            'label' : "Decay Mode Finding",
+            'label' : "Decay Mode Finding"
         },
         'byIsolationLoose' : {
             'expr_str': '$byHPSloose',
-            'label': "HPS loose",
+            'label': "HPS loose"
         },
         'byIsolationMedium' : {
             'expr_str': '$byHPSmedium',
-            'label': "HPS medium",
+            'label': "HPS medium"
         },
         'byIsolationTight' : {
             'expr_str': '$byHPStight',
-            'label': "HPS tight",
+            'label': "HPS tight"
         },
     }
 

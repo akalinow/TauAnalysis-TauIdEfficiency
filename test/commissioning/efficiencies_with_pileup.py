@@ -77,9 +77,9 @@ numerator_selections_by_algorithm = {
                      + ' && $byTrackIsolation > 0.5 && $byEcalIsolation > 0.5' \
                      + ' && ($numChargedParticlesSignalCone == 1 || $numChargedParticlesSignalCone == 3)',
     'TaNC'          : '$byLeadTrackFinding > 0.5 && $byLeadTrackPtCut > 0.5' \
-                     + ' && $byTaNCfrHalfPercent > 0.5',
+                     + ' && $byTaNCmedium > 0.5',
     'hps'           : '$byLeadTrackFinding > 0.5' \
-                     + ' && $byIsolationMedium',
+                     + ' && $byHPSmedium',
     'calo'          : '$byLeadTrackFinding > 0.5 && $byLeadTrackPtCut > 0.5' \
                      + ' && $byIsolation > 0.5 && $etSumIsolationECAL < 5' \
                      + ' && ($numSignalTracks == 1 || $numSignalTracks == 3)'
@@ -93,8 +93,7 @@ if __name__ == "__main__":
     ROOT.gStyle.SetOptStat(0)
 
     # Get ZTT samples
-    #ztt = samples.zttPU156bx_mc # particleFlow
-    ztt = samples.zttPU156bxPFnoPileUp_mc # pfNoPileUp
+    ztt = samples.zttPU156bx_mc # particleFlow
 
     # Build the plot manager.  The plot manager keeps track of all the samples
     # and ensures they are correctly normalized w.r.t. luminosity.  See 
@@ -158,8 +157,8 @@ if __name__ == "__main__":
 
     nTuples = {
         "shrinkingCone" : "patPFTausDijetTagAndProbeShrinkingCone",
-        "TaNC"          : "patPFTausDijetTagAndProbeShrinkingCone",
-        "hps"           : "patPFTausDijetTagAndProbeHPS",
+        "TaNC"          : "patPFTausDijetTagAndProbeHPSpTaNC",
+        "hps"           : "patPFTausDijetTagAndProbeHPSpTaNC",
         "calo"          : "patCaloTausDijetTagAndProbe"
     }
 

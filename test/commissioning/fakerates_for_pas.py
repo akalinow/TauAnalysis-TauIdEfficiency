@@ -162,19 +162,19 @@ def makeFakerateComparisonPlots(numerators):
 
         if numerators['TaNC'] != "":
             numerator_tanc = numerators['TaNC']
-            fakerate_tanc = fakerate_results['TaNC'][x_var]['numerators']['byTaNCfrHalfPercent']['data']
+            fakerate_tanc = fakerate_results['TaNC'][x_var]['numerators']['byTaNCmedium']['data']
             fakerate_tanc.SetMarkerStyle(22)
             fakerate_tanc.SetMarkerColor(ROOT.EColor.kBlue)
             fakerate_tanc.SetLineColor(ROOT.EColor.kBlue)
             fakerate_tanc.Draw("e1p,same")
-            legend.AddEntry(fakerate_tanc, "TaNC 0.50%", "P")
+            legend.AddEntry(fakerate_tanc, "TaNC medium", "P")
 
-        fakerate_hps = fakerate_results['hps'][x_var]['numerators']['byIsolationMedium']['data']
+        fakerate_hps = fakerate_results['hps'][x_var]['numerators']['byHPSmedium']['data']
         fakerate_hps.SetMarkerStyle(23)
         fakerate_hps.SetMarkerColor(28)
         fakerate_hps.SetLineColor(28)
         fakerate_hps.Draw("e1p,same")
-        legend.AddEntry(fakerate_hps, "HPS medium isolation", "P")
+        legend.AddEntry(fakerate_hps, "HPS medium", "P")
 
         fakerate_tctau = fakerate_results['calo'][x_var]['numerators']['OneOrThreeProng']['data']
         fakerate_tctau.SetMarkerStyle(29)
@@ -208,24 +208,21 @@ if __name__ == "__main__":
 
     # Add each sample we want to plot/compare
     # Uncomment to add QCD
-    plotter.add_sample(samples.qcd_mc_pythia8, "Simulation", **style.QCD_MC_PYTHIA8_STYLE_HIST)
-    #plotter.add_sample(samples.qcd_mc_pythia6, "QCD (Pythia 6)", **style.QCD_MC_PYTHIA6_STYLE_HIST)
+    plotter.add_sample(samples.qcddijet_mc, "Simulation", **style.QCD_MC_PYTHIA6_STYLE_HIST)
 
-    #plotter.add_sample(samples.minbias_mc, "Minbias MC", **style.MINBIAS_MC_STYLE)
-    
-    plotter.add_sample(samples.data, "Data", **style.DATA_STYLE)
+    plotter.add_sample(samples.data_dijet, "Data", **style.DATA_STYLE)
 
     # Normalize everything to the data luminosity
-    plotter.set_integrated_lumi(samples.data.effective_luminosity())
+    plotter.set_integrated_lumi(samples.data_dijet.effective_luminosity())
     
     # Build the ntuple manager
-    ntuple_manager = samples.data.build_ntuple_manager("tauIdEffNtuple")
+    ntuple_manager = samples.data_dijet.build_ntuple_manager("tauIdEffNtuple")
 
     nTuples = {
         "shrinkingCone": ntuple_manager.get_ntuple("patPFTausDijetTagAndProbeShrinkingCone"),
         "fixedCone": ntuple_manager.get_ntuple("patPFTausDijetTagAndProbeFixedCone"),
-        "TaNC": ntuple_manager.get_ntuple("patPFTausDijetTagAndProbeShrinkingCone"),
-        "hps": ntuple_manager.get_ntuple("patPFTausDijetTagAndProbeHPS"),
+        "TaNC": ntuple_manager.get_ntuple("patPFTausDijetTagAndProbeHPSpTaNC"),
+        "hps": ntuple_manager.get_ntuple("patPFTausDijetTagAndProbeHPSpTaNC"),
         "calo": ntuple_manager.get_ntuple("patCaloTausDijetTagAndProbe")
     }
     
@@ -263,36 +260,36 @@ if __name__ == "__main__":
         ],
         "TaNC":[
             {
-                'expr': nTuples["TaNC"].expr('$byLeadTrackFinding > 0.5 & $byTaNCfrOnePercent > 0.5'),
-                'style_name':"byTaNCfrOnePercent",
-                'nice_name': "TaNC 1.00%"
+                'expr': nTuples["TaNC"].expr('$byLeadTrackFinding > 0.5 & $byLeadTrackPtCut > 0.5 & $byTaNCloose > 0.5'),
+                'style_name':"byTaNCloose",
+                'nice_name': "TaNC loose%"
             },
             {
-                'expr': nTuples["TaNC"].expr('$byLeadTrackFinding > 0.5 & $byTaNCfrHalfPercent > 0.5'),
-                'style_name':"byTaNCfrHalfPercent",
-                'nice_name': "TaNC 0.50%"
+                'expr': nTuples["TaNC"].expr('$byLeadTrackFinding > 0.5 & $byLeadTrackPtCut > 0.5 & $byTaNCmedium > 0.5'),
+                'style_name':"byTaNCmedium",
+                'nice_name': "TaNC medium"
             },
             {
-                'expr': nTuples["TaNC"].expr('$byLeadTrackFinding > 0.5 & $byTaNCfrQuarterPercent > 0.5'),
-                'style_name':"byTaNCfrQuarterPercent",
-                'nice_name': "TaNC 0.25%"
+                'expr': nTuples["TaNC"].expr('$byLeadTrackFinding > 0.5 & $byLeadTrackPtCut > 0.5 & $byTaNCtight > 0.5'),
+                'style_name':"byTaNCtight",
+                'nice_name': "TaNC tight"
             }
          ],
          "hps":[
             {
-                'expr': nTuples["hps"].expr('$byLeadTrackFinding > 0.5 & $byIsolationLoose > 0.5'),
-                'style_name':"byIsolationLoose",
-                'nice_name': "Loose Isolation"
+                'expr': nTuples["hps"].expr('$byDecayMode > 0.5 & $byHPSloose > 0.5'),
+                'style_name':"byHPSloose",
+                'nice_name': "HPS loose"
             },
             {
-                'expr': nTuples["hps"].expr('$byLeadTrackFinding > 0.5 & $byIsolationMedium > 0.5'),
-                'style_name':"byIsolationMedium",
-                'nice_name': "Medium Isolation"
+                'expr': nTuples["hps"].expr('$byDecayMode > 0.5 & $byHPSmedium > 0.5'),
+                'style_name':"byHPSmedium",
+                'nice_name': "HPS medium"
             },
             {
-                'expr': nTuples["hps"].expr('$byLeadTrackFinding > 0.5 & $byIsolationTight > 0.5'),
-                'style_name':"byIsolationTight",
-                'nice_name': "Tight Isolation"
+                'expr': nTuples["hps"].expr('$byDecayMode > 0.5 & $byHPStight > 0.5'),
+                'style_name':"byHPStight",
+                'nice_name': "HPS tight"
             }
         ],
         "calo":[
@@ -328,8 +325,8 @@ if __name__ == "__main__":
     numerators = {}
     numerators['fixedCone'] = ""
     numerators['shrinkingCone'] = 'OneOrThreeProng'
-    numerators['TaNC'] = 'byTaNCfrHalfPercent'
-    numerators['hps'] = 'byIsolationMedium'
+    numerators['TaNC'] = 'byTaNCmedium'
+    numerators['hps'] = 'byHPSmedium'
     numerators['calo'] = 'OneOrThreeProng'
     makeFakerateComparisonPlots(numerators)
             
