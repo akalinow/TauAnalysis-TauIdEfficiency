@@ -156,7 +156,7 @@ for dataStyle in DATA_STYLES:
 # TaNC, HPS and calo tau colors follow the same pattern
 for iso_type, tanc_type in zip(
     [ 'byTrackIsolation', 'byEcalIsolation', 'OneOrThreeProng' ],
-    [ 'byTaNCfrOnePercent', 'byTaNCfrHalfPercent', 'byTaNCfrQuarterPercent' ]):
+    [ 'byTaNCloose', 'byTaNCmedium', 'byTaNCtight' ]):
     EFFICIENCY_STYLES[tanc_type] = EFFICIENCY_STYLES[iso_type]
     MC_STYLES[tanc_type] = EFFICIENCY_STYLES[iso_type]
     DATA_STYLES[tanc_type] = deepcopy(EFFICIENCY_STYLES[iso_type])
@@ -164,7 +164,7 @@ for iso_type, tanc_type in zip(
 
 for iso_type, hps_type in zip(
     [ 'byTrackIsolation', 'byEcalIsolation', 'OneOrThreeProng' ],
-    [ 'byIsolationLoose', 'byIsolationMedium', 'byIsolationTight' ]):
+    [ 'byHPSloose', 'byHPSmedium', 'byHPStight' ]):
     EFFICIENCY_STYLES[hps_type] = EFFICIENCY_STYLES[iso_type]
     MC_STYLES[hps_type] = EFFICIENCY_STYLES[iso_type]
     DATA_STYLES[hps_type] = deepcopy(EFFICIENCY_STYLES[iso_type])

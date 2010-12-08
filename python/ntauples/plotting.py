@@ -74,8 +74,8 @@ def efficiency(events, expression, numerator = "", denominator = "", output_name
     nNum = float(numerator_h.Integral())
     nDenom = denominator_h.Integral()
     err = 1/nDenom*sqrt(nNum*(1-nNum/nDenom) )
-    efficiencyLogHack( "%e / %e = %e +- %e\n"%(nNum, nDenom, nNum/nDenom, err))
-    efficiencyLogHack("",timestamp=True)
+    efficiencyLogHack("%e / %e = %e +- %e\n" % (nNum, nDenom, nNum/nDenom, err))
+    efficiencyLogHack("", timestamp=True)
     #end cleanup
     
     #print numerator_h, denominator_h
