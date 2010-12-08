@@ -6,7 +6,7 @@ import TauAnalysis.TauIdEfficiency.tools.castor_mirror as mirror
 #--------------------------------------------------------------------------------
 
 # Import the samples into this namespace
-from samples import ztautau_mc, zttPU156bx_mc, zttPU156bxPFnoPileUp_mc, \
+from samples import ztautau_mc, zttPU156bx_mc, \
      qcddijet_mc, ppmux_mc, ppmuxPU156bx_mc, wmunu_mc, wmunuPU156bx_mc, \
      data_dijet_runs132440to135802, data_dijet_runs135821to141887, data_dijet_runs141950to144114, data_dijet, \
      data_ppmux_runs132440to145761, data_ppmux_runs145762_147116, data_ppmux_runs147117_149442, data_ppmux, \
@@ -60,10 +60,7 @@ _sample_list.extend([ wmunu_mc, wmunuPU156bx_mc, data_wjets ])
 
 #--------------------------------------------------------------------------------
 # define Z --> tau+ tau- samples for tau id. efficiency plots
-_sample_list.extend([ ztautau_mc, zttPU156bx_mc, zttPU156bxPFnoPileUp_mc ])
-#_sample_list.append(ztautau_mc)
-#_sample_list.extend([ zttPU156bx_mc, zttPU156bxPFnoPileUp_mc ])
-#_sample_list = [ ztautau_mc ]
+_sample_list.extend([ ztautau_mc, zttPU156bx_mc ])
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
