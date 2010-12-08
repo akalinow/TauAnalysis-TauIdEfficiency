@@ -27,7 +27,7 @@ hltMu = cms.EDFilter("EventSelPluginFilter",
 # define Muon selection
 #--------------------------------------------------------------------------------
 
-patMuonsLoosePFIsoEmbedded = cms.EDProducer("PATTauPFIsolationEmbedder",
+patMuonsLoosePFIsoEmbedded = cms.EDProducer("PATMuonPFIsolationEmbedder",
     src = cms.InputTag('cleanPatMuons'),                                       
     userFloatName = cms.string('pfLooseIsoPt'),
     pfCandidateSource = cms.InputTag('pfNoPileUp'),
@@ -89,7 +89,7 @@ selectPatMuons = patMuonSelConfigurator.configure(pyNameSpace = locals())
 #--------------------------------------------------------------------------------
 
 patTausLoosePFIsoEmbedded = cms.EDProducer("PATTauPFIsolationEmbedder",
-    src = cms.InputTag('cleanPatTaus'),                                       
+    src = cms.InputTag('patTaus'),                                       
     userFloatName = cms.string('pfLooseIsoPt'),
     pfCandidateSource = cms.InputTag('pfNoPileUp'),
     chargedHadronIso = cms.PSet(
