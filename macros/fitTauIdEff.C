@@ -1,10 +1,16 @@
 
 #include "RooAddPdf.h"
+#include "RooCategory.h"
 #include "RooCmdArg.h"
+#include "RooConstVar.h"
 #include "RooDataHist.h"
 #include "RooFit.h"
+#include "RooFormulaVar.h"
+#include "RooGaussian.h"
 #include "RooHistPdf.h"
+#include "RooProduct.h"
 #include "RooRealVar.h"
+#include "RooSimultaneous.h"
 
 #include <TCanvas.h>
 #include <TChain.h>
@@ -162,15 +168,128 @@ std::map<std::string, TH1*> makeHistograms(const std::string& process, double we
   return retVal;
 }
 
-TH1* normalize(const TH1* histogram)
+TH1* normalize(const TH1* histogram, double norm = 1.)
 {
   TH1* retVal = (TH1*)histogram->Clone();
 
   if ( !retVal->GetSumw2N() ) retVal->Sumw2();
 
-  if ( retVal->Integral() != 0. ) retVal->Scale(1./retVal->Integral());
+  if ( retVal->Integral() != 0. ) retVal->Scale(norm/retVal->Integral());
     
   return retVal;
+}
+
+void drawHistograms(TH1* histogramQCD, double normQCD,
+		    TH1* histogramWplusJets, double normWplusJets,
+		    TH1* histogramZmumu, double normZmumu,
+		    TH1* histogramZtautau, double normZtautau,
+		    TH1* histogramData,
+		    const std::string& outputFileName)
+{
+  //std::cout << "<drawHistograms>:" << std::endl;
+  //std::cout << " normQCD = " << normQCD << std::endl;
+  //std::cout << " normWplusJets = " << normWplusJets << std::endl;
+  //std::cout << " normZmumu = " << normZmumu << std::endl;
+  //std::cout << " normZtautau = " << normZtautau << std::endl;
+  
+  TCanvas* canvas = new TCanvas("canvas", "canvas", 800, 640);
+  canvas->SetFillColor(10);
+  canvas->SetBorderSize(2);
+
+  THStack smSum("smSum", "smSum");
+
+  TH1* templateQCD = ( normQCD > 0. ) ? normalize(histogramQCD, normQCD) : histogramQCD;
+  templateQCD->SetFillColor(797);
+  smSum.Add(templateQCD);
+
+  TH1* templateWplusJets = ( normWplusJets > 0. ) ? normalize(histogramWplusJets, normWplusJets) : histogramWplusJets;
+  templateWplusJets->SetFillColor(856);
+  smSum.Add(templateWplusJets);
+
+  TH1* templateZmumu = ( normZmumu > 0. ) ? normalize(histogramZmumu, normZmumu) : histogramZmumu;
+  templateZmumu->SetFillColor(596);
+  smSum.Add(templateZmumu);
+
+  TH1* templateZtautau = ( normZtautau > 0. ) ? normalize(histogramZtautau, normZtautau) : histogramZtautau;
+  templateZtautau->SetFillColor(628);
+  smSum.Add(templateZtautau);
+
+  histogramData->SetLineColor(1);
+  histogramData->SetMarkerColor(1);
+  histogramData->SetMarkerStyle(20);
+
+  smSum.SetTitle(templateZtautau->GetTitle());
+  smSum.SetMaximum(1.4*TMath::Max(smSum.GetMaximum(), histogramData->GetMaximum()));
+	
+  smSum.Draw("hist");
+  histogramData->SetStats(false);
+  histogramData->Draw("ep1same");
+
+  TLegend legend(0.64, 0.69, 0.89, 0.89, "", "brNDC"); 
+  legend.SetBorderSize(0);
+  legend.SetFillColor(0);
+  
+  legend.AddEntry(templateZtautau, "Z #rightarrow #tau^{+} #tau^{-}", "f");
+  legend.AddEntry(templateZmumu, "Z #rightarrow #mu^{+} #mu^{-}", "f");
+  legend.AddEntry(templateWplusJets, "W + jets", "f");
+  legend.AddEntry(templateQCD, "QCD", "f");
+  legend.AddEntry(histogramData, "Data", "p");
+  legend.Draw();
+
+  canvas->Update();
+  std::string outputFilePath = std::string("./plots/");
+  canvas->Print(outputFilePath.append(outputFileName).data());
+
+  if ( templateQCD       != histogramQCD       ) delete templateQCD;
+  if ( templateWplusJets != histogramWplusJets ) delete templateWplusJets;
+  if ( templateZmumu     != histogramZmumu     ) delete templateZmumu;
+  if ( templateZtautau   != histogramZtautau   ) delete templateZtautau;
+
+  delete canvas;
+}
+
+void drawHistograms(TH1* histogram_passed, TH1* histogram_failed, 
+		    const std::string& tauId,
+		    const std::string& outputFileName)
+{
+  //std::cout << "<drawHistograms>:" << std::endl;
+  
+  TCanvas* canvas = new TCanvas("canvas", "canvas", 800, 640);
+  canvas->SetFillColor(10);
+  canvas->SetBorderSize(2);
+
+  TH1* template_passed = normalize(histogram_passed, 1.);
+  template_passed->SetLineColor(3);
+  template_passed->SetMarkerColor(3);
+  template_passed->SetMarkerStyle(20);
+
+  TH1* template_failed = normalize(histogram_failed, 1.);
+  template_failed->SetLineColor(2);
+  template_failed->SetMarkerColor(2);
+  template_failed->SetMarkerStyle(24);
+
+  template_passed->SetMaximum(1.4*TMath::Max(template_passed->GetMaximum(), template_failed->GetMaximum()));
+  template_passed->SetStats(false);
+  template_passed->Draw("ep1");
+
+  template_failed->Draw("ep1same");
+
+  TLegend legend(0.64, 0.69, 0.89, 0.89, "", "brNDC"); 
+  legend.SetBorderSize(0);
+  legend.SetFillColor(0);
+  
+  legend.AddEntry(template_passed, std::string(tauId).append(" passed").data(), "p");
+  legend.AddEntry(template_failed, std::string(tauId).append(" failed").data(), "p");
+  legend.Draw();
+
+  canvas->Update();
+  std::string outputFilePath = std::string("./plots/");
+  canvas->Print(outputFilePath.append(outputFileName).data());
+
+  delete template_passed;
+  delete template_failed;
+
+  delete canvas;
 }
 
 void fitUsingTFractionFitter(std::map<std::string, TH1*>& histogramsData,
@@ -180,13 +299,19 @@ void fitUsingTFractionFitter(std::map<std::string, TH1*>& histogramsData,
 			     std::map<std::string, TH1*>& histogramsQCD,
 			     const std::vector<std::string>& tauIds, const std::vector<std::string>& tauIdValues,
 			     const std::vector<std::string>& fitVariables,
-			     std::map<std::string, double>& fitValues,
-			     std::map<std::string, double>& fitErrors)
+			     std::map<std::string, double>& effValues,
+			     std::map<std::string, double>& effErrors)
 {
   for ( std::vector<std::string>::const_iterator variable = fitVariables.begin();
 	variable != fitVariables.end(); ++variable ) {
     for ( std::vector<std::string>::const_iterator tauId = tauIds.begin();
 	  tauId != tauIds.end(); ++tauId ) {
+
+      double passedValueZtautau = 0.;
+      double passedErrorZtautau = 0.;
+      double failedValueZtautau = 0.;
+      double failedErrorZtautau = 0.;
+
       for ( std::vector<std::string>::const_iterator tauIdValue = tauIdValues.begin();
 	    tauIdValue != tauIdValues.end(); ++tauIdValue ) {
 
@@ -224,28 +349,39 @@ void fitUsingTFractionFitter(std::map<std::string, TH1*>& histogramsData,
 	  double fitValueZtautau = fitAlgorithm->GetParameter(3)*histogramData->Integral();
 	  double fitErrorZtautau = fitAlgorithm->GetParError(3)*histogramData->Integral();
 
-	  std::cout << "Fit Parameter:" << std::endl;
+	  std::cout << "Results of fitting variable = " << (*variable)
+		    << " for Tau id. = " << (*tauId) << ", value = '"<< (*tauIdValue) << "':" << std::endl;
 	  std::cout << " Ztautau: normalization = " << fitValueZtautau << " +/- " << fitErrorZtautau << std::endl;
 	  std::cout << " Zmumu: normalization = " << fitValueZmumu << " +/- " << fitErrorZmumu << std::endl; 
 	  std::cout << " WplusJets: normalization = " << fitValueWplusJets << " +/- " << fitErrorWplusJets << std::endl;
 	  std::cout << " QCD: normalization = " << fitValueQCD << " +/- " << fitErrorQCD << std::endl; 
 
-	  std::string key = std::string(*variable);
-	  key.append("_").append(*tauId).append("_").append(*tauIdValue);
-
-	  fitValues[std::string("Ztautau").append("_").append(key)] = fitValueZtautau;
-	  fitErrors[std::string("Ztautau").append("_").append(key)] = fitErrorZtautau;
-	  fitValues[std::string("Zmumu").append("_").append(key)] = fitValueZmumu;
-	  fitErrors[std::string("Zmumu").append("_").append(key)] = fitErrorZmumu;
-	  fitValues[std::string("WplusJets").append("_").append(key)] = fitValueWplusJets;
-	  fitErrors[std::string("WplusJets").append("_").append(key)] = fitErrorWplusJets;
-	  fitValues[std::string("QCD").append("_").append(key)] = fitValueQCD;
-	  fitErrors[std::string("QCD").append("_").append(key)] = fitErrorQCD;
+	  if ( (*tauIdValue) == "passed" ) {
+	    passedValueZtautau = fitValueZtautau;
+	    passedErrorZtautau = fitErrorZtautau;
+	  } else if ( (*tauIdValue) == "failed" ) {
+	    failedValueZtautau = fitValueZtautau;
+	    failedErrorZtautau = fitErrorZtautau;
+	  }
 	}
       }
+
+      double numerator = passedValueZtautau;
+      double denominator = passedValueZtautau + failedValueZtautau;
+
+      double effValue = numerator/denominator;
+      double effError2 = TMath::Power((failedValueZtautau/denominator)*(passedErrorZtautau/denominator), 2)
+	                + TMath::Power((passedValueZtautau/denominator)*(failedErrorZtautau/denominator), 2);
+
+      std::string key = std::string(*variable);
+      key.append("_").append(*tauId);
+
+      effValues[key] = effValue;
+      effErrors[key] = TMath::Sqrt(effError2);
     }
   }
 }
+
 void fitUsingRooFit(std::map<std::string, TH1*>& histogramsData,
 		    std::map<std::string, TH1*>& histogramsZtautau,
 		    std::map<std::string, TH1*>& histogramsZmumu,
@@ -253,110 +389,318 @@ void fitUsingRooFit(std::map<std::string, TH1*>& histogramsData,
 		    std::map<std::string, TH1*>& histogramsQCD,
 		    const std::vector<std::string>& tauIds, const std::vector<std::string>& tauIdValues,
 		    const std::vector<std::string>& fitVariables,
-		    std::map<std::string, double>& fitValues,
-		    std::map<std::string, double>& fitErrors)
+		    std::map<std::string, double>& effValues,
+		    std::map<std::string, double>& effErrors)
 {
   for ( std::vector<std::string>::const_iterator variable = fitVariables.begin();
 	variable != fitVariables.end(); ++variable ) {
     for ( std::vector<std::string>::const_iterator tauId = tauIds.begin();
 	  tauId != tauIds.end(); ++tauId ) {
-      for ( std::vector<std::string>::const_iterator tauIdValue = tauIdValues.begin();
-	    tauIdValue != tauIdValues.end(); ++tauIdValue ) {
+      
+      std::cout << "performing Fit of variable = " << (*variable)
+		<< " for Tau id. = " << (*tauId) << std::endl;
+            
+      std::string key = std::string(*variable);
+      key.append("_").append(*tauId);
 
-	std::cout << "performing Fit of variable = " << (*variable)
-		  << " for Tau id. = " << (*tauId) << ", value = "<< (*tauIdValue) << std::endl;
+      double fitMin = histogramsZtautau[std::string(key).append("_").append("all")]->GetXaxis()->GetXmin();
+      double fitMax = histogramsZtautau[std::string(key).append("_").append("all")]->GetXaxis()->GetXmax();
+      
+      RooRealVar* fitVar = new RooRealVar("fitVar", "fitVar", fitMin, fitMax);
+
+      double numEventsData = histogramsData[std::string(key).append("_").append("all")]->Integral();
+
+      RooRealVar* fr = new RooRealVar("fr", "fr", 0.05, 0., 1.);
+
+      TH1* histogramQCD_passed = histogramsQCD[std::string(key).append("_").append("passed")];
+      RooDataHist* tmpHistQCD_passed = 
+	new RooDataHist("tmpHistQCD_passed", "tmpHistQCD_passed", *fitVar, histogramQCD_passed);
+      RooHistPdf* templateQCD_passed = 
+	new RooHistPdf("templateQCD_passed", "templateQCD_passed", *fitVar, *tmpHistQCD_passed);
+      TH1* histogramQCD_failed = histogramsQCD[std::string(key).append("_").append("failed")];
+      RooDataHist* tmpHistQCD_failed = 
+	new RooDataHist("tmpHistQCD_failed", "tmpHistQCD_failed", *fitVar, histogramQCD_failed);
+      RooHistPdf* templateQCD_failed = 
+	new RooHistPdf("templateQCD_failed", "templateQCD_failed", *fitVar, *tmpHistQCD_failed);
+      RooRealVar* normQCD = new RooRealVar("normQCD", "normQCD", 0.40*numEventsData, 0., numEventsData);
+      RooRealVar* frFactorQCD = new RooRealVar("frFactorQCD", "frFactorQCD", 1., 0., 10.);
+      RooFormulaVar* normQCD_passed = 
+	new RooFormulaVar("normQCD_passed", "normQCD_passed", 
+			  "fr*frFactorQCD*normQCD", RooArgSet(*normQCD, *fr, *frFactorQCD));
+      RooFormulaVar* normQCD_failed = 
+	new RooFormulaVar("normQCD_failed", "normQCD_failed", 
+			  "(1.0 - fr*frFactorQCD)*normQCD", RooArgSet(*normQCD, *fr, *frFactorQCD));
+
+      TH1* histogramWplusJets_passed = histogramsWplusJets[std::string(key).append("_").append("passed")];
+      RooDataHist* tmpHistWplusJets_passed =
+	new RooDataHist("tmpHistWplusJets_passed", "tmpHistWplusJets_passed", *fitVar, histogramWplusJets_passed);
+      RooHistPdf* templateWplusJets_passed =
+	new RooHistPdf("templateWplusJets_passed", "templateWplusJets_passed", *fitVar, *tmpHistWplusJets_passed);
+      TH1* histogramWplusJets_failed = histogramsWplusJets[std::string(key).append("_").append("failed")];
+      RooDataHist* tmpHistWplusJets_failed =
+	new RooDataHist("tmpHistWplusJets_failed", "tmpHistWplusJets_failed", *fitVar, histogramWplusJets_failed);
+      RooHistPdf* templateWplusJets_failed =
+	new RooHistPdf("templateWplusJets_failed", "templateWplusJets_failed", *fitVar, *tmpHistWplusJets_failed);
+      RooRealVar* normWplusJets = new RooRealVar("normWplusJets", "normWplusJets", 0.25*numEventsData, 0., numEventsData);
+      RooRealVar* frFactorWplusJets = new RooRealVar("frFactorWplusJets", "frFactorWplusJets", 1., 0., 10.);
+      RooFormulaVar* normWplusJets_passed =
+	new RooFormulaVar("normWplusJets_passed", "normWplusJets_passed",
+			  "fr*frFactorWplusJets*normWplusJets", RooArgSet(*normWplusJets, *fr, *frFactorWplusJets));
+      RooFormulaVar* normWplusJets_failed = 
+	new RooFormulaVar("normWplusJets_failed", "normWplusJets_failed",
+			  "(1.0 - fr*frFactorWplusJets)*normWplusJets", RooArgSet(*normWplusJets, *fr, *frFactorWplusJets));
+
+      TH1* histogramZmumu_passed = histogramsZmumu[std::string(key).append("_").append("passed")];
+      RooDataHist* tmpHistZmumu_passed = 
+	new RooDataHist("tmpHistZmumu_passed", "tmpHistZmumu_passed", *fitVar, histogramZmumu_passed);
+      RooHistPdf* templateZmumu_passed = 
+	new RooHistPdf("templateZmumu_passed", "templateZmumu_passed", *fitVar, *tmpHistZmumu_passed);
+      TH1* histogramZmumu_failed = histogramsZmumu[std::string(key).append("_").append("failed")];
+      RooDataHist* tmpHistZmumu_failed = 
+	new RooDataHist("tmpHistZmumu_failed", "tmpHistZmumu_failed", *fitVar, histogramZmumu_failed);
+      RooHistPdf* templateZmumu_failed = 
+	new RooHistPdf("templateZmumu_failed", "templateZmumu_failed", *fitVar, *tmpHistZmumu_failed);
+      RooRealVar* normZmumu = new RooRealVar("normZmumu", "normZmumu", 0.10*numEventsData, 0., numEventsData);
+      RooRealVar* frFactorZmumu = new RooRealVar("frFactorZmumu", "frFactorZmumu", 1., 0., 10.);
+      RooFormulaVar* normZmumu_passed = 
+	new RooFormulaVar("normZmumu_passed", "normZmumu_passed", 
+			  "fr*frFactorZmumu*normZmumu", RooArgSet(*normZmumu, *fr, *frFactorZmumu));
+      RooFormulaVar* normZmumu_failed = 
+	new RooFormulaVar("normZmumu_failed", "normZmumu_failed", 
+			  "(1.0 - fr*frFactorZmumu)*normZmumu", RooArgSet(*normZmumu, *fr, *frFactorZmumu));
+
+      TH1* histogramZtautau_passed = histogramsZtautau[std::string(key).append("_").append("passed")];
+      RooDataHist* tmpHistZtautau_passed = 
+	new RooDataHist("tmpHistZtautau_passed", "tmpHistZtautau_passed", *fitVar, histogramZtautau_passed);
+      RooHistPdf* templateZtautau_passed = 
+	new RooHistPdf("templateZtautau_passed", "templateZtautau_passed", *fitVar, *tmpHistZtautau_passed);
+      TH1* histogramZtautau_failed = histogramsZtautau[std::string(key).append("_").append("failed")];
+      RooDataHist* tmpHistZtautau_failed = 
+	new RooDataHist("tmpHistZtautau_failed", "tmpHistZtautau_failed", *fitVar, histogramZtautau_failed);
+      RooHistPdf* templateZtautau_failed = 
+	new RooHistPdf("templateZtautau_failed", "templateZtautau_failed", *fitVar, *tmpHistZtautau_failed);
+      RooRealVar* normZtautau = new RooRealVar("normZtautau", "normZtautau", 0.25*numEventsData, 0., numEventsData);
+      RooRealVar* effZtautau = new RooRealVar("effZtautau", "effZtautau", 0.50, 0., 1.);
+      RooProduct* normZtautau_passed = 
+	new RooProduct("normZtautau_passed", "normZtautau_passed", RooArgSet(*normZtautau, *effZtautau));
+      RooFormulaVar* normZtautau_failed = 
+	new RooFormulaVar("normZtautau_failed", "normZtautau_failed", 
+			  "(1.0 - effZtautau)*normZtautau", RooArgSet(*normZtautau, *effZtautau));
+
+      TObjArray templates_passed;
+      templates_passed.Add(templateQCD_passed);
+      templates_passed.Add(templateWplusJets_passed);
+      templates_passed.Add(templateZmumu_passed);
+      templates_passed.Add(templateZtautau_passed);
 	
-	std::string key = std::string(*variable);
-	key.append("_").append(*tauId).append("_").append(*tauIdValue);
-     
-	double fitMin = histogramsZtautau[key]->GetXaxis()->GetXmin();
-	double fitMax = histogramsZtautau[key]->GetXaxis()->GetXmax();
+      TObjArray parameters_passed;
+      parameters_passed.Add(normQCD_passed);
+      parameters_passed.Add(normWplusJets_passed);
+      parameters_passed.Add(normZmumu_passed);
+      parameters_passed.Add(normZtautau_passed);
+      
+      RooAddPdf* pdfSMsumMC_passed 
+	= new RooAddPdf("pdfSMsumMC_passed", "pdfSMsumMC_passed", RooArgList(templates_passed), RooArgList(parameters_passed));
 
-	RooRealVar* fitVar = new RooRealVar("fitVar", "fitVar", fitMin, fitMax);
+      TObjArray templates_failed;
+      templates_failed.Add(templateQCD_failed);
+      templates_failed.Add(templateWplusJets_failed);
+      templates_failed.Add(templateZmumu_failed);
+      templates_failed.Add(templateZtautau_failed);
 
-        double numEventsData = histogramsData[key]->Integral();
-	std::cout << " numEventsData = " << numEventsData << std::endl;
+      TObjArray parameters_failed;
+      parameters_failed.Add(normQCD_failed);
+      parameters_failed.Add(normWplusJets_failed);
+      parameters_failed.Add(normZmumu_failed);
+      parameters_failed.Add(normZtautau_failed);
 
-	TH1* histogramQCD = histogramsQCD[key];
-	RooDataHist* tmpHistQCD = new RooDataHist("tmpHistQCD", "tmpHistQCD", *fitVar, histogramQCD);
-        RooHistPdf* templateQCD = new RooHistPdf("templateQCD", "templateQCD", *fitVar, *tmpHistQCD);
-        RooRealVar* normQCD = new RooRealVar("normQCD", "normQCD", 0.25*numEventsData, 0., numEventsData);
+      RooAddPdf* pdfSMsumMC_failed 
+	= new RooAddPdf("pdfSMsumMC_failed", "pdfSMsumMC_failed", RooArgList(templates_failed), RooArgList(parameters_failed));
 
-	TH1* histogramWplusJets = histogramsWplusJets[key];
-        RooDataHist* tmpHistWplusJets = new RooDataHist("tmpHistWplusJets", "tmpHistWplusJets", *fitVar, histogramWplusJets);
-        RooHistPdf* templateWplusJets = new RooHistPdf("templateWplusJets", "templateWplusJets", *fitVar, *tmpHistWplusJets);
-        RooRealVar* normWplusJets = new RooRealVar("normWplusJets", "normWplusJets", 0.25*numEventsData, 0., numEventsData);
+      TObjArray templates_all;
+      templates_all.Add(templateQCD_passed);
+      templates_all.Add(templateQCD_failed);
+      templates_all.Add(templateWplusJets_passed);
+      templates_all.Add(templateWplusJets_failed);
+      templates_all.Add(templateZmumu_passed);
+      templates_all.Add(templateZmumu_failed);
+      templates_all.Add(templateZtautau_passed);
+      templates_all.Add(templateZtautau_failed);
 
-	TH1* histogramZmumu = histogramsZmumu[key];
-        RooDataHist* tmpHistZmumu = new RooDataHist("tmpHistZmumu", "tmpHistZmumu", *fitVar, histogramZmumu);
-        RooHistPdf* templateZmumu = new RooHistPdf("templateZmumu", "templateZmumu", *fitVar, *tmpHistZmumu);
-        RooRealVar* normZmumu = new RooRealVar("normZmumu", "normZmumu", 0.25*numEventsData, 0., numEventsData);
+      TObjArray parameters_all;
+      parameters_all.Add(normQCD_passed);
+      parameters_all.Add(normQCD_failed);
+      parameters_all.Add(normWplusJets_passed);
+      parameters_all.Add(normWplusJets_failed);
+      parameters_all.Add(normZmumu_passed);
+      parameters_all.Add(normZmumu_failed);
+      parameters_all.Add(normZtautau_passed);
+      parameters_all.Add(normZtautau_failed);
 
-	TH1* histogramZtautau = histogramsZtautau[key];
-        RooDataHist* tmpHistZtautau = new RooDataHist("tmpHistZtautau", "tmpHistZtautau", *fitVar, histogramZtautau);
-        RooHistPdf* templateZtautau = new RooHistPdf("templateZtautau", "templateZtautau", *fitVar, *tmpHistZtautau);
-        RooRealVar* normZtautau = new RooRealVar("normZtautau", "normZtautau", 0.25*numEventsData, 0., numEventsData);
+      RooAddPdf* pdfSMsumMC_all 
+	= new RooAddPdf("pdfSMsumMC_all", "pdfSMsumMC_all", RooArgList(templates_all), RooArgList(parameters_all));
+      
+      RooCategory* fitCategories = new RooCategory("categories", "categories");
+      fitCategories->defineType("passed");
+      fitCategories->defineType("failed");
+      fitCategories->defineType("all");
 
-        TObjArray templates;
-	templates.Add(templateQCD);
-	templates.Add(templateWplusJets);
-	templates.Add(templateZmumu);
-	templates.Add(templateZtautau);
-	
-	TObjArray normalizations;
-	normalizations.Add(normQCD);
-	normalizations.Add(normWplusJets);
-	normalizations.Add(normZmumu);
-	normalizations.Add(normZtautau);
+      RooSimultaneous* pdfSimultaneousFit = new RooSimultaneous("pdfSimultaneousFit", "pdfSimultaneousFit", *fitCategories);
+      pdfSimultaneousFit->addPdf(*pdfSMsumMC_passed, "passed");
+      pdfSimultaneousFit->addPdf(*pdfSMsumMC_failed, "failed");
+      pdfSimultaneousFit->addPdf(*pdfSMsumMC_all, "all");
+      
+      std::map<std::string, TH1*> histogramDataMap;
+      histogramDataMap["passed"] = histogramsData[std::string(key).append("_").append("passed")];
+      histogramDataMap["failed"] = histogramsData[std::string(key).append("_").append("failed")];
+      histogramDataMap["all"] = histogramsData[std::string(key).append("_").append("all")];
+      
+      RooDataHist* data = new RooDataHist("data", "data", *fitVar, *fitCategories, histogramDataMap);
 
-	RooAddPdf* pdfSMsumMC = new RooAddPdf("pdfSMsumMC", "pdfSMsumMC", RooArgList(templates), RooArgList(normalizations));
+      RooLinkedList fitOptions;
+      fitOptions.Add(new RooCmdArg(RooFit::Extended()));
+      fitOptions.Add(new RooCmdArg(RooFit::PrintLevel(1)));
+      fitOptions.Add(new RooCmdArg(RooFit::PrintEvalErrors(true)));
+      fitOptions.Add(new RooCmdArg(RooFit::Warnings(true)));
 
-	TH1* histogramData = histogramsData[key];
-	RooDataHist* data = new RooDataHist("data", "data", *fitVar, histogramData);
+      RooConstVar* frMean = new RooConstVar("frMean", "frMean", 0.05);
+      RooConstVar* frSpread = new RooConstVar("frSpread", "frSpread", 0.025);
 
-	RooLinkedList fitOptions;
-	fitOptions.Add(new RooCmdArg(RooFit::Extended()));
-	fitOptions.Add(new RooCmdArg(RooFit::PrintLevel(1)));
-	fitOptions.Add(new RooCmdArg(RooFit::PrintEvalErrors(true)));
-	fitOptions.Add(new RooCmdArg(RooFit::Warnings(true)));
+      RooGaussian* fr_constraint = new RooGaussian("fr_constraint", "fr_constraint", *fr, *frMean, *frSpread);
 
-	pdfSMsumMC->fitTo(*data, fitOptions);
+      RooConstVar* frFactorMean = new RooConstVar("frFactorMean", "frFactorMean", 1.);
+      RooConstVar* frFactorSpread = new RooConstVar("frFactorSpread", "frFactorSpread", 0.5);
 
-	double fitValueQCD = normQCD->getVal();
-	double fitErrorQCD = normQCD->getError();
-        double fitValueWplusJets = normWplusJets->getVal();
-	double fitErrorWplusJets = normWplusJets->getError();
-	double fitValueZmumu = normZmumu->getVal();
-	double fitErrorZmumu = normZmumu->getError();
-        double fitValueZtautau = normZtautau->getVal();
-	double fitErrorZtautau = normZtautau->getError();
+      RooGaussian* frFactorQCD_constraint = 
+	new RooGaussian("frFactorQCD_constraint", "frFactorQCD_constraint", 
+			*frFactorQCD, *frFactorMean, *frFactorSpread);
+      RooGaussian* frFactorWplusJets_constraint = 
+	new RooGaussian("frFactorWplusJets_constraint", "frFactorWplusJets_constraint", 
+			*frFactorWplusJets, *frFactorMean, *frFactorSpread);
+      RooGaussian* frFactorZmumu_constraint = 
+	new RooGaussian("frFactorZmumu_constraint", "frFactorZmumu_constraint", 
+			*frFactorZmumu, *frFactorMean, *frFactorSpread);
 
-	std::string key2 = std::string(*variable);
-	key2.append("_").append(*tauId).append("_").append(*tauIdValue);
-	
-	fitValues[std::string("Ztautau").append("_").append(key2)] = fitValueZtautau;
-	fitErrors[std::string("Ztautau").append("_").append(key2)] = fitErrorZtautau;
-	fitValues[std::string("Zmumu").append("_").append(key2)] = fitValueZmumu;
-	fitErrors[std::string("Zmumu").append("_").append(key2)] = fitErrorZmumu;
-	fitValues[std::string("WplusJets").append("_").append(key2)] = fitValueWplusJets;
-	fitErrors[std::string("WplusJets").append("_").append(key2)] = fitErrorWplusJets;
-	fitValues[std::string("QCD").append("_").append(key2)] = fitValueQCD;
-	fitErrors[std::string("QCD").append("_").append(key2)] = fitErrorQCD;
-	
-        delete tmpHistQCD;
-	delete templateQCD;
-        delete tmpHistWplusJets;
-	delete templateWplusJets;
-        delete tmpHistZmumu;
-	delete templateZmumu;
-        delete tmpHistZtautau;
-	delete templateZtautau; 
+      TObjArray constraints;
+      constraints.Add(fr_constraint);
+      constraints.Add(frFactorQCD_constraint);
+      constraints.Add(frFactorWplusJets_constraint);
+      constraints.Add(frFactorZmumu_constraint);
 
-        delete pdfSMsumMC;
-        delete data;
+      fitOptions.Add(new RooCmdArg(RooFit::ExternalConstraints(RooArgSet(constraints))));
 
-        delete fitVar;
-      }
+      pdfSimultaneousFit->fitTo(*data, fitOptions);
+      
+      std::cout << "Results of fitting variable = " << (*variable)
+		<< " for Tau id. = " << (*tauId) << std::endl;
+      std::cout << " Ztautau:" << std::endl;
+      std::cout << "  normalization = " << normZtautau->getVal() << " +/- " << normZtautau->getError() << std::endl;
+      std::cout << "  efficiency = " << effZtautau->getVal() << " +/- " << effZtautau->getError() << std::endl;
+      std::cout << " Zmumu:" << std::endl; 
+      std::cout << "  normalization = " << normZmumu->getVal() << " +/- " << normZmumu->getError() << std::endl; 
+      double frValueZmumu = fr->getVal()*frFactorZmumu->getVal();
+      double frErrorZmumu = frValueZmumu*TMath::Sqrt(TMath::Power(fr->getError()/fr->getVal(), 2) 
+						    + TMath::Power(frFactorZmumu->getError()/frFactorZmumu->getVal(), 2));
+      std::cout << "  fake-rate = " << frValueZmumu << " +/- " << frErrorZmumu << std::endl;
+      std::cout << " WplusJets:" << std::endl;
+      std::cout << "  normalization = " << normWplusJets->getVal() << " +/- " << normWplusJets->getError() << std::endl; 
+      double frValueWplusJets = fr->getVal()*frFactorWplusJets->getVal();
+      double frErrorWplusJets = frValueWplusJets*TMath::Sqrt(TMath::Power(fr->getError()/fr->getVal(), 2) 
+						            + TMath::Power(frFactorWplusJets->getError()/frFactorWplusJets->getVal(), 2));
+      std::cout << "  fake-rate = " << frValueWplusJets << " +/- " << frErrorWplusJets << std::endl;
+      std::cout << " QCD:" << std::endl;
+      std::cout << "  normalization = " << normQCD->getVal() << " +/- " << normQCD->getError() << std::endl; 
+      double frValueQCD = fr->getVal()*frFactorQCD->getVal();
+      double frErrorQCD = frValueQCD*TMath::Sqrt(TMath::Power(fr->getError()/fr->getVal(), 2) 
+						+ TMath::Power(frFactorQCD->getError()/frFactorQCD->getVal(), 2));
+      std::cout << "  fake-rate = " << frValueQCD << " +/- " << frErrorQCD << std::endl;
+
+      effValues[key] = effZtautau->getVal();
+      effErrors[key] = effZtautau->getError();
+      
+      drawHistograms(histogramQCD_passed, normQCD->getVal()*fr->getVal()*frFactorQCD->getVal(),
+		     histogramWplusJets_passed, normWplusJets->getVal()*fr->getVal()*frFactorWplusJets->getVal(),
+		     histogramZmumu_passed, normZmumu->getVal()*fr->getVal()*frFactorZmumu->getVal(),
+		     histogramZtautau_passed, normZtautau->getVal()*effZtautau->getVal(),
+		     histogramDataMap["passed"],
+		     std::string("fitTauIdEff_").append(key).append("_passed.png"));
+      drawHistograms(histogramQCD_failed, normQCD->getVal()*(1.0 - fr->getVal()*frFactorQCD->getVal()),
+		     histogramWplusJets_failed, normWplusJets->getVal()*(1.0 - fr->getVal()*frFactorWplusJets->getVal()),
+		     histogramZmumu_failed, normZmumu->getVal()*(1.0 - fr->getVal()*frFactorZmumu->getVal()),
+		     histogramZtautau_failed, normZtautau->getVal()*(1.0 - effZtautau->getVal()),
+		     histogramDataMap["failed"],
+		     std::string("fitTauIdEff_").append(key).append("_failed.png"));
+
+      drawHistograms(histogramQCD_passed, histogramQCD_failed, *tauId,
+		     std::string("fitTauIdEff_").append(key).append("_QCD.png"));
+      drawHistograms(histogramWplusJets_passed, histogramWplusJets_failed, *tauId,
+		     std::string("fitTauIdEff_").append(key).append("_WplusJets.png"));
+      drawHistograms(histogramZmumu_passed, histogramZmumu_failed, *tauId,
+		     std::string("fitTauIdEff_").append(key).append("_Zmumu.png"));
+      drawHistograms(histogramZtautau_passed, histogramZtautau_failed, *tauId,
+		     std::string("fitTauIdEff_").append(key).append("_Ztautau.png"));
+
+      delete fr;
+      
+      delete tmpHistQCD_passed;
+      delete templateQCD_passed;
+      delete tmpHistQCD_failed;
+      delete templateQCD_failed;
+      delete normQCD;
+      delete frFactorQCD;
+      delete normQCD_passed;
+      delete normQCD_failed;
+
+      delete tmpHistWplusJets_passed;
+      delete templateWplusJets_passed;
+      delete tmpHistWplusJets_failed;
+      delete templateWplusJets_failed;
+      delete normWplusJets;
+      delete frFactorWplusJets;
+      delete normWplusJets_passed;
+      delete normWplusJets_failed;
+
+      delete tmpHistZmumu_passed;
+      delete templateZmumu_passed;
+      delete tmpHistZmumu_failed;
+      delete templateZmumu_failed;
+      delete normZmumu;
+      delete frFactorZmumu;
+      delete normZmumu_passed;
+      delete normZmumu_failed;
+
+      delete tmpHistZtautau_passed;
+      delete templateZtautau_passed;
+      delete tmpHistZtautau_failed;
+      delete templateZtautau_failed;
+      delete normZtautau;
+      delete effZtautau;
+      delete normZtautau_passed;
+      delete normZtautau_failed;
+
+      delete pdfSMsumMC_passed;
+      delete pdfSMsumMC_failed;
+      delete pdfSMsumMC_all;
+      
+      delete fitCategories;
+
+      delete pdfSimultaneousFit;
+      
+      delete data;
+      
+      delete fitVar;
+
+      delete frMean;
+      delete frSpread;
+
+      delete fr_constraint;
+
+      delete frFactorMean;
+      delete frFactorSpread;
+
+      delete frFactorQCD_constraint;
+      delete frFactorWplusJets_constraint;
+      delete frFactorZmumu_constraint;
     }
   }
 }
@@ -370,7 +714,12 @@ void fitTauIdEff()
   const std::string treeSelection = "";
 
   std::vector<std::string> tauIds;
+  //tauIds.push_back(std::string("discrTaNCloose"));
   tauIds.push_back(std::string("discrTaNCmedium"));
+  //tauIds.push_back(std::string("discrTaNCtight"));
+  //tauIds.push_back(std::string("discrHPSloose"));
+  //tauIds.push_back(std::string("discrHPSmedium"));
+  //tauIds.push_back(std::string("discrHPStight"));
   
   std::vector<std::string> tauIdValues;
   tauIdValues.push_back("passed");
@@ -378,17 +727,20 @@ void fitTauIdEff()
   tauIdValues.push_back("all");
 
   std::vector<std::string> fitVariables;
-  fitVariables.push_back("Ht");
-  fitVariables.push_back("SVfitMass1");
-  fitVariables.push_back("SVfitMass2");
+  //fitVariables.push_back("Ht");
+  //fitVariables.push_back("SVfitMass1");
+  //fitVariables.push_back("SVfitMass2");
   fitVariables.push_back("visMass");
   //fitVariables.push_back("muonPt");
   //fitVariables.push_back("muonEta");
   //fitVariables.push_back("tauPt");
   //fitVariables.push_back("tauEta");
-  fitVariables.push_back("numChargedParticles");
-  fitVariables.push_back("numParticles");
-  fitVariables.push_back("jetWidth");
+  //fitVariables.push_back("numChargedParticles");
+  //fitVariables.push_back("numParticles");
+  //fitVariables.push_back("jetWidth"); CV: signal/background normalizations --> tau id. efficiencies obtained by using jetWidth variable
+  //                                        are **very** different from values obtained by using all other variables
+  //                                       --> there seems to be a problem in modeling jetWidth variable
+  //                                       --> do not use jetWidth variable for now
 
   TChain* chainData = new TChain("Events");
   chainData->Add(std::string(inputFilePath).append("tauIdEffMeasEDNtuple_data_Mu_Run2010A_Sep17ReReco_Run26.root").data());
@@ -399,7 +751,7 @@ void fitTauIdEff()
   TChain* chainZtautau = new TChain("Events");
   chainZtautau->Add(std::string(inputFilePath).append("tauIdEffMeasEDNtuple_ZtautauPU156bx_Run26_*.root").data());
   std::map<std::string, TH1*> histogramsZtautau = 
-    makeHistograms("Ztautau", 0.030*1.02, chainZtautau, treeSelection, tauIds, tauIdValues, fitVariables);
+    makeHistograms("Ztautau", 0.030*1.02*2.63, chainZtautau, treeSelection, tauIds, tauIdValues, fitVariables);
 
   TChain* chainZmumu = new TChain("Events");
   chainZmumu->Add(std::string(inputFilePath).append("tauIdEffMeasEDNtuple_Zmumu_Run26_*.root").data());
@@ -418,10 +770,6 @@ void fitTauIdEff()
   std::map<std::string, TH1*> histogramsQCD = 
     makeHistograms("QCD", 0.10*2.04*1.01*fudgeFactorQCD, chainQCD, treeSelection, tauIds, tauIdValues, fitVariables);
   
-  TCanvas* canvas = new TCanvas("canvas", "canvas", 800, 640);
-  canvas->SetFillColor(10);
-  canvas->SetBorderSize(2);
-
   for ( std::vector<std::string>::const_iterator variable = fitVariables.begin();
 	variable != fitVariables.end(); ++variable ) {
     for ( std::vector<std::string>::const_iterator tauId = tauIds.begin();
@@ -429,95 +777,26 @@ void fitTauIdEff()
       for ( std::vector<std::string>::const_iterator tauIdValue = tauIdValues.begin();
 	    tauIdValue != tauIdValues.end(); ++tauIdValue ) {
 
-	canvas->Clear();
-
 	std::string key = std::string(*variable);
 	key.append("_").append(*tauId).append("_").append(*tauIdValue);
 
-	THStack smSum("smSum", "smSum");
-
-	TH1* histogramQCD = histogramsQCD[key];
-	histogramQCD->SetFillColor(797);
-	smSum.Add(histogramQCD);
-
-	TH1* histogramWplusJets = histogramsWplusJets[key];
-	histogramWplusJets->SetFillColor(856);
-	smSum.Add(histogramWplusJets);
-
-	TH1* histogramZmumu = histogramsZmumu[key];
-	histogramZmumu->SetFillColor(596);
-	smSum.Add(histogramZmumu);
-
-	TH1* histogramZtautau = histogramsZtautau[key];
-	histogramZtautau->SetFillColor(628);
-	smSum.Add(histogramZtautau);
-
-	TH1* histogramData = histogramsData[key];
-	histogramData->SetLineColor(1);
-	histogramData->SetMarkerColor(1);
-	histogramData->SetMarkerStyle(20);
-
-	smSum.SetTitle(histogramZtautau->GetTitle());
-	smSum.SetMaximum(1.4*TMath::Max(smSum.GetMaximum(), histogramData->GetMaximum()));
-	
-	smSum.Draw("hist");
-	histogramData->SetStats(false);
-	histogramData->Draw("ep1same");
-
-	TLegend legend(0.64, 0.69, 0.89, 0.89, "", "brNDC"); 
-	legend.SetBorderSize(0);
-	legend.SetFillColor(0);
-
-	legend.AddEntry(histogramZtautau, "Z #rightarrow #tau^{+} #tau^{-}", "f");
-	legend.AddEntry(histogramZmumu, "Z #rightarrow #mu^{+} #mu^{-}", "f");
-	legend.AddEntry(histogramWplusJets, "W + jets", "f");
-	legend.AddEntry(histogramQCD, "QCD", "f");
-	legend.AddEntry(histogramData, "Data", "p");
-	legend.Draw();
-
-	canvas->Update();
-	std::string outputFileName = std::string("./plots/").append("plotsTauIdEff_").append(key).append(".png");
-	canvas->Print(outputFileName.data());
+	drawHistograms(histogramsQCD[key], -1.,
+		       histogramsWplusJets[key], -1.,
+		       histogramsZmumu[key], -1.,
+		       histogramsZtautau[key], -1.,
+		       histogramsData[key],
+		       std::string("plotsTauIdEff_").append(key).append(".png"));
       }
     }
   }
 
-  std::map<std::string, double> fitValues;
-  std::map<std::string, double> fitErrors;
+  std::map<std::string, double> effValues;
+  std::map<std::string, double> effErrors;
   
   //fitUsingTFractionFitter(histogramsData, histogramsZtautau, histogramsZmumu, histogramsWplusJets, histogramsQCD,
-  //		  	    tauIds, tauIdValues, fitVariables, fitValues, fitErrors);
+  //		  	    tauIds, tauIdValues, fitVariables, effValues, effErrors);
   fitUsingRooFit(histogramsData, histogramsZtautau, histogramsZmumu, histogramsWplusJets, histogramsQCD,
-		 tauIds, tauIdValues, fitVariables, fitValues, fitErrors);
-
-  for ( std::vector<std::string>::const_iterator variable = fitVariables.begin();
-	variable != fitVariables.end(); ++variable ) {
-    for ( std::vector<std::string>::const_iterator tauId = tauIds.begin();
-	  tauId != tauIds.end(); ++tauId ) {
-      for ( std::vector<std::string>::const_iterator tauIdValue = tauIdValues.begin();
-	    tauIdValue != tauIdValues.end(); ++tauIdValue ) {
-	
-	std::string key = std::string(*variable);
-	key.append("_").append(*tauId).append("_").append(*tauIdValue);
-
-	double fitValueZtautau = fitValues[std::string("Ztautau").append("_").append(key)];
-	double fitErrorZtautau = fitErrors[std::string("Ztautau").append("_").append(key)];
-	double fitValueZmumu = fitValues[std::string("Zmumu").append("_").append(key)];
-	double fitErrorZmumu = fitErrors[std::string("Zmumu").append("_").append(key)];
-	double fitValueWplusJets = fitValues[std::string("WplusJets").append("_").append(key)];
-	double fitErrorWplusJets = fitErrors[std::string("WplusJets").append("_").append(key)];
-	double fitValueQCD = fitValues[std::string("QCD").append("_").append(key)];
-	double fitErrorQCD = fitErrors[std::string("QCD").append("_").append(key)];
-
-	std::cout << "Results of fitting variable = " << (*variable)
-		  << " for Tau id. = " << (*tauId) << ", value = '"<< (*tauIdValue) << "':" << std::endl;
-	std::cout << " Ztautau: normalization = " << fitValueZtautau << " +/- " << fitErrorZtautau << std::endl;
-	std::cout << " Zmumu: normalization = " << fitValueZmumu << " +/- " << fitErrorZmumu << std::endl; 
-	std::cout << " WplusJets: normalization = " << fitValueWplusJets << " +/- " << fitErrorWplusJets << std::endl;
-	std::cout << " QCD: normalization = " << fitValueQCD << " +/- " << fitErrorQCD << std::endl; 
-      }
-    }
-  }
+		 tauIds, tauIdValues, fitVariables, effValues, effErrors);
 
   for ( std::vector<std::string>::const_iterator tauId = tauIds.begin();
 	tauId != tauIds.end(); ++tauId ) {
@@ -527,26 +806,14 @@ void fitTauIdEff()
     for ( std::vector<std::string>::const_iterator variable = fitVariables.begin();
 	  variable != fitVariables.end(); ++variable ) {
 
-      std::string key = std::string("Ztautau").append("_").append(*variable);
+      std::string key = std::string(*variable);
       key.append("_").append(*tauId);
-      
-      double passedValue = fitValues[std::string(key).append("_").append("passed")];            
-      double passedError = fitErrors[std::string(key).append("_").append("passed")]; 
-      double failedValue = fitValues[std::string(key).append("_").append("failed")];
-      double failedError = fitErrors[std::string(key).append("_").append("failed")];
-
-      //std::cout << "passed = " << passedValue << " +/- " << passedError << std::endl;
-      //std::cout << "failed = " << failedValue << " +/- " << failedError << std::endl;
-
-      double numerator = passedValue;
-      double denominator = passedValue + failedValue;
-
-      double effValue = numerator/denominator;
-      double effError2 = TMath::Power((failedValue/denominator)*(passedError/denominator), 2)
-	                + TMath::Power((passedValue/denominator)*(failedError/denominator), 2);
 
       std::cout << " fitVariable = " << (*variable) << ":" 
-		<< " result = " << effValue*100. << " +/- " << TMath::Sqrt(effError2)*100. << "%" << std::endl;
+		<< " result = " << effValues[key]*100. << " +/- " << effErrors[key]*100. << "%" << std::endl;
+      double numeratorZtautau = histogramsZtautau[std::string(key).append("_passed")]->Integral();
+      double denominatorZtautau = histogramsZtautau[std::string(key).append("_all")]->Integral();
+      std::cout << "(Monte Carlo prediction = " << (numeratorZtautau/denominatorZtautau) << ")" << std::endl;
     }
   }
 }
