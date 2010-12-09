@@ -31,7 +31,7 @@ sample_map = {
     },
     'mcpu' : {
         'files' : ['file:' + file for file in glob.glob(
-            '/data1/friis/ZmumuSkim/mcpu0*.root')],
+            '/data1/friis/ZmumuSkim/mcpu*.root')],
         'trigger' : 'REDIGI38XPU',
         'paths' : ['HLT_Mu9'],
         'add_mc' : True,
