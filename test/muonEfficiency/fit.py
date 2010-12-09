@@ -11,8 +11,8 @@ process.load("FWCore.MessageService.MessageLogger_cfi")
 process.MessageLogger.destinations = ['cout', 'cerr']
 process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 
-_PT_BINS = [10, 15, 20, 30, 40, 50, 60, 80, 120]
-_ALL_PT = [10, 120]
+_PT_BINS = [15, 20, 30, 40, 50, 60, 80, 120]
+_ALL_PT = [15, 120]
 _ETA_BINS = [2.1/10*i for i in range(11)]
 # Special binning for trigger measurement, taken from Manuel Zeise's EWK talk
 _ETA_BINS_TRG = [0, 0.9, 1.2, 2.1]
@@ -150,14 +150,11 @@ variables = [
     ('avg', 'pt', _ALL_PT),
     ('pt', 'pt', _PT_BINS),
     ('eta', 'abseta', _ETA_BINS),
+    ('etatrig', 'abseta', _ETA_BINS_TRG),
 ]
 
 iso_vars = [
     ('vtx', 'tag_nVertices', _VTX_BINS),
-]
-
-trig_vars = [
-    ('etatrig', 'abseta', _ETA_BINS_TRG),
 ]
 
 efficiencies = [
@@ -166,6 +163,7 @@ efficiencies = [
     ('reliso', 'RelIso', ['Glb', 'VBTF']),
     ('loosereliso', 'LooseRelIso', ['Glb', 'VBTF']),
     ('id', 'VBTF', ['Glb']),
+    ('hltMu9', ['Glb', 'VBTF', 'AbsIso']),
 ]
 
 trigger_efficiencies = [
@@ -192,7 +190,7 @@ for eff in efficiencies:
 
 if not source_info['mc']:
     for eff in trigger_efficiencies:
-        for variable in (variables + trig_vars):
+        for variable in variables:
             append_pset(variable, eff,
                         process.TagProbeFitTreeAnalyzer.Efficiencies)
 
