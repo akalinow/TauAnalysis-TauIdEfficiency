@@ -44,7 +44,7 @@ def configurePatTupleProduction(process, patSequenceBuilder = None,
     process.load("TauAnalysis.CandidateTools.muTauPairProduction_cff")
 
     if not addGenInfo:
-        removeMCMatching(process)
+        removeMCMatching(process, outputInProcess = False)
     else:
         # match pat::Taus to all genJets
         # (including to genJets build from electrons/muons produced in tau --> e/mu decays)
