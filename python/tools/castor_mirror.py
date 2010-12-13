@@ -3,7 +3,7 @@ import subprocess
 import re
 import time
 import itertools
-import TauAnalysis.TauIdEfficiency.tools.castor as castor
+import TauAnalysis.Configuration.tools.castor as castor
 
 # Where to store the files
 LOCAL_DIRECTORY = "/tmp/tau_commissioning"
@@ -35,12 +35,15 @@ def local_version_current(castor_file):
     local_stat = os.stat(local_file)
     # Get last mod time of local file
     #local_mtime = time.ctime(local_stat.st_mtime)
-    local_mtime = local_stat.st_mtime
+    local_mtime = time.localtime(local_stat.st_mtime)
     local_size = local_stat.st_size
-    castor_stat = castor.rfstat(castor_file)
-    castor_size = int(castor_stat["Size (bytes)"])
-    castor_mtime = time.mktime(
-        unixtime_from_timestamp(castor_stat["Last modify"]))
+    # This call is memoized
+    castor_stat = list(castor.nslsl(castor_file))[0]
+    castor_size = castor_stat["size"]
+    #castor_mtime = time.mktime(
+    #    unixtime_from_timestamp(castor_stat["Last modify"]))
+    castor_mtime = castor_stat['time']
+    #print local_mtime, castor_mtime
     # Check sizes are same
     if local_size != castor_size:
         print "Local copy of", castor_file, " is the wrong size: %i != %i"% (local_size, castor_size)
@@ -169,8 +172,8 @@ def needs_local_copy(castor_files, verbose=False):
 def expand_file_list(fileEntries):
      for fileEntry in fileEntries:
          if fileEntry.find("*") != -1:
-             for file in castor.nsls(clean_name(fileEntry)):
-                 yield "rfio:" + file
+             for file in castor.nslsl(clean_name(fileEntry)):
+                 yield "rfio:" + file['path']
          else:
              yield fileEntry
 
@@ -201,15 +204,18 @@ def update_sample_to_use_local_files(sample, tiny_mode=False, only_local=False):
         local_count = 0
         skipped_count = 0
         for input_file in expand_file_list(subsample.files):
+            #print input_file
             count += 1
             if tiny_mode:
                 if count > 1:
                     break
             if is_on_castor(input_file):
+                #print "is on castor"
                 # strip rfio:
                 clean_file = clean_name(input_file)
                 # Check if it is cached locally
                 if local_version_current(clean_file):
+                    #print "is current"
                     local_count += 1
                     input_file = "file:%s" % local_version(clean_file)
                 else:
