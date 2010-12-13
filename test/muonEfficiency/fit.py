@@ -50,7 +50,7 @@ process.TagProbeFitTreeAnalyzer = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
     InputTreeName = cms.string("fitter_tree"),
     OutputFileName = cms.string("/data1/friis/ZmumuEff/efficiency_%s.root" % source),
     #numbrer of CPUs to use for fitting
-    NumCPU = cms.uint32(1),
+    NumCPU = cms.uint32(4),
     # specifies wether to save the RooWorkspace containing the data for each bin and
     # the pdf object with the initial and final state snapshots
     SaveWorkspace = cms.bool(True),
@@ -135,6 +135,8 @@ def append_pset(x_axis, eff_info, append_to):
         EfficiencyCategoryAndState = cms.vstring(eff_info[1],"pass"),
         UnbinnedVariables = cms.vstring("mass"),
         BinnedVariables = cms.PSet(
+            # Always apply our PT selection
+            pt = cms.vdouble(*_ALL_PT)
         ),
         BinToPDFmap = cms.vstring('cbPlusExpo')
     )
@@ -163,7 +165,8 @@ efficiencies = [
     ('reliso', 'RelIso', ['Glb', 'VBTF']),
     ('loosereliso', 'LooseRelIso', ['Glb', 'VBTF']),
     ('id', 'VBTF', ['Glb']),
-    ('hltMu9', ['Glb', 'VBTF', 'AbsIso']),
+    ('hltMu9', 'HLTMu9', ['Glb', 'VBTF', 'AbsIso']),
+    ('standAlone', 'outerTrack', []),
 ]
 
 trigger_efficiencies = [
@@ -175,7 +178,8 @@ trigger_efficiencies = [
 
 # FIXME is TM
 inner_efficiencies = [
-    ('innerTrack', 'innerTrack', ['outerTrack']),
+    ('innerTrack', 'hasTrack', ['outerTrack']),
+    ('linking', 'Glb', ['outerTrack', 'hasTrack']),
 ]
 
 # FIXME
@@ -213,7 +217,7 @@ if source_info['mc']:
             object.BinnedVariables.mcTrue = cms.vstring("pass")
 
 process.fit = cms.Path(
-    process.TagProbeFitTreeAnalyzer*
-    process.TagProbeFitTreeAnalyzerSta*
-    process.TagProbeFitTreeAnalyzerInner
+    #process.TagProbeFitTreeAnalyzer*
+    process.TagProbeFitTreeAnalyzerSta
+    #process.TagProbeFitTreeAnalyzerInner
 )
