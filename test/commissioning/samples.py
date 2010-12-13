@@ -7,7 +7,7 @@ samples.py
 
 Central defintion of data sources for commissioning.
 
-$Id: samples.py,v 1.27 2010/12/03 15:50:41 veelken Exp $
+$Id: samples.py,v 1.28 2010/12/08 10:24:04 veelken Exp $
 
 '''
 
@@ -31,13 +31,23 @@ muEnrichedSampleAliasMap = {
     'patCaloTausCleaned': 'calo'
 }
 
+#wJetsSampleAliasMap = {
+    #'patPFTausCleanedHPS': 'hps',
+    #'patPFTausCleanedHPSpTaNC': 'hpstanc',
+    #'patPFTausCleanedShrinkingCone': 'shrinking',
+    #'patPFTausCleanedFixedCone': 'fixed',
+    #'patCaloTausCleaned': 'calo'
+#}
+
 wJetsSampleAliasMap = {
-    'patPFTausCleanedHPS': 'hps',
-    'patPFTausCleanedHPSpTaNC': 'hpstanc',
-    'patPFTausCleanedShrinkingCone': 'shrinking',
-    'patPFTausCleanedFixedCone': 'fixed',
-    'patCaloTausCleaned': 'calo'
+    'patPFTausLoosePFIsoEmbeddedHPS': 'hps',
+    'patPFTausLoosePFIsoEmbeddedHPSpTaNC': 'hpstanc',
+    'patPFTausLoosePFIsoEmbeddedShrinkingCone': 'shrinking',
+    'patPFTausLoosePFIsoEmbeddedFixedCone': 'fixed',
+    'patCaloTausLoosePFIsoEmbedded': 'calo'
 }
+
+muEnrichedSampleAliasMap = wJetsSampleAliasMap
 
 # Locations of the luminosity maps
 _DATA_LUMI_MAP_FILE = os.path.join(
