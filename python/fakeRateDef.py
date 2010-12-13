@@ -41,7 +41,7 @@ fakeRateDef = {
     },
 
     'PPmuX' : {
-        'denominator' : '$jetPt > 20. && abs($jetEta) < 2.3 && $probe > 0.5 && $byLeadTrackFinding > 0.5 && $byLeadTrackPtCut > 0.5',
+        'denominator' : '$jetPt > 20. && abs($jetEta) < 2.3 && $byLeadTrackFinding > 0.5 && $byLeadTrackPtCut > 0.5',
         'numerators' : {
             'ewkTauId'   : '$byTaNCmedium > 0.5 && abs($charge) == 1',
             'TaNCvloose' : '$byTaNCvloose > 0.5',
@@ -63,7 +63,7 @@ fakeRateDef = {
         }
     },
     'PPmuXafterLoosePFIso' : {
-        'denominator' : '$jetPt > 20. && abs($jetEta) < 2.3 && $probe > 0.5 && $byLeadTrackFinding > 0.5 && $byLeadTrackPtCut > 0.5' \
+        'denominator' : '$jetPt > 20. && abs($jetEta) < 2.3 && $byLeadTrackFinding > 0.5 && $byLeadTrackPtCut > 0.5' \
                        + ' && $ptSumLooseIsolation < 2.5',
         'numerators' : {
             'TaNCloose'  : '$byTaNCloose > 0.5',
