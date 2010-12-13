@@ -27,12 +27,12 @@ for fakeRateLabel, fakeRateConfig in fakeRateDef.items():
             
             cfgFileName = './config/fakerate_%s_%s_%s.cfg' % (numeratorLabel, fakeRateLabel, sampleLabel)
             cfgFile = open(cfgFileName, "w")
-            cfgFile.write("[fake_rate]")
-            cfgFile.write("sample = %s" % sampleConfig['name'])
-            cfgFile.write("denominator = %s" % denominator)
-            cfgFile.write("numerator = %s" % numerator)
+            cfgFile.write("[fake_rate]\n")
+            cfgFile.write("sample = %s\n" % sampleConfig['name'])
+            cfgFile.write("denominator = %s\n" % denominator)
+            cfgFile.write("numerator = %s\n" % numerator)
             if fakeRateConfig.get('hlt') is not None:
-                cfgFile.write("hlt = %s" % fakeRateConfig['hlt'])
+                cfgFile.write("hlt = %s\n" % fakeRateConfig['hlt'])
             cfgFile.close()
 
 print("Configuration files build:")
