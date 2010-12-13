@@ -1,6 +1,8 @@
 import ROOT
 ROOT.gROOT.SetBatch(True)
 ROOT.gROOT.SetStyle("Plain")
+import math
+import sys
 
 steering = {
     'mc' : {
@@ -49,8 +51,11 @@ for sample, info in steering.iteritems():
             name = subfolder.GetName()
             # Remove the "tag" variables
             name_key = tuple(datum for datum in name.split("_") if datum != "tag")
-            print name_key
+            #print name_key
             fit_plot_folder = subfolder.Get("fit_eff_plots")
+            if not fit_plot_folder:
+                print "ERROR: can't get", name
+                continue
             fit_canvas = fit_plot_folder.GetListOfKeys()[0].ReadObj()
             plot = fit_canvas.GetPrimitive("hxy_fit_eff")
             info['plots'][name_key] = plot
@@ -75,11 +80,79 @@ titles = {
     "standAlone" : "STA muon given inner track",
     "linking" : "Global muon given inner and outer track",
     "innerTrack" : "Inner track given STA muon",
+    "hltMu9" : "HLT Mu9 w.r.t. offline",
+    "trigComp" : "HLT Trigger efficiency (data) compared to MC HLT_Mu9",
 }
 
+# Make the special trigger plots
+# Find the MC hltMu9 efficiencies
+mc_hlt_mu9_plots = [key for key in steering['mc']['plots'].keys()
+                    if key[1] == 'hltMu9' and key[2] != 'nVertices']
+
+
+#print [key[1] for key in steering['data']['plots'].keys()]
+
+lumi_info = {
+    'trigA' : 8237412.121,
+    'trigB' : 9470933.970,
+    'trigC' : 18436654.902,
+}
+
+def merge_efficiencies(*inputs):
+    # Keep track of the weighted sums in each bin
+    nbins = inputs[0][1].GetN()
+    y_sum = [0]*nbins
+    y_err_high_sum2 = [0]*nbins
+    y_err_low_sum2 = [0]*nbins
+    for weight, input in inputs:
+        for bin in range(nbins):
+            y_sum[bin] += weight*input.GetY()[bin]
+            y_err_high_sum2[bin] += weight*(input.GetEYhigh()[bin]**2)
+            y_err_low_sum2[bin] += weight*(input.GetEYlow()[bin]**2)
+    norm = sum(weight for weight, input in inputs)
+    normalize = lambda x: x/norm
+    y_sum = map(normalize, y_sum)
+    y_err_low_sum2 = map(math.sqrt, map(normalize, y_err_low_sum2))
+    y_err_high_sum2 = map(math.sqrt, map(normalize, y_err_high_sum2))
+
+    # Just copy our input so we don't have worry about the x_errors
+    #output = ROOT.TGraphAsymmErrors(inputs[0][1])
+    output = ROOT.TGraphAsymmErrors(nbins)
+
+    for bin, (y, e_high, e_low) in enumerate(
+        zip(y_sum, y_err_high_sum2, y_err_low_sum2)):
+        output.SetPoint(bin, inputs[0][1].GetX()[bin], y)
+        output.SetPointEXlow(bin, inputs[0][1].GetEXlow()[bin])
+        output.SetPointEXhigh(bin, inputs[0][1].GetEXhigh()[bin])
+        output.SetPointEYlow(bin, e_low)
+        output.SetPointEYhigh(bin, e_high)
+    return output
+
+for plot in mc_hlt_mu9_plots:
+    print plot
+    # We are making our special trigger comparison.  For MC it is the same, so
+    # just copy it over.
+    steering['mc']['plots'][(plot[0], 'trigComp', plot[2])] = \
+            steering['mc']['plots'][plot]
+
+    # We want to compare against each one individually as well
+    for period in lumi_info.keys():
+        steering['mc']['plots'][(plot[0], period, plot[2])] = \
+                steering['mc']['plots'][plot]
+
+    # Find the corresponding data plots
+    data_plots = steering['data']['plots']
+    trigger_plots = [
+        (lumi_info[trig], data_plots[(plot[0], trig, plot[2])])
+        for trig in lumi_info.keys()
+    ]
+    new_plot = merge_efficiencies(*trigger_plots)
+    steering['data']['plots'][(plot[0], 'trigComp', plot[2])] = new_plot
+
+#sys.exit()
 
 for plot in steering['mc']['plots'].keys():
-    print plot
+    #print plot
     mc_plot = steering['mc']['plots'][plot]
     data_plot = steering['data']['plots'][plot]
 
@@ -102,8 +175,8 @@ for plot in steering['mc']['plots'].keys():
     data_min = minimum(data_plot)
     the_min = mc_min < data_min and mc_min or data_min
 
-    print mc_max, data_max, the_max
-    print mc_min, data_min, the_min
+    #print mc_max, data_max, the_max
+    #print mc_min, data_min, the_min
 
     mc_plot.GetHistogram().SetMaximum(the_max + (the_max-the_min)*0.25)
     mc_plot.GetHistogram().SetMinimum(the_min - (the_max-the_min)*0.25)
@@ -152,7 +225,7 @@ for plot in steering['mc']['plots'].keys():
         data_err_x_low = data_plot.GetEXlow()[bin]
         if mc_y > 0:
             data_y /= mc_y
-            print data_y
+            #print data_y
             mc_err_y_high /= mc_y
             mc_err_y_low /= mc_y
             data_err_y_high /= mc_y
