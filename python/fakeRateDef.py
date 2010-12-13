@@ -39,7 +39,7 @@ fakeRateDef = {
             'mc'         : { 'name' : 'qcddijet_mc' }
         }
     },
-    
+
     'PPmuX' : {
         'denominator' : '$jetPt > 20. && abs($jetEta) < 2.3 && $probe > 0.5 && $byLeadTrackFinding > 0.5 && $byLeadTrackPtCut > 0.5',
         'numerators' : {
@@ -97,8 +97,8 @@ fakeRateDef = {
         },
         'samples' : {
             'data'       : { 'name' : 'data_wjets' },
-            'mc'         : { 'name' : 'wjets_mc' },
-            'mcPU156bx'  : { 'name' : 'wjetsPU156bx_mc' }
+            'mc'         : { 'name' : 'wmunu_mc' },
+            'mcPU156bx'  : { 'name' : 'wmunuPU156bx_mc' }
             ##'mcPU156bxReweighted' : {
             ##    'name'    : 'wjetsPU156bx_mc',
             ##    'options' : [ 'applyVertexMultiplicityReweighting' ]
@@ -118,8 +118,8 @@ fakeRateDef = {
         },
         'samples' : {
             'data'       : { 'name' : 'data_wjets' },
-            'mc'         : { 'name' : 'wjets_mc' },
-            'mcPU156bx'  : { 'name' : 'wjetsPU156bx_mc' },
+            'mc'         : { 'name' : 'wmunu_mc' },
+            'mcPU156bx'  : { 'name' : 'wmunuPU156bx_mc' },
             ##'mcPU156bxReweighted' : {
             ##    'name'    : 'wjetsPU156bx_mc',
             ##    'options' : [ 'applyVertexMultiplicityReweighting' ]
