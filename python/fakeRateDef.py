@@ -106,7 +106,7 @@ fakeRateDef = {
         }
     },
     'WplusJetsAfterLoosePFIso' : {
-        'denominator' : '$jetPt > 20. && abs($jetEta) < 2.3 && $probe > 0.5 && $byLeadTrackFinding > 0.5 && $byLeadTrackPtCut > 0.5' \
+        'denominator' : '$jetPt > 20. && abs($jetEta) < 2.3 &&  $byLeadTrackFinding > 0.5 && $byLeadTrackPtCut > 0.5' \
                        + ' && $ptSumLooseIsolation < 2.5',
         'numerators' : {
             'TaNCloose'  : '$byTaNCloose > 0.5',
@@ -127,7 +127,7 @@ fakeRateDef = {
         }
     },
     'Ztautau' : {
-        'denominator' : '$jetPt > 20. && abs($jetEta) < 2.3 && $probe > 0.5 && $byLeadTrackFinding > 0.5 && $byLeadTrackPtCut > 0.5',
+        'denominator' : '$jetPt > 20. && abs($jetEta) < 2.3 &&  $byLeadTrackFinding > 0.5 && $byLeadTrackPtCut > 0.5',
         'numerators' : {
             'TaNCloose'  : '$byTaNCloose > 0.5',
             'TaNCmedium' : '$byTaNCmedium > 0.5',
