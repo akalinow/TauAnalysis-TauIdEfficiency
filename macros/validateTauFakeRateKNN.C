@@ -34,18 +34,16 @@ TH1* fillHistogram(TTree* testTree, const std::string& varName, const std::strin
   std::cout << " weightName = " << weightName << std::endl;
   std::cout << " histogramName = " << histogramName << std::endl;
 
-  TH1* histogram = 0;
-  if ( weightName != "" ) {
-    histogram = new TProfile(histogramName.data(), histogramName.data(), numBinsX, xMin, xMax);
-  } else {
-    histogram = new TH1F(histogramName.data(), histogramName.data(), numBinsX, xMin, xMax);
-    histogram->Sumw2();
-  }
+  TH1* histogram = new TH1F(histogramName.data(), histogramName.data(), numBinsX, xMin, xMax);
+  histogram->Sumw2();
 
   TFile* dummyOutputFile = new TFile("dummyOutputFile.root", "RECREATE");
 
   TTree* selTree = ( selection != "" ) ? testTree->CopyTree(selection.data()) : testTree;
   std::cout << " selTree = " << selTree << std::endl;
+
+  Float_t eventWeight = 1.;
+  selTree->SetBranchAddress("weight", &eventWeight);
 
   Float_t var = 0.;
   selTree->SetBranchAddress(varName.data(), &var);
@@ -67,9 +65,9 @@ TH1* fillHistogram(TTree* testTree, const std::string& varName, const std::strin
     if ( weightName != "" ) {
       if ( TMath::Abs(weight) < 1. ) // some entries have weight O(-100)
                                      // --> indication of technical problem with k-NearestNeighbour tree ?
-	histogram->Fill(var, weight);
+	histogram->Fill(var, weight*eventWeight);
     } else {
-      histogram->Fill(var);
+      histogram->Fill(var, eventWeight);
     }
   }
 
@@ -82,14 +80,6 @@ TH1* fillHistogram(TTree* testTree, const std::string& varName, const std::strin
 void makePlot(TCanvas* canvas, const std::string& outputFileName, TTree* testTree, const std::string& varName, 
 	      unsigned numBinsX, double xMin, double xMax)
 {
-  std::cout << "creating histogramFakeRateWeighted..." << std::endl;
-  TString histogramFakeRateWeightedName = TString("histogramFakeRateWeighted").Append("_").Append(varName.data());
-  TH1* histogramFakeRateWeighted = fillHistogram(testTree, varName, "", "MVA_KNN", 
-						 histogramFakeRateWeightedName.Data(), numBinsX, xMin, xMax);
-  std::cout << "--> histogramFakeRateWeighted = " << histogramFakeRateWeighted 
-	    << " entries = " << histogramFakeRateWeighted->GetEntries() << ","
-	    << " integral = " << histogramFakeRateWeighted->Integral() << std::endl;
-
   std::cout << "creating histogramTauIdPassed..." << std::endl;
   TString histogramTauIdPassedName = TString("histogramTauIdPassed").Append("_").Append(varName.data());
   TH1* histogramTauIdPassed = fillHistogram(testTree, varName, "type==1", "",
@@ -121,6 +111,16 @@ void makePlot(TCanvas* canvas, const std::string& outputFileName, TTree* testTre
   histogramFakeRate->Divide(histogramTauIdDenominator);
   std::cout << "--> histogramFakeRate = " << histogramFakeRate 
 	    << " integral = " << histogramFakeRate->Integral() << std::endl;
+
+  std::cout << "creating histogramFakeRateWeighted..." << std::endl;
+  TString histogramFakeRateWeightedName = TString("histogramFakeRateWeighted").Append("_").Append(varName.data());
+  TH1* histogramFakeRateWeighted = fillHistogram(testTree, varName, "", "MVA_KNN", 
+						 histogramFakeRateWeightedName.Data(), numBinsX, xMin, xMax);
+  histogramFakeRateWeighted->Divide(histogramTauIdDenominator);
+  std::cout << "--> histogramFakeRateWeighted = " << histogramFakeRateWeighted 
+	    << " entries = " << histogramFakeRateWeighted->GetEntries() << ","
+	    << " integral = " << histogramFakeRateWeighted->Integral() << std::endl;
+  // Scale the weighted fake rate histogram
 
   histogramFakeRate->SetTitle(varName.data());
   histogramFakeRate->SetStats(false);
