@@ -3,21 +3,23 @@ ROOT.gROOT.SetBatch(True)
 ROOT.gROOT.SetStyle("Plain")
 import math
 import sys
+import pprint
+pp = pprint.PrettyPrinter(indent=4)
 
 steering = {
     'mc' : {
         'files' : [
-            ROOT.TFile("/data1/friis/ZmumuEff/efficiency_mcpu.root", "READ"),
-            ROOT.TFile("/data1/friis/ZmumuEff/efficiencySta_mcpu.root", "READ"),
-            ROOT.TFile("/data1/friis/ZmumuEff/efficiencyInner_mcpu.root", "READ"),
+            ROOT.TFile("/data2/friis/ZmumuEff/efficiency_mcpu.root", "READ"),
+            #ROOT.TFile("/data2/friis/ZmumuEff/efficiencySta_mcpu.root", "READ"),
+            #ROOT.TFile("/data2/friis/ZmumuEff/efficiencyInner_mcpu.root", "READ"),
         ],
         'plots' : {},
     },
     'data' : {
         'files' : [
-            ROOT.TFile("/data1/friis/ZmumuEff/efficiency_data.root", "READ"),
-            ROOT.TFile("/data1/friis/ZmumuEff/efficiencySta_data.root", "READ"),
-            ROOT.TFile("/data1/friis/ZmumuEff/efficiencyInner_data.root", "READ"),
+            ROOT.TFile("/data2/friis/ZmumuEff/efficiency_data.root", "READ"),
+            #ROOT.TFile("/data2/friis/ZmumuEff/efficiencySta_data.root", "READ"),
+            #ROOT.TFile("/data2/friis/ZmumuEff/efficiencyInner_data.root", "READ"),
         ],
         'plots' : {},
     },
@@ -44,6 +46,7 @@ canvas = ROOT.TCanvas("blah", "blah", 800, 600)
 for sample, info in steering.iteritems():
     # Loop over each file
     for file in info['files']:
+        print file
         # Get the first ttree in the file (the only one)
         folder = list(get_by_type(file, "TDirectory"))[0]
         # Now get all the plot subfolders
@@ -51,7 +54,6 @@ for sample, info in steering.iteritems():
             name = subfolder.GetName()
             # Remove the "tag" variables
             name_key = tuple(datum for datum in name.split("_") if datum != "tag")
-            #print name_key
             fit_plot_folder = subfolder.Get("fit_eff_plots")
             if not fit_plot_folder:
                 print "ERROR: can't get", name
@@ -59,8 +61,10 @@ for sample, info in steering.iteritems():
             fit_canvas = fit_plot_folder.GetListOfKeys()[0].ReadObj()
             plot = fit_canvas.GetPrimitive("hxy_fit_eff")
             info['plots'][name_key] = plot
+            print name_key, plot
 
 print "Making plots"
+
 
 x_axes = {
     'abseta' : "|#eta|",
@@ -89,6 +93,7 @@ titles = {
 mc_hlt_mu9_plots = [key for key in steering['mc']['plots'].keys()
                     if key[1] == 'hltMu9' and key[2] != 'nVertices']
 
+pp.pprint(mc_hlt_mu9_plots)
 
 #print [key[1] for key in steering['data']['plots'].keys()]
 
@@ -99,6 +104,7 @@ lumi_info = {
 }
 
 def merge_efficiencies(*inputs):
+    print inputs
     # Keep track of the weighted sums in each bin
     nbins = inputs[0][1].GetN()
     y_sum = [0]*nbins
@@ -142,14 +148,18 @@ for plot in mc_hlt_mu9_plots:
 
     # Find the corresponding data plots
     data_plots = steering['data']['plots']
+    pp.pprint(data_plots)
     trigger_plots = [
         (lumi_info[trig], data_plots[(plot[0], trig, plot[2])])
         for trig in lumi_info.keys()
     ]
+    print trigger_plots
     new_plot = merge_efficiencies(*trigger_plots)
     steering['data']['plots'][(plot[0], 'trigComp', plot[2])] = new_plot
 
 #sys.exit()
+
+scaling_info = {}
 
 for plot in steering['mc']['plots'].keys():
     #print plot
@@ -160,7 +170,8 @@ for plot in steering['mc']['plots'].keys():
     mc_plot.SetMarkerColor(ROOT.EColor.kRed)
     mc_plot.SetMarkerSize(1)
     mc_plot.Draw("ape")
-    mc_plot.SetFillColor(ROOT.EColor.kAzure +7)
+    #mc_plot.SetFillColor(ROOT.EColor.kAzure -9)
+    mc_plot.SetFillColor(ROOT.EColor.kYellow -7)
 
     data_plot.SetMarkerStyle(20)
     data_plot.SetMarkerColor(ROOT.EColor.kBlack)
@@ -192,15 +203,35 @@ for plot in steering['mc']['plots'].keys():
 
     file_name = "_".join(plot)
 
+    if plot[0] == 'avg':
+        scaling_info[plot] = {}
+        my_dict = scaling_info[plot]
+
+        my_dict['mc_value'] = mc_plot.GetY()[0]
+        my_dict['mc_up'] = mc_plot.GetEYhigh()[0]
+        my_dict['mc_down'] = mc_plot.GetEYlow()[0]
+        my_dict['data_value'] = data_plot.GetY()[0]
+        my_dict['data_up'] = data_plot.GetEYhigh()[0]
+        my_dict['data_down'] = data_plot.GetEYlow()[0]
+
+        my_dict['ratio'] = my_dict['data_value']/my_dict['mc_value']
+        my_dict['ratio_up'] = my_dict['ratio']*math.sqrt(
+            (my_dict['mc_down']/my_dict['mc_value'])**2 +
+            (my_dict['data_up']/my_dict['data_value'])**2)
+        my_dict['ratio_down'] = my_dict['ratio']*math.sqrt(
+            (my_dict['mc_up']/my_dict['mc_value'])**2 +
+            (my_dict['data_down']/my_dict['data_value'])**2)
+
     canvas.Update()
-    canvas.SaveAs(file_name+".png")
-    canvas.SaveAs(file_name+".pdf")
+    canvas.SaveAs('plots/' + file_name+".png")
+    canvas.SaveAs('plots/' + file_name+".pdf")
 
     mc_scaled = ROOT.TGraphAsymmErrors(mc_plot.GetN())
     mc_scaled.SetMarkerStyle(24)
     mc_scaled.SetMarkerColor(ROOT.EColor.kRed)
     mc_scaled.SetMarkerSize(1)
-    mc_scaled.SetFillColor(ROOT.EColor.kAzure +7)
+    #mc_scaled.SetFillColor(ROOT.EColor.kAzure +7)
+    mc_scaled.SetFillColor(ROOT.EColor.kYellow -7)
     mc_scaled.SetFillStyle(2001)
 
 
@@ -261,8 +292,8 @@ for plot in steering['mc']['plots'].keys():
     mc_scaled.GetHistogram().GetXaxis().SetTitle(x_axes[plot[2]])
 
     canvas.Update()
-    canvas.SaveAs(file_name + "_scaled" + ".png")
-    canvas.SaveAs(file_name + "_scaled" + ".pdf")
+    canvas.SaveAs('plots/' + file_name + "_scaled" + ".png")
+    canvas.SaveAs('plots/' + file_name + "_scaled" + ".pdf")
 
 for plot in [key for key in steering['data']['plots'].keys() if
              key not in steering['mc']['plots']]:
@@ -278,6 +309,21 @@ for plot in [key for key in steering['data']['plots'].keys() if
     file_name = "_".join(plot)
 
     canvas.Update()
-    canvas.SaveAs(file_name+".png")
-    canvas.SaveAs(file_name+".pdf")
+    canvas.SaveAs('plots/' + file_name+".png")
+    canvas.SaveAs('plots/' + file_name+".pdf")
+
+# Print out information
+for name, info in scaling_info.iteritems():
+    print "================================================="
+    print "== " + "_".join(name)
+    print "================================================="
+    print " mc         ", "%0.1f" % (info['mc_value']*100)
+    print " mc up      ", "%0.1f" % (info['mc_up']*100)
+    print " mc down    ", "%0.1f" % (info['mc_down']*100)
+    print " data       ", "%0.1f" % (info['data_value']*100)
+    print " data up    ", "%0.1f" % (info['data_up']*100)
+    print " data down  ", "%0.1f" % (info['data_down']*100)
+    print " ratio      ", "%0.1f" % (info['ratio']*100)
+    print " ratio up   ", "%0.1f" % (info['ratio_up']*100)
+    print " ratio down ", "%0.1f" % (info['ratio_down']*100)
 

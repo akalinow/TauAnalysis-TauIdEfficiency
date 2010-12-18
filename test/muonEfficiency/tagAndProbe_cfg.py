@@ -2,6 +2,7 @@ import FWCore.ParameterSet.Config as cms
 import glob
 import sys
 import copy
+import itertools
 
 process = cms.Process("TagProbe")
 
@@ -14,10 +15,21 @@ import TauAnalysis.Configuration.recoSampleDefinitionsZtoMuTau_7TeV_grid_cfi \
         as samples
 hlt_dict = samples.RECO_SAMPLES['data_Mu_Run2010B_Nov4ReReco']['hlt_paths']
 
+def chunk(inputs, chunks):
+    output = []
+    for input in inputs:
+        output.append(input)
+        if len(output) == input/chunks:
+            yield output
+            output = []
+
 sample_map = {
     'data' : {
-        'files' : ['file:' + file for file in glob.glob(
-            '/data1/friis/ZmumuSkim/dataB*.root')],
+        'files' : ['file:' + file for file in itertools.chain(
+            #glob.glob('/data1/friis/ZmumuSkim/dataB*.root'),
+            #glob.glob('/data1/friis/ZmumuSkim/data[.0-9]*.root')
+            glob.glob('/data1/friis/ZmumuSkim/data*.root')
+        )],
         'trigger' : 'HLT',
         'paths' : ['*'],
         'add_mc' : False,
@@ -38,23 +50,40 @@ sample_map = {
     },
 }
 
+
+jobs_file = open('jobs.txt', 'w')
+for index, file in enumerate(sample_map['data']['files']):
+    jobs_file.write('data %i\n' % index)
+
+for index, file in enumerate(sample_map['mcpu']['files']):
+    jobs_file.write('mcpu %i\n' % index)
+
+
+print "Run:"
+print "cat jobs.txt | xargs -n 2 -P 5 cmsRun tagAndProbe_cfg.py"
+print "to submit"
+
 source = None
-if len(sys.argv) > 2:
+jobindex = None
+if len(sys.argv) > 3:
     source = sys.argv[2]
+    jobindex = sys.argv[3]
 else:
     source = sys.argv[1]
+    jobindex = sys.argv[2]
+jobindex = int(jobindex)
 
-
-print "Source is:", source
+print "Source is:", source, jobindex
 sample_info = sample_map[source]
 
-print sample_info['files']
+print "File is:", sample_info['files'][jobindex]
 
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
-        sample_info['files']
+        sample_info['files'][jobindex]
     ),
 )
+
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
 process.load("Configuration.StandardSequences.MagneticField_cff")
@@ -318,6 +347,8 @@ process.tpTree = cms.EDAnalyzer("TagProbeFitTreeProducer",
         PeriodA = cms.string("userInt('periodA') > 0"),
         PeriodB = cms.string("userInt('periodB') > 0"),
         PeriodC = cms.string("userInt('periodC') > 0"),
+        PtThresh = cms.string("pt > 15"),
+        EtaCut = cms.string("abs(eta) < 2.1"),
         HLTMu9 = cms.string(trigger_match('HLT_Mu9')),
         IsoMu9Mu11 = cms.string(trigger_match('HLT_IsoMu9', 'HLT_Mu11')),
         IsoMu13Mu15 = cms.string(
@@ -374,11 +405,14 @@ from PhysicsTools.PatAlgos.tools.helpers import cloneProcessingSnippet, \
 # Note we use our run range sequence
 process.patMuonsWithTriggerSequenceSta = cloneProcessingSnippet(
     process, process.patMuonsWithTriggerSequence, "Sta")
+
 process.muonMatchHLTL2Sta.maxDeltaR = 0.5
 process.muonMatchHLTL3Sta.maxDeltaR = 0.5
 
 massSearchReplaceAnyInputTag(process.patMuonsWithTriggerSequenceSta,
                              "mergedMuons", "muonsSta")
+
+print process.patMuonsWithTriggerSequenceSta
 
 ## Define probes and T&P pairs
 process.probeMuonsSta = cms.EDFilter("PATMuonSelector",
@@ -427,6 +461,8 @@ process.tpTreeSta = process.tpTree.clone(
     ),
     flags = cms.PSet(
         common.HighPtTriggerFlags,
+        PtThresh = cms.string("pt > 15"),
+        EtaCut = cms.string("abs(eta) < 2.1"),
         hasTrack = cms.InputTag("staPassingTk"),
         L1DoubleMuOpen       = common.LowPtTriggerFlagsPhysics.L1DoubleMuOpen,
         L1DoubleMuOpen_Tight = common.LowPtTriggerFlagsPhysics.L1DoubleMuOpen_Tight,
@@ -520,6 +556,8 @@ process.tpTreeInner = process.tpTree.clone(
     flags = cms.PSet(
         common.HighPtTriggerFlags,
         common.MuonIDFlags,
+        PtThresh = cms.string("pt > 15"),
+        EtaCut = cms.string("abs(eta) < 2.1"),
     )
 )
 
@@ -559,7 +597,7 @@ if sample_info['add_mc']:
 process.tagAndProbeInner += process.tnpSimpleSequenceInner
 
 process.TFileService = cms.Service("TFileService", fileName = cms.string(
-    "/data1/friis/ZmumuEff/tagAndProbe_%s.root" % source))
+    "/data2/friis/ZmumuEff/tagAndProbe_%s_%i.root" % (source, jobindex)))
 
 process.options = cms.untracked.PSet(
     wantSummary = cms.untracked.bool(True)

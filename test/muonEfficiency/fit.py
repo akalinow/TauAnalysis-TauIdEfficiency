@@ -1,6 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 import sys
 import copy
+import glob
 import itertools
 
 process = cms.Process("TagProbe")
@@ -20,22 +21,11 @@ _VTX_BINS = [0.5, 1.5, 2.5, 4.5, 10.5]
 
 sources = {
     'data' : {
-        'file' : "/data1/friis/ZmumuEff/tagAndProbe_data.root",
+        'file' : glob.glob("/data2/friis/ZmumuEff/tagAndProbe_data_*.root"),
         'mc' : False,
     },
-    'mc' : {
-        'file' : "/data1/friis/ZmumuEff/tagAndProbe_mc.root",
-        'mc' : True,
-    },
     'mcpu' : {
-        'file' : "/data1/friis/ZmumuEff/tagAndProbe_mcpu.root",
-        'mc' : True,
-    },
-    'mcboth' : {
-        'file' : [
-            "/data1/friis/ZmumuEff/tagAndProbe_mcpu.root",
-            "/data1/friis/ZmumuEff/tagAndProbe_mc.root",
-        ],
+        'file' : glob.glob("/data2/friis/ZmumuEff/tagAndProbe_mcpu_*.root"),
         'mc' : True,
     },
 }
@@ -48,7 +38,7 @@ process.TagProbeFitTreeAnalyzer = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
     InputFileNames = cms.vstring(source_info['file']),
     InputDirectoryName = cms.string("tpTree"),
     InputTreeName = cms.string("fitter_tree"),
-    OutputFileName = cms.string("/data1/friis/ZmumuEff/efficiency_%s.root" % source),
+    OutputFileName = cms.string("/data2/friis/ZmumuEff/efficiency_%s.root" % source),
     #numbrer of CPUs to use for fitting
     NumCPU = cms.uint32(4),
     # specifies wether to save the RooWorkspace containing the data for each bin and
@@ -80,6 +70,7 @@ process.TagProbeFitTreeAnalyzer = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
         CustomTrigger = cms.vstring("Trigger", "dummy[pass=1,fail=0]"),
         VBTF = cms.vstring("VBTF", "dummy[pass=1,fail=0]"),
         innerTrack = cms.vstring("Inner track",  "dummy[pass=1,fail=0]"),
+        hasTrack = cms.vstring("Tracker match",  "dummy[pass=1,fail=0]"),
         outerTrack = cms.vstring("Outer track",  "dummy[pass=1,fail=0]"),
         PeriodA = cms.vstring("Period A",  "dummy[pass=1,fail=0]"),
         PeriodB = cms.vstring("Period B",  "dummy[pass=1,fail=0]"),
@@ -87,6 +78,8 @@ process.TagProbeFitTreeAnalyzer = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
         HLTMu9 = cms.vstring("HLT_Mu9",   "dummy[pass=1,fail=0]"),
         IsoMu9Mu11 = cms.vstring("HLT_IsoMu9 OR HLT_Mu11",   "dummy[pass=1,fail=0]"),
         IsoMu13Mu15 = cms.vstring("HLT_IsoMu13 OR HLT_Mu15",   "dummy[pass=1,fail=0]"),
+        PtThresh = cms.vstring("Above 15 PT", "dummy[pass=1,fail=0]"),
+        EtaCut = cms.vstring("|eta| < 2.1", "dummy[pass=1,fail=0]"),
     ),
 
     # defines all the PDFs that will be available for the efficiency calculations; uses RooFit's "factory" syntax;
@@ -122,12 +115,12 @@ process.TagProbeFitTreeAnalyzer = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
 
 process.TagProbeFitTreeAnalyzerSta = process.TagProbeFitTreeAnalyzer.clone(
     InputDirectoryName = cms.string("tpTreeSta"),
-    OutputFileName = cms.string("/data1/friis/ZmumuEff/efficiencySta_%s.root" % source)
+    OutputFileName = cms.string("/data2/friis/ZmumuEff/efficiencySta_%s.root" % source)
 )
 
 process.TagProbeFitTreeAnalyzerInner = process.TagProbeFitTreeAnalyzer.clone(
     InputDirectoryName = cms.string("tpTreeInner"),
-    OutputFileName = cms.string("/data1/friis/ZmumuEff/efficiencyInner_%s.root" % source)
+    OutputFileName = cms.string("/data2/friis/ZmumuEff/efficiencyInner_%s.root" % source)
 )
 
 def append_pset(x_axis, eff_info, append_to):
@@ -136,7 +129,9 @@ def append_pset(x_axis, eff_info, append_to):
         UnbinnedVariables = cms.vstring("mass"),
         BinnedVariables = cms.PSet(
             # Always apply our PT selection
-            pt = cms.vdouble(*_ALL_PT)
+            # pt = cms.vdouble(*_ALL_PT)
+            PtThresh = cms.vstring("pass"),
+            EtaCut = cms.vstring("pass"),
         ),
         BinToPDFmap = cms.vstring('cbPlusExpo')
     )
@@ -151,19 +146,19 @@ def append_pset(x_axis, eff_info, append_to):
 variables = [
     ('avg', 'pt', _ALL_PT),
     ('pt', 'pt', _PT_BINS),
-    ('eta', 'abseta', _ETA_BINS),
+    #('eta', 'abseta', _ETA_BINS),
     ('etatrig', 'abseta', _ETA_BINS_TRG),
 ]
 
 iso_vars = [
-    ('vtx', 'tag_nVertices', _VTX_BINS),
+    #('vtx', 'tag_nVertices', _VTX_BINS),
 ]
 
 efficiencies = [
     ('iso', 'AbsIso', ['Glb', 'VBTF']),
-    ('looseiso', 'LooseAbsIso', ['Glb', 'VBTF']),
-    ('reliso', 'RelIso', ['Glb', 'VBTF']),
-    ('loosereliso', 'LooseRelIso', ['Glb', 'VBTF']),
+    #('looseiso', 'LooseAbsIso', ['Glb', 'VBTF']),
+    #('reliso', 'RelIso', ['Glb', 'VBTF']),
+    #('loosereliso', 'LooseRelIso', ['Glb', 'VBTF']),
     ('id', 'VBTF', ['Glb']),
     ('hltMu9', 'HLTMu9', ['Glb', 'VBTF', 'AbsIso']),
     ('standAlone', 'outerTrack', []),
@@ -184,8 +179,8 @@ inner_efficiencies = [
 
 # FIXME
 outer_efficiencies = [
-    ('standAlone', 'outerTrack', ['innerTrack']),
-    ('linking', 'Glb', ['outerTrack', 'innerTrack']),
+    #('standAlone', 'outerTrack', ['innerTrack']),
+    #('linking', 'Glb', ['outerTrack', 'innerTrack']),
 ]
 
 for eff in efficiencies:
@@ -217,7 +212,7 @@ if source_info['mc']:
             object.BinnedVariables.mcTrue = cms.vstring("pass")
 
 process.fit = cms.Path(
-    #process.TagProbeFitTreeAnalyzer*
-    process.TagProbeFitTreeAnalyzerSta
+    process.TagProbeFitTreeAnalyzer
+    #process.TagProbeFitTreeAnalyzerSta*
     #process.TagProbeFitTreeAnalyzerInner
 )
