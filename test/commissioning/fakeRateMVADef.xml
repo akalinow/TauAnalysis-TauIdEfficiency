@@ -6,15 +6,19 @@
     <option name="trainfiles">train/train_%1$s%2$s.%3$s</option>
   </general>
   <input id="input">
-    <var name="JetPt" multiple="false" optional="false"/>
-    <var name="JetEta" multiple="false" optional="false"/>
+    <!--<var name="JetPt" multiple="false" optional="false"/>-->
+    <!--<var name="JetEta" multiple="false" optional="false"/>-->
+    <var name="Pt" multiple="false" optional="false"/>
+    <var name="AbsEta" multiple="false" optional="false"/>
     <var name="JetWidth" multiple="false" optional="false"/>
   </input>
   <!--MVA defintion-->
   <processor id="FakeRateMethod" name="ProcTMVA">
     <input>
-      <var source="input" name="JetPt"/>
-      <var source="input" name="JetEta"/>
+      <!--<var source="input" name="JetPt"/>-->
+      <!--<var source="input" name="JetEta"/>-->
+      <var source="input" name="Pt"/>
+      <var source="input" name="AbsEta"/>
       <var source="input" name="JetWidth"/>
     </input>
     <config>
