@@ -13,9 +13,10 @@
 print("<buildFakeRateLUTs>:")
 
 import os
-import subprocess
 
 from TauAnalysis.TauIdEfficiency.fakeRateDef import fakeRateDef
+
+skipExisting = True
 
 for fakeRateLabel, fakeRateConfig in fakeRateDef.items():
     for sampleLabel, sampleConfig in fakeRateConfig['samples'].items():
@@ -26,6 +27,9 @@ for fakeRateLabel, fakeRateConfig in fakeRateDef.items():
                 os.mkdir("./config")
             
             cfgFileName = './config/fakerate_%s_%s_%s.cfg' % (numeratorLabel, fakeRateLabel, sampleLabel)
+            if os.path.exists(cfgFileName) and skipExisting:
+                print "Skipping ", cfgFileName
+                continue
             cfgFile = open(cfgFileName, "w")
             cfgFile.write("[fake_rate]\n")
             cfgFile.write("sample = %s\n" % sampleConfig['name'])
@@ -37,5 +41,3 @@ for fakeRateLabel, fakeRateConfig in fakeRateDef.items():
 
 print("Configuration files build:")
 print("execute 'ls config/fakerate*cfg | xargs -P 5 -I % make -f Makefile.FakeRateMethod -j 2 CFG=%' in order to start make process.")
-
-        
