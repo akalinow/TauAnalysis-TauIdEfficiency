@@ -24,6 +24,7 @@ parser.add_argument('-failing', action='store_true', default=False,
                     help="Build ntuple for events that fail")
 parser.add_argument('--output', help="Output file")
 parser.add_argument('--config', help="Configuration file")
+parser.add_argument('--index', help="Sample index")
 
 options=parser.parse_args()
 
@@ -89,7 +90,8 @@ def check_for_quotes(my_string):
 check_for_quotes(passing)
 check_for_quotes(failing)
 
-draw_string = ntuple.expr('$jetWidth:$jetEta:$jetPt')
+#draw_string = ntuple.expr('$jetWidth:$jetEta:$jetPt')
+draw_string = ntuple.expr('$jetWidth:abs($eta):$pt')
 
 output_file = ROOT.TFile(options.output, "RECREATE")
 output_file.cd()
@@ -104,59 +106,86 @@ events_list = list(getattr(samples, options.sample).events_and_weights())
 #         (Note that this means it is not possible to fill k-NN tree
 #          with QCD Monte Carlo generated in different PtHat bins)
 import TauAnalysis.TauIdEfficiency.ntauples.helpers as helpers
-events = None
-if len(events_list) == 1:
-    events = events_list[0][0]
-elif len(events_list) > 1:
-    events = ROOT.TChain("Events")
-    isFirst = True
-    weight = 0.
-    for entry in events_list:
-        if isFirst:
-            helpers.copy_aliases_from(entry[0], events)
-            weight = entry[1]
-            isFirst = False
-        else:
-            if weight != entry[1]:
-                raise ValueError("Events with different weights not supported yet !!")
-        print("--> adding %s events to TChain..." % entry[0].GetEntries())
-        print entry[0]
-        events.Add(entry[0])
 
-if events is None:
-    raise ValueError("Failed to access TChain !!")
+#events = None
+#if len(events_list) == 1:
+    #events = events_list[0][0]
+#elif len(events_list) > 1:
+    #events = ROOT.TChain("Events")
+    #isFirst = True
+    #weight = 0.
+    #for entry in events_list:
+        #if isFirst:
+            #helpers.copy_aliases_from(entry[0], events)
+            #weight = entry[1]
+            #isFirst = False
+        #else:
+            #if weight != entry[1]:
+                #raise ValueError("Events with different weights not supported yet !!")
+        #print("--> adding %s events to TChain..." % entry[0].GetEntries())
+        #print entry[0]
+        #events.Add(entry[0])
 
-print "Ntuple has entries: ", events.GetEntries()
-# Prevent root from cutting us off at 10^6
-events.SetEstimate(100000000L)
+#if events is None:
+    #raise ValueError("Failed to access TChain !!")
 
-if options.passing:
-    # Build a TPolyMaker3D with our points
-    selected_events = events.Draw(str(draw_string), str(passing))
-    print "TTree::Drew ntuple with %i events" % selected_events
-    numerator_tuple = ROOT.gPad.GetPrimitive("TPolyMarker3D")
-    numerator_tuple.SetName("passing")
+weights = ROOT.TArrayD(len(events_list))
 
-    print "Built 'passing' pre-ntuple with %i entries" % \
-            numerator_tuple.GetN()
+# Normalize the sample weights
+weight_norm = sum(weight for events, weight in events_list)
 
-    if numerator_tuple.GetN() == events.GetEstimate():
-        raise ValueError("Number of entries produced is at the upper limit " \
-                         "of TTree::Draw.  You need to set events.SetEstimate to " \
-                         "be larger than the total number of selected rows.")
-    numerator_tuple.Write()
+to_write = []
 
-if options.failing:
-    # Build a TPolyMaker3D with our points
-    drawn = events.Draw(str(draw_string), str(failing))
-    print "TTree::Drew ntuple with %i events" % drawn
-    denominator_tuple = ROOT.gPad.GetPrimitive("TPolyMarker3D")
-    denominator_tuple.SetName("failing")
-    print "Built 'failing' pre-ntuple with %i entries" % \
-            denominator_tuple.GetN()
-    if denominator_tuple.GetN() == events.GetEstimate():
-        raise ValueError("Number of entries produced is at the upper limit " \
-                         "of TTree::Draw.  You need to set events.SetEstimate to " \
-                         "be larger than the total number of selected rows.")
-    denominator_tuple.Write()
+max_entries = sum(events.GetEntries() for events, weight in events_list)
 
+map(lambda x: x.SetEstimate(max_entries*3), (x for x, weight in events_list))
+
+ROOT.SetMemoryPolicy( ROOT.kMemoryStrict )
+
+for index, (events, weight) in enumerate(events_list):
+    #if not index == 0:
+    #    helpers.copy_aliases_from(events_list[0][0], events)
+    print "Ntuple has entries: ", events.GetEntries(), "and weight:", weight
+    # Prevent root from cutting us off at 10^6
+    #if index != 1:
+    #    continue
+    weights[index] = weight/weight_norm
+    if options.passing:
+        # Build a TPolyMaker3D with our points
+        selected_events = events.Draw(str(draw_string), str(passing))
+        #selected_events = events.Draw(str(draw_string))
+        print "TTree::Drew ntuple with %i events" % selected_events
+        my_tuple = ROOT.gPad.GetPrimitive("TPolyMarker3D")
+        #my_tuple = numerator_tuple.Clone("passing_%i" % index)
+        my_tuple.SetName("passing_%i" % index)
+
+        print "Built 'passing' pre-ntuple with %i entries" % \
+               my_tuple.GetN()
+
+        if my_tuple.GetN() == events.GetEstimate():
+           raise ValueError("Number of entries produced is at the upper limit " \
+                            "of TTree::Draw.  You need to set events.SetEstimate to " \
+                            "be larger than the total number of selected rows.")
+        bytes = my_tuple.Write()
+        print "Wrote %i bytes" % bytes
+        print "Deleting..."
+        my_tuple.IsA().Destructor(my_tuple)
+        print "Done."
+
+    if options.failing:
+        # Build a TPolyMaker3D with our points
+        drawn = events.Draw(str(draw_string), str(failing))
+        print "TTree::Drew ntuple with %i events" % drawn
+        my_tuple = ROOT.gPad.GetPrimitive("TPolyMarker3D")
+        #my_tuple = denominator_tuple.Clone("failing_%i" % index)
+        my_tuple.SetName("failing_%i" % index)
+        print "Built 'failing' pre-ntuple with %i entries" % \
+                my_tuple.GetN()
+        if my_tuple.GetN() == events.GetEstimate():
+            raise ValueError("Number of entries produced is at the upper limit " \
+                             "of TTree::Draw.  You need to set events.SetEstimate to " \
+                             "be larger than the total number of selected rows.")
+        my_tuple.Write()
+        ROOT.gPad.Clear()
+
+output_file.WriteObject(weights, "weights")
