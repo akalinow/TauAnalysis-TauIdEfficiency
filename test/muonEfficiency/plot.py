@@ -3,6 +3,7 @@ ROOT.gROOT.SetBatch(True)
 ROOT.gROOT.SetStyle("Plain")
 import math
 import sys
+import copy
 import pprint
 pp = pprint.PrettyPrinter(indent=4)
 
@@ -86,6 +87,7 @@ titles = {
     "innerTrack" : "Inner track given STA muon",
     "hltMu9" : "HLT Mu9 w.r.t. offline",
     "trigComp" : "HLT Trigger efficiency (data) compared to MC HLT_Mu9",
+    "trigCompX" : "Corrected HLT Trigger efficiency (data) compared to MC HLT_Mu9",
 }
 
 # Make the special trigger plots
@@ -134,11 +136,14 @@ def merge_efficiencies(*inputs):
         output.SetPointEYhigh(bin, e_high)
     return output
 
+
 for plot in mc_hlt_mu9_plots:
     print plot
     # We are making our special trigger comparison.  For MC it is the same, so
     # just copy it over.
     steering['mc']['plots'][(plot[0], 'trigComp', plot[2])] = \
+            steering['mc']['plots'][plot]
+    steering['mc']['plots'][(plot[0], 'trigCompX', plot[2])] = \
             steering['mc']['plots'][plot]
 
     # We want to compare against each one individually as well
@@ -149,13 +154,85 @@ for plot in mc_hlt_mu9_plots:
     # Find the corresponding data plots
     data_plots = steering['data']['plots']
     pp.pprint(data_plots)
-    trigger_plots = [
-        (lumi_info[trig], data_plots[(plot[0], trig, plot[2])])
+    trigger_plots = dict(
+        ((plot[0], trig, plot[2]),
+        (lumi_info[trig], data_plots[(plot[0], trig, plot[2])]))
         for trig in lumi_info.keys()
-    ]
+    )
+
+    # Compensate for the cross trigger
+    trigB = trigger_plots[(plot[0], 'trigB', plot[2])][1]
+    trigC = trigger_plots[(plot[0], 'trigC', plot[2])][1]
+
+    newTrigB = trigB.Clone()
+    newTrigC = trigC.Clone()
+
+    # Add two percent to newTrigB
+    for ibin in range(newTrigB.GetN()):
+        old_y = newTrigB.GetY()[ibin]
+        old_x = newTrigB.GetX()[ibin]
+        newTrigB.SetPoint(ibin, old_x, old_y + 0.02)
+
+    difference_graph = trigB.Clone()
+    for ibin in range(newTrigB.GetN()):
+        b_y = newTrigB.GetY()[ibin]
+        b_x = newTrigB.GetX()[ibin]
+        c_y = newTrigC.GetY()[ibin]
+
+        difference = b_y - c_y
+        difference_error_up = math.sqrt(newTrigB.GetErrorYhigh(ibin)**2 +
+                                        newTrigC.GetErrorYhigh(ibin)**2)
+
+        difference_error_down = math.sqrt(newTrigB.GetErrorYlow(ibin)**2 +
+                                          newTrigC.GetErrorYlow(ibin)**2)
+
+        # Scale by PFTau efficiency
+        scaled_difference = difference*0.9
+
+        scaled_difference_error_up = scaled_difference*math.sqrt(
+            (difference_error_up/difference)**2 + 0.1**2)
+
+        scaled_difference_error_down = scaled_difference*math.sqrt(
+            (difference_error_down/difference)**2 + 0.1**2)
+
+        difference_graph.SetPoint(ibin, b_x, difference)
+
+        difference_graph.SetPointEYhigh(
+            ibin, scaled_difference_error_up)
+        difference_graph.SetPointEYlow(
+            ibin, scaled_difference_error_down)
+
+    # Add them back together
+    for ibin in range(trigB.GetN()):
+        c_y = newTrigC.GetY()[ibin]
+        c_x = newTrigC.GetX()[ibin]
+        difference = difference_graph.GetY()[ibin]
+        c_y_up = newTrigC.GetErrorYhigh(ibin)
+        c_y_down = newTrigC.GetErrorYlow(ibin)
+
+        difference = difference_graph.GetY()[ibin]
+        diff_up = difference_graph.GetErrorYhigh(ibin)
+        diff_down = difference_graph.GetErrorYlow(ibin)
+
+        c_y += difference
+        c_y_up = math.sqrt(c_y_up**2 + diff_up**2)
+        c_y_down = math.sqrt(c_y_down**2 + diff_down**2)
+
+        newTrigC.SetPoint(ibin, c_x, c_y)
+        newTrigC.SetPointEYhigh(ibin, c_y_up)
+        newTrigC.SetPointEYlow(ibin, c_y_down)
+
+    xtrigger_plots = copy.copy(trigger_plots)
+    old_plot = xtrigger_plots[(plot[0], 'trigC', plot[2])]
+    new_plot = (old_plot[0], newTrigC)
+    xtrigger_plots[(plot[0], 'trigC', plot[2])] = new_plot
+
     print trigger_plots
-    new_plot = merge_efficiencies(*trigger_plots)
+    new_plot = merge_efficiencies(*trigger_plots.values())
     steering['data']['plots'][(plot[0], 'trigComp', plot[2])] = new_plot
+    new_plot_with_xtrigger = merge_efficiencies(*xtrigger_plots.values())
+
+    steering['data']['plots'][(plot[0], 'trigCompX', plot[2])] = new_plot_with_xtrigger
 
 #sys.exit()
 
@@ -240,6 +317,7 @@ for plot in steering['mc']['plots'].keys():
     data_scaled.SetMarkerColor(ROOT.EColor.kBlack)
     data_scaled.SetMarkerSize(1)
 
+
     # Make scaled plot
     for bin in range(mc_plot.GetN()):
         mc_y = mc_plot.GetY()[bin]
@@ -288,8 +366,20 @@ for plot in steering['mc']['plots'].keys():
     mc_scaled.GetHistogram().SetMaximum(the_max + (the_max-the_min)*0.25)
     mc_scaled.GetHistogram().SetMinimum(the_min - (the_max-the_min)*0.25)
 
-    mc_scaled.GetHistogram().SetTitle(titles[plot[1]])
+    #mc_scaled.GetHistogram().SetTitle(titles[plot[1]])
+    mc_scaled.GetHistogram().SetTitle("")
     mc_scaled.GetHistogram().GetXaxis().SetTitle(x_axes[plot[2]])
+
+    scaled_legend = None
+    if plot[0] == 'pt':
+        scaled_legend = ROOT.TLegend(0.15, 0.7, 0.5, 0.85, "", "brNDC")
+    else:
+        scaled_legend = ROOT.TLegend(0.15, 0.15, 0.5, 0.3, "", "brNDC")
+    scaled_legend.AddEntry(data_scaled, "Data/Simulation ratio", "p")
+    scaled_legend.AddEntry(mc_scaled, "Simulation stat. error", "f")
+    scaled_legend.SetFillStyle(0)
+    scaled_legend.SetBorderSize(0)
+    scaled_legend.Draw()
 
     canvas.Update()
     canvas.SaveAs('plots/' + file_name + "_scaled" + ".png")
