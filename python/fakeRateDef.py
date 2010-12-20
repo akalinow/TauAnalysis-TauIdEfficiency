@@ -2,8 +2,8 @@ import FWCore.ParameterSet.Config as cms
 
 fakeRateDef = {
     'QCDdiJet1st' : {
-        'denominator' : '$jetPt > 20. && abs($jetEta) < 2.3 && $probe > 0.5 && $byLeadTrackFinding > 0.5 && $byLeadTrackPtCut > 0.5' \
-                       + ' && $ptIndex == 0',
+        'denominator' : '$pt > 20. && abs($eta) < 2.3 && $probe > 0.5 && $byLeadTrackFinding > 0.5 && $byLeadTrackPtCut > 0.5' \
+                       + ' && $ptIndex == 0 && $againstMuon > 0.5 && $againstElectron > 0.5',
         'numerators' : {
             'ewkTauId'   : '$byTaNCmedium > 0.5 && abs($charge) == 1',
             'TaNCvloose' : '$byTaNCvloose > 0.5',
@@ -21,8 +21,8 @@ fakeRateDef = {
         }
     },
     'QCDdiJet2nd' : {
-        'denominator' : '$jetPt > 20. && abs($jetEta) < 2.3 && $probe > 0.5 && $byLeadTrackFinding > 0.5 && $byLeadTrackPtCut > 0.5' \
-                       + ' && $ptIndex == 1',
+        'denominator' : '$pt > 20. && abs($eta) < 2.3 && $probe > 0.5 && $byLeadTrackFinding > 0.5 && $byLeadTrackPtCut > 0.5' \
+                       + ' && $ptIndex == 1 && $againstMuon > 0.5 && $againstElectron > 0.5',
         'numerators' : {
             'ewkTauId'   : '$byTaNCmedium > 0.5 && abs($charge) == 1',
             'TaNCvloose' : '$byTaNCvloose > 0.5',
@@ -41,7 +41,7 @@ fakeRateDef = {
     },
 
     'PPmuX' : {
-        'denominator' : '$jetPt > 20. && abs($jetEta) < 2.3 && $byLeadTrackFinding > 0.5 && $byLeadTrackPtCut > 0.5',
+        'denominator' : '$pt > 20. && abs($eta) < 2.3 && $byLeadTrackFinding > 0.5 && $byLeadTrackPtCut > 0.5 && $againstMuon > 0.5 && $againstElectron > 0.5',
         'numerators' : {
             'ewkTauId'   : '$byTaNCmedium > 0.5 && abs($charge) == 1',
             'TaNCvloose' : '$byTaNCvloose > 0.5',
@@ -63,8 +63,8 @@ fakeRateDef = {
         }
     },
     'PPmuXafterLoosePFIso' : {
-        'denominator' : '$jetPt > 20. && abs($jetEta) < 2.3 && $byLeadTrackFinding > 0.5 && $byLeadTrackPtCut > 0.5' \
-                       + ' && $ptSumLooseIsolation < 2.5',
+        'denominator' : '$pt > 20. && abs($eta) < 2.3 && $byLeadTrackFinding > 0.5 && $byLeadTrackPtCut > 0.5' \
+                       + ' && $ptSumLooseIsolation < 2.5 && $againstMuon > 0.5 && $againstElectron > 0.5',
         'numerators' : {
             'TaNCloose'  : '$byTaNCloose > 0.5',
             'TaNCmedium' : '$byTaNCmedium > 0.5',
@@ -84,7 +84,7 @@ fakeRateDef = {
         }
     },
     'WplusJets' : {
-        'denominator' : '$jetPt > 20. && abs($jetEta) < 2.3 && $byLeadTrackFinding > 0.5 && $byLeadTrackPtCut > 0.5',
+        'denominator' : '$pt > 20. && abs($eta) < 2.3 && $byLeadTrackFinding > 0.5 && $byLeadTrackPtCut > 0.5 && $againstMuon > 0.5 && $againstElectron > 0.5',
         'numerators'  : {
             'ewkTauId'   : '$byTaNCmedium > 0.5 && abs($charge) == 1',
             'TaNCvloose' : '$byTaNCvloose > 0.5',
@@ -106,7 +106,7 @@ fakeRateDef = {
         }
     },
     'WplusJetsAfterLoosePFIso' : {
-        'denominator' : '$jetPt > 20. && abs($jetEta) < 2.3 &&  $byLeadTrackFinding > 0.5 && $byLeadTrackPtCut > 0.5' \
+        'denominator' : '$pt > 20. && abs($eta) < 2.3 &&  $byLeadTrackFinding > 0.5 && $byLeadTrackPtCut > 0.5 && $againstMuon > 0.5 && $againstElectron > 0.5' \
                        + ' && $ptSumLooseIsolation < 2.5',
         'numerators' : {
             'TaNCloose'  : '$byTaNCloose > 0.5',
@@ -127,8 +127,9 @@ fakeRateDef = {
         }
     },
     'Ztautau' : {
-        'denominator' : '$jetPt > 20. && abs($jetEta) < 2.3 &&  $byLeadTrackFinding > 0.5 && $byLeadTrackPtCut > 0.5',
+        'denominator' : '$pt > 20. && abs($eta) < 2.3 &&  $byLeadTrackFinding > 0.5 && $byLeadTrackPtCut > 0.5 && $againstMuon > 0.5 && $againstElectron > 0.5',
         'numerators' : {
+            'ewkTauId'   : '$byTaNCmedium > 0.5 && abs($charge) == 1',
             'TaNCloose'  : '$byTaNCloose > 0.5',
             'TaNCmedium' : '$byTaNCmedium > 0.5',
             'TaNCtight'  : '$byTaNCtight > 0.5',

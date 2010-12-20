@@ -167,8 +167,10 @@ void validateTauFakeRateKNN(TString inputFilePath)
   TString testTreeName = "TestTree";
   TTree* testTree = (TTree*)file->Get(testTreeName);
 
-  makePlot(canvas, "validateTauFakeRateKNN_JetPt.png", testTree, "JetPt", 10, 0., 100.);
-  makePlot(canvas, "validateTauFakeRateKNN_JetEta.png", testTree, "JetEta", 10, -2.5, +2.5);
+  //makePlot(canvas, "validateTauFakeRateKNN_JetPt.png", testTree, "JetPt", 10, 0., 100.);
+  //makePlot(canvas, "validateTauFakeRateKNN_JetEta.png", testTree, "JetEta", 10, -2.5, +2.5);
+  makePlot(canvas, "validateTauFakeRateKNN_JetPt.png", testTree, "Pt", 10, 0., 100.);
+  makePlot(canvas, "validateTauFakeRateKNN_JetEta.png", testTree, "AbsEta", 10, -2.5, +2.5);
   
   delete file;
 
