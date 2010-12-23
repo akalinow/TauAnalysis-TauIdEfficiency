@@ -77,6 +77,8 @@ makeVertexMultiplicityPlots()
   histoMC->SetTitle("Num. Vertices #Sigma trackPt > 10 GeV");
   histoMC->SetStats(false);
   histoMC->SetMaximum(1.);
+  histoMC->SetXTitle("Num. Vertices");
+  histoMC->SetYTitle("a.u.");
   histoMC->SetMarkerStyle(24);
   histoMC->SetMarkerColor(kRed);
   histoMC->SetLineColor(kRed);
@@ -96,17 +98,19 @@ makeVertexMultiplicityPlots()
   legend.Draw();
 
   canvas->Update();
-  canvas->Print("vertexMultiplicity.png");
+  canvas->Print("vertexMultiplicity.pdf");
 
   canvas->Clear();
 
   histoReweight->SetTitle("Vertex Multiplicity Reweight factors");
   histoReweight->SetStats(false);
+  histoReweight->SetXTitle("Num. Vertices");
+  histoReweight->SetYTitle("Reweight Factor");
   histoReweight->SetMarkerStyle(20);
   histoReweight->SetMarkerColor(kBlack);
   histoReweight->SetLineColor(kBlack);
   histoReweight->Draw("e1p");
 
   canvas->Update();
-  canvas->Print("vertexMultiplicityReweights.png");
+  canvas->Print("vertexMultiplicityReweights.pdf");
 }
