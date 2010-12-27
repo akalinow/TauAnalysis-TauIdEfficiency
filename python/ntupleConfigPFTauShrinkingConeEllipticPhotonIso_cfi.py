@@ -81,6 +81,7 @@ pfTausShrinkingConeEllipticPhotonIso_recInfo = cms.PSet(
         
         # discriminators against electrons/muons
         againstElectron = cms.string("tauID('againstElectron')"),
+        pfElectronMVA = cms.string("? leadPFCand().isNonnull() ? leadPFCand().mva_e_pi() : +1."),
         againstMuon = cms.string("tauID('againstMuon')")
     )
 )
