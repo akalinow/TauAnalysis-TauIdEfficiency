@@ -47,6 +47,16 @@ HLTprocessName = "REDIGI38XPU" # use for Fall'10 reprocessed MC with pile-up
 ##HLTprocessName = "REDIGI38X" # use for Fall'10 reprocessed MC without pile-up
 pfCandidateCollection = "particleFlow" # pile-up removal disabled
 ##pfCandidateCollection = "pfNoPileUp" # pile-up removal enabled
+#---------------------------------------------------------------------
+
+#--------------------------------------------------------------------------------
+# define "hooks" for replacing configuration parameters
+# in case running jobs on the CERN batch system/grid
+#
+#__isMC = #isMC#
+#__HLTprocessName = #HLTprocessName#
+#__pfCandidateCollection = #pfCandidateCollection#
+#
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
@@ -188,6 +198,51 @@ process.ntupleProducer = cms.EDProducer("ObjValEDNtupleProducer",
     )
 )
 
+# add branches for collections of Muons, Tau-jet candidates and Jets shifted Up/Down in energy/momentum 
+# and branches for MET with Z-recoil corrections applied
+from TauAnalysis.TauIdEfficiency.tools.configurePatTupleProductionTauIdEffMeasSpecific import configurePatTupleProductionTauIdEffMeasSpecific
+configurePatTupleProductionTauIdEffMeasSpecific(process)
+
+setattr(process.ntupleProducer.sources, "tauIdEffMeas01MuonPtUp", process.tauIdEffMeas_template01.clone(
+  src = cms.InputTag('selectedPatMuonsTrkIPsysMuonPtUpCumulative')
+))
+setattr(process.ntupleProducer.sources, "tauIdEffMeas03MuonPtUp", process.tauIdEffMeas_template03.clone(
+  src = cms.InputTag('selectedMuTauPairsAntiOverlapVetoSysMuonPtUpCumulative')
+))
+setattr(process.ntupleProducer.sources, "tauIdEffMeas01MuonPtDown", process.tauIdEffMeas_template01.clone(
+  src = cms.InputTag('selectedPatMuonsTrkIPsysMuonPtDownCumulative')
+))
+setattr(process.ntupleProducer.sources, "tauIdEffMeas03MuonPtDown", process.tauIdEffMeas_template03.clone(
+  src = cms.InputTag('selectedMuTauPairsAntiOverlapVetoSysMuonPtDownCumulative')
+))
+
+setattr(process.ntupleProducer.sources, "tauIdEffMeas02TauJetEnUp", process.tauIdEffMeas_template02.clone(
+  src = cms.InputTag('selectedPatTausForMuTauEcalCrackVetoSysTauJetEnUpCumulative')
+))
+setattr(process.ntupleProducer.sources, "tauIdEffMeas03TauJetEnUp", process.tauIdEffMeas_template03.clone(
+  src = cms.InputTag('selectedMuTauPairsAntiOverlapVetoSysTauJetEnUpCumulative')
+))
+setattr(process.ntupleProducer.sources, "tauIdEffMeas02TauJetEnDown", process.tauIdEffMeas_template02.clone(
+  src = cms.InputTag('selectedPatTausForMuTauEcalCrackVetoSysTauJetEnDownCumulative')
+))
+setattr(process.ntupleProducer.sources, "tauIdEffMeas03TauJetEnDown", process.tauIdEffMeas_template03.clone(
+  src = cms.InputTag('selectedMuTauPairsAntiOverlapVetoSysTauJetEnDownCumulative')
+))
+
+setattr(process.ntupleProducer.sources, "tauIdEffMeas03JetEnUp", process.tauIdEffMeas_template03.clone(
+  src = cms.InputTag('selectedMuTauPairsAntiOverlapVetoSysJetEnUpCumulative')
+))
+setattr(process.ntupleProducer.sources, "tauIdEffMeas03JetEnDown", process.tauIdEffMeas_template03.clone(
+  src = cms.InputTag('selectedMuTauPairsAntiOverlapVetoSysJetEnDownCumulative')
+))
+
+setattr(process.ntupleProducer.sources, "tauIdEffMeas03ZllRecoilCorrectionUp", process.tauIdEffMeas_template03.clone(
+  src = cms.InputTag('selectedMuTauPairsAntiOverlapVetoSysZllRecoilCorrectionUpCumulative')
+))
+setattr(process.ntupleProducer.sources, "tauIdEffMeas03ZllRecoilCorrectionDown", process.tauIdEffMeas_template03.clone(
+  src = cms.InputTag('selectedMuTauPairsAntiOverlapVetoSysZllRecoilCorrectionDownCumulative')
+))
+
 if isMC:
     # add in information about generator level visible taus and all generator level jets
     setattr(process.ntupleProducer.sources, "tauGenJets", process.tauGenJets_genInfo)
@@ -217,10 +272,7 @@ process.ntupleOutputModule = cms.OutputModule("PoolOutputModule",
 process.p = cms.Path(
     process.prePatProductionSequence
    + process.patDefaultSequence
-   + process.selectPrimaryVertex
-   + process.selectPatMuons
-   + process.patTausLoosePFIsoEmbedded + process.selectPatTausForMuTau
-   + process.muTauPairsForTauIdEff + process.selectMuTauPairs
+   + process.producePatTupleTauIdEffMeasSpecific
    #+ process.printEventContent
    #+ process.printGenParticleList
    + process.ntupleProducer

@@ -6,11 +6,11 @@ from TauAnalysis.Configuration.userRegistry import getAnalysisFilePath, getJobId
 
 import os
 
-channel = 'AHtoMuTau'
+channel = 'ZtoMuTau_tauIdEff'
 configFile = 'produceTauIdEffMeasNtuple_cfg.py'
 analysisFilePath = getAnalysisFilePath(channel)
 #jobId = getJobId(channel)
-jobId = 'Run26'
+jobId = '2010Dec24'
 
 samplesToAnalyze = [
     # modify in case you want to submit jobs for some of the samples only...
@@ -25,7 +25,7 @@ outputFilePath = "/data1/veelken/CMSSW_3_8_x/ntuples/TauIdEffMeas"
 def local_sample_mapper(channel, sample, jobId):
     return os.path.join(
         getPickEventsPath(channel),
-        "skim_%s_%s_%s*.root" % (channel, sample, jobId)
+        "tauIdEffSample_%s_%s_%s*.root" % (channel, sample, jobId)
     )
 
 # Define what output ntuple file name a sample will have

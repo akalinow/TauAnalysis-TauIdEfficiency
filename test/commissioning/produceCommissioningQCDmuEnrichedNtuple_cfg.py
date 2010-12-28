@@ -45,11 +45,21 @@ pfCandidateCollection = "particleFlow" # pile-up removal disabled
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
+# define "hooks" for replacing configuration parameters
+# in case running jobs on the CERN batch system/grid
+#
+#__isMC = #isMC#
+#__HLTprocessName = #HLTprocessName#
+#__pfCandidateCollection = #pfCandidateCollection#
+#
+#--------------------------------------------------------------------------------
+
+#--------------------------------------------------------------------------------
 # define GlobalTag to be used for event reconstruction
 if isMC:
-    process.GlobalTag.globaltag = cms.string('START38_V12::All')
+    process.GlobalTag.globaltag = cms.string('START38_V14::All')
 else:  
-    process.GlobalTag.globaltag = cms.string('GR_R_38X_V13::All')
+    process.GlobalTag.globaltag = cms.string('GR_R_38X_V15::All')
 #--------------------------------------------------------------------------------    
 
 #--------------------------------------------------------------------------------
