@@ -27,42 +27,59 @@ hltMu = cms.EDFilter("EventSelPluginFilter",
 # define Muon selection
 #--------------------------------------------------------------------------------
 
-patMuonsLoosePFIsoEmbedded = cms.EDProducer("PATMuonPFIsolationEmbedder",
+patMuonsLoosePFIsoEmbedded04 = cms.EDProducer("PATMuonPFIsolationEmbedder",
     src = cms.InputTag('cleanPatMuons'),                                       
-    userFloatName = cms.string('pfLooseIsoPt'),
+    userFloatName = cms.string('pfLooseIsoPt04'),
     pfCandidateSource = cms.InputTag('pfNoPileUp'),
     chargedHadronIso = cms.PSet(
         ptMin = cms.double(0.5),        
         dRvetoCone = cms.double(-1.),
-        dRisoCone = cms.double(0.6)
+        dRisoCone = cms.double(0.4)
     ),
     neutralHadronIso = cms.PSet(
         ptMin = cms.double(1000.),        
         dRvetoCone = cms.double(0.08),        
-        dRisoCone = cms.double(0.6)
+        dRisoCone = cms.double(0.4)
     ),
     photonIso = cms.PSet(
         ptMin = cms.double(0.5),        
         dPhiVeto = cms.double(-1.),  # asymmetric Eta x Phi veto region 
         dEtaVeto = cms.double(-1.),  # to account for photon conversions in electron isolation case        
         dRvetoCone = cms.double(-1.),
+        dRisoCone = cms.double(0.4)
+    )
+)
+
+patMuonsLoosePFIsoEmbedded06 = patMuonsLoosePFIsoEmbedded04.clone(
+    src = cms.InputTag('patMuonsLoosePFIsoEmbedded04'),
+    userFloatName = cms.string('pfLooseIsoPt06'),
+    pfCandidateSource = cms.InputTag('pfNoPileUp'),
+    chargedHadronIso = patMuonsLoosePFIsoEmbedded04.chargedHadronIso.clone(
+        dRisoCone = cms.double(0.6)
+    ),
+    neutralHadronIso = patMuonsLoosePFIsoEmbedded04.neutralHadronIso.clone(
+        dRisoCone = cms.double(0.6)
+    ),
+    photonIso = patMuonsLoosePFIsoEmbedded04.photonIso.clone(
         dRisoCone = cms.double(0.6)
     )
 )
+
+patMuonsLoosePFIsoEmbedded = cms.Sequence(patMuonsLoosePFIsoEmbedded04 * patMuonsLoosePFIsoEmbedded06)
 
 selectedPatMuonsGlobal.cut = cms.string('isGlobalMuon()')
 selectedPatMuonsEta21.cut = cms.string('abs(eta) < 2.1')
 selectedPatMuonsPt15.cut = cms.string('pt > 15.')
 selectedPatMuonsVbTfId.beamSpotSource = cms.InputTag("offlineBeamSpot")
-selectedPatMuonsPFRelIso.chargedHadronIso.ptMin = patMuonsLoosePFIsoEmbedded.chargedHadronIso.ptMin
-selectedPatMuonsPFRelIso.chargedHadronIso.dRvetoCone = patMuonsLoosePFIsoEmbedded.chargedHadronIso.dRvetoCone
-selectedPatMuonsPFRelIso.chargedHadronIso.dRisoCone = patMuonsLoosePFIsoEmbedded.chargedHadronIso.dRisoCone
-selectedPatMuonsPFRelIso.neutralHadronIso.ptMin = patMuonsLoosePFIsoEmbedded.neutralHadronIso.ptMin 
-selectedPatMuonsPFRelIso.neutralHadronIso.dRvetoCone = patMuonsLoosePFIsoEmbedded.neutralHadronIso.dRvetoCone
-selectedPatMuonsPFRelIso.neutralHadronIso.dRisoCone = patMuonsLoosePFIsoEmbedded.neutralHadronIso.dRisoCone
-selectedPatMuonsPFRelIso.photonIso.ptMin = patMuonsLoosePFIsoEmbedded.photonIso.ptMin
-selectedPatMuonsPFRelIso.photonIso.dRvetoCone = patMuonsLoosePFIsoEmbedded.photonIso.dRvetoCone
-selectedPatMuonsPFRelIso.photonIso.dRisoCone = patMuonsLoosePFIsoEmbedded.photonIso.dRisoCone
+selectedPatMuonsPFRelIso.chargedHadronIso.ptMin = patMuonsLoosePFIsoEmbedded04.chargedHadronIso.ptMin
+selectedPatMuonsPFRelIso.chargedHadronIso.dRvetoCone = patMuonsLoosePFIsoEmbedded04.chargedHadronIso.dRvetoCone
+selectedPatMuonsPFRelIso.chargedHadronIso.dRisoCone = patMuonsLoosePFIsoEmbedded04.chargedHadronIso.dRisoCone
+selectedPatMuonsPFRelIso.neutralHadronIso.ptMin = patMuonsLoosePFIsoEmbedded04.neutralHadronIso.ptMin 
+selectedPatMuonsPFRelIso.neutralHadronIso.dRvetoCone = patMuonsLoosePFIsoEmbedded04.neutralHadronIso.dRvetoCone
+selectedPatMuonsPFRelIso.neutralHadronIso.dRisoCone = patMuonsLoosePFIsoEmbedded04.neutralHadronIso.dRisoCone
+selectedPatMuonsPFRelIso.photonIso.ptMin = patMuonsLoosePFIsoEmbedded04.photonIso.ptMin
+selectedPatMuonsPFRelIso.photonIso.dRvetoCone = patMuonsLoosePFIsoEmbedded04.photonIso.dRvetoCone
+selectedPatMuonsPFRelIso.photonIso.dRisoCone = patMuonsLoosePFIsoEmbedded04.photonIso.dRisoCone
 selectedPatMuonsPFRelIso.sumPtMax = cms.double(0.30)
 selectedPatMuonsPFRelIso.sumPtMethod = cms.string("relative")
 selectedPatMuonsTrk.cut = cms.string('innerTrack.isNonnull')
@@ -77,7 +94,7 @@ patMuonSelConfigurator = objSelConfigurator(
       selectedPatMuonsPFRelIso,
       selectedPatMuonsTrk,
       selectedPatMuonsTrkIP ],
-    src = "patMuonsLoosePFIsoEmbedded",
+    src = "patMuonsLoosePFIsoEmbedded06",
     pyModuleName = __name__,
     doSelIndividual = False
 )
@@ -88,28 +105,45 @@ selectPatMuons = patMuonSelConfigurator.configure(pyNameSpace = locals())
 # define loose Tau-jet candidate selection
 #--------------------------------------------------------------------------------
 
-patTausLoosePFIsoEmbedded = cms.EDProducer("PATTauPFIsolationEmbedder",
-    src = cms.InputTag('patTaus'),                                       
-    userFloatName = cms.string('pfLooseIsoPt'),
+patTausLoosePFIsoEmbedded04 = cms.EDProducer("PATTauPFIsolationEmbedder",
+    src = cms.InputTag('patTaus'),
+    userFloatName = cms.string('pfLooseIsoPt04'),
     pfCandidateSource = cms.InputTag('pfNoPileUp'),
     chargedHadronIso = cms.PSet(
         ptMin = cms.double(1.0),        
         dRvetoCone = cms.double(0.15),
-        dRisoCone = cms.double(0.6)
+        dRisoCone = cms.double(0.4)
     ),
     neutralHadronIso = cms.PSet(
         ptMin = cms.double(1000.),        
         dRvetoCone = cms.double(0.15),        
-        dRisoCone = cms.double(0.6)
+        dRisoCone = cms.double(0.4)
     ),
     photonIso = cms.PSet(
         ptMin = cms.double(1.5),        
         dPhiVeto = cms.double(-1.),  # asymmetric Eta x Phi veto region 
         dEtaVeto = cms.double(-1.),  # to account for photon conversions in electron isolation case        
         dRvetoCone = cms.double(0.15),
+        dRisoCone = cms.double(0.4)
+    )
+)
+
+patTausLoosePFIsoEmbedded06 = patTausLoosePFIsoEmbedded04.clone(
+    src = cms.InputTag('patTausLoosePFIsoEmbedded04'),
+    userFloatName = cms.string('pfLooseIsoPt06'),
+    pfCandidateSource = cms.InputTag('pfNoPileUp'),
+    chargedHadronIso = patTausLoosePFIsoEmbedded04.chargedHadronIso.clone(
+        dRisoCone = cms.double(0.6)
+    ),
+    neutralHadronIso = patTausLoosePFIsoEmbedded04.neutralHadronIso.clone(
+        dRisoCone = cms.double(0.6)
+    ),
+    photonIso = patTausLoosePFIsoEmbedded04.photonIso.clone(
         dRisoCone = cms.double(0.6)
     )
 )
+
+patTausLoosePFIsoEmbedded = cms.Sequence(patTausLoosePFIsoEmbedded04 * patTausLoosePFIsoEmbedded06)
 
 selectedPatTausForMuTauAntiOverlapWithMuonsVeto.dRmin = cms.double(0.7)
 selectedPatTausForMuTauAntiOverlapWithMuonsVeto.srcNotToBeFiltered = cms.VInputTag("selectedPatMuonsGlobalCumulative")
@@ -133,7 +167,7 @@ patTauSelConfiguratorForMuTau = objSelConfigurator(
       selectedPatTausForMuTauCaloMuonVeto,
       selectedPatTausForMuTauElectronVeto,
       selectedPatTausForMuTauEcalCrackVeto ],
-    src = "patTausLoosePFIsoEmbedded",
+    src = "patTausLoosePFIsoEmbedded06",
     pyModuleName = __name__,
     doSelIndividual = False
 )

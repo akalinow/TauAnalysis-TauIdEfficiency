@@ -57,8 +57,9 @@ pfTausHPSpTaNC_recInfo = cms.PSet(
 
         # loose PFIsolation Pt sum
         # (computed by summing PFChargedHadrons of Pt > 1.0 GeV + PFGammas of Pt > 1.5 GeV
-        #  in pfNoPileUp collection within region 0.15 < dR < 0.6 centered on PFTau direction)
-        ptSumLooseIsolation = cms.string("userFloat('pfLooseIsoPt')"),
+        #  in pfNoPileUp collection within region 0.15 < dR < 0.4/0.6 centered on PFTau direction)
+        ptSumLooseIsolation04 = cms.string("userFloat('pfLooseIsoPt04')"),
+        ptSumLooseIsolation06 = cms.string("userFloat('pfLooseIsoPt06')"),
 
         # flags for tag/probe and Pt_index for distinguishing between
         # highest Pt, second highest Pt and third highest Pt jet
@@ -79,12 +80,14 @@ pfTausHPSpTaNC_recInfo = cms.PSet(
         # additional TaNC (neural network) based discriminators
         byTaNCraw = cms.string("tauID('byTaNCraw')"),
         byTaNC = cms.string("tauID('byTaNC')"),
+        byTaNCvloose = cms.string("tauID('byTaNCvloose')"),
         byTaNCloose = cms.string("tauID('byTaNCloose')"),
         byTaNCmedium = cms.string("tauID('byTaNCmedium')"),
         byTaNCtight = cms.string("tauID('byTaNCtight')"),        
 
         # HPS discriminators
         byDecayMode = cms.string("tauID('byDecayMode')"),
+        byHPSvloose = cms.string("tauID('byHPSvloose')"),
         byHPSloose = cms.string("tauID('byHPSloose')"),
         byHPSmedium = cms.string("tauID('byHPSmedium')"),
         byHPStight = cms.string("tauID('byHPStight')"),
