@@ -23,7 +23,8 @@ tauIdEffMeas_template01 = cms.PSet(
         phi = cms.string("leg1.phi()"),
 
         # loose isolation
-        ptSumLooseIsolation = cms.string("leg2.userFloat('pfLooseIsoPt')")
+        ptSumLooseIsolation04 = cms.string("leg2.userFloat('pfLooseIsoPt04')"),
+        ptSumLooseIsolation06 = cms.string("leg2.userFloat('pfLooseIsoPt06')"),
     )
 )
 
@@ -84,7 +85,8 @@ tauIdEffMeas_template02 = cms.PSet(
         # loose PFIsolation Pt sum
         # (computed by summing PFChargedHadrons of Pt > 1.0 GeV + PFGammas of Pt > 1.5 GeV
         #  in pfNoPileUp collection within region 0.15 < dR < 0.6 centered on PFTau direction)
-        ptSumLooseIsolation = cms.string("userFloat('pfLooseIsoPt')"),
+        ptSumLooseIsolation04 = cms.string("userFloat('pfLooseIsoPt04')"),
+        ptSumLooseIsolation06 = cms.string("userFloat('pfLooseIsoPt06')"),
 
         # tau id. discriminators based on leading track/PFChargedHadron                                                 
         byLeadTrackFinding = cms.string("tauID('leadingTrackFinding')"),
@@ -99,12 +101,14 @@ tauIdEffMeas_template02 = cms.PSet(
         # additional TaNC (neural network) based discriminators
         byTaNCraw = cms.string("tauID('byTaNCraw')"),
         byTaNC = cms.string("tauID('byTaNC')"),
+        byTaNCvloose = cms.string("tauID('byTaNCvloose')"),
         byTaNCloose = cms.string("tauID('byTaNCloose')"),
         byTaNCmedium = cms.string("tauID('byTaNCmedium')"),
         byTaNCtight = cms.string("tauID('byTaNCtight')"),        
 
         # HPS discriminators
         byDecayMode = cms.string("tauID('byDecayMode')"),
+        byHPSvloose = cms.string("tauID('byHPSvloose')"),
         byHPSloose = cms.string("tauID('byHPSloose')"),
         byHPSmedium = cms.string("tauID('byHPSmedium')"),
         byHPStight = cms.string("tauID('byHPStight')"),
