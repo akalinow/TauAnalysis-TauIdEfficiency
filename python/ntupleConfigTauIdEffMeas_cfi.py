@@ -10,7 +10,7 @@ tauIdEffMeas_template01 = cms.PSet(
     indices = cms.vuint32([0]), # Store values for first object only
         
     # Extractor plugin
-    pluginType = cms.string("PATMuonVectorValExtractor"),
+    pluginType = cms.string("PATMuonValExtractor"),
     
     # Collection to extract from
     src = cms.InputTag(""),
@@ -18,13 +18,13 @@ tauIdEffMeas_template01 = cms.PSet(
     # Variables to compute for this source
     columns = cms.PSet(
         # kinematic variables for Muon
-        pt = cms.string("leg1.pt()"),
-        eta = cms.string("leg1.eta()"),
-        phi = cms.string("leg1.phi()"),
+        pt = cms.string("pt()"),
+        eta = cms.string("eta()"),
+        phi = cms.string("phi()"),
 
         # loose isolation
-        ptSumLooseIsolation04 = cms.string("leg2.userFloat('pfLooseIsoPt04')"),
-        ptSumLooseIsolation06 = cms.string("leg2.userFloat('pfLooseIsoPt06')"),
+        ptSumLooseIsolation04 = cms.string("userFloat('pfLooseIsoPt04')"),
+        ptSumLooseIsolation06 = cms.string("userFloat('pfLooseIsoPt06')"),
     )
 )
 
@@ -38,7 +38,7 @@ tauIdEffMeas_template02 = cms.PSet(
     indices = cms.vuint32([0]), # Store values for first object only
         
     # Extractor plugin
-    pluginType = cms.string("PATTauVectorValExtractor"),
+    pluginType = cms.string("PATTauValExtractor"),
     
     # Collection to extract from
     src = cms.InputTag(""),
@@ -130,7 +130,7 @@ tauIdEffMeas_template03 = cms.PSet(
     indices = cms.vuint32([0]), # Store values for first object only
     
     # Extractor plugin
-    pluginType = cms.string("PATMuTauPairVectorValExtractor"),
+    pluginType = cms.string("PATMuTauPairValExtractor"),
     
     # Collection to extract from
     src = cms.InputTag(""),
