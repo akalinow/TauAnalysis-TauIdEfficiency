@@ -25,19 +25,19 @@ SAMPLES_TO_RUN = [
 JOBS_TO_RUN = [
     'qcdDiJet',
     'qcdMuEnriched',
-    'WplusJetsEnriched'
+    'WplusJets'
 ]
 
 CONFIG_FILES = {
-    'qcdDiJet'          : "produceCommissioningQCDdiJetNtuple_cfg.py",
-    'qcdMuEnriched'     : "produceCommissioningQCDmuEnrichedNtuple_cfg.py", 
-    'WplusJetsEnriched' : "produceCommissioningWplusJetsEnrichedNtuple_cfg.py"
+    'qcdDiJet'      : "produceCommissioningQCDdiJetNtuple_cfg.py",
+    'qcdMuEnriched' : "produceCommissioningQCDmuEnrichedNtuple_cfg.py", 
+    'WplusJets'     : "produceCommissioningWplusJetsEnrichedNtuple_cfg.py"
 }
 
 ROOT_FILE_NAMES = {
-    'qcdDiJet'          : "tauIdEffEDNtuple_qcdDiJet.root",
-    'qcdMuEnriched'     : "tauIdEffEDNtuple_qcdMuEnriched.root", 
-    'WplusJetsEnriched' : "tauIdEffEDNtuple_wPlusJetsEnriched.root"
+    'qcdDiJet'      : "tauIdEffEDNtuple_qcdDiJet.root",
+    'qcdMuEnriched' : "tauIdEffEDNtuple_qcdMuEnriched.root", 
+    'WplusJets'     : "tauIdEffEDNtuple_wPlusJetsEnriched.root"
 }
 
 RECO_SAMPLES = {
@@ -47,6 +47,7 @@ RECO_SAMPLES = {
         'dbs_url'       : "http://cmsdbsprod.cern.ch/cms_dbs_prod_global/servlet/DBSServlet",
         'lumi_mask'     : "/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions10/7TeV/StreamExpress/Cert_132440-149442_7TeV_StreamExpress_Collisions10_JSON_v3.txt",
         'runselection'  : "132440-135802",
+        'lumis_per_job' : "50",
         'jobs'          : [ 'qcdDiJet' ], 
         'type'          : 'Data',
         'hlt'           : 'HLT'
@@ -56,6 +57,7 @@ RECO_SAMPLES = {
         'dbs_url'       : "http://cmsdbsprod.cern.ch/cms_dbs_prod_global/servlet/DBSServlet",
         'lumi_mask'     : "/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions10/7TeV/StreamExpress/Cert_132440-149442_7TeV_StreamExpress_Collisions10_JSON_v3.txt",
         'runselection'  : "135821-141887",
+        'lumis_per_job' : "5",
         'jobs'          : [ 'qcdDiJet' ], 
         'type'          : 'Data',
         'hlt'           : 'HLT'
@@ -65,6 +67,7 @@ RECO_SAMPLES = {
         'dbs_url'       : "http://cmsdbsprod.cern.ch/cms_dbs_prod_global/servlet/DBSServlet",
         'lumi_mask'     : "/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions10/7TeV/Reprocessing/Cert_136033-149442_7TeV_Nov4ReReco_Collisions10_JSON.txt",
         'runselection'  : "141950-144114",
+        'lumis_per_job' : "5",
         'jobs'          : [ 'qcdDiJet' ], 
         'type'          : 'Data',
         'hlt'           : 'HLT'
@@ -75,7 +78,8 @@ RECO_SAMPLES = {
         'dbs_url'       : "http://cmsdbsprod.cern.ch/cms_dbs_prod_global/servlet/DBSServlet",
         'lumi_mask'     : "/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions10/7TeV/Reprocessing/Cert_136033-149442_7TeV_Nov4ReReco_Collisions10_JSON.txt",
         'runselection'  : "136033-144114",
-        'jobs'          : [ 'qcdMuEnriched', 'WplusJetsEnriched' ], 
+        'lumis_per_job' : "50",
+        'jobs'          : [ 'qcdMuEnriched', 'WplusJets' ], 
         'type'          : 'Data',
         'hlt'           : 'HLT',
         'SE_black_list' : 'T2_IT_Legnaro'
@@ -85,7 +89,8 @@ RECO_SAMPLES = {
         'dbs_url'       : "http://cmsdbsprod.cern.ch/cms_dbs_prod_global/servlet/DBSServlet",
         'lumi_mask'     : "/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions10/7TeV/Reprocessing/Cert_136033-149442_7TeV_Nov4ReReco_Collisions10_JSON.txt",
         'runselection'  : '146428-149442',
-        'jobs'          : [ 'qcdMuEnriched', 'WplusJetsEnriched' ], 
+        'lumis_per_job' : "25",
+        'jobs'          : [ 'qcdMuEnriched', 'WplusJets' ], 
         'type'          : 'Data',
         'hlt'           : 'HLT'
     },
@@ -142,14 +147,14 @@ RECO_SAMPLES = {
     'WplusJets' : {
         'datasetpath'   : "/WJetsToLNu_TuneD6T_7TeV-madgraph-tauola/Fall10-START38_V12-v1/GEN-SIM-RECO",
         'dbs_url'       :  "http://cmsdbsprod.cern.ch/cms_dbs_prod_global/servlet/DBSServlet",
-        'jobs'          : [ 'WplusJetsEnriched' ], 
+        'jobs'          : [ 'WplusJets' ], 
         'type'          : 'MC',
-        'hlt'           : ''
+        'hlt'           : 'HLT'
     },
     'WplusJetsPU156bx' : {
         'datasetpath'   : "/WJetsToLNu_TuneZ2_7TeV-madgraph-tauola/Fall10-E7TeV_ProbDist_2010Data_BX156_START38_V12-v1/GEN-SIM-RECO",
         'dbs_url'       :  "http://cmsdbsprod.cern.ch/cms_dbs_prod_global/servlet/DBSServlet",
-        'jobs'          : [ 'WplusJetsEnriched' ], 
+        'jobs'          : [ 'WplusJets' ], 
         'type'          : 'MC',
         'hlt'           : 'REDIGI38XPU'
     }
