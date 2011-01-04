@@ -9,18 +9,19 @@ from TauAnalysis.TauIdEfficiency.recoSampleDefinitionsTauIdCommissioning_7TeV_gr
 print("<submitEDNtupleProductionJobs_grid>:")
 
 castorFilePath = "/castor/cern.ch/user/v/veelken/TauIdCommissioning/"
-crabFilePath = "/afs/cern.ch/user/v/veelken/scratch0/CMSSW_3_8_7/src/TauAnalysis/TauIdEfficiency/test/commissioning/crab/"
+#crabFilePath = "/afs/cern.ch/user/v/veelken/scratch0/CMSSW_3_8_7/src/TauAnalysis/TauIdEfficiency/test/commissioning/crab/"
+crabFilePath = "/data1/veelken/CMSSW_3_8_x/crab/TauIdEfficiency/"
 
 pfCandidateCollection = "particleFlow" # pile-up removal disabled
 #pfCandidateCollection = "pfNoPileUp"   # pile-up removal enabled
 
-version = "v4_0"
+version = "v3_6"
 
 crab_template = """
 [CRAB]
 
 jobtype = cmssw
-scheduler = glidein
+scheduler = glite
 use_server = 1
 
 [CMSSW]
@@ -33,6 +34,8 @@ pset = PSET
 output_file = OUTPUT_FILE
 total_number_of_events = -1
 events_per_job = 25000
+total_number_of_lumis = -1
+lumis_per_job = LUMIS_PER_JOB
 
 [USER]
 
@@ -93,7 +96,15 @@ for sampleName in SAMPLES_TO_RUN:
                crabConfig = setOption(crabConfig, RECO_SAMPLES[sampleName], "RUNSELECTION", 'runselection')
                crabConfig = setOption(crabConfig, RECO_SAMPLES[sampleName], "PSET", 'pset', cfgFileName_modified)
                crabConfig = setOption(crabConfig, RECO_SAMPLES[sampleName], "OUTPUT_FILE", 'output_file', ROOT_FILE_NAMES[jobType])
-               ui_working_dir = os.path.join(crabFilePath, "crabdirProduceEDNTuple_%s_%s" % (sampleName, jobType))
+               print(" isMC = %s" % isMC)
+               if isMC == "False":
+                    crabConfig = crabConfig.replace("total_number_of_events = -1", "")
+                    crabConfig = crabConfig.replace("events_per_job = 25000", "")
+                    crabConfig = setOption(crabConfig, RECO_SAMPLES[sampleName], "LUMIS_PER_JOB", 'lumis_per_job') 
+               else:
+                    crabConfig = crabConfig.replace("total_number_of_lumis = -1", "")
+                    crabConfig = crabConfig.replace("lumis_per_job = LUMIS_PER_JOB", "")
+               ui_working_dir = os.path.join(crabFilePath, "crabdirProduceEDNtuple_%s_%s" % (sampleName, jobType))
                crabConfig = setOption(crabConfig, RECO_SAMPLES[sampleName], "UI_WORKING_DIR", 'ui_working_dir', ui_working_dir)
                user_remote_dir = os.path.join(castorFilePath, jobType) + '/' + version + '/' + sampleName
                crabConfig = setOption(crabConfig, RECO_SAMPLES[sampleName], "USER_REMOTE_DIR", 'user_remote_dir', user_remote_dir.replace("/castor/cern.ch", ""))
