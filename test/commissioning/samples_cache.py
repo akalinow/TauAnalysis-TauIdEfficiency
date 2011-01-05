@@ -6,11 +6,12 @@ import TauAnalysis.TauIdEfficiency.tools.castor_mirror as mirror
 #--------------------------------------------------------------------------------
 
 # Import the samples into this namespace
-from samples import ztautau_mc, zttPU156bx_mc, \
-     qcddijet_mc, ppmux_mc, ppmuxPU156bx_mc, wmunu_mc, wmunuPU156bx_mc, \
-     data_dijet_runs132440to135802, data_dijet_runs135821to141887, data_dijet_runs141950to144114, data_dijet, \
-     data_ppmux_runs132440to145761, data_ppmux_runs145762_147116, data_ppmux_runs147117_149442, data_ppmux, \
-     data_wjets_runs132440to145761, data_wjets_runs145762_147116, data_wjets_runs147117_149442, data_wjets
+from samples import ztautau_mc, zttPU156bx_mc, ztautau_test,\
+        qcddijet_mc, ppmux_mc, ppmuxPU156bx_mc, wmunu_mc, wmunuPU156bx_mc, \
+        data_dijet, data_ppmux, data_wjets
+        #data_dijet_runs132440to135802, data_dijet_runs135821to141887, data_dijet_runs141950to144114, data_dijet, \
+        #data_ppmux_runs132440to145761, data_ppmux_runs145762_147116, data_ppmux_runs147117_149442, data_ppmux, \
+        #data_wjets_runs132440to145761, data_wjets_runs145762_147116, data_wjets_runs147117_149442, data_wjets
 
 #mirror.LOCAL_DIRECTORY = "/tmp/tau_commissioning_friis"
 mirror.LOCAL_DIRECTORY = "/data1/friis/tau_fakerate_ntuples"
@@ -60,7 +61,7 @@ _sample_list.extend([ wmunu_mc, wmunuPU156bx_mc, data_wjets ])
 
 #--------------------------------------------------------------------------------
 # define Z --> tau+ tau- samples for tau id. efficiency plots
-_sample_list.extend([ ztautau_mc, zttPU156bx_mc ])
+_sample_list.extend([ ztautau_mc, zttPU156bx_mc, ztautau_test ])
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
