@@ -20,6 +20,17 @@ const PhysicsTools::AtomicId widthId("JetWidth");
 const PhysicsTools::AtomicId tauPtId("Pt");
 const PhysicsTools::AtomicId tauEtaId("AbsEta");
 
+// Check if a value is Nan and print a warning if so
+double checkNan(const PhysicsTools::AtomicId &name, double value) {
+  if (std::isnan(value)) {
+    std::cerr << "Found a nan in variable: " << name << ", returning zero!"
+      << std::endl;
+    value = 0.;
+  }
+  return value;
+}
+
+
 // The Phys tools version of this doesn't compile due to const issues.
 struct Extractor {
   const TPolyMarker3D* data_;
@@ -37,11 +48,11 @@ struct Extractor {
   }
   double compute(const PhysicsTools::AtomicId &name) const {
     if (name == tauPtId)
-      return pt_;
+      return checkNan(tauPtId, pt_);
     if (name == tauEtaId)
-      return eta_;
+      return checkNan(tauEtaId, eta_);
     if (name == widthId)
-      return width_;
+      return checkNan(widthId, width_);
     return -1000;
   }
 };
