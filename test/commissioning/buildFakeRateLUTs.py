@@ -14,18 +14,22 @@ print("<buildFakeRateLUTs>:")
 
 import os
 
-from TauAnalysis.TauIdEfficiency.fakeRateDef import fakeRateDef
+from TauAnalysis.TauIdEfficiency.fakeRateDef import fakeRateDef, \
+        numerators_to_make
 
 skipExisting = True
 
 for fakeRateLabel, fakeRateConfig in fakeRateDef.items():
     for sampleLabel, sampleConfig in fakeRateConfig['samples'].items():
         for numeratorLabel, numerator in fakeRateConfig['numerators'].items():
+            if numeratorLabel not in numerators_to_make:
+                print "Skipping", numeratorLabel
+                continue
             denominator = fakeRateConfig['denominator']
 
             if not os.path.exists("./config"):
                 os.mkdir("./config")
-            
+
             cfgFileName = './config/fakerate_%s_%s_%s.cfg' % (numeratorLabel, fakeRateLabel, sampleLabel)
             if os.path.exists(cfgFileName) and skipExisting:
                 print "Skipping ", cfgFileName
