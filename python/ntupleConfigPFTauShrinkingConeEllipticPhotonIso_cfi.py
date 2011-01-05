@@ -53,7 +53,7 @@ pfTausShrinkingConeEllipticPhotonIso_recInfo = cms.PSet(
         jetPhi = cms.string("pfTauTagInfoRef().pfjetRef().phi()"),
 
         # jet width
-        jetWidth = cms.string("sqrt(etaetaMoment() + phiphiMoment())"),
+        jetWidth = cms.string("? (etaetaMoment() + phiphiMoment()) > 0. ? sqrt(etaetaMoment() + phiphiMoment()) : 0."),
 
         # loose PFIsolation Pt sum
         # (computed by summing PFChargedHadrons of Pt > 1.0 GeV + PFGammas of Pt > 1.5 GeV

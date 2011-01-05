@@ -29,6 +29,9 @@ pfTausHPS_recInfo = cms.PSet(
         jetEta = cms.string("pfTauTagInfoRef().pfjetRef().eta()"),
         jetPhi = cms.string("pfTauTagInfoRef().pfjetRef().phi()"),
 
+	# jet width
+        jetWidth = cms.string("? (etaetaMoment() + phiphiMoment()) > 0. ? sqrt(etaetaMoment() + phiphiMoment()) : 0."),
+
         # loose PFIsolation Pt sum
         # (computed by summing PFChargedHadrons of Pt > 1.0 GeV + PFGammas of Pt > 1.5 GeV
         #  in pfNoPileUp collection within region 0.15 < dR < 0.4/0.6 centered on PFTau direction)
