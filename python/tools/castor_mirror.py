@@ -50,7 +50,9 @@ def local_version_current(castor_file):
         return False
     # Check local file is newer
     if local_mtime < castor_mtime:
-        print "Local copy of", castor_file, " is outdated %i > %i"% (local_mtime, castor_mtime)
+        print "Local copy of", castor_file, " is outdated!"
+        print "local:", time.asctime(local_mtime), \
+                "castor:", time.asctime(castor_mtime)
         return False
     return True
 
