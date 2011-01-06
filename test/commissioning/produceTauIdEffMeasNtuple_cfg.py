@@ -63,23 +63,10 @@ pfCandidateCollection = "particleFlow" # pile-up removal disabled
 # define GlobalTag to be used for event reconstruction
 # (only relevant for HPS tau reconstruction algorithm)
 if isMC:
-    process.GlobalTag.globaltag = cms.string('START38_V12::All')
+    process.GlobalTag.globaltag = cms.string('START38_V14::All')
 else:   
-    process.GlobalTag.globaltag = cms.string('GR_R_38X_V13::All')
+    process.GlobalTag.globaltag = cms.string('GR_R_38X_V15::All')
 #--------------------------------------------------------------------------------    
-
-#--------------------------------------------------------------------------------
-# define skimming criteria
-# (in order to be able to produce Tau Ntuple directly from unskimmed Monte Carlo/datasets;
-#  HLT single jet trigger passed && either two CaloJets or two PFJets of Pt > 10 GeV within |eta| < 2.5)
-process.load('TauAnalysis.TauIdEfficiency.filterTauIdEffSample_cfi')
-
-process.hltMu.selector.src = cms.InputTag('TriggerResults::%s' % HLTprocessName)
-
-if isMC:
-    process.dataQualityFilters.remove(process.hltPhysicsDeclared)
-    process.dataQualityFilters.remove(process.dcsstatus)
-#--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
 #
@@ -94,15 +81,29 @@ process.prePatProductionSequence.remove(process.tautagging)
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
-#
-# produce PAT objects
-#
-process.load("PhysicsTools.PatAlgos.patSequences_cff")
+# import sequences for PAT-tuple production
+process.load("TauAnalysis.Configuration.producePatTuple_cff")
+process.load("TauAnalysis.Configuration.producePatTupleZtoMuTauSpecific_cff")
+#--------------------------------------------------------------------------------
 
-# configure PAT trigger matching
+#--------------------------------------------------------------------------------
+# import utility function for configuring PAT trigger matching
 from PhysicsTools.PatAlgos.tools.trigTools import switchOnTrigger
 switchOnTrigger(process, hltProcess = HLTprocessName, outputModule = '')
 process.patTrigger.addL1Algos = cms.bool(True)
+#--------------------------------------------------------------------------------
+
+#--------------------------------------------------------------------------------
+# define skimming criteria
+# (in order to be able to produce Tau Ntuple directly from unskimmed Monte Carlo/datasets;
+#  HLT single jet trigger passed && either two CaloJets or two PFJets of Pt > 10 GeV within |eta| < 2.5)
+process.load('TauAnalysis.TauIdEfficiency.filterTauIdEffSample_cfi')
+
+process.hltMu.selector.src = cms.InputTag('TriggerResults::%s' % HLTprocessName)
+
+if isMC:
+    process.dataQualityFilters.remove(process.hltPhysicsDeclared)
+    process.dataQualityFilters.remove(process.dcsstatus)
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
@@ -271,7 +272,7 @@ process.ntupleOutputModule = cms.OutputModule("PoolOutputModule",
 
 process.p = cms.Path(
     process.prePatProductionSequence
-   + process.patDefaultSequence
+   + process.producePatTuple + process.producePatTupleZtoMuTauSpecific
    + process.producePatTupleTauIdEffMeasSpecific
    #+ process.printEventContent
    #+ process.printGenParticleList
@@ -291,7 +292,9 @@ process.schedule = cms.Schedule(
     process.o
 )
 
+
+
 # print-out all python configuration parameter information
-#print process.dumpPython()
+print process.dumpPython()
 
 
