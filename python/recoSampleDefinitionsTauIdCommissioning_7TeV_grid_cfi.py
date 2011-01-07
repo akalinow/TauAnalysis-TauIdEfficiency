@@ -6,20 +6,20 @@ import TauAnalysis.DQMTools.plotterStyleDefinitions_cfi as styles
 
 # List of samples to run in the analysis
 SAMPLES_TO_RUN = [
-    #'data_MinBias_Commissioning_Jun14ReReco',
-    #'data_JetMETTau_Run2010Ai_Sep17ReReco',
-    #'data_JetMET_Run2010Aii_Sep17ReReco',
-    #'data_Mu_Run2010A_Nov4ReReco',
-    #'data_Mu_Run2010B_Nov4ReReco',
+    'data_MinBias_Commissioning_Jun14ReReco',
+    'data_JetMETTau_Run2010Ai_Sep17ReReco',
+    'data_JetMET_Run2010Aii_Sep17ReReco',
+    'data_Mu_Run2010A_Nov4ReReco',
+    'data_Mu_Run2010B_Nov4ReReco',
     'Ztautau',
-    #'ZtautauPU156bx',
-    #'qcdDiJetPtHat15to30',
-    #'qcdDiJetPtHat30to50',
-    #'qcdDiJetPtHat50to80',
-    #'PPmuXptGt20Mu10',
-    #'PPmuXptGt20Mu10PU156bx',
-    #'WplusJets',
-    #'WplusJetsPU156bx'
+    'ZtautauPU156bx',
+    'qcdDiJetPtHat15to30',
+    'qcdDiJetPtHat30to50',
+    'qcdDiJetPtHat50to80',
+    'PPmuXptGt20Mu10',
+    'PPmuXptGt20Mu10PU156bx',
+    'WplusJets',
+    'WplusJetsPU156bx'
 ]
 
 JOBS_TO_RUN = [
