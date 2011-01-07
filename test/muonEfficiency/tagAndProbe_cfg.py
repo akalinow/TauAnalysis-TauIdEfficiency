@@ -60,7 +60,7 @@ for index, file in enumerate(sample_map['mcpu']['files']):
 
 
 print "Run:"
-print "cat jobs.txt | xargs -n 2 -P 5 cmsRun tagAndProbe_cfg.py"
+print "cat jobs.txt | xargs -n 2 -P 3 cmsRun tagAndProbe_cfg.py"
 print "to submit"
 
 source = None
@@ -247,20 +247,29 @@ process.patMuonsWithEmbeddedIsoForRel = cms.EDProducer(
 process.tagAndProbe += process.patMuonsWithEmbeddedIsoForRel
 
 # Raise thresholds
-process.patMuonsWithEmbeddedIso = cms.EDProducer(
+process.patMuonsWithEmbeddedIso04 = cms.EDProducer(
     "PATMuonPFIsolationEmbedder",
     patMuonPFIsolationSelector,
     src = cms.InputTag("patMuonsWithEmbeddedIsoForRel"),
-    userFloatName = cms.string('isoActivityForAbs'),
+    userFloatName = cms.string('iso04ActivityForAbs'),
 )
 
-process.patMuonsWithEmbeddedIso.chargedHadronIso.ptMin = 1.0
-process.patMuonsWithEmbeddedIso.neutralHadronIso.ptMin = 2000.
-process.patMuonsWithEmbeddedIso.photonIso.ptMin = 1.5
-# This dont' matter here, but leave it for reference
-process.patMuonsWithEmbeddedIso.sumPtMax = 1.0
-process.patMuonsWithEmbeddedIso.sumPtMethod = "absolute"
-process.tagAndProbe += process.patMuonsWithEmbeddedIso
+process.patMuonsWithEmbeddedIso04.chargedHadronIso.ptMin = 1.0
+process.patMuonsWithEmbeddedIso04.neutralHadronIso.ptMin = 2000.
+process.patMuonsWithEmbeddedIso04.photonIso.ptMin = 1.5
+process.tagAndProbe += process.patMuonsWithEmbeddedIso04
+
+# Make a copy with DR = 0.6
+process.patMuonsWithEmbeddedIso06 = copy.deepcopy(
+    process.patMuonsWithEmbeddedIso04)
+
+process.patMuonsWithEmbeddedIso06.src = cms.InputTag(
+    "patMuonsWithEmbeddedIso04")
+process.patMuonsWithEmbeddedIso06.userFloatName = 'iso06ActivityForAbs'
+process.patMuonsWithEmbeddedIso06.chargedHadronIso.dRisoCone = 0.6
+process.patMuonsWithEmbeddedIso06.neutralHadronIso.dRisoCone = 0.6
+process.patMuonsWithEmbeddedIso06.photonIso.dRisoCone = 0.6
+process.tagAndProbe += process.patMuonsWithEmbeddedIso06
 
 import MuonAnalysis.TagAndProbe.common_variables_cff as common
 process.load("MuonAnalysis.TagAndProbe.common_modules_cff")
@@ -268,7 +277,7 @@ process.load("MuonAnalysis.TagAndProbe.common_modules_cff")
 # Muons that pass the pt and ID requirement
 process.tagMuons = cms.EDFilter(
     "PATMuonSelector",
-    src = cms.InputTag("patMuonsWithEmbeddedIso"),
+    src = cms.InputTag("patMuonsWithEmbeddedIso06"),
     cut = cms.string(
         "pt > 15 && "
         "userInt('triggerRange') != 0 && "
@@ -299,7 +308,7 @@ process.tagAndProbe += process.nverticesModule
 
 # Build probe muons (no real cut now)
 process.probeMuons = cms.EDFilter("PATMuonSelector",
-    src = cms.InputTag("patMuonsWithEmbeddedIso"),
+    src = cms.InputTag("patMuonsWithEmbeddedIso06"),
     cut = cms.string("track.isNonnull"),  # no real cut now
 )
 process.tagAndProbe += process.probeMuons
@@ -340,8 +349,10 @@ process.tpTree = cms.EDAnalyzer("TagProbeFitTreeProducer",
         CustomTrigger = cms.string("userInt('triggerRange') > 0"),
         innerTrack = cms.string('innerTrack.isNonnull'),
         outerTrack = cms.string('outerTrack.isNonnull'),
-        AbsIso = cms.string("userFloat('isoActivityForAbs') < 1.0"),
-        LooseAbsIso = cms.string("userFloat('isoActivityForAbs') < 2.5"),
+        AbsIso04 = cms.string("userFloat('iso04ActivityForAbs') < 1.0"),
+        LooseAbsIso04 = cms.string("userFloat('iso04ActivityForAbs') < 2.5"),
+        AbsIso06 = cms.string("userFloat('iso06ActivityForAbs') < 1.0"),
+        LooseAbsIso06 = cms.string("userFloat('iso06ActivityForAbs') < 2.5"),
         RelIso = cms.string("userFloat('isoActivityForRel') < (0.10*pt)"),
         LooseRelIso = cms.string("userFloat('isoActivityForRel') < (0.15*pt)"),
         PeriodA = cms.string("userInt('periodA') > 0"),

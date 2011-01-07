@@ -1,0 +1,8 @@
+#!/bin/bash
+cd $CMSSW_BASE/src
+addpkg PhysicsTools/TagAndProbe V02-06-11 
+addpkg MuonAnalysis/MuonAssociators  V01-10-00
+addpkg MuonAnalysis/TagAndProbe V07-01-00
+
+#addpkg PhysicsTools/PatAlgos
+cvs update -rV08-01-02 PhysicsTools/PatAlgos/python/tools/helpers.py
