@@ -24,14 +24,14 @@
 //const int maxEntriesToProcess = 10000; // for testing purposes only
 const int maxEntriesToProcess = -1;
 
-TH1* fillHistogram(TTree* testTree, const std::string& varName, const std::string& selection, const std::string& weightName,
+TH1* fillHistogram(TTree* testTree, const std::string& varName, const std::string& selection, const std::string& frWeightName,
 		   const std::string& histogramName, unsigned numBinsX, double xMin, double xMax)
 {
   std::cout << "<fillHistogram>:" << std::endl;
   std::cout << " testTree = " << testTree << std::endl;
   std::cout << " varName = " << varName << std::endl;
   std::cout << " selection = " << selection << std::endl;
-  std::cout << " weightName = " << weightName << std::endl;
+  std::cout << " frWeightName = " << frWeightName << std::endl;
   std::cout << " histogramName = " << histogramName << std::endl;
 
   TH1* histogram = new TH1F(histogramName.data(), histogramName.data(), numBinsX, xMin, xMax);
@@ -48,10 +48,10 @@ TH1* fillHistogram(TTree* testTree, const std::string& varName, const std::strin
   Float_t var = 0.;
   selTree->SetBranchAddress(varName.data(), &var);
   
-  Float_t weight = 1.;
-  if ( weightName != "" ) {
-    std::cout << "--> setting branch-address of weight..." << std::endl;
-    selTree->SetBranchAddress(weightName.data(), &weight);
+  Float_t frWeight = 1.;
+  if ( frWeightName != "" ) {
+    std::cout << "--> setting branch-address of fake-rate weight..." << std::endl;
+    selTree->SetBranchAddress(frWeightName.data(), &frWeight);
   }
 
   int numEntries = selTree->GetEntries();
@@ -60,12 +60,12 @@ TH1* fillHistogram(TTree* testTree, const std::string& varName, const std::strin
   for ( int iEntry = 0 ; iEntry < numEntries; ++iEntry ) {
     selTree->GetEvent(iEntry);  
 
-    //std::cout << "iEntry = " << iEntry << ": var = " << var << ", weight = " << weight << std::endl;
+    //std::cout << "iEntry = " << iEntry << ": var = " << var << ", frWeight = " << frWeight << std::endl;
 
-    if ( weightName != "" ) {
-      if ( TMath::Abs(weight) < 1. ) // some entries have weight O(-100)
-                                     // --> indication of technical problem with k-NearestNeighbour tree ?
-	histogram->Fill(var, weight*eventWeight);
+    if ( frWeightName != "" ) {
+      if ( TMath::Abs(frWeight) < 1. ) // some entries have weight O(-100)
+                                       // --> indication of technical problem with k-NearestNeighbour tree ?
+	histogram->Fill(var, frWeight*eventWeight);
     } else {
       histogram->Fill(var, eventWeight);
     }
