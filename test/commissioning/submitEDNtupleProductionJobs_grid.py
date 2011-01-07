@@ -15,13 +15,13 @@ crabFilePath = "/data1/veelken/CMSSW_3_8_x/crab/TauIdEfficiency/"
 pfCandidateCollection = "particleFlow" # pile-up removal disabled
 #pfCandidateCollection = "pfNoPileUp"   # pile-up removal enabled
 
-version = "v3_6"
+version = "v4_0n"
 
 crab_template = """
 [CRAB]
 
 jobtype = cmssw
-scheduler = glite
+scheduler = glidein
 use_server = 1
 
 [CMSSW]
@@ -83,12 +83,13 @@ for sampleName in SAMPLES_TO_RUN:
                cfg = cfg.replace("#HLTprocessName#", "'%s'" % RECO_SAMPLES[sampleName]['hlt'])
                cfg = cfg.replace("#pfCandidateCollection#", "'%s'" % pfCandidateCollection)
 
-               cfgFileName_modified = os.path.join(crabFilePath, cfgFileName.replace("_cfg.py", "_%s_%s_cfg.py" % (sampleName, jobType)))
+               cfgFileName_modified = \
+                 os.path.join(crabFilePath, cfgFileName.replace("_cfg.py", "_%s_%s_%s_cfg.py" % (sampleName, jobType, version)))
                cfgFile_modified = open(cfgFileName_modified, "w")
                cfgFile_modified.write(cfg)
                cfgFile_modified.close()
 
-               crabFileName = crabFilePath + "crab_%s_%s.cfg" % (sampleName, jobType)
+               crabFileName = crabFilePath + "crab_%s_%s_%s.cfg" % (sampleName, jobType, version)
                crabConfig = str(crab_template)
                crabConfig = setOption(crabConfig, RECO_SAMPLES[sampleName], "DATASETPATH", 'datasetpath')
                crabConfig = setOption(crabConfig, RECO_SAMPLES[sampleName], "DBS_URL", 'dbs_url')
@@ -104,7 +105,7 @@ for sampleName in SAMPLES_TO_RUN:
                else:
                     crabConfig = crabConfig.replace("total_number_of_lumis = -1", "")
                     crabConfig = crabConfig.replace("lumis_per_job = LUMIS_PER_JOB", "")
-               ui_working_dir = os.path.join(crabFilePath, "crabdirProduceEDNtuple_%s_%s" % (sampleName, jobType))
+               ui_working_dir = os.path.join(crabFilePath, "crabdirProduceEDNtuple_%s_%s_%s" % (sampleName, jobType, version))
                crabConfig = setOption(crabConfig, RECO_SAMPLES[sampleName], "UI_WORKING_DIR", 'ui_working_dir', ui_working_dir)
                user_remote_dir = os.path.join(castorFilePath, jobType) + '/' + version + '/' + sampleName
                crabConfig = setOption(crabConfig, RECO_SAMPLES[sampleName], "USER_REMOTE_DIR", 'user_remote_dir', user_remote_dir.replace("/castor/cern.ch", ""))

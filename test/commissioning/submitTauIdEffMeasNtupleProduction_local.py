@@ -43,7 +43,7 @@ def output_mapper(channel, sample, jobId):
 submitAnalysisToLocal(configFile = configFile, channel = channel, jobId = jobId,
                       samples = recoSampleDefinitionsZtoMuTau_7TeV,
                       samplesToAnalyze = samplesToAnalyze,
-                      disableSysUncertainties = True,
+                      disableFactorization = True, disableSysUncertainties = True, disableZrecoilCorrections = True,
                       # Options for local running
                       cfgdir = 'local', 
                       maxEvents = 10000, maxJobsConcurrently = 8, submit = False, 
