@@ -1,22 +1,38 @@
-import FWCore.ParameterSet.Config as cms
-
 # If this is non-empty only specified numerators will be taken
 #numerators_to_make = ['HPSloose', 'BgEst', 'TaNCloose']
-numerators_to_make = ['HPSloose']
+#fake_rates_to_make = ['ewkTauIdHPSloose', 'ewkTauIdTaNCloose', 'bgEstTemplateTaNCinverted']
+#fake_rates_to_make = ['bgEstTemplateTaNCinverted']
+fake_rates_to_make = ['ewkTauIdHPSloose']
+
+def and_of(*cuts):
+    " Produce the and of a set of cuts "
+    return " && ".join(cuts)
+
+_DENOM_COMMON = and_of(
+    "$pt > 20.",
+    "abs($eta) < 2.3",
+    "$byLeadTrackFinding > 0.5",
+    "$againstMuon > 0.5",
+    "$againstElectron > 0.5",
+)
+
+_DENOM_TANC = and_of(_DENOM_COMMON, "$byLeadTrackPtCut > 0.5")
 
 fakeRateDef = {
     'QCDdiJet1st' : {
-        'denominator' : '$pt > 20. && abs($eta) < 2.3 && $probe > 0.5 && $byLeadTrackFinding > 0.5 ' \
-                       + ' && $ptIndex == 0 && $againstMuon > 0.5 && $againstElectron > 0.5',
-        'numerators' : {
-            'ewkTauId'   : '$byTaNCmedium > 0.5 && abs($charge) == 1',
-            'TaNCvloose' : '$byTaNC > 0.9 & abs($charge) == 1',
-            'TaNCloose'  : '$byTaNCloose > 0.5 & abs($charge) == 1',
-            'TaNCmedium' : '$byTaNCmedium > 0.5 & abs($charge) == 1',
-            'TaNCtight'  : '$byTaNCtight > 0.5 & abs($charge) == 1',
-            'HPSloose'   : '$byHPSloose > 0.5 & abs($charge) == 1',
-            'HPSmedium'  : '$byHPSmedium > 0.5 & abs($charge) == 1',
-            'HPStight'   : '$byHPStight > 0.5 & abs($charge) == 1',
+        'fake_rates' : {
+            'ewkTauIdHPSloose' : {
+                'denominator' : and_of(_DENOM_COMMON, "$probe > 0.5", "$ptIndex == 0"),
+                'numerator' : '$byHPSloose > 0.5 & abs($charge) == 1'
+            },
+            'ewkTauIdTaNCloose' : {
+                'denominator' : and_of(_DENOM_TANC, "$probe > 0.5", "$ptIndex == 0"),
+                'numerator' : '$byTaNCloose > 0.5 & abs($charge) == 1'
+            },
+            'ewkTauIdTaNCmedium' : {
+                'denominator' : and_of(_DENOM_TANC, "$probe > 0.5", "$ptIndex == 0"),
+                'numerator' : '$byTaNCmedium > 0.5 & abs($charge) == 1'
+            },
         },
         'hlt' : '$hltJet15Ubit > 0.5',
         'samples' : {
@@ -25,17 +41,19 @@ fakeRateDef = {
         }
     },
     'QCDdiJet2nd' : {
-        'denominator' : '$pt > 20. && abs($eta) < 2.3 && $probe > 0.5 && $byLeadTrackFinding > 0.5 ' \
-                       + ' && $ptIndex == 1 && $againstMuon > 0.5 && $againstElectron > 0.5',
-        'numerators' : {
-            'ewkTauId'   : '$byTaNCmedium > 0.5 && abs($charge) == 1',
-            'TaNCvloose' : '$byTaNC > 0.9 & abs($charge) == 1',
-            'TaNCloose'  : '$byTaNCloose > 0.5 & abs($charge) == 1',
-            'TaNCmedium' : '$byTaNCmedium > 0.5 & abs($charge) == 1',
-            'TaNCtight'  : '$byTaNCtight > 0.5 & abs($charge) == 1',
-            'HPSloose'   : '$byHPSloose > 0.5 & abs($charge) == 1',
-            'HPSmedium'  : '$byHPSmedium > 0.5 & abs($charge) == 1',
-            'HPStight'   : '$byHPStight > 0.5 & abs($charge) == 1',
+        'fake_rates' : {
+            'ewkTauIdHPSloose' : {
+                'denominator' : and_of(_DENOM_COMMON, "$probe > 0.5", "$ptIndex == 1"),
+                'numerator' : '$byHPSloose > 0.5 & abs($charge) == 1'
+            },
+            'ewkTauIdTaNCloose' : {
+                'denominator' : and_of(_DENOM_TANC, "$probe > 0.5", "$ptIndex == 1"),
+                'numerator' : '$byTaNCloose > 0.5 & abs($charge) == 1'
+            },
+            'ewkTauIdTaNCmedium' : {
+                'denominator' : and_of(_DENOM_TANC, "$probe > 0.5", "$ptIndex == 1"),
+                'numerator' : '$byTaNCmedium > 0.5 & abs($charge) == 1'
+            },
         },
         'hlt' : '$hltJet15Ubit > 0.5',
         'samples' : {
@@ -43,18 +61,20 @@ fakeRateDef = {
             'mc'         : { 'name' : 'qcddijet_mc' }
         }
     },
-
     'PPmuX' : {
-        'denominator' : '$pt > 20. && abs($eta) < 2.3 && $byLeadTrackFinding > 0.5  && $againstMuon > 0.5 && $againstElectron > 0.5',
-        'numerators' : {
-            'ewkTauId'   : '$byTaNCmedium > 0.5 && abs($charge) == 1',
-            'TaNCvloose' : '$byTaNC > 0.9 & abs($charge) == 1',
-            'TaNCloose'  : '$byTaNCloose > 0.5 & abs($charge) == 1',
-            'TaNCmedium' : '$byTaNCmedium > 0.5 & abs($charge) == 1',
-            'TaNCtight'  : '$byTaNCtight > 0.5 & abs($charge) == 1',
-            'HPSloose'   : '$byHPSloose > 0.5 & abs($charge) == 1',
-            'HPSmedium'  : '$byHPSmedium > 0.5 & abs($charge) == 1',
-            'HPStight'   : '$byHPStight > 0.5 & abs($charge) == 1',
+        'fake_rates' : {
+            'ewkTauIdHPSloose' : {
+                'denominator' : _DENOM_COMMON,
+                'numerator' : '$byHPSloose > 0.5 & abs($charge) == 1'
+            },
+            'ewkTauIdTaNCloose' : {
+                'denominator' : _DENOM_TANC,
+                'numerator' : '$byTaNCloose > 0.5 & abs($charge) == 1'
+            },
+            'ewkTauIdTaNCmedium' : {
+                'denominator' : _DENOM_TANC,
+                'numerator' : '$byTaNCmedium > 0.5 & abs($charge) == 1'
+            },
         },
         'samples' : {
             'data'       : { 'name' : 'data_ppmux' },
@@ -67,15 +87,19 @@ fakeRateDef = {
         }
     },
     'PPmuXafterLoosePFIso' : {
-        'denominator' : '$pt > 20. && abs($eta) < 2.3 && $byLeadTrackFinding > 0.5 ' \
-                       + ' && $ptSumLooseIsolation < 2.5 && $againstMuon > 0.5 && $againstElectron > 0.5',
-        'numerators' : {
-            'TaNCloose'  : '$byTaNCloose > 0.5 & abs($charge) == 1',
-            'TaNCmedium' : '$byTaNCmedium > 0.5 & abs($charge) == 1',
-            'TaNCtight'  : '$byTaNCtight > 0.5 & abs($charge) == 1',
-            'HPSloose'   : '$byHPSloose > 0.5 & abs($charge) == 1',
-            'HPSmedium'  : '$byHPSmedium > 0.5 & abs($charge) == 1',
-            'HPStight'   : '$byHPStight > 0.5 & abs($charge) == 1',
+        'fake_rates' : {
+            'ewkTauIdHPSloose' : {
+                'denominator' : and_of(_DENOM_COMMON, "$ptSumLooseIsolation04 < 2.5"),
+                'numerator' : '$byHPSloose > 0.5 & abs($charge) == 1'
+            },
+            'ewkTauIdTaNCloose' : {
+                'denominator' : and_of(_DENOM_TANC, "$ptSumLooseIsolation04 < 2.5"),
+                'numerator' : '$byTaNCloose > 0.5 & abs($charge) == 1'
+            },
+            'ewkTauIdTaNCmedium' : {
+                'denominator' : and_of(_DENOM_TANC, "$ptSumLooseIsolation04 < 2.5"),
+                'numerator' : '$byTaNCmedium > 0.5 & abs($charge) == 1'
+            },
         },
         'samples' : {
             'data'       : { 'name' : 'data_ppmux' },
@@ -88,23 +112,29 @@ fakeRateDef = {
         }
     },
     'WplusJets' : {
-        'denominator' : '$pt > 20. && abs($eta) < 2.3 && $byLeadTrackFinding > 0.5  && $againstMuon > 0.5 && $againstElectron > 0.5',
-        'numerators'  : {
-            # NB tanc medium cut is reversed to remove ZTT contribution
-            'BgEst' : '$byTaNC > 0.9 & $byTaNCmedium < 0.5',
-            'ewkTauId'   : '$byTaNCmedium > 0.5 && abs($charge) == 1',
-            'TaNCvloose' : '$byTaNC > 0.9 & abs($charge) == 1',
-            'TaNCloose'  : '$byTaNCloose > 0.5 & abs($charge) == 1',
-            'TaNCmedium' : '$byTaNCmedium > 0.5 & abs($charge) == 1',
-            'TaNCtight'  : '$byTaNCtight > 0.5 & abs($charge) == 1',
-            'HPSloose'   : '$byHPSloose > 0.5 & abs($charge) == 1',
-            'HPSmedium'  : '$byHPSmedium > 0.5 & abs($charge) == 1',
-            'HPStight'   : '$byHPStight > 0.5 & abs($charge) == 1',
+        'fake_rates' : {
+            'ewkTauIdHPSloose' : {
+                'denominator' : _DENOM_COMMON,
+                'numerator' : '$byHPSloose > 0.5 & abs($charge) == 1'
+            },
+            'ewkTauIdTaNCloose' : {
+                'denominator' : _DENOM_TANC,
+                'numerator' : '$byTaNCloose > 0.5 & abs($charge) == 1'
+            },
+            'ewkTauIdTaNCmedium' : {
+                'denominator' : _DENOM_TANC,
+                'numerator' : '$byTaNCmedium > 0.5 & abs($charge) == 1'
+            },
+            'bgEstTemplateTaNCinverted' : {
+                'denominator' : _DENOM_TANC,
+                'numerator' : '$byTaNCmedium < 0.5 & $byTaNCvloose > 0.5 & abs($charge) == 1'
+            },
         },
         'samples' : {
             'data'       : { 'name' : 'data_wjets' },
             'mc'         : { 'name' : 'wmunu_mc' },
-            'mcPU156bx'  : { 'name' : 'wmunuPU156bx_mc' }
+            'mcPU156bx'  : { 'name' : 'wmunuPU156bx_mc' },
+            'closure'  : { 'name' : 'wmunu_closure' }
             ##'mcPU156bxReweighted' : {
             ##    'name'    : 'wjetsPU156bx_mc',
             ##    'options' : [ 'applyVertexMultiplicityReweighting' ]
@@ -112,15 +142,19 @@ fakeRateDef = {
         }
     },
     'WplusJetsAfterLoosePFIso' : {
-        'denominator' : '$pt > 20. && abs($eta) < 2.3 &&  $byLeadTrackFinding > 0.5  && $againstMuon > 0.5 && $againstElectron > 0.5' \
-                       + ' && $ptSumLooseIsolation < 2.5',
-        'numerators' : {
-            'TaNCloose'  : '$byTaNCloose > 0.5 & abs($charge) == 1',
-            'TaNCmedium' : '$byTaNCmedium > 0.5 & abs($charge) == 1',
-            'TaNCtight'  : '$byTaNCtight > 0.5 & abs($charge) == 1',
-            'HPSloose'   : '$byHPSloose > 0.5 & abs($charge) == 1',
-            'HPSmedium'  : '$byHPSmedium > 0.5 & abs($charge) == 1',
-            'HPStight'   : '$byHPStight > 0.5 & abs($charge) == 1',
+        'fake_rates' : {
+            'ewkTauIdHPSloose' : {
+                'denominator' : and_of(_DENOM_COMMON, "$ptSumLooseIsolation04 < 2.5"),
+                'numerator' : '$byHPSloose > 0.5 & abs($charge) == 1'
+            },
+            'ewkTauIdTaNCloose' : {
+                'denominator' : and_of(_DENOM_TANC, "$ptSumLooseIsolation04 < 2.5"),
+                'numerator' : '$byTaNCloose > 0.5 & abs($charge) == 1'
+            },
+            'ewkTauIdTaNCmedium' : {
+                'denominator' : and_of(_DENOM_TANC, "$ptSumLooseIsolation04 < 2.5"),
+                'numerator' : '$byTaNCmedium > 0.5 & abs($charge) == 1'
+            },
         },
         'samples' : {
             'data'       : { 'name' : 'data_wjets' },
@@ -133,15 +167,23 @@ fakeRateDef = {
         }
     },
     'Ztautau' : {
-        'denominator' : '$pt > 20. && abs($eta) < 2.3 &&  $byLeadTrackFinding > 0.5  && $againstMuon > 0.5 && $againstElectron > 0.5',
-        'numerators' : {
-            'ewkTauId'   : '$byTaNCmedium > 0.5 && abs($charge) == 1',
-            'TaNCloose'  : '$byTaNCloose > 0.5 & abs($charge) == 1',
-            'TaNCmedium' : '$byTaNCmedium > 0.5 & abs($charge) == 1',
-            'TaNCtight'  : '$byTaNCtight > 0.5 & abs($charge) == 1',
-            'HPSloose'   : '$byHPSloose > 0.5 & abs($charge) == 1',
-            'HPSmedium'  : '$byHPSmedium > 0.5 & abs($charge) == 1',
-            'HPStight'   : '$byHPStight > 0.5 & abs($charge) == 1',
+        'fake_rates' : {
+            'ewkTauIdHPSloose' : {
+                'denominator' : and_of(_DENOM_COMMON, "$genDecayMode > 1.5"),
+                'numerator' : '$byHPSloose > 0.5 & abs($charge) == 1'
+            },
+            'ewkTauIdTaNCloose' : {
+                'denominator' : and_of(_DENOM_TANC, "$genDecayMode > 1.5"),
+                'numerator' : '$byTaNCloose > 0.5 & abs($charge) == 1'
+            },
+            'ewkTauIdTaNCmedium' : {
+                'denominator' : and_of(_DENOM_TANC, "$genDecayMode > 1.5"),
+                'numerator' : '$byTaNCmedium > 0.5 & abs($charge) == 1'
+            },
+            'bgEstTemplateTaNCinverted' : {
+                'denominator' : _DENOM_TANC,
+                'numerator' : '$byTaNCmedium < 0.5 & $byTaNCvloose > 0.5 & abs($charge) == 1'
+            },
         },
         'samples' : {
             'mc'         : { 'name' : 'ztautau_mc' },

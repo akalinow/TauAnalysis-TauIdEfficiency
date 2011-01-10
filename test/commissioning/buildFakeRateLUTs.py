@@ -14,26 +14,50 @@ print("<buildFakeRateLUTs>:")
 
 import os
 
-from TauAnalysis.TauIdEfficiency.fakeRateDef import fakeRateDef, \
-        numerators_to_make
+import TauAnalysis.TauIdEfficiency.fakeRateDef as fakerates
 
 skipExisting = True
 
-for fakeRateLabel, fakeRateConfig in fakeRateDef.items():
+sample_filterfunc = None
+# Uncomment to skip loose iso
+sample_filterfunc = lambda x: x.find('closure') != -1
+
+type_filter = None
+type_filter = lambda x: x.find('WplusJets') != -1
+
+for fakeRateType, fakeRateConfig in fakerates.fakeRateDef.items():
     for sampleLabel, sampleConfig in fakeRateConfig['samples'].items():
-        for numeratorLabel, numerator in fakeRateConfig['numerators'].items():
-            if numeratorLabel not in numerators_to_make:
-                print "Skipping", numeratorLabel
+        for fake_rate_label, fake_rate_impl in fakeRateConfig['fake_rates'].items():
+
+            if fakerates.fake_rates_to_make and (
+                fake_rate_label not in fakerates.fake_rates_to_make):
+                print "Skipping", fake_rate_label
                 continue
-            denominator = fakeRateConfig['denominator']
+
+            if type_filter:
+                if not type_filter(fakeRateType):
+                    print "Skipping", fakeRateType
+                    continue
+
+            if sample_filterfunc:
+                if not sample_filterfunc(sampleLabel):
+                    print "Skipping", sampleLabel
+                    continue
+
+
+            denominator = fake_rate_impl['denominator']
+            numerator = fake_rate_impl['numerator']
 
             if not os.path.exists("./config"):
                 os.mkdir("./config")
 
-            cfgFileName = './config/fakerate_%s_%s_%s.cfg' % (numeratorLabel, fakeRateLabel, sampleLabel)
+            cfgFileName = './config/fakerate_%s_%s_%s.cfg' % (
+                fake_rate_label, fakeRateType, sampleLabel)
+
             if os.path.exists(cfgFileName) and skipExisting:
                 print "Skipping ", cfgFileName
                 continue
+
             cfgFile = open(cfgFileName, "w")
             cfgFile.write("[fake_rate]\n")
             cfgFile.write("sample = %s\n" % sampleConfig['name'])
