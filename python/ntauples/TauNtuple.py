@@ -9,14 +9,22 @@ class TauNtuple(object):
         # Build
         self.mapping_dict = dict(
             (var, "%(ntuple_name)s#%(collection_name)s#%(var)s" % {
-                 'ntuple_name':ntuple_name, 
-                 'collection_name':collection_name, 
-                 'var':var } 
+                 'ntuple_name':ntuple_name,
+                 'collection_name':collection_name,
+                 'var':var }
             ) for var in variables)
 
     def substitute(self, expr):
         " Retrive the correct TTree draw()-type string for a given variable "
-        return string.Template(expr).substitute(self.mapping_dict)
+        try:
+            result = string.Template(expr).substitute(self.mapping_dict)
+        except KeyError:
+            print "Error translating expression %s" % expr
+            print "Available variables for %s:" % self.collection
+            for var in self.variables:
+                print var
+            raise
+        return result
 
     def __repr__(self):
         " Print helpful information"
@@ -27,16 +35,16 @@ class TauNtuple(object):
 
     def expr(self, expression):
         " Build an expression from this ntuple "
-        return TauNtupleExpression(self.substitute(expression)) 
+        return TauNtupleExpression(self.substitute(expression))
 
 class TauNtupleExpression(object):
     def __init__(self, value):
         self.value = value
     def hash_string(self):
-        " Return a hash string corresponding to this expression " 
+        " Return a hash string corresponding to this expression "
         return hashlib.md5(self.value).hexdigest()
     def __hash__(self):
-        " Return a hash integer corresponding to this expression " 
+        " Return a hash integer corresponding to this expression "
         return int(self.hash_string(), 16)
     def check_other(self, other):
         # To be implemented if needed later
@@ -95,7 +103,7 @@ class TauNtupleExpression(object):
 
 if __name__ == "__main__":
     # Some tests
-    # Some mutable object 
+    # Some mutable object
     pt = TauNtupleExpression('pt')
     eta = TauNtupleExpression('eta')
     new = pt | eta
