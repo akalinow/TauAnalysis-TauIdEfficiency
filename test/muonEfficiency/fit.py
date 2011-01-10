@@ -60,8 +60,10 @@ process.TagProbeFitTreeAnalyzer = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
     Categories = cms.PSet(
         mcTrue = cms.vstring("MC true", "dummy[pass=1,fail=0]"),
         #passing = cms.vstring("isMuon", "dummy[pass=1,fail=0]"),
-        AbsIso = cms.vstring("Absolute isolation", "dummy[pass=1,fail=0]"),
-        LooseAbsIso = cms.vstring("Loose absolute isolation", "dummy[pass=1,fail=0]"),
+        AbsIso04 = cms.vstring("Absolute isolation", "dummy[pass=1,fail=0]"),
+        LooseAbsIso04 = cms.vstring("Loose absolute isolation", "dummy[pass=1,fail=0]"),
+        AbsIso06 = cms.vstring("Absolute isolation", "dummy[pass=1,fail=0]"),
+        LooseAbsIso06 = cms.vstring("Loose absolute isolation", "dummy[pass=1,fail=0]"),
         RelIso = cms.vstring("Relative isolation", "dummy[pass=1,fail=0]"),
         LooseRelIso = cms.vstring("Loose relative isolation", "dummy[pass=1,fail=0]"),
         Glb = cms.vstring("GlobalMuon", "dummy[pass=1,fail=0]"),
@@ -155,26 +157,27 @@ iso_vars = [
 ]
 
 efficiencies = [
-    ('iso', 'AbsIso', ['Glb', 'VBTF']),
-    #('looseiso', 'LooseAbsIso', ['Glb', 'VBTF']),
+    #('iso', 'AbsIso04', ['Glb', 'VBTF']),
+    ('looseiso04', 'LooseAbsIso04', ['Glb', 'VBTF']),
+    ('looseiso06', 'LooseAbsIso06', ['Glb', 'VBTF']),
     #('reliso', 'RelIso', ['Glb', 'VBTF']),
     #('loosereliso', 'LooseRelIso', ['Glb', 'VBTF']),
-    ('id', 'VBTF', ['Glb']),
-    ('hltMu9', 'HLTMu9', ['Glb', 'VBTF', 'AbsIso']),
-    ('standAlone', 'outerTrack', []),
+    #('id', 'VBTF', ['Glb']),
+    #('hltMu9', 'HLTMu9', ['Glb', 'VBTF', 'AbsIso04']),
+    #('standAlone', 'outerTrack', []),
 ]
 
 trigger_efficiencies = [
-    ('trigA', 'HLTMu9', ['Glb', 'VBTF', 'AbsIso', 'PeriodA']),
-    ('trigB', 'IsoMu9Mu11', ['Glb', 'VBTF', 'AbsIso', 'PeriodB']),
-    ('trigC', 'IsoMu13Mu15', ['Glb', 'VBTF', 'AbsIso', 'PeriodC']),
+    #('trigA', 'HLTMu9', ['Glb', 'VBTF', 'AbsIso04', 'PeriodA']),
+    #('trigB', 'IsoMu9Mu11', ['Glb', 'VBTF', 'AbsIso04', 'PeriodB']),
+    #('trigC', 'IsoMu13Mu15', ['Glb', 'VBTF', 'AbsIso04', 'PeriodC']),
 ]
 
 
 # FIXME is TM
 inner_efficiencies = [
-    ('innerTrack', 'hasTrack', ['outerTrack']),
-    ('linking', 'Glb', ['outerTrack', 'hasTrack']),
+    #('innerTrack', 'hasTrack', ['outerTrack']),
+    #('linking', 'Glb', ['outerTrack', 'hasTrack']),
 ]
 
 # FIXME

@@ -78,6 +78,8 @@ titles = {
     "iso": "Abs. Iso. Efficiency w.r.t. Global + VBTF",
     "reliso": "Rel. Iso. Efficiency w.r.t. Global + VBTF",
     "looseiso":  "Loose Abs. Iso. Efficiency w.r.t. Global + VBTF",
+    "looseiso04":  "Loose Abs. Iso. Efficiency (DR < 0.4) w.r.t. Global + VBTF",
+    "looseiso06":  "Loose Abs. Iso. Efficiency (DR < 0.6) w.r.t. Global + VBTF",
     "loosereliso": "Loose Rel. Iso. Efficiency w.r.t. Global + VBTF",
     "trigA" : "HLT Mu9 w.r.t offline (Runs 132440-147116)",
     "trigB" : "HLT IsoMu9 | Mu11 w.r.t offline (Runs 147196-148058)",
