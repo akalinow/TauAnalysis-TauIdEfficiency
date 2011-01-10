@@ -138,9 +138,15 @@ to_write = []
 
 max_entries = sum(events.GetEntries() for events, weight in events_list)
 
-map(lambda x: x.SetEstimate(max_entries*3), (x for x, weight in events_list))
+# Increase max events if necessary
+map(lambda x: max(10000, x.SetEstimate(max_entries*3)),
+    (x for x, weight in events_list))
 
 ROOT.SetMemoryPolicy( ROOT.kMemoryStrict )
+
+# Write a TPolyMarker containing indices/evts/runs of passed & failed jets in
+# events.
+write_indices = False
 
 for index, (events, weight) in enumerate(events_list):
     #if not index == 0:
@@ -172,6 +178,20 @@ for index, (events, weight) in enumerate(events_list):
         my_tuple.IsA().Destructor(my_tuple)
         print "Done."
 
+        # If desired, write indexes to log
+        if write_indices:
+            index_draw_str = str(ntuple.expr("$index:event:run"))
+            selected_events = events.Draw(index_draw_str, str(passing))
+            print " Drew index ntuple with %i events" % selected_events
+            my_tuple = ROOT.gPad.GetPrimitive("TPolyMarker3D")
+            #my_tuple = numerator_tuple.Clone("passing_%i" % index)
+            my_tuple.SetName("passing_indices_%i" % index)
+            bytes = my_tuple.Write()
+            print "Wrote %i bytes" % bytes
+            print "Deleting..."
+            my_tuple.IsA().Destructor(my_tuple)
+            print "Done."
+
     if options.failing:
         # Build a TPolyMaker3D with our points
         drawn = events.Draw(str(draw_string), str(failing))
@@ -181,11 +201,25 @@ for index, (events, weight) in enumerate(events_list):
         my_tuple.SetName("failing_%i" % index)
         print "Built 'failing' pre-ntuple with %i entries" % \
                 my_tuple.GetN()
+
         if my_tuple.GetN() == events.GetEstimate():
             raise ValueError("Number of entries produced is at the upper limit " \
                              "of TTree::Draw.  You need to set events.SetEstimate to " \
                              "be larger than the total number of selected rows.")
         my_tuple.Write()
         ROOT.gPad.Clear()
+
+        if write_indices:
+            index_draw_str = str(ntuple.expr("$index:event:run"))
+            selected_events = events.Draw(index_draw_str, str(failing))
+            print " Drew index ntuple with %i events" % selected_events
+            my_tuple = ROOT.gPad.GetPrimitive("TPolyMarker3D")
+            #my_tuple = numerator_tuple.Clone("passing_%i" % index)
+            my_tuple.SetName("failing_indices_%i" % index)
+            bytes = my_tuple.Write()
+            print "Wrote %i bytes" % bytes
+            print "Deleting..."
+            my_tuple.IsA().Destructor(my_tuple)
+            print "Done."
 
 output_file.WriteObject(weights, "weights")
