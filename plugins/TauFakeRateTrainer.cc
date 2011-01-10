@@ -30,7 +30,6 @@ double checkNan(const PhysicsTools::AtomicId &name, double value) {
   return value;
 }
 
-
 // The Phys tools version of this doesn't compile due to const issues.
 struct Extractor {
   const TPolyMarker3D* data_;
@@ -64,7 +63,21 @@ struct ExtractorFiller {
 	{ return object.compute(name); }
 };
 
-
+// Print list of indices to the screen
+void printIndices(const TPolyMarker3D* ntuple, const std::string& prefix) {
+  double fId, fEvt, fRun;
+  std::string sep = ":";
+  for (int i = 0; i < ntuple->Size(); ++i) {
+    ntuple->GetPoint(i, fId, fEvt, fRun);
+    std::cout << prefix
+      << sep
+      << lrint(fId)
+      << sep
+      << lrint(fEvt)
+      << sep
+      << lrint(fRun)
+      << std::endl;
+  }
 }
 
 class TauFakeRateTrainer : public edm::EDAnalyzer {
@@ -131,6 +144,13 @@ TauFakeRateTrainer::TauFakeRateTrainer(const edm::ParameterSet &pset)
     std::stringstream failing_name;
     failing_name << "failing_";
     failing_name << i;
+    // The names of the poly markers holding the indices of the jet events
+    std::stringstream passing_index_name;
+    passing_index_name << "passing_indices_";
+    passing_index_name << i;
+    std::stringstream failing_index_name;
+    failing_index_name << "failing_indices_";
+    failing_index_name << i;
 
     // Build extractors
     Extractor numerator;
@@ -142,6 +162,13 @@ TauFakeRateTrainer::TauFakeRateTrainer(const edm::ParameterSet &pset)
     }
     numerator.setIndex(0);
 
+    const TPolyMarker3D* passingIndices = dynamic_cast<const TPolyMarker3D*>(
+        numeratorFile->Get(passing_index_name.str().c_str()));
+    if (passingIndices) {
+      std::cout << "Found passing indices:" << std::endl;
+      printIndices(passingIndices, "index_pass");
+    }
+
     Extractor denominator;
     denominator.weight_ = den_weights->At(i);
     denominator.data_ = dynamic_cast<const TPolyMarker3D*>(
@@ -149,6 +176,14 @@ TauFakeRateTrainer::TauFakeRateTrainer(const edm::ParameterSet &pset)
     if (!denominator.data_) {
       throw cms::Exception("Missing ntuple") << "Can't Get() failing ntuple";
     }
+
+    const TPolyMarker3D* failingIndices = dynamic_cast<const TPolyMarker3D*>(
+        denominatorFile->Get(failing_index_name.str().c_str()));
+    if (failingIndices) {
+      std::cout << "Found failing indices:" << std::endl;
+      printIndices(failingIndices, "index_fail");
+    }
+
     denominator.setIndex(0);
 
     numerators_.push_back(numerator);
@@ -177,6 +212,8 @@ void TauFakeRateTrainer::analyze(const edm::Event& evt,
       helper_.train(denominator, false, denominator.weight_);
     }
   }
+}
+
 }
 
 #include "FWCore/Framework/interface/MakerMacros.h"
