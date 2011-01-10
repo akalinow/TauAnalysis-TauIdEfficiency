@@ -6,3 +6,4 @@ addpkg MuonAnalysis/TagAndProbe V07-01-00
 
 #addpkg PhysicsTools/PatAlgos
 cvs update -rV08-01-02 PhysicsTools/PatAlgos/python/tools/helpers.py
+cvs up -r 1.11 PhysicsTools/PatAlgos/python/triggerLayer1/triggerMatcher_cfi.py
