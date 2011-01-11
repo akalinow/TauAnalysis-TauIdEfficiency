@@ -138,11 +138,14 @@ tauIdEffMeas_template03 = cms.PSet(
     # Variables to compute for this source
     columns = cms.PSet(
         charge = cms.string("leg1.charge() + leg2.leadPFChargedHadrCand.charge()"),
-        
+
+	Mt = cms.string("mt1MET()"),  
+        pZeta = cms.string("pZeta()"),
+        pZetaVis = cms.string("pZetaVis()"),
+
         visMass = cms.string("p4Vis.mass()"),
         SVfitMass1 = cms.string("svFitSolution('psKine_MEt').mass()"),
         SVfitMass2 = cms.string("svFitSolution('psKine_MEt_ptBalance').mass()"),
-        Mt = cms.string("mt1MET()"),
         Ht = cms.string("leg1.pt() + leg2.pt() + met.pt()")
     )
 )
