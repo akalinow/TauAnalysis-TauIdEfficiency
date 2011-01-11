@@ -24,10 +24,13 @@ maxNumEntries = 1000000000
 def makeLoosePFIsoPlot(ztt_events,
                        genSelection_e, genSelection_mu, genSelection_had,
                        recSelection, recExpression,
+                       binning,
                        outputFileName):
     canvas = ROOT.TCanvas("canvas", "canvas", 500, 500)
     canvas.SetLeftMargin(0.11)
     canvas.SetGridy(1)
+
+    isFirstHistogram = True
 
     histogram_e = None
     if genSelection_e is not None:
@@ -39,13 +42,15 @@ def makeLoosePFIsoPlot(ztt_events,
             output_name = 'e',
             maxNumEntries = maxNumEntries
         )
-        histogram_e.Sumw2()
+        if not histogram_e.GetSumw2N():
+            histogram_e.Sumw2()
         histogram_e.Scale(1./histogram_e.Integral())
         histogram_e.SetMarkerSize(2)
         histogram_e.SetMarkerStyle(20)
         histogram_e.SetMarkerColor(3)
         histogram_e.SetLineColor(3)
         histogram_e.Draw("e1p")
+        isFirstHistogram = False
 
     histogram_mu = None
     if genSelection_mu is not None:
@@ -57,13 +62,18 @@ def makeLoosePFIsoPlot(ztt_events,
             output_name = 'mu',
             maxNumEntries = maxNumEntries
         )
-        histogram_mu.Sumw2()
+        if not histogram_mu.GetSumw2N():
+            histogram_mu.Sumw2()
         histogram_mu.Scale(1./histogram_mu.Integral())
         histogram_mu.SetMarkerSize(2)
         histogram_mu.SetMarkerStyle(20)
         histogram_mu.SetMarkerColor(4)
         histogram_mu.SetLineColor(4)
-        histogram_mu.Draw("e1psame")
+        if isFirstHistogram:
+            histogram_mu.Draw("e1p")
+        else:
+            histogram_mu.Draw("e1psame")
+        isFirstHistogram = False
 
     histogram_had = None
     if genSelection_had is not None:
@@ -75,14 +85,18 @@ def makeLoosePFIsoPlot(ztt_events,
             output_name = 'had',
             maxNumEntries = maxNumEntries
         )
-        histogram_had.Sumw2()
+        if not histogram_had.GetSumw2N():
+            histogram_had.Sumw2()
         histogram_had.Scale(1./histogram_had.Integral())
         histogram_had.SetMarkerSize(2)
         histogram_had.SetMarkerStyle(20)
         histogram_had.SetMarkerColor(2)
         histogram_had.SetLineColor(2)
-        histogram_had.Draw("e1psame")
-
+        if isFirstHistogram:
+            histogram_had.Draw("e1p")
+        else:
+            histogram_had.Draw("e1psame")
+        
     # Draw the legend - you can pass NDC xl, yl, xh, yh coordinates to make_legend(...)
     legend = ROOT.TLegend(0.60, 0.69, 0.88, 0.88)
     if histogram_e is not None:
@@ -115,8 +129,8 @@ if __name__ == "__main__":
     genSelection_had = genTaus.expr('$genDecayMode >  1.5 && $genPt > 10 && abs($genEta) < 2.1')
 
     recTaus = ntuple_manager.get_ntuple("hpstanc")
-    #accSelection                = recTaus.expr('$pt > 20 && abs($eta) < 2.3')
-    accSelection                = recTaus.expr('$pt > 20 && abs($eta) < 2.1')
+    accSelection                = recTaus.expr('$pt > 20 && abs($eta) < 2.3')
+    #accSelection                = recTaus.expr('$pt > 20 && abs($eta) < 2.1')
     recSelectionBeforeTauId     = accSelection            & recTaus.expr('$byLeadTrackFinding > 0.5 && $byLeadTrackPtCut > 0.5')
     recSelectionAfterTaNCloose  = recSelectionBeforeTauId & recTaus.expr('$byTaNCloose  > 0.5')
     recSelectionAfterTaNCmedium = recSelectionBeforeTauId & recTaus.expr('$byTaNCmedium > 0.5')
@@ -124,67 +138,89 @@ if __name__ == "__main__":
     recSelectionAfterHPSloose   = recSelectionBeforeTauId & recTaus.expr('$byHPSloose   > 0.5')
     recSelectionAfterHPSmedium  = recSelectionBeforeTauId & recTaus.expr('$byHPSmedium  > 0.5')
     recSelectionAfterHPStight   = recSelectionBeforeTauId & recTaus.expr('$byHPStight   > 0.5')
-    
+
     recExpressionLoosePFIso04 = recTaus.expr('$ptSumLooseIsolation04')
     recExpressionLoosePFIso06 = recTaus.expr('$ptSumLooseIsolation06')
+    binningLoosePFIso = (20, 0, 10)
+
+    recSelectionAfterHPSlooseNoLeadTrackPt  = accSelection & recTaus.expr('$byLeadTrackFinding > 0.5 && $byHPSloose  > 0.5')
+    recSelectionAfterHPSmediumNoLeadTrackPt = accSelection & recTaus.expr('$byLeadTrackFinding > 0.5 && $byHPSmedium > 0.5')
+    recSelectionAfterHPStightNoLeadTrackPt  = accSelection & recTaus.expr('$byLeadTrackFinding > 0.5 && $byHPStight  > 0.5')
+    
+    recExpressionLeadTrackPtDiscr = recTaus.expr('$byLeadTrackPtCut')
+    binningLeadTrackPtDiscr = (2, -0.5, 1.5)
 
     ztt_events = list(ztt.events_and_weights())[0][0]
 
-    makeLoosePFIsoPlot(ztt_events,
-                       genSelection_e, genSelection_mu, genSelection_had,
-                       recSelectionBeforeTauId, recExpressionLoosePFIso04,
-                       "./plots/pfLooseIsolation04_beforeTauId.png")
-    makeLoosePFIsoPlot(ztt_events,
-                       genSelection_e, genSelection_mu, genSelection_had,
-                       recSelectionBeforeTauId, recExpressionLoosePFIso06,
-                       "./plots/pfLooseIsolation06_beforeTauId.png")
+    ##makeLoosePFIsoPlot(ztt_events,
+    ##                   genSelection_e, genSelection_mu, genSelection_had,
+    ##                   recSelectionBeforeTauId, recExpressionLoosePFIso04, binningLoosePFIso,
+    ##                   "./plots/pfLooseIsolation04_beforeTauId.png")
+    ##makeLoosePFIsoPlot(ztt_events,
+    ##                   genSelection_e, genSelection_mu, genSelection_had,
+    ##                   recSelectionBeforeTauId, recExpressionLoosePFIso06, binningLoosePFIso,
+    ##                   "./plots/pfLooseIsolation06_beforeTauId.png")
+
+    ##makeLoosePFIsoPlot(ztt_events,
+    ##                   None, None, genSelection_had,
+    ##                   recSelectionAfterTaNCloose, recExpressionLoosePFIso04, binningLoosePFIso,
+    ##                   "./plots/pfLooseIsolation04_afterTaNCloose.png")
+    ##makeLoosePFIsoPlot(ztt_events,
+    ##                   None, None, genSelection_had,
+    ##                   recSelectionAfterTaNCloose, recExpressionLoosePFIso06, binningLoosePFIso,
+    ##                   "./plots/pfLooseIsolation06_afterTaNCloose.png")
+    ##makeLoosePFIsoPlot(ztt_events,
+    ##                   None, None, genSelection_had,
+    ##                   recSelectionAfterTaNCmedium, recExpressionLoosePFIso04, binningLoosePFIso,
+    ##                   "./plots/pfLooseIsolation04_afterTaNCmedium.png")
+    ##makeLoosePFIsoPlot(ztt_events,
+    ##                   None, None, genSelection_had,
+    ##                   recSelectionAfterTaNCmedium, recExpressionLoosePFIso06, binningLoosePFIso,
+    ##                   "./plots/pfLooseIsolation06_afterTaNCmedium.png")
+    ##makeLoosePFIsoPlot(ztt_events,
+    ##                   None, None, genSelection_had,
+    ##                   recSelectionAfterTaNCtight, recExpressionLoosePFIso04, binningLoosePFIso,
+    ##                   "./plots/pfLooseIsolation04_afterTaNCtight.png")
+    ##makeLoosePFIsoPlot(ztt_events,
+    ##                   None, None, genSelection_had,
+    ##                   recSelectionAfterTaNCtight, recExpressionLoosePFIso06, binningLoosePFIso,
+    ##                   "./plots/pfLooseIsolation06_afterTaNCtight.png")
+
+    ##makeLoosePFIsoPlot(ztt_events,
+    ##                   None, None, genSelection_had,
+    ##                   recSelectionAfterHPSloose, recExpressionLoosePFIso04, binningLoosePFIso,
+    ##                   "./plots/pfLooseIsolation04_afterHPSloose.png")
+    ##makeLoosePFIsoPlot(ztt_events,
+    ##                   None, None, genSelection_had,
+    ##                   recSelectionAfterHPSloose, recExpressionLoosePFIso06, binningLoosePFIso,
+    ##                   "./plots/pfLooseIsolation06_afterHPSloose.png")
+    ##makeLoosePFIsoPlot(ztt_events,
+    ##                   None, None, genSelection_had,
+    ##                   recSelectionAfterHPSmedium, recExpressionLoosePFIso04, binningLoosePFIso,
+    ##                   "./plots/pfLooseIsolation04_afterHPSmedium.png")
+    ##makeLoosePFIsoPlot(ztt_events,
+    ##                   None, None, genSelection_had,
+    ##                   recSelectionAfterHPSmedium, recExpressionLoosePFIso06, binningLoosePFIso,
+    ##                   "./plots/pfLooseIsolation06_afterHPSmedium.png")
+    ##makeLoosePFIsoPlot(ztt_events,
+    ##                   None, None, genSelection_had,
+    ##                   recSelectionAfterHPStight, recExpressionLoosePFIso04, binningLoosePFIso,
+    ##                   "./plots/pfLooseIsolation04_afterHPStight.png")
+    ##makeLoosePFIsoPlot(ztt_events,
+    ##                   None, None, genSelection_had,
+    ##                   recSelectionAfterHPStight, recExpressionLoosePFIso06, binningLoosePFIso,
+    ##                   "./plots/pfLooseIsolation06_afterHPStight.png")
 
     makeLoosePFIsoPlot(ztt_events,
                        None, None, genSelection_had,
-                       recSelectionAfterTaNCloose, recExpressionLoosePFIso04,
-                       "./plots/pfLooseIsolation04_afterTaNCloose.png")
+                       recSelectionAfterHPSlooseNoLeadTrackPt, recExpressionLeadTrackPtDiscr, binningLeadTrackPtDiscr,
+                       "./plots/leadTrackPtDiscr_afterHPSloose.png")
     makeLoosePFIsoPlot(ztt_events,
                        None, None, genSelection_had,
-                       recSelectionAfterTaNCloose, recExpressionLoosePFIso06,
-                       "./plots/pfLooseIsolation06_afterTaNCloose.png")
+                       recSelectionAfterHPSmediumNoLeadTrackPt, recExpressionLeadTrackPtDiscr, binningLeadTrackPtDiscr,
+                       "./plots/leadTrackPtDiscr_afterHPSmedium.png")
     makeLoosePFIsoPlot(ztt_events,
                        None, None, genSelection_had,
-                       recSelectionAfterTaNCmedium, recExpressionLoosePFIso04,
-                       "./plots/pfLooseIsolation04_afterTaNCmedium.png")
-    makeLoosePFIsoPlot(ztt_events,
-                       None, None, genSelection_had,
-                       recSelectionAfterTaNCmedium, recExpressionLoosePFIso06,
-                       "./plots/pfLooseIsolation06_afterTaNCmedium.png")
-    makeLoosePFIsoPlot(ztt_events,
-                       None, None, genSelection_had,
-                       recSelectionAfterTaNCtight, recExpressionLoosePFIso04,
-                       "./plots/pfLooseIsolation04_afterTaNCtight.png")
-    makeLoosePFIsoPlot(ztt_events,
-                       None, None, genSelection_had,
-                       recSelectionAfterTaNCtight, recExpressionLoosePFIso06,
-                       "./plots/pfLooseIsolation06_afterTaNCtight.png")
-
-    makeLoosePFIsoPlot(ztt_events,
-                       None, None, genSelection_had,
-                       recSelectionAfterHPSloose, recExpressionLoosePFIso04,
-                       "./plots/pfLooseIsolation04_afterHPSloose.png")
-    makeLoosePFIsoPlot(ztt_events,
-                       None, None, genSelection_had,
-                       recSelectionAfterHPSloose, recExpressionLoosePFIso06,
-                       "./plots/pfLooseIsolation06_afterHPSloose.png")
-    makeLoosePFIsoPlot(ztt_events,
-                       None, None, genSelection_had,
-                       recSelectionAfterHPSmedium, recExpressionLoosePFIso04,
-                       "./plots/pfLooseIsolation04_afterHPSmedium.png")
-    makeLoosePFIsoPlot(ztt_events,
-                       None, None, genSelection_had,
-                       recSelectionAfterHPSmedium, recExpressionLoosePFIso06,
-                       "./plots/pfLooseIsolation06_afterHPSmedium.png")
-    makeLoosePFIsoPlot(ztt_events,
-                       None, None, genSelection_had,
-                       recSelectionAfterHPStight, recExpressionLoosePFIso04,
-                       "./plots/pfLooseIsolation04_afterHPStight.png")
-    makeLoosePFIsoPlot(ztt_events,
-                       None, None, genSelection_had,
-                       recSelectionAfterHPStight, recExpressionLoosePFIso06,
-                       "./plots/pfLooseIsolation06_afterHPStight.png")
+                       recSelectionAfterHPStightNoLeadTrackPt, recExpressionLeadTrackPtDiscr, binningLeadTrackPtDiscr,
+                       "./plots/leadTrackPtDiscr_afterHPStight.png")
+    
