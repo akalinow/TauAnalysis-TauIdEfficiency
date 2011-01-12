@@ -7,7 +7,7 @@ samples.py
 
 Central defintion of data sources for commissioning.
 
-$Id: samples.py,v 1.29 2010/12/13 16:13:01 friis Exp $
+$Id: samples.py,v 1.30 2011/01/05 10:16:56 friis Exp $
 
 '''
 
@@ -19,13 +19,13 @@ dijetSampleAliasMap = {
     'patPFTausDijetTagAndProbeHPS': 'hps',
     'patPFTausDijetTagAndProbeShrinkingCone': 'shrinking',
     'patPFTausDijetTagAndProbeFixedCone': 'fixed',
-    'patPFTausDijetTagAndProbeHPSpTaNC': 'hpstanc',
+    'patPFTausDijetTagAndProbeHPSpTaNC06': 'hpstanc',
     'patCaloTausDijetTagAndProbe': 'calo'
 }
 
 muEnrichedSampleAliasMap = {
     'patPFTausCleanedHPS': 'hps',
-    'patPFTausCleanedHPSpTaNC': 'hpstanc',
+    'patPFTausCleanedHPSpTaNC06': 'hpstanc',
     'patPFTausCleanedShrinkingCone': 'shrinking',
     'patPFTausCleanedFixedCone': 'fixed',
     'patCaloTausCleaned': 'calo'
@@ -41,7 +41,7 @@ muEnrichedSampleAliasMap = {
 
 wJetsSampleAliasMap = {
     'patPFTausLoosePFIsoEmbeddedHPS': 'hps',
-    'patPFTausLoosePFIsoEmbeddedHPSpTaNC': 'hpstanc',
+    'patPFTausLoosePFIsoEmbeddedHPSpTaNC06': 'hpstanc',
     'patPFTausLoosePFIsoEmbeddedShrinkingCone': 'shrinking',
     'patPFTausLoosePFIsoEmbeddedFixedCone': 'fixed',
     'patCaloTausLoosePFIsoEmbedded': 'calo'
