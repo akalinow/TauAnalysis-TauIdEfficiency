@@ -70,6 +70,49 @@ def configurePatTupleProduction(process, patSequenceBuilder = None,
     )   
     #--------------------------------------------------------------------------------
 
+    #--------------------------------------------------------------------------------
+    # compute Pt sum of charged + neutral hadrons and photons within isolation cones of size dR = 0.4/0.6
+    process.patMuonsLoosePFIsoEmbedded04 = cms.EDProducer("PATMuonPFIsolationEmbedder",
+        src = cms.InputTag('patMuons'),                                       
+        userFloatName = cms.string('pfLooseIsoPt04'),
+        pfCandidateSource = cms.InputTag('pfNoPileUp'),
+        chargedHadronIso = cms.PSet(
+            ptMin = cms.double(1.0),        
+            dRvetoCone = cms.double(-1.),
+            dRisoCone = cms.double(0.4)
+        ),
+        neutralHadronIso = cms.PSet(
+            ptMin = cms.double(1.0),        
+            dRvetoCone = cms.double(0.08),        
+            dRisoCone = cms.double(0.4)
+        ),
+        photonIso = cms.PSet(
+            ptMin = cms.double(1.0),        
+            dPhiVeto = cms.double(-1.),
+            dEtaVeto = cms.double(-1.),
+            dRvetoCone = cms.double(0.05),
+            dRisoCone = cms.double(0.4)
+        )
+    )
+
+    process.patMuonsLoosePFIsoEmbedded06 = process.patMuonsLoosePFIsoEmbedded04.clone(
+        src = cms.InputTag('patMuonsLoosePFIsoEmbedded04'),
+        userFloatName = cms.string('pfLooseIsoPt06'),
+        pfCandidateSource = cms.InputTag('pfNoPileUp'),
+        chargedHadronIso = process.patMuonsLoosePFIsoEmbedded04.chargedHadronIso.clone(
+            dRisoCone = cms.double(0.6)
+        ),
+        neutralHadronIso = process.patMuonsLoosePFIsoEmbedded04.neutralHadronIso.clone(
+            dRisoCone = cms.double(0.6)
+        ),
+        photonIso = process.patMuonsLoosePFIsoEmbedded04.photonIso.clone(
+            dRisoCone = cms.double(0.6)
+        )
+    )
+
+    process.patMuonsLoosePFIsoEmbedded = cms.Sequence(process.patMuonsLoosePFIsoEmbedded04 * process.patMuonsLoosePFIsoEmbedded06)
+    #--------------------------------------------------------------------------------
+
     #-------------------------------------------------------------------------------- 
     #
     # produce combinations of muon + tau-jet pairs
@@ -89,7 +132,7 @@ def configurePatTupleProduction(process, patSequenceBuilder = None,
     process.caloTauSequence = retVal_caloTau["sequence"]
 
     process.patMuonCaloTauPairs = process.allMuTauPairs.clone(
-        srcLeg1 = cms.InputTag('patMuons'),
+        srcLeg1 = cms.InputTag('patMuonsLoosePFIsoEmbedded06'),
         srcLeg2 = cms.InputTag(retVal_caloTau["collection"]),
         srcMET = cms.InputTag('patMETs'),
         srcGenParticles = cms.InputTag(''),
@@ -117,7 +160,7 @@ def configurePatTupleProduction(process, patSequenceBuilder = None,
     process.pfTauSequenceFixedCone = retVal_pfTauFixedCone["sequence"]
 
     process.patMuonPFTauPairsFixedCone = process.allMuTauPairs.clone(
-        srcLeg1 = cms.InputTag('patMuons'),
+        srcLeg1 = cms.InputTag('patMuonsLoosePFIsoEmbedded06'),
         srcLeg2 = cms.InputTag(retVal_pfTauFixedCone["collection"]),
         srcMET = cms.InputTag('patPFMETs'),
         srcGenParticles = cms.InputTag(''),
@@ -154,7 +197,7 @@ def configurePatTupleProduction(process, patSequenceBuilder = None,
     process.pfTauSequenceShrinkingCone = retVal_pfTauShrinkingCone["sequence"]
 
     process.patMuonPFTauPairsShrinkingCone = process.allMuTauPairs.clone(
-        srcLeg1 = cms.InputTag('patMuons'),
+        srcLeg1 = cms.InputTag('patMuonsLoosePFIsoEmbedded06'),
         srcLeg2 = cms.InputTag(retVal_pfTauShrinkingCone["collection"]),
         srcMET = cms.InputTag('patPFMETs'),
         srcGenParticles = cms.InputTag(''),
@@ -187,7 +230,7 @@ def configurePatTupleProduction(process, patSequenceBuilder = None,
     process.pfTauSequenceHPS = retVal_pfTauHPS["sequence"]
 
     process.patMuonPFTauPairsHPS = process.allMuTauPairs.clone(
-        srcLeg1 = cms.InputTag('patMuons'),
+        srcLeg1 = cms.InputTag('patMuonsLoosePFIsoEmbedded06'),
         srcLeg2 = cms.InputTag(retVal_pfTauHPS["collection"]),
         srcMET = cms.InputTag('patPFMETs'),
         srcGenParticles = cms.InputTag(''),
@@ -216,7 +259,7 @@ def configurePatTupleProduction(process, patSequenceBuilder = None,
     process.pfTauSequenceHPSpTaNC = retVal_pfTauHPSpTaNC["sequence"]
 
     process.patMuonPFTauPairsHPSpTaNC = process.allMuTauPairs.clone(
-        srcLeg1 = cms.InputTag('patMuons'),
+        srcLeg1 = cms.InputTag('patMuonsLoosePFIsoEmbedded06'),
         srcLeg2 = cms.InputTag(retVal_pfTauHPSpTaNC["collection"]),
         srcMET = cms.InputTag('patPFMETs'),
         srcGenParticles = cms.InputTag(''),
@@ -258,7 +301,7 @@ def configurePatTupleProduction(process, patSequenceBuilder = None,
     process.pfTauSequenceShrinkingConeEllipticPhotonIso = retVal_pfTauShrinkingConeEllipticPhotonIso["sequence"]
 
     process.patMuonPFTauPairsShrinkingConeEllipticPhotonIso = process.allMuTauPairs.clone(
-        srcLeg1 = cms.InputTag('patMuons'),
+        srcLeg1 = cms.InputTag('patMuonsLoosePFIsoEmbedded06'),
         srcLeg2 = cms.InputTag(retVal_pfTauShrinkingConeEllipticPhotonIso["collection"]),
         srcMET = cms.InputTag('patPFMETs'),
         srcGenParticles = cms.InputTag(''),
@@ -286,6 +329,7 @@ def configurePatTupleProduction(process, patSequenceBuilder = None,
     process.patTupleProductionSequence = cms.Sequence(
         process.patDefaultSequence
        ##+ process.patTrigger + process.patTriggerEvent
+       + process.patMuonsLoosePFIsoEmbedded
        + process.caloTauSequence
        # store TaNC inputs as discriminators
        + process.produceTancMVAInputDiscriminators
@@ -302,9 +346,15 @@ def configurePatTupleProduction(process, patSequenceBuilder = None,
     # to be used as InputTag for further processing
     retVal = {}
     retVal["caloTauCollection"] = retVal_caloTau["collection"]
+    retVal["muonCaloTauCollection"] = process.patMuonCaloTauPairs.label()
     retVal["pfTauCollectionFixedCone"] = retVal_pfTauFixedCone["collection"]
+    retVal["muonPFTauCollectionFixedCone"] = process.patMuonPFTauPairsFixedCone.label()
     retVal["pfTauCollectionShrinkingCone"] = retVal_pfTauShrinkingCone["collection"]
+    retVal["muonPFTauCollectionShrinkingCone"] = process.patMuonPFTauPairsShrinkingCone.label()
     retVal["pfTauCollectionHPS"] = retVal_pfTauHPS["collection"]
+    retVal["muonPFTauCollectionHPS"] = process.patMuonPFTauPairsHPS.label()
     retVal["pfTauCollectionHPSpTaNC"] = retVal_pfTauHPSpTaNC["collection"]
+    retVal["muonPFTauCollectionHPSpTaNC"] = process.patMuonPFTauPairsHPSpTaNC.label()
     retVal["pfTauCollectionShrinkingConeEllipticPhotonIso"] = retVal_pfTauShrinkingConeEllipticPhotonIso["collection"]
+    retVal["muonPFTauCollectionShrinkingConeEllipticPhotonIso"] = process.patMuonPFTauPairsShrinkingConeEllipticPhotonIso.label()
     return retVal
