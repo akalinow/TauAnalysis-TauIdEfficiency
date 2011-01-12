@@ -209,15 +209,15 @@ if __name__ == "__main__":
             'expr_str': '$byDecayMode',
             'label' : "Decay Mode Finding"
         },
-        'byIsolationLoose' : {
+        'byHPSloose' : {
             'expr_str': '$byHPSloose',
             'label': "HPS loose"
         },
-        'byIsolationMedium' : {
+        'byHPSmedium' : {
             'expr_str': '$byHPSmedium',
             'label': "HPS medium"
         },
-        'byIsolationTight' : {
+        'byHPStight' : {
             'expr_str': '$byHPStight',
             'label': "HPS tight"
         },
