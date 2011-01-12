@@ -24,7 +24,7 @@ tauIdEffMeas_template01 = cms.PSet(
 
         # loose isolation
         ptSumLooseIsolation04 = cms.string("userFloat('pfLooseIsoPt04')"),
-        ptSumLooseIsolation06 = cms.string("userFloat('pfLooseIsoPt06')"),
+        ptSumLooseIsolation06 = cms.string("userFloat('pfLooseIsoPt06')")
     )
 )
 
