@@ -7,7 +7,7 @@ samples.py
 
 Central defintion of data sources for commissioning.
 
-$Id: samples.py,v 1.30 2011/01/05 10:16:56 friis Exp $
+$Id: samples.py,v 1.31 2011/01/12 11:06:33 smaruyam Exp $
 
 '''
 
@@ -88,12 +88,20 @@ qcddijet_mc = build_sample(
     ],
     alias_map = dijetSampleAliasMap)
 
-ppmux_mc = build_sample(
-   _MC_LUMI_MAP_FILE, "mc_ppmux", "merge",
+ppmux10_mc = build_sample(
+   _MC_LUMI_MAP_FILE, "mc_ppmux10", "merge",
    take_every=1, datasets = ["mcQCDppMuXptHatGt20PtMuGt10"],
    alias_map = muEnrichedSampleAliasMap)
-ppmuxPU156bx_mc = build_sample(
-   _MC_LUMI_MAP_FILE, "mc_ppmuxPU156bx", "merge",
+ppmux10PU156bx_mc = build_sample(
+   _MC_LUMI_MAP_FILE, "mc_ppmux10PU156bx", "merge",
+   take_every=1, datasets = ["mcQCDppMuXptHatGt20PtMuGt10PU156bx"],
+   alias_map = muEnrichedSampleAliasMap)
+ppmux15_mc = build_sample(
+   _MC_LUMI_MAP_FILE, "mc_ppmux15", "merge",
+   take_every=1, datasets = ["mcQCDppMuXptHatGt20PtMuGt10"],
+   alias_map = muEnrichedSampleAliasMap)
+ppmux15PU156bx_mc = build_sample(
+   _MC_LUMI_MAP_FILE, "mc_ppmux15PU156bx", "merge",
    take_every=1, datasets = ["mcQCDppMuXptHatGt20PtMuGt10PU156bx"],
    alias_map = muEnrichedSampleAliasMap)
 
