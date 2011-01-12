@@ -131,7 +131,7 @@ if __name__ == "__main__":
     recTaus = ntuple_manager.get_ntuple("hpstanc")
     accSelection                = recTaus.expr('$pt > 20 && abs($eta) < 2.3')
     #accSelection                = recTaus.expr('$pt > 20 && abs($eta) < 2.1')
-    recSelectionBeforeTauId     = accSelection            & recTaus.expr('$byLeadTrackFinding > 0.5 && $byLeadTrackPtCut > 0.5')
+    recSelectionBeforeTaNC      = accSelection            & recTaus.expr('$byLeadTrackFinding > 0.5 && $byLeadTrackPtCut > 0.5')
     recSelectionAfterTaNCloose  = recSelectionBeforeTauId & recTaus.expr('$byTaNCloose  > 0.5')
     recSelectionAfterTaNCmedium = recSelectionBeforeTauId & recTaus.expr('$byTaNCmedium > 0.5')
     recSelectionAfterTaNCtight  = recSelectionBeforeTauId & recTaus.expr('$byTaNCtight  > 0.5')
@@ -146,9 +146,21 @@ if __name__ == "__main__":
     recSelectionAfterHPSlooseNoLeadTrackPt  = accSelection & recTaus.expr('$byLeadTrackFinding > 0.5 && $byHPSloose  > 0.5')
     recSelectionAfterHPSmediumNoLeadTrackPt = accSelection & recTaus.expr('$byLeadTrackFinding > 0.5 && $byHPSmedium > 0.5')
     recSelectionAfterHPStightNoLeadTrackPt  = accSelection & recTaus.expr('$byLeadTrackFinding > 0.5 && $byHPStight  > 0.5')
-    
+
+    recExpressionLeadTrackFindingDiscr = recTaus.expr('$byLeadTrackFinding')
     recExpressionLeadTrackPtDiscr = recTaus.expr('$byLeadTrackPtCut')
-    binningLeadTrackPtDiscr = (2, -0.5, 1.5)
+    binningTauIdDiscr = (2, -0.5, 1.5)
+
+    recSelectionLoosePFIso04     = recSelectionBeforeTauId & recTaus.expr('$ptSumLooseIsolation04 < 2.5')
+    recSelectionAntiLoosePFIso04 = recSelectionBeforeTauId & recTaus.expr('$ptSumLooseIsolation04 > 2.5')
+    recSelectionLoosePFIso06     = recSelectionBeforeTauId & recTaus.expr('$ptSumLooseIsolation06 < 2.5')
+    recSelectionAntiLoosePFIso06 = recSelectionBeforeTauId & recTaus.expr('$ptSumLooseIsolation06 > 2.5')
+    recExpressionTaNCloose  = recTaus.expr('$byTaNCloose')
+    recExpressionTaNCmedium = recTaus.expr('$byTaNCmedium')
+    recExpressionTaNCtight  = recTaus.expr('$byTaNCtight')
+    recExpressionHPSloose   = recTaus.expr('$byHPSloose')
+    recExpressionHPSmedium  = recTaus.expr('$byHPSmedium')
+    recExpressionHPStight   = recTaus.expr('$byHPStight')
 
     ztt_events = list(ztt.events_and_weights())[0][0]
 
@@ -211,16 +223,146 @@ if __name__ == "__main__":
     ##                   recSelectionAfterHPStight, recExpressionLoosePFIso06, binningLoosePFIso,
     ##                   "./plots/pfLooseIsolation06_afterHPStight.png")
 
+    ##makeLoosePFIsoPlot(ztt_events,
+    ##                   None, None, genSelection_had,
+    ##                   recSelectionAfterHPSlooseNoLeadTrackPt, recExpressionLeadTrackPtDiscr, binningTauIdDiscr,
+    ##                   "./plots/leadTrackPtDiscr_afterHPSloose.png")
+    ##makeLoosePFIsoPlot(ztt_events,
+    ##                   None, None, genSelection_had,
+    ##                   recSelectionAfterHPSmediumNoLeadTrackPt, recExpressionLeadTrackPtDiscr, binningTauIdDiscr,
+    ##                   "./plots/leadTrackPtDiscr_afterHPSmedium.png")
+    ##makeLoosePFIsoPlot(ztt_events,
+    ##                   None, None, genSelection_had,
+    ##                   recSelectionAfterHPStightNoLeadTrackPt, recExpressionLeadTrackPtDiscr, binningTauIdDiscr,
+    ##                   "./plots/leadTrackPtDiscr_afterHPStight.png")
+
     makeLoosePFIsoPlot(ztt_events,
                        None, None, genSelection_had,
-                       recSelectionAfterHPSlooseNoLeadTrackPt, recExpressionLeadTrackPtDiscr, binningLeadTrackPtDiscr,
-                       "./plots/leadTrackPtDiscr_afterHPSloose.png")
+                       accSelection, recExpressionLeadTrackFindingDiscr, binningTauIdDiscr,
+                       "./plots/leadTrackFindingDiscr_wrtAcceptance.png")
     makeLoosePFIsoPlot(ztt_events,
                        None, None, genSelection_had,
-                       recSelectionAfterHPSmediumNoLeadTrackPt, recExpressionLeadTrackPtDiscr, binningLeadTrackPtDiscr,
-                       "./plots/leadTrackPtDiscr_afterHPSmedium.png")
-    makeLoosePFIsoPlot(ztt_events,
-                       None, None, genSelection_had,
-                       recSelectionAfterHPStightNoLeadTrackPt, recExpressionLeadTrackPtDiscr, binningLeadTrackPtDiscr,
-                       "./plots/leadTrackPtDiscr_afterHPStight.png")
+                       accSelection, recExpressionLeadTrackPtDiscr, binningTauIdDiscr,
+                       "./plots/leadTrackPtDiscr_wrtAcceptance.png")
+
+    ##makeLoosePFIsoPlot(ztt_events,
+    ##                   None, None, genSelection_had,
+    ##                   recSelectionBeforeTauId, recExpressionTaNCloose, binningTauIdDiscr,
+    ##                   "./plots/byTaNClooseDiscr_beforeLoosePFIso.png")
+    ##makeLoosePFIsoPlot(ztt_events,
+    ##                   None, None, genSelection_had,
+    ##                   recSelectionLoosePFIso04, recExpressionTaNCloose, binningTauIdDiscr,
+    ##                   "./plots/byTaNClooseDiscr_afterLoosePFIso04.png")
+    ##makeLoosePFIsoPlot(ztt_events,
+    ##                   None, None, genSelection_had,
+    ##                   recSelectionAntiLoosePFIso04, recExpressionTaNCloose, binningTauIdDiscr,
+    ##                   "./plots/byTaNClooseDiscr_afterAntiLoosePFIso04.png")
+    ##makeLoosePFIsoPlot(ztt_events,
+    ##                   None, None, genSelection_had,
+    ##                   recSelectionLoosePFIso06, recExpressionTaNCloose, binningTauIdDiscr,
+    ##                   "./plots/byTaNClooseDiscr_afterLoosePFIso06.png")
+    ##makeLoosePFIsoPlot(ztt_events,
+    ##                   None, None, genSelection_had,
+    ##                   recSelectionAntiLoosePFIso06, recExpressionTaNCloose, binningTauIdDiscr,
+    ##                   "./plots/byTaNClooseDiscr_afterAntiLoosePFIso06.png")
+    ##makeLoosePFIsoPlot(ztt_events,
+    ##                   None, None, genSelection_had,
+    ##                   recSelectionBeforeTauId, recExpressionTaNCmedium, binningTauIdDiscr,
+    ##                   "./plots/byTaNCmediumDiscr_beforeLoosePFIso.png")
+    ##makeLoosePFIsoPlot(ztt_events,
+    ##                   None, None, genSelection_had,
+    ##                   recSelectionLoosePFIso04, recExpressionTaNCmedium, binningTauIdDiscr,
+    ##                   "./plots/byTaNCmediumDiscr_afterLoosePFIso04.png")
+    ##makeLoosePFIsoPlot(ztt_events,
+    ##                   None, None, genSelection_had,
+    ##                   recSelectionAntiLoosePFIso04, recExpressionTaNCmedium, binningTauIdDiscr,
+    ##                   "./plots/byTaNCmediumDiscr_afterAntiLoosePFIso04.png")
+    ##makeLoosePFIsoPlot(ztt_events,
+    ##                   None, None, genSelection_had,
+    ##                   recSelectionLoosePFIso06, recExpressionTaNCmedium, binningTauIdDiscr,
+    ##                   "./plots/byTaNCmediumDiscr_afterLoosePFIso06.png")
+    ##makeLoosePFIsoPlot(ztt_events,
+    ##                   None, None, genSelection_had,
+    ##                   recSelectionAntiLoosePFIso06, recExpressionTaNCmedium, binningTauIdDiscr,
+    ##                   "./plots/byTaNCmediumDiscr_afterAntiLoosePFIso06.png")
+    ##makeLoosePFIsoPlot(ztt_events,
+    ##                   None, None, genSelection_had,
+    ##                   recSelectionBeforeTauId, recExpressionTaNCtight, binningTauIdDiscr,
+    ##                   "./plots/byTaNCtightDiscr_beforeLoosePFIso.png")
+    ##makeLoosePFIsoPlot(ztt_events,
+    ##                   None, None, genSelection_had,
+    ##                   recSelectionLoosePFIso04, recExpressionTaNCtight, binningTauIdDiscr,
+    ##                   "./plots/byTaNCtightDiscr_afterLoosePFIso04.png")
+    ##makeLoosePFIsoPlot(ztt_events,
+    ##                   None, None, genSelection_had,
+    ##                   recSelectionAntiLoosePFIso04, recExpressionTaNCtight, binningTauIdDiscr,
+    ##                   "./plots/byTaNCtightDiscr_afterAntiLoosePFIso04.png")
+    ##makeLoosePFIsoPlot(ztt_events,
+    ##                   None, None, genSelection_had,
+    ##                   recSelectionLoosePFIso06, recExpressionTaNCtight, binningTauIdDiscr,
+    ##                   "./plots/byTaNCtightDiscr_afterLoosePFIso06.png")
+    ##makeLoosePFIsoPlot(ztt_events,
+    ##                   None, None, genSelection_had,
+    ##                   recSelectionAntiLoosePFIso06, recExpressionTaNCtight, binningTauIdDiscr,
+    ##                   "./plots/byTaNCtightDiscr_afterAntiLoosePFIso06.png")
+    ##makeLoosePFIsoPlot(ztt_events,
+    ##                   None, None, genSelection_had,
+    ##                   recSelectionBeforeTauId, recExpressionHPSloose, binningTauIdDiscr,
+    ##                   "./plots/byHPSlooseDiscr_beforeLoosePFIso.png")
+    ##makeLoosePFIsoPlot(ztt_events,
+    ##                   None, None, genSelection_had,
+    ##                   recSelectionLoosePFIso04, recExpressionHPSloose, binningTauIdDiscr,
+    ##                   "./plots/byHPSlooseDiscr_afterLoosePFIso04.png")
+    ##makeLoosePFIsoPlot(ztt_events,
+    ##                   None, None, genSelection_had,
+    ##                   recSelectionAntiLoosePFIso04, recExpressionHPSloose, binningTauIdDiscr,
+    ##                   "./plots/byHPSlooseDiscr_afterAntiLoosePFIso04.png")
+    ##makeLoosePFIsoPlot(ztt_events,
+    ##                   None, None, genSelection_had,
+    ##                   recSelectionLoosePFIso06, recExpressionHPSloose, binningTauIdDiscr,
+    ##                   "./plots/byHPSlooseDiscr_afterLoosePFIso06.png")
+    ##makeLoosePFIsoPlot(ztt_events,
+    ##                   None, None, genSelection_had,
+    ##                   recSelectionAntiLoosePFIso06, recExpressionHPSloose, binningTauIdDiscr,
+    ##                   "./plots/byHPSlooseDiscr_afterAntiLoosePFIso06.png")
+    ##makeLoosePFIsoPlot(ztt_events,
+    ##                   None, None, genSelection_had,
+    ##                   recSelectionBeforeTauId, recExpressionHPSmedium, binningTauIdDiscr,
+    ##                   "./plots/byHPSmediumDiscr_beforeLoosePFIso.png")
+    ##makeLoosePFIsoPlot(ztt_events,
+    ##                   None, None, genSelection_had,
+    ##                   recSelectionLoosePFIso04, recExpressionHPSmedium, binningTauIdDiscr,
+    ##                   "./plots/byHPSmediumDiscr_afterLoosePFIso04.png")
+    ##makeLoosePFIsoPlot(ztt_events,
+    ##                   None, None, genSelection_had,
+    ##                   recSelectionAntiLoosePFIso04, recExpressionHPSmedium, binningTauIdDiscr,
+    ##                   "./plots/byHPSmediumDiscr_afterAntiLoosePFIso04.png")
+    ##makeLoosePFIsoPlot(ztt_events,
+    ##                   None, None, genSelection_had,
+    ##                   recSelectionLoosePFIso06, recExpressionHPSmedium, binningTauIdDiscr,
+    ##                   "./plots/byHPSmediumDiscr_afterLoosePFIso06.png")
+    ##makeLoosePFIsoPlot(ztt_events,
+    ##                   None, None, genSelection_had,
+    ##                   recSelectionAntiLoosePFIso06, recExpressionHPSmedium, binningTauIdDiscr,
+    ##                   "./plots/byHPSmediumDiscr_afterAntiLoosePFIso06.png")
+    ##makeLoosePFIsoPlot(ztt_events,
+    ##                   None, None, genSelection_had,
+    ##                   recSelectionBeforeTauId, recExpressionHPStight, binningTauIdDiscr,
+    ##                   "./plots/byHPStightDiscr_beforeLoosePFIso.png")
+    ##makeLoosePFIsoPlot(ztt_events,
+    ##                   None, None, genSelection_had,
+    ##                   recSelectionLoosePFIso04, recExpressionHPStight, binningTauIdDiscr,
+    ##                   "./plots/byHPStightDiscr_afterLoosePFIso04.png")
+    ##makeLoosePFIsoPlot(ztt_events,
+    ##                   None, None, genSelection_had,
+    ##                   recSelectionAntiLoosePFIso04, recExpressionHPStight, binningTauIdDiscr,
+    ##                   "./plots/byHPStightDiscr_afterAntiLoosePFIso04.png")
+    ##makeLoosePFIsoPlot(ztt_events,
+    ##                   None, None, genSelection_had,
+    ##                   recSelectionLoosePFIso06, recExpressionHPStight, binningTauIdDiscr,
+    ##                   "./plots/byHPStightDiscr_afterLoosePFIso06.png")
+    ##makeLoosePFIsoPlot(ztt_events,
+    ##                   None, None, genSelection_had,
+    ##                   recSelectionAntiLoosePFIso06, recExpressionHPStight, binningTauIdDiscr,
+    ##                   "./plots/byHPStightDiscr_afterAntiLoosePFIso06.png")
     
