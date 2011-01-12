@@ -42,8 +42,8 @@ patMuonsLoosePFIsoEmbedded04 = cms.EDProducer("PATMuonPFIsolationEmbedder",
     ),
     photonIso = cms.PSet(
         ptMin = cms.double(0.5),        
-        dPhiVeto = cms.double(-1.),  # asymmetric Eta x Phi veto region 
-        dEtaVeto = cms.double(-1.),  # to account for photon conversions in electron isolation case        
+        dPhiVeto = cms.double(-1.), # asymmetric Eta x Phi veto region 
+        dEtaVeto = cms.double(-1.), # to account for photon conversions in electron isolation case        
         dRvetoCone = cms.double(0.05),
         dRisoCone = cms.double(0.4)
     )
