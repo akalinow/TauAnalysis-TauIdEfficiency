@@ -13,7 +13,7 @@ muons_recInfo = cms.PSet(
     pluginType = cms.string("PATMuonVectorValExtractor"),
     
     # Collection to extract from
-    src = cms.InputTag("patMuons"),
+    src = cms.InputTag("patMuonsLoosePFIsoEmbedded06"),
     
     # Variables to compute for this source
     columns = cms.PSet(
@@ -35,7 +35,11 @@ muons_recInfo = cms.PSet(
         # Pt sum of tracks/Et sum of ECAL/HCAL energy deposits within isolation cone
         trackIso = cms.string("trackIso"),
         ecalIso = cms.string("ecalIso"),
-        hcalIso = cms.string("hcalIso")
+        hcalIso = cms.string("hcalIso"),
+
+        # Pt sum of charged + neutral hadrons and photons within isolation cones of size dR = 0.4/0.6
+        ptSumLooseIsolation04 = cms.string("userFloat('pfLooseIsoPt04')"),
+        ptSumLooseIsolation06 = cms.string("userFloat('pfLooseIsoPt06')")
     )
 )
 

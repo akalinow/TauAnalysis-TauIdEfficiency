@@ -154,6 +154,7 @@ process.load("TauAnalysis.TauIdEfficiency.ntupleConfigPFTauShrinkingCone_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigPFTauHPS_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigPFTauHPSpTaNC_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigPFTauShrinkingConeEllipticPhotonIso_cfi")
+process.load("TauAnalysis.TauIdEfficiency.ntupleConfigDiTauKinematics_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigGlobalVariables_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigGenJets_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigGenPhaseSpaceEventInfo_cfi")
@@ -183,32 +184,50 @@ process.ntupleProducer = cms.EDProducer("ObjValEDNtupleProducer",
         caloTaus_rec = process.caloTaus_recInfo.clone(
             src = cms.InputTag(retVal["caloTauCollection"])                       
         ),
+        muCaloTauPairs_rec = process.diTaus_recInfo.clone(
+            src = cms.InputTag(retVal["muonCaloTauCollection"])                       
+        ),                                 
 
         # variables specific to fixed cone PFTaus                                            
         pfTausFixedCone_rec = process.pfTausFixedCone_recInfo.clone(
             src = cms.InputTag(retVal["pfTauCollectionFixedCone"])                       
         ),
+        muPFTauPairsFixedCone_rec = process.diTaus_recInfo.clone(
+            src = cms.InputTag(retVal["muonPFTauCollectionFixedCone"])                       
+        ),                                     
 
         # variables specific to shrinking cone PFTaus                                            
         pfTausShrinkingCone_rec = process.pfTausShrinkingCone_recInfo.clone(
             src = cms.InputTag(retVal["pfTauCollectionShrinkingCone"])                       
+        ),
+        muPFTauPairsShrinkingCone_rec = process.diTaus_recInfo.clone(
+            src = cms.InputTag(retVal["muonPFTauCollectionShrinkingCone"])                       
         ),
 
         # variables specific to PFTaus reconstructed by hadron + strips (HPS) algorithm                                           
         pfTausHPS_rec = process.pfTausHPS_recInfo.clone(
             src = cms.InputTag(retVal["pfTauCollectionHPS"])                       
         ),
+        muPFTauPairsHPS_rec = process.diTaus_recInfo.clone(
+            src = cms.InputTag(retVal["muonPFTauCollectionHPS"])                       
+        ),                                    
 
         # variables specific to PFTaus reconstructed by HPS + TaNC combined tau id. algorithm
         pfTausHPSpTaNC_rec01 = process.pfTausHPSpTaNC_recInfo.clone(
             src = cms.InputTag(retVal["pfTauCollectionHPSpTaNC"])
         ),
+        muPFTauPairsHPSpTaNC_rec = process.diTaus_recInfo.clone(
+            src = cms.InputTag(retVal["muonPFTauCollectionHPSpTaNC"])                       
+        ),                                   
 
         # variables specific to shrinking cone PFTaus
         # reconstructed using ellipse for photon isolation
         pfTausShrinkingConeEllPhotonIso_rec = process.pfTausShrinkingConeEllipticPhotonIso_recInfo.clone(
             src = cms.InputTag(retVal["pfTauCollectionShrinkingConeEllipticPhotonIso"])                       
         ),
+        muPFTauPairsShrinkingConeEllPhotonIso_rec = process.diTaus_recInfo.clone(
+            src = cms.InputTag(retVal["muonPFTauCollectionShrinkingConeEllipticPhotonIso"])                       
+        ),                                    
 
         # global event variables specific to W + jets selection
         caloMet_rec = process.caloMet_template,
