@@ -9,6 +9,7 @@ SAMPLES_TO_RUN = [
     'data_MinBias_Commissioning_Jun14ReReco',
     'data_JetMETTau_Run2010Ai_Sep17ReReco',
     'data_JetMET_Run2010Aii_Sep17ReReco',
+    'data_Jet_Run2010B_Nov4ReReco',
     'data_Mu_Run2010A_Nov4ReReco',
     'data_Mu_Run2010B_Nov4ReReco',
     'Ztautau',
@@ -18,6 +19,8 @@ SAMPLES_TO_RUN = [
     'qcdDiJetPtHat50to80',
     'PPmuXptGt20Mu10',
     'PPmuXptGt20Mu10PU156bx',
+    'PPmuXptGt20Mu15',
+    'PPmuXptGt20Mu15PU156bx',
     'WplusJets',
     'WplusJetsPU156bx'
 ]
@@ -71,7 +74,18 @@ RECO_SAMPLES = {
         'jobs'          : [ 'qcdDiJet' ], 
         'type'          : 'Data',
         'hlt'           : 'HLT'
-    },  
+    },
+    'data_Jet_Run2010B_Nov4ReReco' : {
+        'datasetpath'   : '/Jet/Run2010B-Nov4ReReco_v1/RECO',
+        'dbs_url'       : "http://cmsdbsprod.cern.ch/cms_dbs_prod_global/servlet/DBSServlet",
+        'lumi_mask'     : "/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions10/7TeV/Reprocessing/Cert_136033-149442_7TeV_Nov4ReReco_Collisions10_JSON.txt",
+        'runselection'  : "146428-149442",
+        'lumis_per_job' : "25",
+        'jobs'          : [ 'qcdDiJet' ], 
+        'type'          : 'Data',
+        'hlt'           : 'HLT',
+        'SE_black_list' : 'T2_BE_IIHE'
+    },
     # Muon secondary datasets
     'data_Mu_Run2010A_Nov4ReReco' : {
         'datasetpath'   : '/Mu/Run2010A-Nov4ReReco_v1/RECO',
@@ -88,7 +102,7 @@ RECO_SAMPLES = {
         'datasetpath'   : '/Mu/Run2010B-Nov4ReReco_v1/RECO',
         'dbs_url'       : "http://cmsdbsprod.cern.ch/cms_dbs_prod_global/servlet/DBSServlet",
         'lumi_mask'     : "/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions10/7TeV/Reprocessing/Cert_136033-149442_7TeV_Nov4ReReco_Collisions10_JSON.txt",
-        'runselection'  : '146428-149442',
+        'runselection'  : "146428-149442",
         'lumis_per_job' : "25",
         'jobs'          : [ 'qcdMuEnriched', 'WplusJets' ], 
         'type'          : 'Data',
@@ -139,6 +153,20 @@ RECO_SAMPLES = {
     },
     'PPmuXptGt20Mu10PU156bx' : {
         'datasetpath'   : "/QCD_Pt-20_MuEnrichedPt-10_TuneZ2_7TeV-pythia6/Fall10-E7TeV_ProbDist_2010Data_BX156_START38_V12-v1/GEN-SIM-RECO",
+        'dbs_url'       : "http://cmsdbsprod.cern.ch/cms_dbs_prod_global/servlet/DBSServlet",
+        'jobs'          : [ 'qcdMuEnriched' ], 
+        'type'          : 'MC',
+        'hlt'           : 'REDIGI38XPU'
+    },
+    'PPmuXptGt20Mu15' : {
+        'datasetpath'   : "/QCD_Pt-20_MuEnrichedPt-15_TuneZ2_7TeV-pythia6/Fall10-START38_V12-v1/GEN-SIM-RECO",
+        'dbs_url'       : "http://cmsdbsprod.cern.ch/cms_dbs_prod_global/servlet/DBSServlet",
+        'jobs'          : [ 'qcdMuEnriched' ], 
+        'type'          : 'MC',
+        'hlt'           : 'REDIGI38X'
+    },
+    'PPmuXptGt20Mu15PU156bx' : {
+        'datasetpath'   : "/QCD_Pt-20_MuEnrichedPt-15_TuneZ2_7TeV-pythia6/Fall10-E7TeV_ProbDist_2010Data_BX156_START38_V12-v1/GEN-SIM-RECO",
         'dbs_url'       : "http://cmsdbsprod.cern.ch/cms_dbs_prod_global/servlet/DBSServlet",
         'jobs'          : [ 'qcdMuEnriched' ], 
         'type'          : 'MC',
