@@ -49,20 +49,20 @@ selectedIsoMuons = cms.EDFilter("PATMuonPFIsolationSelector",
     src = cms.InputTag('selectedMuons'),
     pfCandidateSource = cms.InputTag('pfNoPileUp'),
     chargedHadronIso = cms.PSet(
-        ptMin = cms.double(-1.),        
+        ptMin = cms.double(1.0),        
         dRvetoCone = cms.double(-1.),
         dRisoCone = cms.double(0.4)
     ),
     neutralHadronIso = cms.PSet(
-        ptMin = cms.double(0.5),        
+        ptMin = cms.double(1.0),        
         dRvetoCone = cms.double(0.08),        
         dRisoCone = cms.double(0.4)
     ),
     photonIso = cms.PSet(
-        ptMin = cms.double(0.5),        
+        ptMin = cms.double(1.0),        
         dPhiVeto = cms.double(-1.),
         dEtaVeto = cms.double(-1.),
-        dRvetoCone = cms.double(-1.),
+        dRvetoCone = cms.double(0.05),
         dRisoCone = cms.double(0.4)
     ),
     sumPtMax = cms.double(0.10),
@@ -95,7 +95,7 @@ muonCaloTauPairs = cms.EDProducer("DiCandidatePairProducer",
 
 selectedMuonCaloTauPairs = cms.EDFilter("DiCandidatePairSelector",
     src = cms.InputTag('muonCaloTauPairs'),
-    cut = cms.string("dR12 > 0.7 & mt1MET > 50. & (pZeta - 1.5*pZetaVis) < -20."),
+    cut = cms.string("dR12 > 0.7 & mt1MET > 40."),
     filter = cms.bool(False)                                     
 )
 
@@ -108,13 +108,6 @@ selectedMuonCaloTauPairFilter = cms.EDFilter("CandViewCountFilter",
     src = cms.InputTag('selectedMuonCaloTauPairs'),
     minNumber = cms.uint32(1)
 )
-
-##selectedCaloJetsAntiOverlapWithMuonsVeto = cms.EDFilter("CaloTauAntiOverlapSelector",
-##    src = cms.InputTag('selectedCaloTaus'),                                             
-##    srcNotToBeFiltered = cms.VInputTag(cms.InputTag('selectedIsoMuons')),
-##    dRmin = cms.double(0.5),
-##    filter = cms.bool(False)                                     
-##)
 
 selectedCaloJetsAntiOverlapWithMuonsVeto = cms.EDProducer("CandViewCleaner",
     srcCands = cms.InputTag('selectedCaloTaus'), 
@@ -160,7 +153,7 @@ muonPFTauPairs = cms.EDProducer("DiCandidatePairProducer",
 
 selectedMuonPFTauPairs = cms.EDFilter("DiCandidatePairSelector",
     src = cms.InputTag('muonPFTauPairs'),
-    cut = cms.string("dR12 > 0.7 & mt1MET > 50. & (pZeta - 1.5*pZetaVis) < -20."),
+    cut = cms.string("dR12 > 0.7 & mt1MET > 40."),
     filter = cms.bool(False)                                     
 )
 
@@ -173,13 +166,6 @@ selectedMuonPFTauPairFilter = cms.EDFilter("CandViewCountFilter",
     src = cms.InputTag('selectedMuonPFTauPairs'),
     minNumber = cms.uint32(1)
 )
-
-##selectedPFJetsAntiOverlapWithMuonsVeto = cms.EDFilter("PFTauAntiOverlapSelector",
-##    src = cms.InputTag('selectedPFTaus'),                                             
-##    srcNotToBeFiltered = cms.VInputTag(cms.InputTag('selectedIsoMuons')),
-##    dRmin = cms.double(0.5),
-##    filter = cms.bool(False)                                                  
-##)
 
 selectedPFJetsAntiOverlapWithMuonsVeto = cms.EDProducer("CandViewCleaner",
     srcCands = cms.InputTag('selectedPFTaus'), 
