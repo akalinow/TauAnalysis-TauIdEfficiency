@@ -117,9 +117,9 @@ std::map<std::string, TH1*> makeHistograms(const std::string& process, double we
 	     (*variable) == "SVfitMass1" || 
 	     (*variable) == "SVfitMass2" || 
 	     (*variable) == "visMass"   ) {
-	  numBins = 25;
-	  min = 0.;
-	  max = 250.;
+	  numBins = 18;
+	  min = 20.;
+	  max = 200.;
 	} else if ( (*variable) == "muonPt" ||
 		    (*variable) == "tauPt" ) {
 	  numBins = 20;
@@ -218,7 +218,8 @@ void drawHistograms(TH1* histogramQCD, double normQCD,
   histogramData->SetMarkerColor(1);
   histogramData->SetMarkerStyle(20);
 
-  smSum.SetTitle(templateZtautau->GetTitle());
+  //smSum.SetTitle(templateZtautau->GetTitle());
+  smSum.SetTitle("");
   smSum.SetMaximum(1.4*TMath::Max(smSum.GetMaximum(), histogramData->GetMaximum()));
 	
   smSum.Draw("hist");
@@ -268,6 +269,7 @@ void drawHistograms(TH1* histogram_passed, TH1* histogram_failed,
   template_failed->SetMarkerColor(2);
   template_failed->SetMarkerStyle(24);
 
+  template_passed->SetTitle("");
   template_passed->SetMaximum(1.4*TMath::Max(template_passed->GetMaximum(), template_failed->GetMaximum()));
   template_passed->SetStats(false);
   template_passed->Draw("ep1");
@@ -623,22 +625,22 @@ void fitUsingRooFit(std::map<std::string, TH1*>& histogramsData,
 		     histogramZmumu_passed, normZmumu->getVal()*fr->getVal()*frFactorZmumu->getVal(),
 		     histogramZtautau_passed, normZtautau->getVal()*effZtautau->getVal(),
 		     histogramDataMap["passed"],
-		     std::string("fitTauIdEff_").append(key).append("_passed.png"));
+		     std::string("fitTauIdEff_").append(key).append("_passed.pdf"));
       drawHistograms(histogramQCD_failed, normQCD->getVal()*(1.0 - fr->getVal()*frFactorQCD->getVal()),
 		     histogramWplusJets_failed, normWplusJets->getVal()*(1.0 - fr->getVal()*frFactorWplusJets->getVal()),
 		     histogramZmumu_failed, normZmumu->getVal()*(1.0 - fr->getVal()*frFactorZmumu->getVal()),
 		     histogramZtautau_failed, normZtautau->getVal()*(1.0 - effZtautau->getVal()),
 		     histogramDataMap["failed"],
-		     std::string("fitTauIdEff_").append(key).append("_failed.png"));
+		     std::string("fitTauIdEff_").append(key).append("_failed.pdf"));
 
       drawHistograms(histogramQCD_passed, histogramQCD_failed, *tauId,
-		     std::string("fitTauIdEff_").append(key).append("_QCD.png"));
+		     std::string("fitTauIdEff_").append(key).append("_QCD.pdf"));
       drawHistograms(histogramWplusJets_passed, histogramWplusJets_failed, *tauId,
-		     std::string("fitTauIdEff_").append(key).append("_WplusJets.png"));
+		     std::string("fitTauIdEff_").append(key).append("_WplusJets.pdf"));
       drawHistograms(histogramZmumu_passed, histogramZmumu_failed, *tauId,
-		     std::string("fitTauIdEff_").append(key).append("_Zmumu.png"));
+		     std::string("fitTauIdEff_").append(key).append("_Zmumu.pdf"));
       drawHistograms(histogramZtautau_passed, histogramZtautau_failed, *tauId,
-		     std::string("fitTauIdEff_").append(key).append("_Ztautau.png"));
+		     std::string("fitTauIdEff_").append(key).append("_Ztautau.pdf"));
 
       delete fr;
       
@@ -714,12 +716,12 @@ void fitTauIdEff()
   const std::string treeSelection = "";
 
   std::vector<std::string> tauIds;
-  //tauIds.push_back(std::string("discrTaNCloose"));
+  tauIds.push_back(std::string("discrTaNCloose"));
   tauIds.push_back(std::string("discrTaNCmedium"));
-  //tauIds.push_back(std::string("discrTaNCtight"));
-  //tauIds.push_back(std::string("discrHPSloose"));
-  //tauIds.push_back(std::string("discrHPSmedium"));
-  //tauIds.push_back(std::string("discrHPStight"));
+  tauIds.push_back(std::string("discrTaNCtight"));
+  tauIds.push_back(std::string("discrHPSloose"));
+  tauIds.push_back(std::string("discrHPSmedium"));
+  tauIds.push_back(std::string("discrHPStight"));
   
   std::vector<std::string> tauIdValues;
   tauIdValues.push_back("passed");
@@ -785,7 +787,7 @@ void fitTauIdEff()
 		       histogramsZmumu[key], -1.,
 		       histogramsZtautau[key], -1.,
 		       histogramsData[key],
-		       std::string("plotsTauIdEff_").append(key).append(".png"));
+		       std::string("plotsTauIdEff_").append(key).append(".pdf"));
       }
     }
   }
