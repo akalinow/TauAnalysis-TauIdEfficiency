@@ -163,7 +163,8 @@ RECO_SAMPLES = {
         'dbs_url'       : "http://cmsdbsprod.cern.ch/cms_dbs_prod_global/servlet/DBSServlet",
         'jobs'          : [ 'qcdMuEnriched' ], 
         'type'          : 'MC',
-        'hlt'           : 'REDIGI38X'
+        'hlt'           : 'REDIGI38X',
+        'SE_black_list' : 'T2_US_Florida,T2_RU_ITEP'
     },
     'PPmuXptGt20Mu15PU156bx' : {
         'datasetpath'   : "/QCD_Pt-20_MuEnrichedPt-15_TuneZ2_7TeV-pythia6/Fall10-E7TeV_ProbDist_2010Data_BX156_START38_V12-v1/GEN-SIM-RECO",
