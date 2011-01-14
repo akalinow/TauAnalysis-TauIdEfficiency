@@ -10,7 +10,7 @@ from TauAnalysis.CandidateTools.sysErrDefinitions_cfi import *
 from TauAnalysis.TauIdEfficiency.filterTauIdEffSample_cfi import \
        patMuonSelConfiguratorForTauIdEff, patTauSelConfiguratorForTauIdEff, patMuTauPairSelConfiguratorForTauIdEff
 
-def configurePatTupleProductionTauIdEffMeasSpecific(process):
+def configurePatTupleProductionTauIdEffMeasSpecific(process, applyZrecoilCorrection = False):
 
     #--------------------------------------------------------------------------------
     # produce collections for "central values" of Muons and Tau-jets
@@ -66,9 +66,13 @@ def configurePatTupleProductionTauIdEffMeasSpecific(process):
     # produce Muon + Tau-jet candidate pairs with Z-recoil corrections applied
     #--------------------------------------------------------------------------------
 
-    configZllRecoilCorrection = \
-      configureZllRecoilCorrection(process, "muTauPairsForTauIdEff", "ZllRecoilCorrectionMuTauPair")
-    process.producePatTupleTauIdEffMeasSpecific += configZllRecoilCorrection['patPFMETsZllRecoilCorrectionSequence']
+    if applyZrecoilCorrection:
+        print("--> enabling Z-recoil Correction")
+        configZllRecoilCorrection = \
+          configureZllRecoilCorrection(process, "muTauPairsForTauIdEff", "ZllRecoilCorrectionMuTauPair")
+        process.producePatTupleTauIdEffMeasSpecific += configZllRecoilCorrection['patPFMETsZllRecoilCorrectionSequence']
+    else:
+        print("--> disabling Z-recoil Correction")
     
     #--------------------------------------------------------------------------------
     # produce Up/Down shifted MET collections
@@ -198,30 +202,36 @@ def configurePatTupleProductionTauIdEffMeasSpecific(process):
         "sysTauJetEnUp"              : cms.InputTag('muTauPairsForTauIdEffSysTauJetEnUp'),
         "sysTauJetEnDown"            : cms.InputTag('muTauPairsForTauIdEffSysTauJetEnDown'),
         "sysJetEnUp"                 : cms.InputTag('muTauPairsForTauIdEffSysJetEnUp'),
-        "sysJetEnDown"               : cms.InputTag('muTauPairsForTauIdEffSysJetEnDown'),
-        "sysZllRecoilCorrectionUp"   : cms.InputTag('muTauPairsForTauIdEffZllRecoilCorrectedSysUp'),
-        "sysZllRecoilCorrectionDown" : cms.InputTag('muTauPairsForTauIdEffZllRecoilCorrectedSysDown')
+        "sysJetEnDown"               : cms.InputTag('muTauPairsForTauIdEffSysJetEnDown')
     }
 
     # apply Z-recoil corrections to shifted/smeared diTau objects
-    for sysName, src in muTauPairSystematicsForTauIdEff.items():
-        if sysName.find("ZllRecoilCorrection") != -1:
-            continue;
+    if applyZrecoilCorrection:
+        for sysName, src in muTauPairSystematicsForTauIdEff.items():
+            if sysName.find("ZllRecoilCorrection") != -1:
+                continue;
 
-        configZllRecoilCorrection = configureZllRecoilCorrection(process, src.getModuleLabel(), "ZllRecoilCorrectionMuTauPair")
+            configZllRecoilCorrection = configureZllRecoilCorrection(process, src.getModuleLabel(), "ZllRecoilCorrectionMuTauPair")
+            process.producePatTupleTauIdEffMeasSpecific += configZllRecoilCorrection['patPFMETsZllRecoilCorrectionSequence']
+            muTauPairSystematicsForTauIdEff[sysName] = configZllRecoilCorrection['diTauProducerModuleZllRecoilCorrectedName']
+
+        # add uncertainties on Z-recoil correction
+        configZllRecoilCorrection = configureZllRecoilCorrection(process, "muTauPairsForTauIdEff",
+                                                                 "ZllRecoilCorrectionMuTauPair", +1., "SysUp")
         process.producePatTupleTauIdEffMeasSpecific += configZllRecoilCorrection['patPFMETsZllRecoilCorrectionSequence']
-        muTauPairSystematicsForTauIdEff[sysName] = configZllRecoilCorrection['diTauProducerModuleZllRecoilCorrectedName']
+        muTauPairSystematicsForTauIdEff["sysZllRecoilCorrectionUp"] = cms.InputTag('muTauPairsForTauIdEffZllRecoilCorrectedSysUp')
+        configZllRecoilCorrection = configureZllRecoilCorrection(process, "muTauPairsForTauIdEff",
+                                                                 "ZllRecoilCorrectionMuTauPair", -1., "SysDown")
+        process.producePatTupleTauIdEffMeasSpecific += configZllRecoilCorrection['patPFMETsZllRecoilCorrectionSequence']
+        muTauPairSystematicsForTauIdEff["sysZllRecoilCorrectionDown"] = cms.InputTag('muTauPairsForTauIdEffZllRecoilCorrectedSysDown')
 
-    # add uncertainties on Z-recoil correction
-    configZllRecoilCorrection = configureZllRecoilCorrection(process, "muTauPairsForTauIdEff",
-                                                             "ZllRecoilCorrectionMuTauPair", +1., "SysUp")
-    process.producePatTupleTauIdEffMeasSpecific += configZllRecoilCorrection['patPFMETsZllRecoilCorrectionSequence']
-    configZllRecoilCorrection = configureZllRecoilCorrection(process, "muTauPairsForTauIdEff",
-                                                             "ZllRecoilCorrectionMuTauPair", -1., "SysDown")
-    process.producePatTupleTauIdEffMeasSpecific += configZllRecoilCorrection['patPFMETsZllRecoilCorrectionSequence']
+    print("muTauPairSystematicsForTauIdEff:", muTauPairSystematicsForTauIdEff)
 
-    setattr(patMuTauPairSelConfiguratorForTauIdEff, "systematics", muTauPairSystematicsForTauIdEff)
-    setattr(patMuTauPairSelConfiguratorForTauIdEff, "src", "muTauPairsForTauIdEffZllRecoilCorrected")
+    setattr(patMuTauPairSelConfiguratorForTauIdEff, "systematics", muTauPairSystematicsForTauIdEff)    
+    if applyZrecoilCorrection:
+        setattr(patMuTauPairSelConfiguratorForTauIdEff, "src", "muTauPairsForTauIdEffZllRecoilCorrected")
+    else:
+        setattr(patMuTauPairSelConfiguratorForTauIdEff, "src", "muTauPairsForTauIdEff")
     process.selectMuTauPairsForTauIdEff = patMuTauPairSelConfiguratorForTauIdEff.configure(process = process)
     process.producePatTupleTauIdEffMeasSpecific += process.selectMuTauPairsForTauIdEff
 
