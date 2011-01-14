@@ -55,8 +55,8 @@ from CommonTools.RecoAlgos.HBHENoiseFilter_cfi import *
 
 dataQualityFilters = cms.Sequence(
     hltPhysicsDeclared
-   + dcsstatus
-   + scrapingBeamsFilter
-   + primaryVertexFilter
-   + HBHENoiseFilter
+   * dcsstatus
+   * scrapingBeamsFilter
+   * primaryVertexFilter
+   * HBHENoiseFilter
 )    
