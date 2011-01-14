@@ -7,7 +7,7 @@ samples.py
 
 Central defintion of data sources for commissioning.
 
-$Id: samples.py,v 1.32 2011/01/12 13:27:42 veelken Exp $
+$Id: samples.py,v 1.33 2011/01/12 15:15:42 smaruyam Exp $
 
 '''
 
@@ -61,8 +61,6 @@ _MC_LUMI_MAP_FILE = os.path.join(
 # Arugments: lumi map file, name of output collection, merge/add, list of samples
 # to take from the JSON file
 print "loading definition of Ztautau signal Monte Carlo samples..."
-## CV: sample has not finished processing yet (11/12/10)
-## EK: enabling it anyway!
 ztautau_mc = build_sample(
     _MC_LUMI_MAP_FILE, "mc_ztautau",
     "merge", datasets = ["Ztautau"],
@@ -106,13 +104,13 @@ ppmux15PU156bx_mc = build_sample(
    alias_map = muEnrichedSampleAliasMap)
 
 print "loading definition of W + jets background Monte Carlo samples..."
-wmunu_mc = build_sample(
-   _MC_LUMI_MAP_FILE, "mc_wmunu", "merge",
-   take_every=1, datasets = ["mcWtoMuNu"],
+wjets_mc = build_sample(
+   _MC_LUMI_MAP_FILE, "mc_wjets", "merge",
+   take_every=1, datasets = ["mcWplusJets"],
    alias_map = wJetsSampleAliasMap)
-wmunuPU156bx_mc = build_sample(
-   _MC_LUMI_MAP_FILE, "mc_wmunuPU156bx", "merge",
-   take_every=1, datasets = ["mcWtoMuNuPU156bx"],
+wjetsPU156bx_mc = build_sample(
+   _MC_LUMI_MAP_FILE, "mc_wjetsPU156bx", "merge",
+   take_every=1, datasets = ["mcWplusJetsPU156bx"],
    alias_map = wJetsSampleAliasMap)
 
 # For data, we use the add mode, to concatenate data
