@@ -21,13 +21,15 @@
 # Define your numerator, denominator and HLT selection configuration file.  
 CFG = fakerate_qcdDiJet1st.cfg
 CFGFILE = $(notdir ${CFG})
-DIR = $(subst .cfg,,${CFG})
+# The type of variable
+TYPE=tau
+DIR = $(subst .cfg,,${CFG})_${TYPE}
 TRAINER=${PWD}/trainTauFakeRate_cfg.py
 #DIR = $(basename .cfg,,${CFG})
 
 # The algorithm to determine fake rates for.
 ALGO = hpstanc
-XML = ${PWD}/fakeRateMVADef.xml
+XML = ${PWD}/fakeRateMVADef_${TYPE}.xml
 
 # Make the validation plot
 ${DIR}/validateTauFakeRateKNN_JetPt.png: ../../macros/validateTauFakeRateKNN.C ${DIR}/fakeRate.db 
@@ -49,14 +51,14 @@ ${DIR}/fakeRate.db: ${XML} ${DIR}/pass.root ${DIR}/fail.root
 ${DIR}/pass.root: fakeratemethod_ntuplize.py samples.py samples_cache.py ${DIR}/${CFGFILE}
 	mkdir -p ${DIR}
 	rm -f ${DIR}/pass.log
-	./fakeratemethod_ntuplize.py -passing --ntuple ${ALGO} \
+	./fakeratemethod_ntuplize.py -passing --ntuple ${ALGO} --kin ${TYPE} \
 	  --config ${DIR}/${CFGFILE} --output $@ >& ${DIR}/pass.log
 
 # Build the 'denominator'
 ${DIR}/fail.root: fakeratemethod_ntuplize.py samples.py samples_cache.py ${DIR}/${CFGFILE}
 	mkdir -p ${DIR}
 	rm -f ${DIR}/fail.log
-	./fakeratemethod_ntuplize.py -failing --ntuple ${ALGO} \
+	./fakeratemethod_ntuplize.py -failing --ntuple ${ALGO} --kin ${TYPE} \
 	  --config ${DIR}/${CFGFILE} --output $@ >& ${DIR}/fail.log
 
 # Copy the cfg used to select the ntuples into the folder for persistence
