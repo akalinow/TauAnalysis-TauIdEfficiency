@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<!--Training defintion for fake rate method-->
+<!--Author: Evan K. Friis-->
+<MVATrainer>
+  <general>
+    <option name="trainfiles">train/train_%1$s%2$s.%3$s</option>
+  </general>
+  <input id="input">
+    <var name="JetPt" multiple="false" optional="false"/>
+    <var name="AbsJetEta" multiple="false" optional="false"/>
+    <var name="JetWidth" multiple="false" optional="false"/>
+  </input>
+  <!--MVA defintion-->
+  <processor id="FakeRateMethod" name="ProcTMVA">
+    <input>
+      <var source="input" name="JetPt"/>
+      <var source="input" name="AbsJetEta"/>
+      <var source="input" name="JetWidth"/>
+    </input>
+    <config>
+      <method type="KNN" name="KNN">nkNN=100</method>
+      <!--Testing mode: Keep half of the events for the testing as a sanity check-->
+      <setup cuts="" options="NormMode=NumEvents:NSigTest=0:NBkgTest=0"/>
+      <!--Production mode: Use all events for the "training" of the k-nearest neighbour tree-->
+      <!--<setup cuts="" options="NormMode=NumEvents:NSigTest=1:NBkgTest=1"/>-->
+    </config>
+    <output>
+      <var name="MVAOutput"/>
+    </output>
+  </processor>
+  <!--Final output of classifier-->
+  <output>
+    <var source="FakeRateMethod" name="MVAOutput"/>
+  </output>
+</MVATrainer>
