@@ -19,6 +19,8 @@ namespace {
 const PhysicsTools::AtomicId widthId("JetWidth");
 const PhysicsTools::AtomicId tauPtId("Pt");
 const PhysicsTools::AtomicId tauEtaId("AbsEta");
+const PhysicsTools::AtomicId jetPtId("JetPt");
+const PhysicsTools::AtomicId jetEtaId("AbsJetEta");
 
 // Check if a value is Nan and print a warning if so
 double checkNan(const PhysicsTools::AtomicId &name, double value) {
@@ -46,9 +48,9 @@ struct Extractor {
     return data_->Size();
   }
   double compute(const PhysicsTools::AtomicId &name) const {
-    if (name == tauPtId)
+    if (name == tauPtId || name == jetPtId)
       return checkNan(tauPtId, pt_);
-    if (name == tauEtaId)
+    if (name == tauEtaId || name == jetEtaId)
       return checkNan(tauEtaId, eta_);
     if (name == widthId)
       return checkNan(widthId, width_);
