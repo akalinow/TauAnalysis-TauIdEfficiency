@@ -26,7 +26,7 @@
       <!--Testing mode: Keep half of the events for the testing as a sanity check-->
       <setup cuts="" options="NormMode=NumEvents:NSigTest=0:NBkgTest=0"/>
       <!--Production mode: Use all events for the "training" of the k-nearest neighbour tree-->
-      <!--setup cuts="" options="NormMode=NumEvents:NSigTest=1:NBkgTest=1"/-->
+      <!--<setup cuts="" options="NormMode=NumEvents:NSigTest=1:NBkgTest=1"/>-->
     </config>
     <output>
       <var name="MVAOutput"/>
