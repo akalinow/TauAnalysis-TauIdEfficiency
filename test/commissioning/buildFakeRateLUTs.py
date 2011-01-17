@@ -20,10 +20,15 @@ skipExisting = True
 
 sample_filterfunc = None
 # Uncomment to skip loose iso
-sample_filterfunc = lambda x: x.find('closure') != -1
+sample_filterfunc = lambda x: x.find('closure') == -1 and x.find('mc.cfg') == -1
+
+def matches_any(x, types):
+    return any(x.find(type) != -1 for type in types)
 
 type_filter = None
-type_filter = lambda x: x.find('WplusJets') != -1
+my_types = ['PP', 'WplusJets', 'Ztau', 'iJet']
+#type_filter = lambda x: x.find('WplusJets') != -1 and x.find('Loose') == -1
+type_filter = lambda x: matches_any(x, my_types) and x.find('terLoose') == -1
 
 for fakeRateType, fakeRateConfig in fakerates.fakeRateDef.items():
     for sampleLabel, sampleConfig in fakeRateConfig['samples'].items():
@@ -68,4 +73,4 @@ for fakeRateType, fakeRateConfig in fakerates.fakeRateDef.items():
             cfgFile.close()
 
 print("Configuration files build:")
-print("execute 'ls config/fakerate*cfg | xargs -P 5 -I % make -f Makefile.FakeRateMethod -j 2 CFG=%' in order to start make process.")
+print("execute 'ls config/fakerate*cfg | xargs -P 5 -I % make -f Makefile.FakeRateMethod -j 2 CFG=% TYPE=jet' in order to start make process.")
