@@ -25,6 +25,8 @@ parser.add_argument('-failing', action='store_true', default=False,
 parser.add_argument('--output', help="Output file")
 parser.add_argument('--config', help="Configuration file")
 parser.add_argument('--index', help="Sample index")
+parser.add_argument(
+    '--kin', help='[tau] or [jet], default = tau', default='jet')
 
 options=parser.parse_args()
 
@@ -90,8 +92,15 @@ def check_for_quotes(my_string):
 check_for_quotes(passing)
 check_for_quotes(failing)
 
-#draw_string = ntuple.expr('$jetWidth:$jetEta:$jetPt')
-draw_string = ntuple.expr('$jetWidth:abs($eta):$pt')
+
+draw_string = "bad"
+if options.kin.find('tau') != -1:
+    draw_string = ntuple.expr('$jetWidth:abs($eta):$pt')
+elif options.kin.find('jet') != -1:
+    draw_string = ntuple.expr('$jetWidth:$jetEta:$jetPt')
+else:
+    raise ValueError("bad kinematic var option - use jet or tau!")
+print "Parameterization string:", draw_string
 
 output_file = ROOT.TFile(options.output, "RECREATE")
 output_file.cd()
@@ -105,7 +114,7 @@ events_list = list(getattr(samples, options.sample).events_and_weights())
 #             or all sets to have the same weights in case sample contains multiple set of files
 #         (Note that this means it is not possible to fill k-NN tree
 #          with QCD Monte Carlo generated in different PtHat bins)
-import TauAnalysis.TauIdEfficiency.ntauples.helpers as helpers
+#import TauAnalysis.TauIdEfficiency.ntauples.helpers as helpers
 
 #events = None
 #if len(events_list) == 1:
