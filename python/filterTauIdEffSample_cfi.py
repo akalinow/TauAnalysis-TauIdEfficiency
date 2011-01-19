@@ -27,11 +27,11 @@ hltMu = cms.EDFilter("EventSelPluginFilter",
 #--------------------------------------------------------------------------------
 
 patMuonsLoosePFIsoEmbedded04 = cms.EDProducer("PATMuonPFIsolationEmbedder",
-    src = cms.InputTag('cleanPatMuons'),                                       
+    src = cms.InputTag('patMuons'),                                       
     userFloatName = cms.string('pfLooseIsoPt04'),
     pfCandidateSource = cms.InputTag('pfNoPileUp'),
     chargedHadronIso = cms.PSet(
-        ptMin = cms.double(0.5),        
+        ptMin = cms.double(1.0),        
         dRvetoCone = cms.double(-1.),
         dRisoCone = cms.double(0.4)
     ),
@@ -41,7 +41,7 @@ patMuonsLoosePFIsoEmbedded04 = cms.EDProducer("PATMuonPFIsolationEmbedder",
         dRisoCone = cms.double(0.4)
     ),
     photonIso = cms.PSet(
-        ptMin = cms.double(0.5),        
+        ptMin = cms.double(1.0),        
         dPhiVeto = cms.double(-1.), # asymmetric Eta x Phi veto region 
         dEtaVeto = cms.double(-1.), # to account for photon conversions in electron isolation case        
         dRvetoCone = cms.double(0.05),
@@ -66,33 +66,40 @@ patMuonsLoosePFIsoEmbedded06 = patMuonsLoosePFIsoEmbedded04.clone(
 
 patMuonsLoosePFIsoEmbedded = cms.Sequence(patMuonsLoosePFIsoEmbedded04 * patMuonsLoosePFIsoEmbedded06)
 
-selectedPatMuonsGlobal.cut = cms.string('isGlobalMuon()')
-selectedPatMuonsEta21.cut = cms.string('abs(eta) < 2.1')
-selectedPatMuonsPt15.cut = cms.string('pt > 15.')
-selectedPatMuonsVbTfId.beamSpotSource = cms.InputTag("offlineBeamSpot")
-selectedPatMuonsPFRelIso.chargedHadronIso.ptMin = patMuonsLoosePFIsoEmbedded04.chargedHadronIso.ptMin
-selectedPatMuonsPFRelIso.chargedHadronIso.dRvetoCone = patMuonsLoosePFIsoEmbedded04.chargedHadronIso.dRvetoCone
-selectedPatMuonsPFRelIso.chargedHadronIso.dRisoCone = patMuonsLoosePFIsoEmbedded04.chargedHadronIso.dRisoCone
-selectedPatMuonsPFRelIso.neutralHadronIso.ptMin = patMuonsLoosePFIsoEmbedded04.neutralHadronIso.ptMin 
-selectedPatMuonsPFRelIso.neutralHadronIso.dRvetoCone = patMuonsLoosePFIsoEmbedded04.neutralHadronIso.dRvetoCone
-selectedPatMuonsPFRelIso.neutralHadronIso.dRisoCone = patMuonsLoosePFIsoEmbedded04.neutralHadronIso.dRisoCone
-selectedPatMuonsPFRelIso.photonIso.ptMin = patMuonsLoosePFIsoEmbedded04.photonIso.ptMin
-selectedPatMuonsPFRelIso.photonIso.dRvetoCone = patMuonsLoosePFIsoEmbedded04.photonIso.dRvetoCone
-selectedPatMuonsPFRelIso.photonIso.dRisoCone = patMuonsLoosePFIsoEmbedded04.photonIso.dRisoCone
-selectedPatMuonsPFRelIso.sumPtMax = cms.double(0.30)
-selectedPatMuonsPFRelIso.sumPtMethod = cms.string("relative")
-selectedPatMuonsTrk.cut = cms.string('innerTrack.isNonnull')
-selectedPatMuonsTrkIP.vertexSource = cms.InputTag("selectedPrimaryVertexHighestPtTrackSum")
-selectedPatMuonsTrkIP.IpMax = cms.double(0.05)
+selectedPatMuonsForTauIdEffGlobal = copy.deepcopy(selectedPatMuonsGlobal)
+selectedPatMuonsForTauIdEffGlobal.cut = cms.string('isGlobalMuon()')
+selectedPatMuonsForTauIdEffEta21 = copy.deepcopy(selectedPatMuonsEta21)
+selectedPatMuonsForTauIdEffEta21.cut = cms.string('abs(eta) < 2.1')
+selectedPatMuonsForTauIdEffPt15 = copy.deepcopy(selectedPatMuonsPt15)
+selectedPatMuonsForTauIdEffPt15.cut = cms.string('pt > 15.')
+selectedPatMuonsForTauIdEffVbTfId = copy.deepcopy(selectedPatMuonsVbTfId)
+selectedPatMuonsForTauIdEffVbTfId.beamSpotSource = cms.InputTag("offlineBeamSpot")
+selectedPatMuonsForTauIdEffPFRelIso = copy.deepcopy(selectedPatMuonsPFRelIso)
+selectedPatMuonsForTauIdEffPFRelIso.chargedHadronIso.ptMin = patMuonsLoosePFIsoEmbedded04.chargedHadronIso.ptMin
+selectedPatMuonsForTauIdEffPFRelIso.chargedHadronIso.dRvetoCone = patMuonsLoosePFIsoEmbedded04.chargedHadronIso.dRvetoCone
+selectedPatMuonsForTauIdEffPFRelIso.chargedHadronIso.dRisoCone = patMuonsLoosePFIsoEmbedded04.chargedHadronIso.dRisoCone
+selectedPatMuonsForTauIdEffPFRelIso.neutralHadronIso.ptMin = patMuonsLoosePFIsoEmbedded04.neutralHadronIso.ptMin 
+selectedPatMuonsForTauIdEffPFRelIso.neutralHadronIso.dRvetoCone = patMuonsLoosePFIsoEmbedded04.neutralHadronIso.dRvetoCone
+selectedPatMuonsForTauIdEffPFRelIso.neutralHadronIso.dRisoCone = patMuonsLoosePFIsoEmbedded04.neutralHadronIso.dRisoCone
+selectedPatMuonsForTauIdEffPFRelIso.photonIso.ptMin = patMuonsLoosePFIsoEmbedded04.photonIso.ptMin
+selectedPatMuonsForTauIdEffPFRelIso.photonIso.dRvetoCone = patMuonsLoosePFIsoEmbedded04.photonIso.dRvetoCone
+selectedPatMuonsForTauIdEffPFRelIso.photonIso.dRisoCone = patMuonsLoosePFIsoEmbedded04.photonIso.dRisoCone
+selectedPatMuonsForTauIdEffPFRelIso.sumPtMax = cms.double(0.30)
+selectedPatMuonsForTauIdEffPFRelIso.sumPtMethod = cms.string("relative")
+selectedPatMuonsForTauIdEffTrk = copy.deepcopy(selectedPatMuonsTrk)
+selectedPatMuonsForTauIdEffTrk.cut = cms.string('innerTrack.isNonnull')
+selectedPatMuonsForTauIdEffTrkIP = copy.deepcopy(selectedPatMuonsTrkIP)
+selectedPatMuonsForTauIdEffTrkIP.vertexSource = cms.InputTag("selectedPrimaryVertexHighestPtTrackSum")
+selectedPatMuonsForTauIdEffTrkIP.IpMax = cms.double(0.05)
 
 patMuonSelConfiguratorForTauIdEff = objSelConfigurator(
-    [ selectedPatMuonsGlobal,
-      selectedPatMuonsEta21,
-      selectedPatMuonsPt15,
-      selectedPatMuonsVbTfId,
-      selectedPatMuonsPFRelIso,
-      selectedPatMuonsTrk,
-      selectedPatMuonsTrkIP ],
+    [ selectedPatMuonsForTauIdEffGlobal,
+      selectedPatMuonsForTauIdEffEta21,
+      selectedPatMuonsForTauIdEffPt15,
+      selectedPatMuonsForTauIdEffVbTfId,
+      selectedPatMuonsForTauIdEffPFRelIso,
+      selectedPatMuonsForTauIdEffTrk,
+      selectedPatMuonsForTauIdEffTrkIP ],
     src = "patMuonsLoosePFIsoEmbedded06",
     pyModuleName = __name__,
     doSelIndividual = False
@@ -144,29 +151,38 @@ patTausLoosePFIsoEmbedded06 = patTausLoosePFIsoEmbedded04.clone(
 
 patTausLoosePFIsoEmbedded = cms.Sequence(patTausLoosePFIsoEmbedded04 * patTausLoosePFIsoEmbedded06)
 
-selectedPatTausForMuTauAntiOverlapWithMuonsVeto.dRmin = cms.double(0.7)
-selectedPatTausForMuTauAntiOverlapWithMuonsVeto.srcNotToBeFiltered = cms.VInputTag("selectedPatMuonsGlobalCumulative")
-selectedPatTausForMuTauEta23.cut = cms.string("abs(eta) < 2.3")
-selectedPatTausForMuTauPt20.cut = cut = cms.string("pt > 20.")
-selectedPatTausForMuTauLeadTrk.cut = cms.string('tauID("leadingTrackFinding") > 0.5')
-selectedPatTausForMuTauLeadTrkPt.cut = cms.string('tauID("leadingTrackPtCut") > 0.5')
-selectedPatTausForMuTauMuonVeto.cut = cms.string('tauID("againstMuon") > 0.5')
-selectedPatTausForMuTauCaloMuonVeto.cut = cms.string('tauID("againstCaloMuon") > 0.5')
-#selectedPatTausForMuTauCaloMuonVeto.cut = cms.string('tauID("againstCaloMuon") > -1.')
-selectedPatTausForMuTauElectronVeto.cut = cms.string('tauID("againstElectron") > 0.5')
-selectedPatTausForMuTauEcalCrackVeto = copy.deepcopy(selectedPatTausEcalCrackVeto)
-selectedPatTausForMuTauEcalCrackVeto.cut = cms.string("abs(eta) < 1.460 | abs(eta) > 1.558")
+selectedPatTausForTauIdEffAntiOverlapWithMuonsVeto = copy.deepcopy(selectedPatTausForMuTauAntiOverlapWithMuonsVeto)
+selectedPatTausForTauIdEffAntiOverlapWithMuonsVeto.dRmin = cms.double(0.7)
+selectedPatTausForTauIdEffAntiOverlapWithMuonsVeto.srcNotToBeFiltered = cms.VInputTag("selectedPatMuonsForTauIdEffGlobalCumulative")
+selectedPatTausForTauIdEffEta23 = copy.deepcopy(selectedPatTausForMuTauEta23)
+selectedPatTausForTauIdEffEta23.cut = cms.string("abs(eta) < 2.3")
+selectedPatTausForTauIdEffPt20 = copy.deepcopy(selectedPatTausForMuTauPt20)
+selectedPatTausForTauIdEffPt20.cut = cut = cms.string("pt > 20.")
+selectedPatTausForTauIdEffLeadTrk = copy.deepcopy(selectedPatTausForMuTauLeadTrk)
+selectedPatTausForTauIdEffLeadTrk.cut = cms.string('tauID("leadingTrackFinding") > 0.5')
+selectedPatTausForTauIdEffLeadTrkPt = copy.deepcopy(selectedPatTausForMuTauLeadTrkPt)
+selectedPatTausForTauIdEffLeadTrkPt.cut = cms.string('tauID("leadingTrackPtCut") > 0.5')
+selectedPatTausForTauIdEffMuonVeto = copy.deepcopy(selectedPatTausForMuTauMuonVeto)
+selectedPatTausForTauIdEffMuonVeto.cut = cms.string('tauID("againstMuon") > 0.5')
+selectedPatTausForTauIdEffCaloMuonVeto = copy.deepcopy(selectedPatTausForMuTauCaloMuonVeto)
+selectedPatTausForTauIdEffCaloMuonVeto.cut = cms.string('tauID("againstCaloMuon") > 0.5')
+#selectedPatTausForTauIdEffCaloMuonVeto.cut = cms.string('tauID("againstCaloMuon") > -1.')
+selectedPatTausForTauIdEffElectronVeto = copy.deepcopy(selectedPatTausForMuTauElectronVeto)
+#selectedPatTausForTauIdEffElectronVeto.cut = cms.string('tauID("againstElectron") > 0.5')
+selectedPatTausForTauIdEffElectronVeto.cut = cms.string('leadPFCand().isNonnull() & leadPFCand().mva_e_pi() < 0.6')
+selectedPatTausForTauIdEffEcalCrackVeto = copy.deepcopy(selectedPatTausEcalCrackVeto)
+selectedPatTausForTauIdEffEcalCrackVeto.cut = cms.string("abs(eta) < 1.460 | abs(eta) > 1.558")
 
 patTauSelConfiguratorForTauIdEff = objSelConfigurator(
-    [ selectedPatTausForMuTauAntiOverlapWithMuonsVeto,
-      selectedPatTausForMuTauEta23,
-      selectedPatTausForMuTauPt20,
-      selectedPatTausForMuTauLeadTrk,
-      selectedPatTausForMuTauLeadTrkPt,
-      selectedPatTausForMuTauMuonVeto,
-      selectedPatTausForMuTauCaloMuonVeto,
-      selectedPatTausForMuTauElectronVeto,
-      selectedPatTausForMuTauEcalCrackVeto ],
+    [ selectedPatTausForTauIdEffAntiOverlapWithMuonsVeto,
+      selectedPatTausForTauIdEffEta23,
+      selectedPatTausForTauIdEffPt20,
+      selectedPatTausForTauIdEffLeadTrk,
+      selectedPatTausForTauIdEffLeadTrkPt,
+      selectedPatTausForTauIdEffMuonVeto,
+      selectedPatTausForTauIdEffCaloMuonVeto,
+      selectedPatTausForTauIdEffElectronVeto,
+      selectedPatTausForTauIdEffEcalCrackVeto ],
     src = "patTausLoosePFIsoEmbedded06",
     pyModuleName = __name__,
     doSelIndividual = False
@@ -179,22 +195,30 @@ selectPatTausForTauIdEff = patTauSelConfiguratorForTauIdEff.configure(pyNameSpac
 #--------------------------------------------------------------------------------
 
 muTauPairsForTauIdEff = allMuTauPairs.clone(
-    srcLeg1 = cms.InputTag('selectedPatMuonsTrkIPcumulative'),
-    srcLeg2 = cms.InputTag('selectedPatTausForMuTauEcalCrackVetoCumulative'),
+    srcLeg1 = cms.InputTag('selectedPatMuonsForTauIdEffTrkIPcumulative'),
+    srcLeg2 = cms.InputTag('selectedPatTausForTauIdEffElectronVetoCumulative'),
     srcMET = cms.InputTag('patPFMETs'),
     srcGenParticles = cms.InputTag('genParticles')
 )    
 
-selectedMuTauPairsAntiOverlapVeto.cut = cms.string('dR12 > 0.7')
-selectedMuTauPairsMt1MET.cut = cms.string('mt1MET < 40.')
-selectedMuTauPairsPzetaDiff.cut = cms.string('(pZeta - 1.5*pZetaVis) > -20.')
-selectedMuTauPairsZeroCharge.cut = cms.string('(leg1.charge + leg2.leadPFChargedHadrCand.charge) = 0')
+selectedMuTauPairsForTauIdEffAntiOverlapVeto = selectedMuTauPairsAntiOverlapVeto.clone(
+    cut = cms.string('dR12 > 0.7')
+)    
+selectedMuTauPairsForTauIdEffMt1MET = selectedMuTauPairsMt1MET.clone(
+    cut = cms.string('mt1MET < 40.')
+)    
+selectedMuTauPairsForTauIdEffPzetaDiff = selectedMuTauPairsPzetaDiff.clone(
+    cut = cms.string('(pZeta - 1.5*pZetaVis) > -20.')
+)       
+selectedMuTauPairsForTauIdEffZeroCharge = selectedMuTauPairsZeroCharge.clone(            
+    cut = cms.string('(leg1.charge + leg2.leadPFChargedHadrCand.charge) = 0')
+)
 
 patMuTauPairSelConfiguratorForTauIdEff = objSelConfigurator(
-    [ selectedMuTauPairsAntiOverlapVeto,
-      selectedMuTauPairsMt1MET,
-      selectedMuTauPairsPzetaDiff,
-      selectedMuTauPairsZeroCharge ],
+    [ selectedMuTauPairsForTauIdEffAntiOverlapVeto,
+      selectedMuTauPairsForTauIdEffMt1MET,
+      selectedMuTauPairsForTauIdEffPzetaDiff,
+      selectedMuTauPairsForTauIdEffZeroCharge ],
     src = "muTauPairsForTauIdEff",
     pyModuleName = __name__,
     doSelIndividual = True
@@ -202,10 +226,55 @@ patMuTauPairSelConfiguratorForTauIdEff = objSelConfigurator(
 
 selectMuTauPairsForTauIdEff = patMuTauPairSelConfiguratorForTauIdEff.configure(pyNameSpace = locals())
 
-selectedMuTauPairFilter = cms.EDFilter("CandViewCountFilter",
-    src = cms.InputTag('selectedMuTauPairsAntiOverlapVetoCumulative'),      
+produceMuTauPairsForTauIdEff = cms.Sequence(muTauPairsForTauIdEff * selectMuTauPairsForTauIdEff)
+
+selectedMuTauPairFilter = cms.EDFilter("PATCandViewCountFilter",
+    src = cms.InputTag('selectedMuTauPairsForTauIdEffAntiOverlapVetoCumulative'),      
     minNumber = cms.uint32(1),
     maxNumber = cms.uint32(1)                                   
+)
+
+#--------------------------------------------------------------------------------
+# veto events containing di-Muon pairs
+# (the hypothesis being that the pair results from a Z --> mu+ mu- decay)
+#--------------------------------------------------------------------------------
+
+selectedPatMuonsForZmumuHypothesesMuonTrack = cms.EDFilter("PATMuonSelector",
+    src = cms.InputTag("patMuons"),
+    cut = cms.string('isGlobalMuon() | isTrackerMuon() | isStandAloneMuon()'),
+    filter = cms.bool(False)
+)
+
+selectedPatMuonsForZmumuHypothesesPt10 = cms.EDFilter("PATMuonSelector",
+    src = cms.InputTag("selectedPatMuonsForZmumuHypothesesMuonTrack"),
+    cut = cms.string('pt > 10'),
+    filter = cms.bool(False)
+)
+
+allDiMuPairZmumuHypotheses = cms.EDProducer("PATDiMuPairProducer",
+    useLeadingTausOnly = cms.bool(False),
+    srcLeg1 = cms.InputTag('selectedPatMuonsForTauIdEffTrkIPcumulative'),
+    srcLeg2 = cms.InputTag('selectedPatMuonsForZmumuHypothesesPt10'),
+    dRmin12 = cms.double(0.3),
+    srcMET = cms.InputTag(''),
+    recoMode = cms.string(""),
+    verbosity = cms.untracked.int32(0)
+)
+
+selectedDiMuPairZmumuHypotheses = cms.EDFilter("PATDiMuPairSelector",
+    src = cms.InputTag("allDiMuPairZmumuHypotheses"),                                   
+    cut = cms.string('charge = 0'),
+    filter = cms.bool(False)
+)
+
+produceDiMuPairs = cms.Sequence(
+    selectedPatMuonsForZmumuHypothesesMuonTrack * selectedPatMuonsForZmumuHypothesesPt10
+   * allDiMuPairZmumuHypotheses * selectedDiMuPairZmumuHypotheses
+)
+
+diMuPairZmumuHypothesisVeto = cms.EDFilter("PATCandViewMaxFilter",
+    src = cms.InputTag('selectedDiMuPairZmumuHypotheses'),
+    maxNumber = cms.uint32(0)                                                            
 )
 
 #--------------------------------------------------------------------------------
@@ -217,8 +286,8 @@ muonPFTauSkimPath = cms.Path(
    + selectPrimaryVertex
    + patMuonsLoosePFIsoEmbedded + selectPatMuonsForTauIdEff
    + patTausLoosePFIsoEmbedded + selectPatTausForTauIdEff
-   + muTauPairsForTauIdEff + selectMuTauPairsForTauIdEff
-   + selectedMuTauPairFilter
+   + produceMuTauPairsForTauIdEff + selectedMuTauPairFilter
+   + produceDiMuPairs + diMuPairZmumuHypothesisVeto
    + dataQualityFilters
 )
 
