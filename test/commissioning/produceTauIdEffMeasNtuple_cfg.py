@@ -21,7 +21,8 @@ process.source = cms.Source("PoolSource",
         #'/store/relval/CMSSW_3_6_1/RelValZTT/GEN-SIM-RECO/START36_V7-v1/0020/EE3E8F74-365D-DF11-AE3D-002618FDA211.root'
         ##'file:/data1/veelken/CMSSW_3_6_x/skims/pseudoData_Ztautau.root'
         ##'file:/data1/veelken/CMSSW_3_6_x/skims/Ztautau_1_1_sXK.root'
-        'file:/data1/veelken/CMSSW_3_8_x/skims/test/mcDYttPU156bx_GEN_SIM_RECO_1_1_1VV.root'
+        ##'file:/data1/veelken/CMSSW_3_8_x/skims/test/mcDYttPU156bx_GEN_SIM_RECO_1_1_1VV.root'
+        'file:/data1/veelken/CMSSW_3_8_x/skims/AHtoMuTau/selEvents_AHtoMuTau_HPSloose_friis_RECO.root'
     ),
     skipEvents = cms.untracked.uint32(0)            
 )
@@ -39,14 +40,16 @@ process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(1000)
 )
 
-isMC = True # use for MC
-##isMC = False # use for Data
-##HLTprocessName = "HLT" # use for non-reprocessed MC samples and Data
+##isMC = True # use for MC
+isMC = False # use for Data
+HLTprocessName = "HLT" # use for non-reprocessed MC samples and Data
 ##HLTprocessName = "REDIGI36X" # use for Spring'10 reprocessed MC
-HLTprocessName = "REDIGI38XPU" # use for Fall'10 reprocessed MC with pile-up
+##HLTprocessName = "REDIGI38XPU" # use for Fall'10 reprocessed MC with pile-up
 ##HLTprocessName = "REDIGI38X" # use for Fall'10 reprocessed MC without pile-up
 pfCandidateCollection = "particleFlow" # pile-up removal disabled
 ##pfCandidateCollection = "pfNoPileUp" # pile-up removal enabled
+applyZrecoilCorrection = False
+#applyZrecoilCorrection = True
 #---------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
@@ -182,20 +185,23 @@ process.ntupleProducer = cms.EDProducer("ObjValEDNtupleProducer",
 
         # global variables describing the underlying event/
         # amount of hadronic activity                                            
-        jets = process.jets_template,
+        jets = process.jets_template.clone(
+            src = cms.InputTag("selectedPatJetsForTauIdEffEt20Cumulative"),
+            srcNotToBeFiltered = cms.VInputTag()
+        ),                                                
         caloMet_rec = process.caloMet_template,
         pfMet_rec = process.pfMet_template,
 
         # variables specific to tau id. efficiency measurement
         tauIdEffMeas01 = process.tauIdEffMeas_template01.clone(
-            src = cms.InputTag('selectedPatMuonsTrkIPcumulative')
+            src = cms.InputTag('selectedPatMuonsForTauIdEffTrkIPcumulative')
         ),
         tauIdEffMeas02 = process.tauIdEffMeas_template02.clone(
-            src = cms.InputTag('selectedPatTausForMuTauEcalCrackVetoCumulative')
+            src = cms.InputTag('selectedPatTausForTauIdEffEcalCrackVetoCumulative')
         ),
-        tauIdEffMeas03 = process.tauIdEffMeas_template03.clone(
-            src = cms.InputTag('selectedMuTauPairsAntiOverlapVetoCumulative')
-        )
+        tauIdEffMeas03woZllRecoilCorr = process.tauIdEffMeas_template03.clone(
+            src = cms.InputTag('selectedMuTauPairsForTauIdEffAntiOverlapVetoCumulative')
+        )                                        
     )
 )
 
@@ -206,52 +212,70 @@ from TauAnalysis.TauIdEfficiency.tools.configurePatTupleProductionTauIdEffMeasSp
 configurePatTupleProductionTauIdEffMeasSpecific(process, applyZrecoilCorrection)
 
 setattr(process.ntupleProducer.sources, "tauIdEffMeas01MuonPtUp", process.tauIdEffMeas_template01.clone(
-    src = cms.InputTag('selectedPatMuonsTrkIPsysMuonPtUpCumulative')
+    src = cms.InputTag('selectedPatMuonsForTauIdEffTrkIPsysMuonPtUpCumulative')
 ))
-setattr(process.ntupleProducer.sources, "tauIdEffMeas03MuonPtUp", process.tauIdEffMeas_template03.clone(
-    src = cms.InputTag('selectedMuTauPairsAntiOverlapVetoSysMuonPtUpCumulative')
+setattr(process.ntupleProducer.sources, "tauIdEffMeas03woZllRecoilCorrMuonPtUp", process.tauIdEffMeas_template03.clone(
+    src = cms.InputTag('selectedMuTauPairsForTauIdEffAntiOverlapVetoSysMuonPtUpCumulative')
 ))
 setattr(process.ntupleProducer.sources, "tauIdEffMeas01MuonPtDown", process.tauIdEffMeas_template01.clone(
-    src = cms.InputTag('selectedPatMuonsTrkIPsysMuonPtDownCumulative')
+    src = cms.InputTag('selectedPatMuonsForTauIdEffTrkIPsysMuonPtDownCumulative')
 ))
-setattr(process.ntupleProducer.sources, "tauIdEffMeas03MuonPtDown", process.tauIdEffMeas_template03.clone(
-    src = cms.InputTag('selectedMuTauPairsAntiOverlapVetoSysMuonPtDownCumulative')
+setattr(process.ntupleProducer.sources, "tauIdEffMeas03woZllRecoilCorrMuonPtDown", process.tauIdEffMeas_template03.clone(
+    src = cms.InputTag('selectedMuTauPairsForTauIdEffAntiOverlapVetoSysMuonPtDownCumulative')
 ))
 
 setattr(process.ntupleProducer.sources, "tauIdEffMeas02TauJetEnUp", process.tauIdEffMeas_template02.clone(
-    src = cms.InputTag('selectedPatTausForMuTauEcalCrackVetoSysTauJetEnUpCumulative')
+    src = cms.InputTag('selectedPatTausForTauIdEffEcalCrackVetoSysTauJetEnUpCumulative')
 ))
-setattr(process.ntupleProducer.sources, "tauIdEffMeas03TauJetEnUp", process.tauIdEffMeas_template03.clone(
-    src = cms.InputTag('selectedMuTauPairsAntiOverlapVetoSysTauJetEnUpCumulative')
+setattr(process.ntupleProducer.sources, "tauIdEffMeas03woZllRecoilCorrTauJetEnUp", process.tauIdEffMeas_template03.clone(
+    src = cms.InputTag('selectedMuTauPairsForTauIdEffAntiOverlapVetoSysTauJetEnUpCumulative')
 ))
 setattr(process.ntupleProducer.sources, "tauIdEffMeas02TauJetEnDown", process.tauIdEffMeas_template02.clone(
-    src = cms.InputTag('selectedPatTausForMuTauEcalCrackVetoSysTauJetEnDownCumulative')
+    src = cms.InputTag('selectedPatTausForTauIdEffEcalCrackVetoSysTauJetEnDownCumulative')
 ))
-setattr(process.ntupleProducer.sources, "tauIdEffMeas03TauJetEnDown", process.tauIdEffMeas_template03.clone(
-    src = cms.InputTag('selectedMuTauPairsAntiOverlapVetoSysTauJetEnDownCumulative')
-))
-
-setattr(process.ntupleProducer.sources, "tauIdEffMeas03JetEnUp", process.tauIdEffMeas_template03.clone(
-    src = cms.InputTag('selectedMuTauPairsAntiOverlapVetoSysJetEnUpCumulative')
-))
-setattr(process.ntupleProducer.sources, "tauIdEffMeas03JetEnDown", process.tauIdEffMeas_template03.clone(
-    src = cms.InputTag('selectedMuTauPairsAntiOverlapVetoSysJetEnDownCumulative')
+setattr(process.ntupleProducer.sources, "tauIdEffMeas03woZllRecoilCorrTauJetEnDown", process.tauIdEffMeas_template03.clone(
+    src = cms.InputTag('selectedMuTauPairsForTauIdEffAntiOverlapVetoSysTauJetEnDownCumulative')
 ))
 
-srcZllRecoilCorrectionUp   = None
-srcZllRecoilCorrectionDown = None
+setattr(process.ntupleProducer.sources, "tauIdEffMeas03woZllRecoilCorrJetEnUp", process.tauIdEffMeas_template03.clone(
+    src = cms.InputTag('selectedMuTauPairsForTauIdEffAntiOverlapVetoSysJetEnUpCumulative')
+))
+setattr(process.ntupleProducer.sources, "tauIdEffMeas03woZllRecoilCorrJetEnDown", process.tauIdEffMeas_template03.clone(
+    src = cms.InputTag('selectedMuTauPairsForTauIdEffAntiOverlapVetoSysJetEnDownCumulative')
+))
+
 if applyZrecoilCorrection:
-    srcZllRecoilCorrectionUp   = cms.InputTag('selectedMuTauPairsAntiOverlapVetoSysZllRecoilCorrectionUpCumulative')
-    srcZllRecoilCorrectionDown = cms.InputTag('selectedMuTauPairsAntiOverlapVetoSysZllRecoilCorrectionDownCumulative')
-else:
-    srcZllRecoilCorrectionUp   = process.ntupleProducer.sources.tauIdEffMeas03.src
-    srcZllRecoilCorrectionDown = srcZllRecoilCorrectionUp
-setattr(process.ntupleProducer.sources, "tauIdEffMeas03ZllRecoilCorrectionUp", process.tauIdEffMeas_template03.clone(
-    src = srcZllRecoilCorrectionUp
-))
-setattr(process.ntupleProducer.sources, "tauIdEffMeas03ZllRecoilCorrectionDown", process.tauIdEffMeas_template03.clone(
-    src = srcZllRecoilCorrectionDown
-))
+    setattr(process.ntupleProducer.sources, "tauIdEffMeas03wZllRecoilCorr", process.tauIdEffMeas_template03.clone(
+        src = cms.InputTag('selectedMuTauPairsForTauIdEffZllRecoilCorrectedAntiOverlapVetoCumulative')
+    ))
+
+    setattr(process.ntupleProducer.sources, "tauIdEffMeas03wZllRecoilCorrMuonPtUp", process.tauIdEffMeas_template03.clone(
+        src = cms.InputTag('selectedMuTauPairsForTauIdEffZllRecoilCorrectedAntiOverlapVetoSysMuonPtUpCumulative')
+    ))
+    setattr(process.ntupleProducer.sources, "tauIdEffMeas03wZllRecoilCorrMuonPtDown", process.tauIdEffMeas_template03.clone(
+        src = cms.InputTag('selectedMuTauPairsForTauIdEffZllRecoilCorrectedAntiOverlapVetoSysMuonPtDownCumulative')
+    ))
+
+    setattr(process.ntupleProducer.sources, "tauIdEffMeas03wZllRecoilCorrTauJetEnUp", process.tauIdEffMeas_template03.clone(
+        src = cms.InputTag('selectedMuTauPairsForTauIdEffZllRecoilCorrectedAntiOverlapVetoSysTauJetEnUpCumulative')
+    ))
+    setattr(process.ntupleProducer.sources, "tauIdEffMeas03wZllRecoilCorrTauJetEnDown", process.tauIdEffMeas_template03.clone(
+        src = cms.InputTag('selectedMuTauPairsForTauIdEffZllRecoilCorrectedAntiOverlapVetoSysTauJetEnDownCumulative')
+    ))
+
+    setattr(process.ntupleProducer.sources, "tauIdEffMeas03wZllRecoilCorrJetEnUp", process.tauIdEffMeas_template03.clone(
+        src = cms.InputTag('selectedMuTauPairsForTauIdEffZllRecoilCorrectedAntiOverlapVetoSysJetEnUpCumulative')
+    ))
+    setattr(process.ntupleProducer.sources, "tauIdEffMeas03wZllRecoilCorrJetEnDown", process.tauIdEffMeas_template03.clone(
+        src = cms.InputTag('selectedMuTauPairsForTauIdEffZllRecoilCorrectedAntiOverlapVetoSysJetEnDownCumulative')
+    ))
+
+    setattr(process.ntupleProducer.sources, "tauIdEffMeas03wZllRecoilCorrZllRecoilCorrectionUp", process.tauIdEffMeas_template03.clone(
+        src = cms.InputTag('selectedMuTauPairsForTauIdEffZllRecoilCorrectedAntiOverlapVetoSysZllRecoilCorrectionUpCumulative')
+    ))
+    setattr(process.ntupleProducer.sources, "tauIdEffMeas03wZllRecoilCorrZllRecoilCorrectionDown", process.tauIdEffMeas_template03.clone(
+        src = cms.InputTag('selectedMuTauPairsForTauIdEffZllRecoilCorrectedAntiOverlapVetoSysZllRecoilCorrectionDownCumulative')
+    ))
 
 if isMC:
     # add in information about generator level visible taus and all generator level jets

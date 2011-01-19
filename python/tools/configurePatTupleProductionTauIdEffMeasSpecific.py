@@ -46,34 +46,39 @@ def configurePatTupleProductionTauIdEffMeasSpecific(process, applyZrecoilCorrect
 
     setattr(patMuonSelConfiguratorForTauIdEff, "systematics", muonSystematics)
     process.selectPatMuonsForTauIdEff = patMuonSelConfiguratorForTauIdEff.configure(process = process)
-
+    process.producePatTupleTauIdEffMeasSpecific += process.selectPatMuonsForTauIdEff
+    
     setattr(patTauSelConfiguratorForTauIdEff, "systematics", tauSystematics)
     process.selectPatTausForTauIdEff = patTauSelConfiguratorForTauIdEff.configure(process = process)
+    process.producePatTupleTauIdEffMeasSpecific += process.selectPatTausForTauIdEff
 
-    # CV: pat::Electron and pat::Tau collections needed for pat::Jet overlap removal
+    # CV: pat::Electron collection needed for pat::Jet overlap removal
     process.producePatTupleTauIdEffMeasSpecific += process.selectPatElectrons
-    process.producePatTupleTauIdEffMeasSpecific += process.selectPatTaus
 
     process.load("TauAnalysis.RecoTools.patJetSelection_cff")
+    process.selectedPatJetsForTauIdEffAntiOverlapWithLeptonsVeto = copy.deepcopy(process.selectedPatJetsAntiOverlapWithLeptonsVeto)
+    process.selectedPatJetsForTauIdEffAntiOverlapWithLeptonsVeto.srcNotToBeFiltered = cms.VInputTag(
+        "selectedPatElectronsTrkIPcumulative",
+        "selectedPatMuonsForTauIdEffTrkIPcumulative",
+        "selectedPatTausForTauIdEffEcalCrackVetoCumulative"
+    )
+    process.selectedPatJetsForTauIdEffEta21 = copy.deepcopy(process.selectedPatJetsEta21)
+    process.selectedPatJetsForTauIdEffEt20 = copy.deepcopy(process.selectedPatJetsEt20)
+    patJetSelConfiguratorForTauIdEff = objSelConfigurator(
+        [ process.selectedPatJetsForTauIdEffAntiOverlapWithLeptonsVeto,
+          process.selectedPatJetsForTauIdEffEta21,
+          process.selectedPatJetsForTauIdEffEt20 ],
+        src = "patJets",
+        pyModuleName = __name__,
+        doSelIndividual = False
+    )
+    setattr(patJetSelConfiguratorForTauIdEff, "systematics", jetSystematics)   
+    process.selectPatJetsForTauIdEff = patJetSelConfiguratorForTauIdEff.configure(process = process)
+
     process.load("TauAnalysis.RecoTools.patJetSystematics_cff")
     process.producePatTupleTauIdEffMeasSpecific += process.prodSmearedJets 
-    process.producePatTupleTauIdEffMeasSpecific += process.selectPatJets
+    process.producePatTupleTauIdEffMeasSpecific += process.selectPatJetsForTauIdEff
 
-    setattr(patJetSelConfigurator, "systematics", jetSystematics)    
-    process.selectPatJets = patJetSelConfigurator.configure(process = process)
-
-    #--------------------------------------------------------------------------------
-    # produce Muon + Tau-jet candidate pairs with Z-recoil corrections applied
-    #--------------------------------------------------------------------------------
-
-    if applyZrecoilCorrection:
-        print("--> enabling Z-recoil Correction")
-        configZllRecoilCorrection = \
-          configureZllRecoilCorrection(process, "muTauPairsForTauIdEff", "ZllRecoilCorrectionMuTauPair")
-        process.producePatTupleTauIdEffMeasSpecific += configZllRecoilCorrection['patPFMETsZllRecoilCorrectionSequence']
-    else:
-        print("--> disabling Z-recoil Correction")
-    
     #--------------------------------------------------------------------------------
     # produce Up/Down shifted MET collections
     #--------------------------------------------------------------------------------
@@ -86,7 +91,7 @@ def configurePatTupleProductionTauIdEffMeasSpecific(process, applyZrecoilCorrect
     #      ( as defined in TauAnalysis/Configuration/python/tools/sysUncertaintyTools.py )
     #
     process.selectedPatJetsForMEtTypeIcorr = cms.EDFilter("PATJetSelector",
-        src = cms.InputTag('selectedPatJetsAntiOverlapWithLeptonsVetoCumulative'),                                    
+        src = cms.InputTag('selectedPatJetsForTauIdEffAntiOverlapWithLeptonsVetoCumulative'),                                    
         cut = cms.string('pt > 10.'), 
         filter = cms.bool(False)
     )
@@ -130,20 +135,20 @@ def configurePatTupleProductionTauIdEffMeasSpecific(process, applyZrecoilCorrect
         pyModuleName = __name__,
         systematics = {
             "sysMuonPtUp" : {
-                "smearedParticles.muons.srcOriginal" : cms.InputTag('selectedPatMuonsTrkIPcumulative'),
-                "smearedParticles.muons.srcSmeared"  : cms.InputTag('selectedPatMuonsTrkIPsysMuonPtUpCumulative')
+                "smearedParticles.muons.srcOriginal" : cms.InputTag('selectedPatMuonsForTauIdEffTrkIPcumulative'),
+                "smearedParticles.muons.srcSmeared"  : cms.InputTag('selectedPatMuonsForTauIdEffTrkIPsysMuonPtUpCumulative')
             },
             "sysMuonPtDown" : {
-                "smearedParticles.muons.srcOriginal" : cms.InputTag('selectedPatMuonsTrkIPcumulative'),
-                "smearedParticles.muons.srcSmeared"  : cms.InputTag('selectedPatMuonsTrkIPsysMuonPtDownCumulative')
+                "smearedParticles.muons.srcOriginal" : cms.InputTag('selectedPatMuonsForTauIdEffTrkIPcumulative'),
+                "smearedParticles.muons.srcSmeared"  : cms.InputTag('selectedPatMuonsForTauIdEffTrkIPsysMuonPtDownCumulative')
             },
             "sysTauJetEnUp" : {
-                "smearedParticles.taus.srcOriginal" : cms.InputTag('selectedPatTausForMuTauEcalCrackVetoCumulative'),
-                "smearedParticles.taus.srcSmeared"  : cms.InputTag('selectedPatTausForMuTauEcalCrackVetoSysTauJetEnUpCumulative')
+                "smearedParticles.taus.srcOriginal" : cms.InputTag('selectedPatTausForTauIdEffEcalCrackVetoCumulative'),
+                "smearedParticles.taus.srcSmeared"  : cms.InputTag('selectedPatTausForTauIdEffEcalCrackVetoSysTauJetEnUpCumulative')
             },
             "sysTauJetEnDown" : {
-                "smearedParticles.taus.srcOriginal" : cms.InputTag('selectedPatTausForMuTauEcalCrackVetoCumulative'),
-                "smearedParticles.taus.srcSmeared"  : cms.InputTag('selectedPatTausForMuTauEcalCrackVetoSysTauJetEnDownCumulative')
+                "smearedParticles.taus.srcOriginal" : cms.InputTag('selectedPatTausForTauIdEffEcalCrackVetoCumulative'),
+                "smearedParticles.taus.srcSmeared"  : cms.InputTag('selectedPatTausForTauIdEffEcalCrackVetoSysTauJetEnDownCumulative')
             },
             "sysJetEnUp" : {
                 "smearedParticles.jetsTypeI.srcOriginal" : cms.InputTag('selectedPatJetsForMEtTypeIcorr'),
@@ -164,6 +169,11 @@ def configurePatTupleProductionTauIdEffMeasSpecific(process, applyZrecoilCorrect
     process.prodSmearedMET = smearedMETconfigurator.configure(process = process)
     process.producePatTupleTauIdEffMeasSpecific += process.prodSmearedMET 
 
+    #--------------------------------------------------------------------------------
+    # produce collections of smeared Muon + Tau-jet candidate pairs
+    # **without** Z-recoil corrections applied
+    #--------------------------------------------------------------------------------
+
     muTauPairProdConfiguratorForTauIdEff = objProdConfigurator(
         process.muTauPairsForTauIdEff,
         pyModuleName = __name__
@@ -171,19 +181,19 @@ def configurePatTupleProductionTauIdEffMeasSpecific(process, applyZrecoilCorrect
 
     setattr(muTauPairProdConfiguratorForTauIdEff, "systematics", {
         "sysMuonPtUp" : {
-            "srcLeg1" : cms.InputTag('selectedPatMuonsTrkIPsysMuonPtUpCumulative'),
+            "srcLeg1" : cms.InputTag('selectedPatMuonsForTauIdEffTrkIPsysMuonPtUpCumulative'),
             "srcMET"  : cms.InputTag('smearedMETsysMuonPtUp')
         },
         "sysMuonPtDown" : {
-            "srcLeg1" : cms.InputTag('selectedPatMuonsTrkIPsysMuonPtDownCumulative'),
+            "srcLeg1" : cms.InputTag('selectedPatMuonsForTauIdEffTrkIPsysMuonPtDownCumulative'),
             "srcMET"  : cms.InputTag('smearedMETsysMuonPtDown')
         },
         "sysTauJetEnUp" : {
-            "srcLeg2" : cms.InputTag('selectedPatTausForMuTauEcalCrackVetoSysTauJetEnUpCumulative'),
+            "srcLeg2" : cms.InputTag('selectedPatTausForTauIdEffEcalCrackVetoSysTauJetEnUpCumulative'),
             "srcMET"  : cms.InputTag('smearedMETsysTauJetEnUp')
         },
         "sysTauJetEnDown" : {
-            "srcLeg2" : cms.InputTag('selectedPatTausForMuTauEcalCrackVetoSysTauJetEnDownCumulative'),
+            "srcLeg2" : cms.InputTag('selectedPatTausForTauIdEffEcalCrackVetoSysTauJetEnDownCumulative'),
             "srcMET"  : cms.InputTag('smearedMETsysTauJetEnDown')
         },
         "sysJetEnUp" : {
@@ -205,34 +215,70 @@ def configurePatTupleProductionTauIdEffMeasSpecific(process, applyZrecoilCorrect
         "sysJetEnDown"               : cms.InputTag('muTauPairsForTauIdEffSysJetEnDown')
     }
 
-    # apply Z-recoil corrections to shifted/smeared diTau objects
+    print("muTauPairSystematicsForTauIdEff:", muTauPairSystematicsForTauIdEff)
+    
+    setattr(patMuTauPairSelConfiguratorForTauIdEff, "systematics", muTauPairSystematicsForTauIdEff)    
+    process.selectMuTauPairsForTauIdEff = \
+      patMuTauPairSelConfiguratorForTauIdEff.configure(process = process)
+    process.producePatTupleTauIdEffMeasSpecific += process.selectMuTauPairsForTauIdEff
+
+    #--------------------------------------------------------------------------------
+    # produce collections of smeared Muon + Tau-jet candidate pairs
+    # **with** Z-recoil corrections applied
+    #--------------------------------------------------------------------------------
+
     if applyZrecoilCorrection:
+        # produce Muon + Tau-jet candidate pairs with Z-recoil corrections applied
+        configZllRecoilCorrection = \
+          configureZllRecoilCorrection(process, "muTauPairsForTauIdEff", "ZllRecoilCorrectionMuTauPair")
+        process.producePatTupleTauIdEffMeasSpecific += configZllRecoilCorrection['patPFMETsZllRecoilCorrectionSequence']
+
+        # apply Z-recoil corrections to shifted/smeared diTau objects
+        muTauPairSystematicsForTauIdEffZllRecoilCorrected = {}
         for sysName, src in muTauPairSystematicsForTauIdEff.items():
             if sysName.find("ZllRecoilCorrection") != -1:
                 continue;
 
             configZllRecoilCorrection = configureZllRecoilCorrection(process, src.getModuleLabel(), "ZllRecoilCorrectionMuTauPair")
             process.producePatTupleTauIdEffMeasSpecific += configZllRecoilCorrection['patPFMETsZllRecoilCorrectionSequence']
-            muTauPairSystematicsForTauIdEff[sysName] = configZllRecoilCorrection['diTauProducerModuleZllRecoilCorrectedName']
+            muTauPairSystematicsForTauIdEffZllRecoilCorrected[sysName] = \
+              configZllRecoilCorrection['diTauProducerModuleZllRecoilCorrectedName']
 
-        # add uncertainties on Z-recoil correction
-        configZllRecoilCorrection = configureZllRecoilCorrection(process, "muTauPairsForTauIdEff",
+            # add uncertainties on Z-recoil correction
+            configZllRecoilCorrection = configureZllRecoilCorrection(process, "muTauPairsForTauIdEff",
                                                                  "ZllRecoilCorrectionMuTauPair", +1., "SysUp")
-        process.producePatTupleTauIdEffMeasSpecific += configZllRecoilCorrection['patPFMETsZllRecoilCorrectionSequence']
-        muTauPairSystematicsForTauIdEff["sysZllRecoilCorrectionUp"] = cms.InputTag('muTauPairsForTauIdEffZllRecoilCorrectedSysUp')
-        configZllRecoilCorrection = configureZllRecoilCorrection(process, "muTauPairsForTauIdEff",
+            process.producePatTupleTauIdEffMeasSpecific += configZllRecoilCorrection['patPFMETsZllRecoilCorrectionSequence']
+            muTauPairSystematicsForTauIdEffZllRecoilCorrected["sysZllRecoilCorrectionUp"] = \
+              cms.InputTag('muTauPairsForTauIdEffZllRecoilCorrectedSysUp')
+            configZllRecoilCorrection = configureZllRecoilCorrection(process, "muTauPairsForTauIdEff",
                                                                  "ZllRecoilCorrectionMuTauPair", -1., "SysDown")
-        process.producePatTupleTauIdEffMeasSpecific += configZllRecoilCorrection['patPFMETsZllRecoilCorrectionSequence']
-        muTauPairSystematicsForTauIdEff["sysZllRecoilCorrectionDown"] = cms.InputTag('muTauPairsForTauIdEffZllRecoilCorrectedSysDown')
+            process.producePatTupleTauIdEffMeasSpecific += configZllRecoilCorrection['patPFMETsZllRecoilCorrectionSequence']
+            muTauPairSystematicsForTauIdEffZllRecoilCorrected["sysZllRecoilCorrectionDown"] = \
+              cms.InputTag('muTauPairsForTauIdEffZllRecoilCorrectedSysDown')
 
-    print("muTauPairSystematicsForTauIdEff:", muTauPairSystematicsForTauIdEff)
+        print("muTauPairSystematicsForTauIdEffZllRecoilCorrected:", muTauPairSystematicsForTauIdEffZllRecoilCorrected)
 
-    setattr(patMuTauPairSelConfiguratorForTauIdEff, "systematics", muTauPairSystematicsForTauIdEff)    
-    if applyZrecoilCorrection:
-        setattr(patMuTauPairSelConfiguratorForTauIdEff, "src", "muTauPairsForTauIdEffZllRecoilCorrected")
-    else:
-        setattr(patMuTauPairSelConfiguratorForTauIdEff, "src", "muTauPairsForTauIdEff")
-    process.selectMuTauPairsForTauIdEff = patMuTauPairSelConfiguratorForTauIdEff.configure(process = process)
-    process.producePatTupleTauIdEffMeasSpecific += process.selectMuTauPairsForTauIdEff
+        process.selectedMuTauPairsForTauIdEffZllRecoilCorrectedAntiOverlapVeto = \
+          copy.deepcopy(process.selectedMuTauPairsForTauIdEffAntiOverlapVeto)
+        process.selectedMuTauPairsForTauIdEffZllRecoilCorrectedMt1MET = \
+          copy.deepcopy(process.selectedMuTauPairsForTauIdEffMt1MET)
+        process.selectedMuTauPairsForTauIdEffZllRecoilCorrectedPzetaDiff = \
+          copy.deepcopy(process.selectedMuTauPairsForTauIdEffPzetaDiff)
+        process.selectedMuTauPairsForTauIdEffZllRecoilCorrectedZeroCharge = \
+          copy.deepcopy(process.selectedMuTauPairsForTauIdEffZeroCharge)
 
+        patMuTauPairSelConfiguratorForTauIdEffZllRecoilCorrected = objSelConfigurator(
+            [ process.selectedMuTauPairsForTauIdEffZllRecoilCorrectedAntiOverlapVeto,
+              process.selectedMuTauPairsForTauIdEffZllRecoilCorrectedMt1MET,
+              process.selectedMuTauPairsForTauIdEffZllRecoilCorrectedPzetaDiff,
+              process.selectedMuTauPairsForTauIdEffZllRecoilCorrectedZeroCharge ],
+            src = "muTauPairsForTauIdEffZllRecoilCorrected",
+            pyModuleName = __name__,
+            doSelIndividual = True
+        )
+    
+        setattr(patMuTauPairSelConfiguratorForTauIdEffZllRecoilCorrected, "systematics", muTauPairSystematicsForTauIdEffZllRecoilCorrected)
+        process.selectMuTauPairsForTauIdEffZllRecoilCorrected = \
+          patMuTauPairSelConfiguratorForTauIdEffZllRecoilCorrected.configure(process = process)
+        process.producePatTupleTauIdEffMeasSpecific += process.selectMuTauPairsForTauIdEffZllRecoilCorrected 
     
