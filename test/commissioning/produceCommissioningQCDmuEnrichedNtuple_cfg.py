@@ -22,7 +22,8 @@ process.source = cms.Source("PoolSource",
         ##'file:/data1/veelken/CMSSW_3_6_x/skims/pseudoData_Ztautau.root'
         ##'file:/data1/veelken/CMSSW_3_6_x/skims/Ztautau_1_1_sXK.root'
         ##'file:/data1/veelken/CMSSW_3_6_x/skims/selEvents_ZtoDiTau_qcdDiJet_RECO.root'
-        'file:/data1/veelken/CMSSW_3_6_x/skims/ppMuXPtGt20Mu15_GEN_SIM_RECO_1_1_2VK.root'
+        ##'file:/data1/veelken/CMSSW_3_6_x/skims/ppMuXPtGt20Mu15_GEN_SIM_RECO_1_1_2VK.root'
+        'file:/data1/veelken/CMSSW_3_8_x/skims/test/mcDYttPU156bx_GEN_SIM_RECO_1_1_1VV.root'                        
     ),
     skipEvents = cms.untracked.uint32(0)            
 )
@@ -37,11 +38,12 @@ process.maxEvents = cms.untracked.PSet(
 isMC = True # use for MC
 ##isMC = False # use for Data
 ##HLTprocessName = "HLT" # use for non-reprocessed MC samples and Data
-HLTprocessName = "REDIGI36X" # use for Spring'10 reprocessed MC
-##HLTprocessName = "REDIGI38XPU" # use for Fall'10 reprocessed MC with pile-up
+##HLTprocessName = "REDIGI36X" # use for Spring'10 reprocessed MC
+HLTprocessName = "REDIGI38XPU" # use for Fall'10 reprocessed MC with pile-up
 ##HLTprocessName = "REDIGI38X" # use for Fall'10 reprocessed MC without pile-up
 pfCandidateCollection = "particleFlow" # pile-up removal disabled
 ##pfCandidateCollection = "pfNoPileUp" # pile-up removal enabled
+applyEventSelection = True 
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
@@ -51,6 +53,7 @@ pfCandidateCollection = "particleFlow" # pile-up removal disabled
 #__isMC = #isMC#
 #__HLTprocessName = #HLTprocessName#
 #__pfCandidateCollection = #pfCandidateCollection#
+#__applyEventSelection = #applyEventSelection#
 #
 #--------------------------------------------------------------------------------
 
@@ -298,12 +301,19 @@ process.options = cms.untracked.PSet(
 process.o = cms.EndPath(process.ntupleOutputModule)
 
 # define order in which different paths are run
-process.schedule = cms.Schedule(
-    process.p,
-    process.muonCaloTauSkimPath,
-    process.muonPFTauSkimPath,
-    process.o
-)
+if applyEventSelection:
+    process.schedule = cms.Schedule(
+        process.p,
+        process.muonCaloTauSkimPath,
+        process.muonPFTauSkimPath,
+        process.o
+    )
+else:
+    delattr(process.ntupleOutputModule, "SelectEvents")
+    process.schedule = cms.Schedule(
+        process.p,
+        process.o
+    )
 
 # print-out all python configuration parameter information
 #print process.dumpPython()

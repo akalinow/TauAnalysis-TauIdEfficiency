@@ -14,9 +14,14 @@ SAMPLES_TO_RUN = [
     'data_Mu_Run2010B_Nov4ReReco',
     'Ztautau',
     'ZtautauPU156bx',
+    'qcdDiJetPtHat5to15',
+    'qcdDiJetPtHat5to15PU156bx',
     'qcdDiJetPtHat15to30',
+    'qcdDiJetPtHat15to30PU156bx',
     'qcdDiJetPtHat30to50',
+    'qcdDiJetPtHat30to50PU156bx',
     'qcdDiJetPtHat50to80',
+    'qcdDiJetPtHat50to80PU156bx',
     'PPmuXptGt20Mu10',
     'PPmuXptGt20Mu10PU156bx',
     'PPmuXptGt20Mu15',
@@ -27,20 +32,56 @@ SAMPLES_TO_RUN = [
 
 JOBS_TO_RUN = [
     'qcdDiJet',
+    'qcdDiJet_mcNoCuts',
     'qcdMuEnriched',
-    'WplusJets'
+    'qcdMuEnriched_mcNoCuts',
+    'WplusJets',
+    'WplusJets_mcNoCuts',
 ]
 
 CONFIG_FILES = {
-    'qcdDiJet'      : "produceCommissioningQCDdiJetNtuple_cfg.py",
-    'qcdMuEnriched' : "produceCommissioningQCDmuEnrichedNtuple_cfg.py", 
-    'WplusJets'     : "produceCommissioningWplusJetsEnrichedNtuple_cfg.py"
+    'qcdDiJet'               : "produceCommissioningQCDdiJetNtuple_cfg.py",
+    'qcdDiJet_mcNoCuts'      : "produceCommissioningQCDdiJetNtuple_cfg.py",
+    'qcdMuEnriched'          : "produceCommissioningQCDmuEnrichedNtuple_cfg.py",
+    'qcdMuEnriched_mcNoCuts' : "produceCommissioningQCDmuEnrichedNtuple_cfg.py",
+    'WplusJets'              : "produceCommissioningWplusJetsEnrichedNtuple_cfg.py",
+    'WplusJets_mcNoCuts'     : "produceCommissioningWplusJetsEnrichedNtuple_cfg.py"
 }
 
 ROOT_FILE_NAMES = {
-    'qcdDiJet'      : "tauIdEffEDNtuple_qcdDiJet.root",
-    'qcdMuEnriched' : "tauIdEffEDNtuple_qcdMuEnriched.root", 
-    'WplusJets'     : "tauIdEffEDNtuple_wPlusJetsEnriched.root"
+    'qcdDiJet'               : "tauIdEffEDNtuple_qcdDiJet.root",
+    'qcdDiJet_mcNoCuts'      : "tauIdEffEDNtuple_qcdDiJet.root",
+    'qcdMuEnriched'          : "tauIdEffEDNtuple_qcdMuEnriched.root",
+    'qcdMuEnriched_mcNoCuts' : "tauIdEffEDNtuple_qcdMuEnriched.root",
+    'WplusJets'              : "tauIdEffEDNtuple_wPlusJetsEnriched.root",
+    'WplusJets_mcNoCuts'     : "tauIdEffEDNtuple_wPlusJetsEnriched.root"
+}
+
+JOB_OPTIONS = {
+    'qcdDiJet' : {
+        'applyEventSelection' : True,
+        'submitTypes'         : [ 'MC', 'Data' ]
+    },
+    'qcdDiJet_mcNoCuts' :{
+        'applyEventSelection' : False,
+        'submitTypes'         : [ 'MC' ]
+    },
+    'qcdMuEnriched' : {
+        'applyEventSelection' : True,
+        'submitTypes'         : [ 'MC', 'Data' ]
+    },
+    'qcdMuEnriched_mcNoCuts' : {
+        'applyEventSelection' : False,
+        'submitTypes'         : [ 'MC' ]
+    },
+    'WplusJets' : {
+        'applyEventSelection' : True,
+        'submitTypes'         : [ 'MC', 'Data' ]
+    },
+    'WplusJets_mcNoCuts' : {
+        'applyEventSelection' : False,
+        'submitTypes'         : [ 'MC' ]
+    }
 }
 
 RECO_SAMPLES = {
@@ -123,12 +164,33 @@ RECO_SAMPLES = {
         'type'          : 'MC',
         'hlt'           : 'REDIGI38XPU'
     },
+    'qcdDiJetPtHat5to15' : {
+        'datasetpath'   : "/QCD_Pt_5to15_TuneZ2_7TeV_pythia6/Fall10-START38_V12-v1/GEN-SIM-RECO",
+        'dbs_url'       : "http://cmsdbsprod.cern.ch/cms_dbs_prod_global/servlet/DBSServlet",
+        'jobs'          : [ 'qcdDiJet' ], 
+        'type'          : 'MC',
+        'hlt'           : 'REDIGI38X'
+    },
+    'qcdDiJetPtHat5to15PU156bx' : {
+        'datasetpath'   : "/QCD_Pt_5to15_TuneZ2_7TeV_pythia6/Fall10-E7TeV_ProbDist_2010Data_BX156_START38_V12-v1/GEN-SIM-RECO",
+        'dbs_url'       : "http://cmsdbsprod.cern.ch/cms_dbs_prod_global/servlet/DBSServlet",
+        'jobs'          : [ 'qcdDiJet' ], 
+        'type'          : 'MC',
+        'hlt'           : 'REDIGI38X'
+    },
     'qcdDiJetPtHat15to30' : {
         'datasetpath'   : "/QCD_Pt_15to30_TuneZ2_7TeV_pythia6/Fall10-START38_V12-v1/GEN-SIM-RECO",
         'dbs_url'       : "http://cmsdbsprod.cern.ch/cms_dbs_prod_global/servlet/DBSServlet",
         'jobs'          : [ 'qcdDiJet' ], 
         'type'          : 'MC',
         'hlt'           : 'REDIGI38X'
+    },
+    'qcdDiJetPtHat15to30PU156bx' : {
+        'datasetpath'   : "/QCD_Pt_15to30_TuneZ2_7TeV_pythia6/Fall10-E7TeV_ProbDist_2010Data_BX156_START38_V12-v1/GEN-SIM-RECO",
+        'dbs_url'       : "http://cmsdbsprod.cern.ch/cms_dbs_prod_global/servlet/DBSServlet",
+        'jobs'          : [ 'qcdDiJet' ], 
+        'type'          : 'MC',
+        'hlt'           : 'REDIGI38XPU'
     },
     'qcdDiJetPtHat30to50' : {
         'datasetpath'   : "/QCD_Pt_30to50_TuneZ2_7TeV_pythia6/Fall10-START38_V12-v1/GEN-SIM-RECO",
@@ -137,12 +199,26 @@ RECO_SAMPLES = {
         'type'          : 'MC',
         'hlt'           : 'REDIGI38X'
     },
+    'qcdDiJetPtHat30to50PU156bx' : {
+        'datasetpath'   : "/QCD_Pt_30to50_TuneZ2_7TeV_pythia6/Fall10-E7TeV_ProbDist_2010Data_BX156_START38_V12-v1/GEN-SIM-RECO",
+        'dbs_url'       : "http://cmsdbsprod.cern.ch/cms_dbs_prod_global/servlet/DBSServlet",
+        'jobs'          : [ 'qcdDiJet' ], 
+        'type'          : 'MC',
+        'hlt'           : 'REDIGI38XPU'
+    },
     'qcdDiJetPtHat50to80' : {
         'datasetpath'   : "/QCD_Pt_50to80_TuneZ2_7TeV_pythia6/Fall10-START38_V12-v1/GEN-SIM-RECO",
         'dbs_url'       : "http://cmsdbsprod.cern.ch/cms_dbs_prod_global/servlet/DBSServlet",
         'jobs'          : [ 'qcdDiJet' ], 
         'type'          : 'MC',
         'hlt'           : 'REDIGI38X'
+    },
+    'qcdDiJetPtHat50to80PU156bx' : {
+        'datasetpath'   : "/QCD_Pt_50to80_TuneZ2_7TeV_pythia6/Fall10-E7TeV_ProbDist_2010Data_BX156_START38_V12-v1/GEN-SIM-RECO",
+        'dbs_url'       : "http://cmsdbsprod.cern.ch/cms_dbs_prod_global/servlet/DBSServlet",
+        'jobs'          : [ 'qcdDiJet' ], 
+        'type'          : 'MC',
+        'hlt'           : 'REDIGI38XPU'
     },
     'PPmuXptGt20Mu10' : {
         'datasetpath'   : "/QCD_Pt-20_MuEnrichedPt-10_TuneZ2_7TeV-pythia6/Fall10-START38_V12-v1/GEN-SIM-RECO",
@@ -189,3 +265,12 @@ RECO_SAMPLES = {
     }
 }
 
+# add jobs with no event selection applied (for MC only)
+for sample in RECO_SAMPLES.keys():
+    if RECO_SAMPLES[sample]['type'] == 'MC':
+        jobs          = RECO_SAMPLES[sample]['jobs']
+        jobs_mcNoCuts = []
+        for job in jobs:
+            jobs_mcNoCuts.append(job)
+            jobs_mcNoCuts.append(job + "_mcNoCuts")
+            RECO_SAMPLES[sample]['jobs'] = jobs_mcNoCuts 

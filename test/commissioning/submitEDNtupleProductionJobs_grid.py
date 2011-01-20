@@ -15,7 +15,7 @@ crabFilePath = "/data1/veelken/CMSSW_3_8_x/crab/TauIdEfficiency/"
 pfCandidateCollection = "particleFlow" # pile-up removal disabled
 #pfCandidateCollection = "pfNoPileUp"   # pile-up removal enabled
 
-version = "v4_0q"
+version = "v4_1a"
 
 crab_template = """
 [CRAB]
@@ -68,7 +68,11 @@ for sampleName in SAMPLES_TO_RUN:
      for jobType in JOBS_TO_RUN:
           if jobType in RECO_SAMPLES[sampleName].get('jobs'):
 
-               print("--> submitting EDNtuple production job for sample = %s, job = %s..." % (sampleName, jobType))
+               if RECO_SAMPLES[sampleName]['type'] in JOB_OPTIONS[jobType]['submitTypes']:               
+                    print("--> submitting EDNtuple production job for sample = %s, job = %s..." % (sampleName, jobType))
+               else:
+                    print("--> skipping submission of EDNtuple production job for sample = %s, job = %s..." % (sampleName, jobType))
+                    continue
 
                cfgFileName = CONFIG_FILES[jobType]
                cfgFile = open(cfgFileName, "r")
@@ -82,7 +86,11 @@ for sampleName in SAMPLES_TO_RUN:
                cfg = cfg.replace("#isMC#", isMC)
                cfg = cfg.replace("#HLTprocessName#", "'%s'" % RECO_SAMPLES[sampleName]['hlt'])
                cfg = cfg.replace("#pfCandidateCollection#", "'%s'" % pfCandidateCollection)
-
+               applyEventSelection = "True"
+               if not JOB_OPTIONS[jobType]['applyEventSelection']:
+                    applyEventSelection = "False"
+               cfg = cfg.replace("#applyEventSelection#", applyEventSelection)
+               
                cfgFileName_modified = \
                  os.path.join(crabFilePath, cfgFileName.replace("_cfg.py", "_%s_%s_%s_cfg.py" % (sampleName, jobType, version)))
                cfgFile_modified = open(cfgFileName_modified, "w")

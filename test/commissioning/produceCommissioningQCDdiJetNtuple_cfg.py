@@ -44,6 +44,7 @@ HLTprocessName = "REDIGI38XPU" # use for Fall'10 reprocessed MC with pile-up
 ##HLTprocessName = "REDIGI38X" # use for Fall'10 reprocessed MC without pile-up
 pfCandidateCollection = "particleFlow" # pile-up removal disabled
 ##pfCandidateCollection = "pfNoPileUp" # pile-up removal enabled
+applyEventSelection = True 
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
@@ -53,6 +54,7 @@ pfCandidateCollection = "particleFlow" # pile-up removal disabled
 #__isMC = #isMC#
 #__HLTprocessName = #HLTprocessName#
 #__pfCandidateCollection = #pfCandidateCollection#
+#__applyEventSelection = #applyEventSelection#
 #
 #--------------------------------------------------------------------------------
 
@@ -288,12 +290,19 @@ process.options = cms.untracked.PSet(
 process.o = cms.EndPath(process.ntupleOutputModule)
 
 # define order in which different paths are run
-process.schedule = cms.Schedule(
-   process.p,
-   process.caloTauSkimPath,
-   process.pfTauSkimPath,
-   process.o
-)
+if applyEventSelection:
+    process.schedule = cms.Schedule(
+        process.p,
+        process.caloTauSkimPath,
+        process.pfTauSkimPath,
+        process.o
+    )
+else:
+    delattr(process.ntupleOutputModule, "SelectEvents")
+    process.schedule = cms.Schedule(
+        process.p,
+        process.o
+    )
 
 # print-out all python configuration parameter information
 #print process.dumpPython()
