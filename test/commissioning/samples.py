@@ -7,7 +7,7 @@ samples.py
 
 Central defintion of data sources for commissioning.
 
-$Id: samples.py,v 1.33 2011/01/12 15:15:42 smaruyam Exp $
+$Id: samples.py,v 1.34 2011/01/14 16:26:16 veelken Exp $
 
 '''
 
@@ -71,18 +71,17 @@ zttPU156bx_mc = build_sample(
     "merge", datasets = ["ZtautauPU156bx"],
     alias_map=dijetSampleAliasMap)
 
-# Build the hacked sample
-ztautau_test = build_sample(
-    _MC_LUMI_MAP_FILE, "mc_ztt_test",
-    "merge", datasets = ["ZtautauTEST"],
-    alias_map=dijetSampleAliasMap
-)
-
 print "loading definition of QCD background Monte Carlo samples..."
 qcddijet_mc = build_sample(
     _MC_LUMI_MAP_FILE, "mc_qcddijet", "merge",
     take_every=1, datasets = [
-      "mcQCDdiJetPtHat15to30", "mcQCDdiJetPtHat30to50", "mcQCDdiJetPtHat50to80"
+      "mcQCDdiJetPtHat5to15", "mcQCDdiJetPtHat15to30", "mcQCDdiJetPtHat30to50", "mcQCDdiJetPtHat50to80"
+    ],
+    alias_map = dijetSampleAliasMap)
+qcddijetPU156bx_mc = build_sample(
+    _MC_LUMI_MAP_FILE, "mc_qcddijetPU156bx", "merge",
+    take_every=1, datasets = [
+      "mcQCDdiJetPtHat5to15PU156bx", "mcQCDdiJetPtHat15to30PU156bx", "mcQCDdiJetPtHat30to50PU156bx", "mcQCDdiJetPtHat50to80PU156bx"
     ],
     alias_map = dijetSampleAliasMap)
 
@@ -119,8 +118,9 @@ data_dijet = build_sample(
     _DATA_LUMI_MAP_FILE, "qcdDiJet_data", "add",
     take_every=1, datasets = [
         "qcdDiJet_data_MinBiasCommissioning_Jun14ReReco",
-        "qcdDiJet_data_JetMETTau_Run2010Ai_Sep17ReReco",
-        "qcdDiJet_data_JetMET_Run2010Aii_Sep17ReReco"
+        #"qcdDiJet_data_JetMETTau_Run2010Ai_Sep17ReReco",
+        #"qcdDiJet_data_JetMET_Run2010Aii_Sep17ReReco",
+        #"qcdDiJet_data_Jet_Run2010B_Nov4ReReco"
     ],
     alias_map = dijetSampleAliasMap)
 
@@ -136,6 +136,6 @@ data_wjets = build_sample(
     _DATA_LUMI_MAP_FILE, "wJets_data", "add",
     take_every=1, datasets = [
         "wJets_data_Mu_Run2010A_Nov4ReReco",
-        "wJets_data_Mu_Run2010B_Nov4ReReco",
+        "wJets_data_Mu_Run2010B_Nov4ReReco"
     ],
     alias_map = wJetsSampleAliasMap)

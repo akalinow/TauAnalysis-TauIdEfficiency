@@ -1,8 +1,35 @@
 {
+    "mcQCDdiJetPtHat5to15" : {
+	"allEvents": , 
+        "directory":
+        "rfio:/castor/cern.ch/user/v/veelken/TauIdCommissioning/qcdDiJet/v4_1a/qcdDiJetPtHat5to15/",
+	"files": [
+            "tauIdEffEDNtuple_qcdDiJet_*.root"
+        ],
+        "int_lumi": 0.045
+    },
+    "mcQCDdiJetPtHat5to15PU156bx" : {
+	"allEvents": , 
+        "directory":
+        "rfio:/castor/cern.ch/user/v/veelken/TauIdCommissioning/qcdDiJet/v4_1a/qcdDiJetPtHat5to15PU156bx/",
+	"files": [
+            "tauIdEffEDNtuple_qcdDiJet_*.root"
+        ],
+        "int_lumi": 0.045
+    },
     "mcQCDdiJetPtHat15to30" : {
 	"allEvents": 5454640.0, 
         "directory":
-        "rfio:/castor/cern.ch/user/v/veelken/TauIdCommissioning/qcdDiJet/v4_0n/qcdDiJetPtHat15to30/",
+        "rfio:/castor/cern.ch/user/v/veelken/TauIdCommissioning/qcdDiJet/v4_1a/qcdDiJetPtHat15to30/",
+	"files": [
+            "tauIdEffEDNtuple_qcdDiJet_*.root"
+        ],
+        "int_lumi": 6.685
+    },
+    "mcQCDdiJetPtHat15to30PU156bx" : {
+	"allEvents": 5454640.0, 
+        "directory":
+        "rfio:/castor/cern.ch/user/v/veelken/TauIdCommissioning/qcdDiJet/v4_1a/qcdDiJetPtHat15to30PU156bx/",
 	"files": [
             "tauIdEffEDNtuple_qcdDiJet_*.root"
         ],
@@ -10,7 +37,15 @@
     },
     "mcQCDdiJetPtHat30to50" : {
 	"allEvents": 3264660.0, 
-        "directory": "rfio:/castor/cern.ch/user/v/veelken/TauIdCommissioning/qcdDiJet/v4_0n/qcdDiJetPtHat30to50/",
+        "directory": "rfio:/castor/cern.ch/user/v/veelken/TauIdCommissioning/qcdDiJet/v4_1a/qcdDiJetPtHat30to50/",
+	"files": [
+	    "tauIdEffEDNtuple_qcdDiJet_*.root"
+        ],
+        "int_lumi": 61.46
+    },
+    "mcQCDdiJetPtHat30to50PU156bx" : {
+	"allEvents": 3264660.0, 
+        "directory": "rfio:/castor/cern.ch/user/v/veelken/TauIdCommissioning/qcdDiJet/v4_1a/qcdDiJetPtHat30to50PU156bx/",
 	"files": [
 	    "tauIdEffEDNtuple_qcdDiJet_*.root"
         ],
@@ -18,7 +53,15 @@
     },
     "mcQCDdiJetPtHat50to80" : {
 	"allEvents": 3191546.0, 
-        "directory": "rfio:/castor/cern.ch/user/v/veelken/TauIdCommissioning/qcdDiJet/v4_0n/qcdDiJetPtHat50to80/",
+        "directory": "rfio:/castor/cern.ch/user/v/veelken/TauIdCommissioning/qcdDiJet/v4_1a/qcdDiJetPtHat50to80/",
+	"files": [
+            "tauIdEffEDNtuple_qcdDiJet_*.root"
+        ],
+        "int_lumi": 501.9
+    },
+    "mcQCDdiJetPtHat50to80PU156bx" : {
+	"allEvents": 3191546.0, 
+        "directory": "rfio:/castor/cern.ch/user/v/veelken/TauIdCommissioning/qcdDiJet/v4_1a/qcdDiJetPtHat50to80PU156bx/",
 	"files": [
             "tauIdEffEDNtuple_qcdDiJet_*.root"
         ],
@@ -26,7 +69,7 @@
     },
     "mcQCDppMuXptHatGt20PtMuGt10" : {
         "allEvents": 8063288.0, 
-        "directory": "rfio:/castor/cern.ch/user/v/veelken/TauIdCommissioning/qcdMuEnriched/v4_0n/PPmuXptGt20Mu10/",
+        "directory": "rfio:/castor/cern.ch/user/v/veelken/TauIdCommissioning/qcdMuEnriched/v4_1a/PPmuXptGt20Mu10/",
 	"files": [
 	    "tauIdEffEDNtuple_qcdMuEnriched_*.root"
         ],
@@ -34,7 +77,7 @@
     },
     "mcQCDppMuXptHatGt20PtMuGt10PU156bx" : {
         "allEvents": 8063288.0, 
-        "directory": "rfio:/castor/cern.ch/user/v/veelken/TauIdCommissioning/qcdMuEnriched/v4_0n/PPmuXptGt20Mu10PU156bx/",
+        "directory": "rfio:/castor/cern.ch/user/v/veelken/TauIdCommissioning/qcdMuEnriched/v4_1a/PPmuXptGt20Mu10PU156bx/",
 	"files": [
 	    "tauIdEffEDNtuple_qcdMuEnriched_*.root"
         ],
@@ -42,7 +85,7 @@
     },	    
     "mcQCDppMuXptHatGt20PtMuGt15" : {
         "allEvents": 29504866.0, 
-        "directory": "rfio:/castor/cern.ch/user/v/veelken/TauIdCommissioning/qcdMuEnriched/v4_0n/PPmuXptGt20Mu15/",
+        "directory": "rfio:/castor/cern.ch/user/v/veelken/TauIdCommissioning/qcdMuEnriched/v4_1a/PPmuXptGt20Mu15/",
 	"files": [
 	    "tauIdEffEDNtuple_qcdMuEnriched_*.root"
         ],
@@ -50,7 +93,7 @@
     },
     "mcQCDppMuXptHatGt20PtMuGt15PU156bx" : {
         "allEvents": 29504866.0, 
-        "directory": "rfio:/castor/cern.ch/user/v/veelken/TauIdCommissioning/qcdMuEnriched/v4_0n/PPmuXptGt20Mu15PU156bx/",
+        "directory": "rfio:/castor/cern.ch/user/v/veelken/TauIdCommissioning/qcdMuEnriched/v4_1a/PPmuXptGt20Mu15PU156bx/",
 	"files": [
 	    "tauIdEffEDNtuple_qcdMuEnriched_*.root"
         ],
@@ -58,7 +101,7 @@
     },
     "mcWplusJets" : {
         "allEvents": 15168266.0, 
-        "directory": "rfio:/castor/cern.ch/user/v/veelken/TauIdCommissioning/WplusJets/v4_0n/WplusJets/",
+        "directory": "rfio:/castor/cern.ch/user/v/veelken/TauIdCommissioning/WplusJets/v4_1a/WplusJets/",
 	"files": [
 	    "tauIdEffEDNtuple_wPlusJetsEnriched_*.root"
         ],
@@ -66,23 +109,15 @@
     },
     "mcWplusJetsPU156bx" : {
         "allEvents": 15168266.0, 
-        "directory": "rfio:/castor/cern.ch/user/v/veelken/TauIdCommissioning/WplusJets/v4_0n/WplusJetsPU156bx/",
+        "directory": "rfio:/castor/cern.ch/user/v/veelken/TauIdCommissioning/WplusJets/v4_1a/WplusJetsPU156bx/",
 	"files": [
 	    "tauIdEffEDNtuple_wPlusJetsEnriched_*.root"
         ],
         "int_lumi": 484392.5
     },
-    "ZtautauTEST" : {
-        "allEvents": 1000, 
-        "directory": "rfio:/castor/cern.ch/user/f/friis/TestFakeRateWorkflowZTT/",
-        "files": [
-            "tauIdEffEDNtuple_qcdDiJet_*.root"
-        ], 
-        "int_lumi": 1236445.0
-    },
     "Ztautau" : {
         "allEvents": 2057446, 
-        "directory": "rfio:/castor/cern.ch/user/v/veelken/TauIdCommissioning/qcdDiJet/v4_0n/Ztautau/",
+        "directory": "rfio:/castor/cern.ch/user/v/veelken/TauIdCommissioning/qcdDiJet/v4_1a/Ztautau/",
         "files": [
             "tauIdEffEDNtuple_qcdDiJet_*.root"
         ], 
@@ -90,7 +125,7 @@
     },
     "ZtautauPU156bx" : {
         "allEvents": 2011186, 
-        "directory": "rfio:/castor/cern.ch/user/v/veelken/TauIdCommissioning/qcdDiJet/v4_0n/ZtautauPU156bx/",
+        "directory": "rfio:/castor/cern.ch/user/v/veelken/TauIdCommissioning/qcdDiJet/v4_1a/ZtautauPU156bx/",
         "files": [
             "tauIdEffEDNtuple_qcdDiJet_*.root"
         ], 
