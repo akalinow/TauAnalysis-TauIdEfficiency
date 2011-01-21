@@ -8,7 +8,7 @@
  *
  * \author Christian, UC Davis
  *
- * \version $Revision: 1.2 $
+ * \version $Revision: 1.3 $
  */
 
 #include "FWCore/Framework/interface/Event.h"
@@ -29,7 +29,7 @@ class PATTriggerInfoExtractor : public ObjValExtractorBase
   double operator()(const edm::Event&) const;
 
  private:
-  //--- configuration parameters
+//--- configuration parameters
   edm::InputTag src_;
 
   std::string hltPathName_;

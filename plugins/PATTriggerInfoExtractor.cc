@@ -19,7 +19,7 @@ PATTriggerInfoExtractor::PATTriggerInfoExtractor(const edm::ParameterSet& cfg)
   std::string encodedValue_string = cfg.getParameter<std::string>("value");
   //std::cout << " encodedValue_string = " << encodedValue_string << std::endl;
 
-//--- check that value contains **exactly once** the characted ":",
+//--- check that value contains **exactly once** the character ":",
 //    which separates the name of the HLT trigger path from the name of the value (bit, prescale,...)
 //    to be extracted for that trigger path
   if ( encodedValue_string.find(value_separator) != std::string::npos                          &&
@@ -63,8 +63,9 @@ double
 PATTriggerInfoExtractor::operator()(const edm::Event& evt) const
 {
   if ( cfgError_ ) {
-    if ( numWarnings_ < maxWarnings_ ) edm::LogError("PATTriggerInfoExtractor::operator()") 
-                                         << " Error in Configuration ParameterSet --> skipping !!";
+    if ( numWarnings_ < maxWarnings_ ) 
+      edm::LogError("PATTriggerInfoExtractor::operator()") 
+	<< " Error in Configuration ParameterSet --> skipping !!";
     ++numWarnings_;
     return -1;
   }
