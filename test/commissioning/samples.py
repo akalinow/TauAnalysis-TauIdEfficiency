@@ -7,7 +7,7 @@ samples.py
 
 Central defintion of data sources for commissioning.
 
-$Id: samples.py,v 1.35 2011/01/21 10:05:40 veelken Exp $
+$Id: samples.py,v 1.36 2011/01/21 10:33:02 veelken Exp $
 
 '''
 
@@ -127,19 +127,19 @@ ppmux10PU156bx_mc_noCuts = build_sample(
    alias_map = muEnrichedSampleAliasMap)
 ppmux15_mc = build_sample(
    _MC_LUMI_MAP_FILE, "mc_ppmux15", "merge",
-   take_every=1, datasets = ["mcQCDppMuXptHatGt20PtMuGt10"],
+   take_every=1, datasets = ["mcQCDppMuXptHatGt20PtMuGt15"],
    alias_map = muEnrichedSampleAliasMap)
 ppmux15_mc_noCuts = build_sample(
    _MC_LUMI_MAP_FILE, "mc_ppmux15_noCuts", "merge",
-   take_every=1, datasets = ["mcQCDppMuXptHatGt20PtMuGt10_noCuts"],
+   take_every=1, datasets = ["mcQCDppMuXptHatGt20PtMuGt15_noCuts"],
    alias_map = muEnrichedSampleAliasMap)
 ppmux15PU156bx_mc = build_sample(
    _MC_LUMI_MAP_FILE, "mc_ppmux15PU156bx", "merge",
-   take_every=1, datasets = ["mcQCDppMuXptHatGt20PtMuGt10PU156bx"],
+   take_every=1, datasets = ["mcQCDppMuXptHatGt20PtMuGt15PU156bx"],
    alias_map = muEnrichedSampleAliasMap)
 ppmux15PU156bx_mc_noCuts = build_sample(
    _MC_LUMI_MAP_FILE, "mc_ppmux15PU156bx_noCuts", "merge",
-   take_every=1, datasets = ["mcQCDppMuXptHatGt20PtMuGt10PU156bx_noCuts"],
+   take_every=1, datasets = ["mcQCDppMuXptHatGt20PtMuGt15PU156bx_noCuts"],
    alias_map = muEnrichedSampleAliasMap)
 
 print "loading definition of W + jets background Monte Carlo samples..."
