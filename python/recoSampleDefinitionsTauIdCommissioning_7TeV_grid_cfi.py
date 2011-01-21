@@ -36,7 +36,7 @@ JOBS_TO_RUN = [
     'qcdMuEnriched',
     'qcdMuEnriched_mcNoCuts',
     'WplusJets',
-    'WplusJets_mcNoCuts',
+    'WplusJets_mcNoCuts'
 ]
 
 CONFIG_FILES = {
