@@ -13,6 +13,6 @@ genPhaseSpaceEventInfo_template = cms.PSet(
     src = cms.InputTag('generator'),
 
     columns = cms.PSet(
-        genPtHat = cms.string("ptHat"),
+        genPtHat = cms.string("ptHat")
     )
 )    

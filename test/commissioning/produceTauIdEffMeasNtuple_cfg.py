@@ -158,6 +158,7 @@ replaceMETforDiTaus(process, cms.InputTag('patMETs'), cms.InputTag('patPFMETs'))
 #
 # produce Ntuple
 #
+process.load("TauAnalysis.TauIdEfficiency.ntupleConfigRunLumiSectionEventNumber_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigTrigger_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigVertex_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigTauIdEffMeas_cfi")
@@ -172,6 +173,9 @@ process.ntupleProducer = cms.EDProducer("ObjValEDNtupleProducer",
                                         
     sources = cms.PSet(
         # Grouping of sources is for convenience of specifying pluginTypes, etc
+
+        # run number, luminosity section, event number variables
+        runLumiSectionEventNumber = process.runLumiSectionEventNumber_template,
 
         # variables indicating decision of HLT trigger paths
         trigger = process.trigger_template,
@@ -201,7 +205,10 @@ process.ntupleProducer = cms.EDProducer("ObjValEDNtupleProducer",
         ),
         tauIdEffMeas03woZllRecoilCorr = process.tauIdEffMeas_template03.clone(
             src = cms.InputTag('selectedMuTauPairsForTauIdEffAntiOverlapVetoCumulative')
-        )                                        
+        ),
+        tauIdEffMeas04woZllRecoilCorr = process.tauIdEffMeas_template04.clone(
+            src = cms.InputTag('selectedMuTauPairsForTauIdEffAntiOverlapVetoCumulative')
+        )                                    
     )
 )
 
@@ -217,10 +224,16 @@ setattr(process.ntupleProducer.sources, "tauIdEffMeas01MuonPtUp", process.tauIdE
 setattr(process.ntupleProducer.sources, "tauIdEffMeas03woZllRecoilCorrMuonPtUp", process.tauIdEffMeas_template03.clone(
     src = cms.InputTag('selectedMuTauPairsForTauIdEffAntiOverlapVetoSysMuonPtUpCumulative')
 ))
+setattr(process.ntupleProducer.sources, "tauIdEffMeas04woZllRecoilCorrMuonPtUp", process.tauIdEffMeas_template04.clone(
+    src = cms.InputTag('selectedMuTauPairsForTauIdEffAntiOverlapVetoSysMuonPtUpCumulative')
+))
 setattr(process.ntupleProducer.sources, "tauIdEffMeas01MuonPtDown", process.tauIdEffMeas_template01.clone(
     src = cms.InputTag('selectedPatMuonsForTauIdEffTrkIPsysMuonPtDownCumulative')
 ))
 setattr(process.ntupleProducer.sources, "tauIdEffMeas03woZllRecoilCorrMuonPtDown", process.tauIdEffMeas_template03.clone(
+    src = cms.InputTag('selectedMuTauPairsForTauIdEffAntiOverlapVetoSysMuonPtDownCumulative')
+))
+setattr(process.ntupleProducer.sources, "tauIdEffMeas04woZllRecoilCorrMuonPtDown", process.tauIdEffMeas_template04.clone(
     src = cms.InputTag('selectedMuTauPairsForTauIdEffAntiOverlapVetoSysMuonPtDownCumulative')
 ))
 
@@ -230,17 +243,29 @@ setattr(process.ntupleProducer.sources, "tauIdEffMeas02TauJetEnUp", process.tauI
 setattr(process.ntupleProducer.sources, "tauIdEffMeas03woZllRecoilCorrTauJetEnUp", process.tauIdEffMeas_template03.clone(
     src = cms.InputTag('selectedMuTauPairsForTauIdEffAntiOverlapVetoSysTauJetEnUpCumulative')
 ))
+setattr(process.ntupleProducer.sources, "tauIdEffMeas04woZllRecoilCorrTauJetEnUp", process.tauIdEffMeas_template04.clone(
+    src = cms.InputTag('selectedMuTauPairsForTauIdEffAntiOverlapVetoSysTauJetEnUpCumulative')
+))
 setattr(process.ntupleProducer.sources, "tauIdEffMeas02TauJetEnDown", process.tauIdEffMeas_template02.clone(
     src = cms.InputTag('selectedPatTausForTauIdEffEcalCrackVetoSysTauJetEnDownCumulative')
 ))
 setattr(process.ntupleProducer.sources, "tauIdEffMeas03woZllRecoilCorrTauJetEnDown", process.tauIdEffMeas_template03.clone(
     src = cms.InputTag('selectedMuTauPairsForTauIdEffAntiOverlapVetoSysTauJetEnDownCumulative')
 ))
+setattr(process.ntupleProducer.sources, "tauIdEffMeas04woZllRecoilCorrTauJetEnDown", process.tauIdEffMeas_template04.clone(
+    src = cms.InputTag('selectedMuTauPairsForTauIdEffAntiOverlapVetoSysTauJetEnDownCumulative')
+))
 
 setattr(process.ntupleProducer.sources, "tauIdEffMeas03woZllRecoilCorrJetEnUp", process.tauIdEffMeas_template03.clone(
     src = cms.InputTag('selectedMuTauPairsForTauIdEffAntiOverlapVetoSysJetEnUpCumulative')
 ))
+setattr(process.ntupleProducer.sources, "tauIdEffMeas04woZllRecoilCorrJetEnUp", process.tauIdEffMeas_template04.clone(
+    src = cms.InputTag('selectedMuTauPairsForTauIdEffAntiOverlapVetoSysJetEnUpCumulative')
+))
 setattr(process.ntupleProducer.sources, "tauIdEffMeas03woZllRecoilCorrJetEnDown", process.tauIdEffMeas_template03.clone(
+    src = cms.InputTag('selectedMuTauPairsForTauIdEffAntiOverlapVetoSysJetEnDownCumulative')
+))
+setattr(process.ntupleProducer.sources, "tauIdEffMeas04woZllRecoilCorrJetEnDown", process.tauIdEffMeas_template04.clone(
     src = cms.InputTag('selectedMuTauPairsForTauIdEffAntiOverlapVetoSysJetEnDownCumulative')
 ))
 
@@ -248,32 +273,59 @@ if applyZrecoilCorrection:
     setattr(process.ntupleProducer.sources, "tauIdEffMeas03wZllRecoilCorr", process.tauIdEffMeas_template03.clone(
         src = cms.InputTag('selectedMuTauPairsForTauIdEffZllRecoilCorrectedAntiOverlapVetoCumulative')
     ))
-
+    setattr(process.ntupleProducer.sources, "tauIdEffMeas04wZllRecoilCorr", process.tauIdEffMeas_template04.clone(
+        src = cms.InputTag('selectedMuTauPairsForTauIdEffZllRecoilCorrectedAntiOverlapVetoCumulative')
+    ))
+    
     setattr(process.ntupleProducer.sources, "tauIdEffMeas03wZllRecoilCorrMuonPtUp", process.tauIdEffMeas_template03.clone(
         src = cms.InputTag('selectedMuTauPairsForTauIdEffZllRecoilCorrectedAntiOverlapVetoSysMuonPtUpCumulative')
     ))
+    setattr(process.ntupleProducer.sources, "tauIdEffMeas04wZllRecoilCorrMuonPtUp", process.tauIdEffMeas_template04.clone(
+        src = cms.InputTag('selectedMuTauPairsForTauIdEffZllRecoilCorrectedAntiOverlapVetoSysMuonPtUpCumulative')
+    ))    
     setattr(process.ntupleProducer.sources, "tauIdEffMeas03wZllRecoilCorrMuonPtDown", process.tauIdEffMeas_template03.clone(
+        src = cms.InputTag('selectedMuTauPairsForTauIdEffZllRecoilCorrectedAntiOverlapVetoSysMuonPtDownCumulative')
+    ))
+    setattr(process.ntupleProducer.sources, "tauIdEffMeas04wZllRecoilCorrMuonPtDown", process.tauIdEffMeas_template04.clone(
         src = cms.InputTag('selectedMuTauPairsForTauIdEffZllRecoilCorrectedAntiOverlapVetoSysMuonPtDownCumulative')
     ))
 
     setattr(process.ntupleProducer.sources, "tauIdEffMeas03wZllRecoilCorrTauJetEnUp", process.tauIdEffMeas_template03.clone(
         src = cms.InputTag('selectedMuTauPairsForTauIdEffZllRecoilCorrectedAntiOverlapVetoSysTauJetEnUpCumulative')
     ))
+    setattr(process.ntupleProducer.sources, "tauIdEffMeas04wZllRecoilCorrTauJetEnUp", process.tauIdEffMeas_template04.clone(
+        src = cms.InputTag('selectedMuTauPairsForTauIdEffZllRecoilCorrectedAntiOverlapVetoSysTauJetEnUpCumulative')
+    ))    
     setattr(process.ntupleProducer.sources, "tauIdEffMeas03wZllRecoilCorrTauJetEnDown", process.tauIdEffMeas_template03.clone(
+        src = cms.InputTag('selectedMuTauPairsForTauIdEffZllRecoilCorrectedAntiOverlapVetoSysTauJetEnDownCumulative')
+    ))
+    setattr(process.ntupleProducer.sources, "tauIdEffMeas04wZllRecoilCorrTauJetEnDown", process.tauIdEffMeas_template04.clone(
         src = cms.InputTag('selectedMuTauPairsForTauIdEffZllRecoilCorrectedAntiOverlapVetoSysTauJetEnDownCumulative')
     ))
 
     setattr(process.ntupleProducer.sources, "tauIdEffMeas03wZllRecoilCorrJetEnUp", process.tauIdEffMeas_template03.clone(
         src = cms.InputTag('selectedMuTauPairsForTauIdEffZllRecoilCorrectedAntiOverlapVetoSysJetEnUpCumulative')
     ))
+    setattr(process.ntupleProducer.sources, "tauIdEffMeas04wZllRecoilCorrJetEnUp", process.tauIdEffMeas_template04.clone(
+        src = cms.InputTag('selectedMuTauPairsForTauIdEffZllRecoilCorrectedAntiOverlapVetoSysJetEnUpCumulative')
+    ))    
     setattr(process.ntupleProducer.sources, "tauIdEffMeas03wZllRecoilCorrJetEnDown", process.tauIdEffMeas_template03.clone(
+        src = cms.InputTag('selectedMuTauPairsForTauIdEffZllRecoilCorrectedAntiOverlapVetoSysJetEnDownCumulative')
+    ))
+    setattr(process.ntupleProducer.sources, "tauIdEffMeas04wZllRecoilCorrJetEnDown", process.tauIdEffMeas_template04.clone(
         src = cms.InputTag('selectedMuTauPairsForTauIdEffZllRecoilCorrectedAntiOverlapVetoSysJetEnDownCumulative')
     ))
 
     setattr(process.ntupleProducer.sources, "tauIdEffMeas03wZllRecoilCorrZllRecoilCorrectionUp", process.tauIdEffMeas_template03.clone(
         src = cms.InputTag('selectedMuTauPairsForTauIdEffZllRecoilCorrectedAntiOverlapVetoSysZllRecoilCorrectionUpCumulative')
     ))
+    setattr(process.ntupleProducer.sources, "tauIdEffMeas04wZllRecoilCorrZllRecoilCorrectionUp", process.tauIdEffMeas_template04.clone(
+        src = cms.InputTag('selectedMuTauPairsForTauIdEffZllRecoilCorrectedAntiOverlapVetoSysZllRecoilCorrectionUpCumulative')
+    ))
     setattr(process.ntupleProducer.sources, "tauIdEffMeas03wZllRecoilCorrZllRecoilCorrectionDown", process.tauIdEffMeas_template03.clone(
+        src = cms.InputTag('selectedMuTauPairsForTauIdEffZllRecoilCorrectedAntiOverlapVetoSysZllRecoilCorrectionDownCumulative')
+    ))
+    setattr(process.ntupleProducer.sources, "tauIdEffMeas04wZllRecoilCorrZllRecoilCorrectionDown", process.tauIdEffMeas_template04.clone(
         src = cms.InputTag('selectedMuTauPairsForTauIdEffZllRecoilCorrectedAntiOverlapVetoSysZllRecoilCorrectionDownCumulative')
     ))
 

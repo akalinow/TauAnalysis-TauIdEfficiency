@@ -144,9 +144,26 @@ tauIdEffMeas_template03 = cms.PSet(
         pZetaVis = cms.string("pZetaVis()"),
 
         visMass = cms.string("p4Vis.mass()"),
-        visMassFromJet = cms.string("(leg1().p4() + leg2().pfTauTagInfoRef().pfjetRef().p4()).mass()"),
+        #visMassFromJet = cms.string("(leg1().p4() + leg2().pfTauTagInfoRef().pfjetRef().p4()).mass()"),
         SVfitMass1 = cms.string("svFitSolution('psKine_MEt').mass()"),
         SVfitMass2 = cms.string("svFitSolution('psKine_MEt_ptBalance').mass()"),
         Ht = cms.string("leg1.pt() + leg2.pt() + met.pt()")
+    )
+)
+
+tauIdEffMeas_template04 = cms.PSet(
+    # Select multiplicy of object(s) to store
+    vector = cms.bool(False),
+    indices = cms.vuint32([0]), # Store values for first object only
+    
+    # Extractor plugin
+    pluginType = cms.string("PATMuTauPairVisMassFromJetExtractor"),
+    
+    # Collection to extract from
+    src = cms.InputTag(""),
+
+    # Variables to compute for this source
+    columns = cms.PSet(
+        visMassFromJet = cms.string("(leg1().p4() + leg2().pfTauTagInfoRef().pfjetRef().p4()).mass()"),
     )
 )
