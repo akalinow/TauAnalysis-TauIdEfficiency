@@ -7,7 +7,7 @@ samples.py
 
 Central defintion of data sources for commissioning.
 
-$Id: samples.py,v 1.34 2011/01/14 16:26:16 veelken Exp $
+$Id: samples.py,v 1.35 2011/01/21 10:05:40 veelken Exp $
 
 '''
 
@@ -75,13 +75,37 @@ print "loading definition of QCD background Monte Carlo samples..."
 qcddijet_mc = build_sample(
     _MC_LUMI_MAP_FILE, "mc_qcddijet", "merge",
     take_every=1, datasets = [
-      "mcQCDdiJetPtHat5to15", "mcQCDdiJetPtHat15to30", "mcQCDdiJetPtHat30to50", "mcQCDdiJetPtHat50to80"
+        "mcQCDdiJetPtHat5to15",
+        "mcQCDdiJetPtHat15to30",
+        "mcQCDdiJetPtHat30to50",
+        "mcQCDdiJetPtHat50to80"
+    ],
+    alias_map = dijetSampleAliasMap)
+qcddijet_mc_noCuts = build_sample(
+    _MC_LUMI_MAP_FILE, "mc_qcddijet_noCuts", "merge",
+    take_every=1, datasets = [
+        "mcQCDdiJetPtHat5to15_noCuts",
+        "mcQCDdiJetPtHat15to30_noCuts",
+        "mcQCDdiJetPtHat30to50_noCuts",
+        "mcQCDdiJetPtHat50to80_noCuts"
     ],
     alias_map = dijetSampleAliasMap)
 qcddijetPU156bx_mc = build_sample(
     _MC_LUMI_MAP_FILE, "mc_qcddijetPU156bx", "merge",
     take_every=1, datasets = [
-      "mcQCDdiJetPtHat5to15PU156bx", "mcQCDdiJetPtHat15to30PU156bx", "mcQCDdiJetPtHat30to50PU156bx", "mcQCDdiJetPtHat50to80PU156bx"
+        "mcQCDdiJetPtHat5to15PU156bx",
+        "mcQCDdiJetPtHat15to30PU156bx",
+        "mcQCDdiJetPtHat30to50PU156bx",
+        "mcQCDdiJetPtHat50to80PU156bx"
+    ],
+    alias_map = dijetSampleAliasMap)
+qcddijetPU156bx_mc_noCuts = build_sample(
+    _MC_LUMI_MAP_FILE, "mc_qcddijetPU156bx_noCuts", "merge",
+    take_every=1, datasets = [
+        "mcQCDdiJetPtHat5to15PU156bx_noCuts",
+        "mcQCDdiJetPtHat15to30PU156bx_noCuts",
+        "mcQCDdiJetPtHat30to50PU156bx_noCuts",
+        "mcQCDdiJetPtHat50to80PU156bx_noCuts"
     ],
     alias_map = dijetSampleAliasMap)
 
@@ -89,17 +113,33 @@ ppmux10_mc = build_sample(
    _MC_LUMI_MAP_FILE, "mc_ppmux10", "merge",
    take_every=1, datasets = ["mcQCDppMuXptHatGt20PtMuGt10"],
    alias_map = muEnrichedSampleAliasMap)
+ppmux10_mc_noCuts = build_sample(
+   _MC_LUMI_MAP_FILE, "mc_ppmux10_noCuts", "merge",
+   take_every=1, datasets = ["mcQCDppMuXptHatGt20PtMuGt10_noCuts"],
+   alias_map = muEnrichedSampleAliasMap)
 ppmux10PU156bx_mc = build_sample(
    _MC_LUMI_MAP_FILE, "mc_ppmux10PU156bx", "merge",
    take_every=1, datasets = ["mcQCDppMuXptHatGt20PtMuGt10PU156bx"],
+   alias_map = muEnrichedSampleAliasMap)
+ppmux10PU156bx_mc_noCuts = build_sample(
+   _MC_LUMI_MAP_FILE, "mc_ppmux10PU156bx_noCuts", "merge",
+   take_every=1, datasets = ["mcQCDppMuXptHatGt20PtMuGt10PU156bx_noCuts"],
    alias_map = muEnrichedSampleAliasMap)
 ppmux15_mc = build_sample(
    _MC_LUMI_MAP_FILE, "mc_ppmux15", "merge",
    take_every=1, datasets = ["mcQCDppMuXptHatGt20PtMuGt10"],
    alias_map = muEnrichedSampleAliasMap)
+ppmux15_mc_noCuts = build_sample(
+   _MC_LUMI_MAP_FILE, "mc_ppmux15_noCuts", "merge",
+   take_every=1, datasets = ["mcQCDppMuXptHatGt20PtMuGt10_noCuts"],
+   alias_map = muEnrichedSampleAliasMap)
 ppmux15PU156bx_mc = build_sample(
    _MC_LUMI_MAP_FILE, "mc_ppmux15PU156bx", "merge",
    take_every=1, datasets = ["mcQCDppMuXptHatGt20PtMuGt10PU156bx"],
+   alias_map = muEnrichedSampleAliasMap)
+ppmux15PU156bx_mc_noCuts = build_sample(
+   _MC_LUMI_MAP_FILE, "mc_ppmux15PU156bx_noCuts", "merge",
+   take_every=1, datasets = ["mcQCDppMuXptHatGt20PtMuGt10PU156bx_noCuts"],
    alias_map = muEnrichedSampleAliasMap)
 
 print "loading definition of W + jets background Monte Carlo samples..."
@@ -107,9 +147,17 @@ wjets_mc = build_sample(
    _MC_LUMI_MAP_FILE, "mc_wjets", "merge",
    take_every=1, datasets = ["mcWplusJets"],
    alias_map = wJetsSampleAliasMap)
+wjets_mc_noCuts = build_sample(
+   _MC_LUMI_MAP_FILE, "mc_wjets_noCuts", "merge",
+   take_every=1, datasets = ["mcWplusJets_noCuts"],
+   alias_map = wJetsSampleAliasMap)
 wjetsPU156bx_mc = build_sample(
    _MC_LUMI_MAP_FILE, "mc_wjetsPU156bx", "merge",
    take_every=1, datasets = ["mcWplusJetsPU156bx"],
+   alias_map = wJetsSampleAliasMap)
+wjetsPU156bx_mc_noCuts = build_sample(
+   _MC_LUMI_MAP_FILE, "mc_wjetsPU156bx_noCuts", "merge",
+   take_every=1, datasets = ["mcWplusJetsPU156bx_noCuts"],
    alias_map = wJetsSampleAliasMap)
 
 # For data, we use the add mode, to concatenate data

@@ -42,7 +42,8 @@ _sample_list = []
 
 #--------------------------------------------------------------------------------
 # define QCD muon-enriched samples
-_sample_list.extend([ ppmux10_mc, ppmux10PU156bx_mc, ppmux15_mc, ppmux15PU156bx_mc, data_ppmux ])
+_sample_list.extend([ ppmux10_mc, ppmux10PU156bx_mc, ppmux15_mc, ppmux15PU156bx_mc, data_ppmux,
+                      ppmux10_mc_noCuts, ppmux10PU156bx_mc_noCuts, ppmux15_mc_noCuts, ppmux15PU156bx_mc_noCuts ])
 #_sample_list.append(ppmux_mc)
 #_sample_list.append(ppmuxPU156bx_mc)
 #_sample_list.append(data_ppmux)
@@ -50,7 +51,8 @@ _sample_list.extend([ ppmux10_mc, ppmux10PU156bx_mc, ppmux15_mc, ppmux15PU156bx_
 
 #--------------------------------------------------------------------------------
 # define W + jets samples
-_sample_list.extend([ wjets_mc, wjetsPU156bx_mc, data_wjets ])
+_sample_list.extend([ wjets_mc, wjetsPU156bx_mc, data_wjets,
+                      wjets_mc_noCuts, wjetsPU156bx_mc_noCuts ])
 #_sample_list.append(wjets_mc)
 #_sample_list.append(wjetsPU156bx_mc)
 #_sample_list.append(data_wjets)
@@ -64,7 +66,8 @@ _sample_list.extend([ ztautau_mc, zttPU156bx_mc, ztautau_test ])
 
 #--------------------------------------------------------------------------------
 # define QCD di-jet samples
-_sample_list.extend([ qcddijet_mc, data_dijet ])
+_sample_list.extend([ qcddijet_mc, qcddijetPU156bx_mc, data_dijet,
+                      qcddijet_mc_noCuts, qcddijetPU156bx_mc_noCuts ])
 #_sample_list.append(qcddijet_mc)
 #_sample_list.append(data_dijet)
 #--------------------------------------------------------------------------------
