@@ -6,8 +6,13 @@ import TauAnalysis.TauIdEfficiency.tools.castor_mirror as mirror
 #--------------------------------------------------------------------------------
 
 # Import the samples into this namespace
-from samples import ztautau_mc, zttPU156bx_mc, ztautau_test,\
-        qcddijet_mc, qcddijetPU156bx_mc, ppmux10_mc, ppmux10PU156bx_mc, ppmux15_mc, ppmux15PU156bx_mc, wjets_mc, wjetsPU156bx_mc, \
+from samples import ztautau_mc, zttPU156bx_mc, \
+        qcddijet_mc, qcddijetPU156bx_mc, \
+        qcddijet_mc_noCuts, qcddijetPU156bx_mc_noCuts, \
+        ppmux10_mc, ppmux10PU156bx_mc, ppmux15_mc, ppmux15PU156bx_mc, \
+        ppmux10_mc_noCuts, ppmux10PU156bx_mc_noCuts, ppmux15_mc_noCuts, ppmux15PU156bx_mc_noCuts, \
+        wjets_mc, wjetsPU156bx_mc, \
+        wjets_mc_noCuts, wjetsPU156bx_mc_noCuts, \
         data_dijet, data_ppmux, data_wjets
 
 #mirror.LOCAL_DIRECTORY = "/tmp/tau_commissioning_friis"
@@ -60,7 +65,7 @@ _sample_list.extend([ wjets_mc, wjetsPU156bx_mc, data_wjets,
 
 #--------------------------------------------------------------------------------
 # define Z --> tau+ tau- samples for tau id. efficiency plots
-_sample_list.extend([ ztautau_mc, zttPU156bx_mc, ztautau_test ])
+_sample_list.extend([ ztautau_mc, zttPU156bx_mc ])
 #_sample_list.extend([ zttPU156bx_mc ])
 #--------------------------------------------------------------------------------
 
