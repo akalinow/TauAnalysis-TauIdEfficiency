@@ -38,11 +38,14 @@ algo_label_hps.AddText("HPS")
 algo_label_calo = copy.deepcopy(algo_label_template)
 algo_label_calo.AddText("TCTau")
 
+maxNumEntries = 1000000000 # draw all evevnts
+#maxNumEntries = 5         # to be used for debugging purposes only
+
 def makeFakeratePlots(algorithm, y_min = 1e-4, y_max = 9.9, extra_labels = []):
     
     denominator_section = "$probe > 0.5 & $jetPt > 10.0 & abs($jetEta) < 2.5"
     
-    denominator = hlt.expr('$hltJet15U > 0.5') & nTuples[algorithm].expr(denominator_section)
+    denominator = hlt.expr('$hltJet15Ubit > 0.5') & nTuples[algorithm].expr(denominator_section)
     
     for eff_info in numerators[algorithm]: 
         eff_info['expr'] = denominator & eff_info['expr']
@@ -226,7 +229,7 @@ if __name__ == "__main__":
         "calo": ntuple_manager.get_ntuple("patCaloTausDijetTagAndProbe")
     }
     
-    hlt = ntuple_manager.get_ntuple("TriggerResults")
+    hlt = ntuple_manager.get_ntuple("patTriggerEvent")
     
     # Make some plots
     canvas = ROOT.TCanvas("pas", "pas", 500, 500)

@@ -184,6 +184,12 @@ class PlotManager(object):
         The horizontal error bars can be kept by setting [x_error_bars] to True.
 
         '''
+
+        #print("<PlotManager::efficiency>:")
+        #print " binning = ", binning
+        #print " maxNumEntries = ", maxNumEntries
+        #print " options = ", options
+        
         # Get a unique name
         unique_name = helpers.make_unique_name(expression, numerator, denominator)
         # store the background histogram
@@ -243,9 +249,13 @@ class PlotManager(object):
             style.update_canvas_style(ROOT.gPad, canvas_style))
         return result_dict
 
-    def multi_efficiency(self, expression, denominator, numerators, binning,
-                         style_map={"mc_qcd_pythia8": style.MC_STYLES, "data":style.DATA_STYLES},
+    def multi_efficiency(self, expression, denominator, numerators, binning = (), maxNumEntries = 1000000000,
+                         style_map = { "mc_qcddijet": style.MC_STYLES, "qcdDiJet_data":style.DATA_STYLES },
                          **options):
+
+        #print("<PlotManager::multi_efficiency>:")
+        #print " options = ", options
+        
         if len(numerators) < 1:
             raise ValueError, "you have to pass at least one numerator (got '%s')!"%numerators
         if len(binning) < 3:
@@ -275,7 +285,7 @@ class PlotManager(object):
             # Build the single efficiency
             print "Building fake rates for", numerator_name
             single_eff = self.efficiency(expression, cumulative_numerator,
-                                         denominator, binning, options)
+                                         denominator, binning = binning, maxNumEntries = maxNumEntries, **options)
 
             # No GC please
             output['keep'].append(single_eff)

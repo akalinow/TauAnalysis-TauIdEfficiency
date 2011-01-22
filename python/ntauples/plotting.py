@@ -57,7 +57,8 @@ def draw(events, expression, selection = "", output_name = "", binning = (), opt
             
     return ROOT.gDirectory.Get(output_name)
 
-def efficiency(events, expression, numerator = "", denominator = "", output_name="", maxNumEntries = 1000000000, **kwargs):
+def efficiency(events, expression, numerator = "", denominator = "", binning = (),
+               output_name = "", maxNumEntries = 1000000000, **kwargs):
     ''' Compute the efficiency versus expression
 
     Returns a tuple containing a background TH1F (used to draw the axis)
@@ -65,10 +66,16 @@ def efficiency(events, expression, numerator = "", denominator = "", output_name
     w.r.t the denominator selection, parameterized by the given expression.  Numerator
     and denomiantor are computed using draw(...).  The kwargs are passed to draw(...).
     '''
+
+    #print("<efficiency>:")
+    #print " kwargs = ", kwargs 
+    
     if not output_name:
-        output_name = "eff_temp"
-    numerator_h = draw(events, expression, numerator, "numerator_temp", maxNumEntries, **kwargs)
-    denominator_h = draw(events, expression, denominator, "denominator_temp", maxNumEntries, **kwargs)
+        output_name = "eff_temp"        
+    numerator_h   = draw(events, expression, numerator, "numerator_temp",
+                         binning = binning, maxNumEntries = maxNumEntries, **kwargs)
+    denominator_h = draw(events, expression, denominator, "denominator_temp",
+                         binning = binning, maxNumEntries = maxNumEntries, **kwargs)
     #FIXME clean this up
     from math import sqrt
     nNum = float(numerator_h.Integral())
