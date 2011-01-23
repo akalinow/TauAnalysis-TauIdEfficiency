@@ -16,7 +16,7 @@ from samples import ztautau_mc, zttPU156bx_mc, \
         data_dijet, data_ppmux, data_wjets
 
 #mirror.LOCAL_DIRECTORY = "/tmp/tau_commissioning_friis"
-mirror.LOCAL_DIRECTORY = "/data1/friis/tau_fakerate_ntuples"
+mirror.LOCAL_DIRECTORY = "/data2/friis/tau_fakerate_ntuples"
 
 class SampleWrapper(object):
     " Wrapper class to automatically update a sample when it is accessed "
