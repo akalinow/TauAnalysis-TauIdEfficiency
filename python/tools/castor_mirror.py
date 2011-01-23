@@ -69,7 +69,7 @@ def mirror_file(castor_file):
     # Create the directories if necessary
     if not os.path.isdir(local_dirname):
         print "Creating local directory %s" % local_dirname
-        os.makedirs(local_dirname)
+        os.makedirs(local_dirname, 0777)
     command = ['rfcp', castor_file, local_path]
     print "Requesting %s" % (castor_file, )
     subproc = subprocess.Popen(command, stdout=subprocess.PIPE,
