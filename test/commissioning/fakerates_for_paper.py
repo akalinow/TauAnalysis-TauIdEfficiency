@@ -37,8 +37,8 @@ denominator_phase_space = "$jetPt > 10.0 & abs($jetEta) < 2.5"
 
 # Define maximum number of Ntuple entries to process
 # (NOTE: use values different from 1000000000 for debugging purposes only !!)
-maxNumEntries = 1000000000
-#maxNumEntries = 10000
+#maxNumEntries = 1000000000
+maxNumEntries = 10000
 
 # Define labels for different algorithms
 algo_label_template = ROOT.TPaveText(0.50, 0.615, 0.88, 0.655, "NDC")
@@ -110,7 +110,7 @@ def makeFakeratePlots(algorithm, numerator,
         y_min = y_min, y_max = y_max, logy = True)
     result_algorithm['dijet'] = eff_dijet
 
-    eff_ppmux = plotter.efficiency(
+    eff_ppmux = plotter_ppmux.efficiency(
         expression,
         denominator_ppmux & numerator,
         denominator_ppmux,
@@ -121,7 +121,7 @@ def makeFakeratePlots(algorithm, numerator,
         y_min = y_min, y_max = y_max, logy = True)
     result_algorithm['ppmux'] = eff_ppmux
 
-    eff_wjets = plotter.efficiency(
+    eff_wjets = plotter_wjets.efficiency(
         expression,
         denominator_wjets & numerator,
         denominator_wjets,
