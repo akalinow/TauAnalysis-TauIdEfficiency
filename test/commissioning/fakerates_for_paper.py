@@ -37,8 +37,8 @@ denominator_phase_space = "$jetPt > 10.0 & abs($jetEta) < 2.5"
 
 # Define maximum number of Ntuple entries to process
 # (NOTE: use values different from 1000000000 for debugging purposes only !!)
-#maxNumEntries = 1000000000
-maxNumEntries = 10000
+maxNumEntries = 1000000000
+#maxNumEntries = 10000
 
 # Define labels for different algorithms
 algo_label_template = ROOT.TPaveText(0.50, 0.615, 0.88, 0.655, "NDC")
@@ -80,7 +80,7 @@ def makeFakeratePlots(algorithm, numerator,
                       maxNumEntries = 1000000000,
                       outputFileName = "fakerates_for_paper.pdf"):
 
-    print("<makeFakeratePlots>:")
+    #print("<makeFakeratePlots>:")
 
     result_algorithm = {}   
 
@@ -177,8 +177,6 @@ def makeFakeratePlots(algorithm, numerator,
 
     algo_label.Draw()
 
-    print "outputFileName", outputFileName[:outputFileName.find(".")] + "_%s_diff.png" % algorithm
-
     canvas_diff.SaveAs(outputFileName[:outputFileName.find(".")] + "_%s.png" % algorithm)
     canvas_diff.SaveAs(outputFileName[:outputFileName.find(".")] + "_%s.pdf" % algorithm)
 
@@ -237,8 +235,6 @@ def makeFakeratePlots(algorithm, numerator,
 
     canvas_diff.cd()
     canvas_diff.Update()
-
-    print "outputFileName", outputFileName[:outputFileName.find(".")] + "_%s_diff.png" % algorithm
 
     canvas_diff.SaveAs(outputFileName[:outputFileName.find(".")] + "_%s_diff.png" % algorithm)
     canvas_diff.SaveAs(outputFileName[:outputFileName.find(".")] + "_%s_diff.pdf" % algorithm)
