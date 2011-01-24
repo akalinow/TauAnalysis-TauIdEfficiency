@@ -142,12 +142,12 @@ def makeFakeratePlots(algorithm, numerator,
     eff_dijet['background'].Draw()
 
     # Draw fake-rate plots
-    eff_dijet['samples'][sample_dijet_data_wPU].Draw('epsame')
-    eff_dijet['samples'][sample_dijet_mc_wPU].Draw('epsame')
-    eff_ppmux['samples'][sample_ppmux_data].Draw('epsame')
-    eff_ppmux['samples'][sample_ppmux_mc].Draw('epsame')
-    eff_wjets['samples'][sample_wjets_data].Draw('epsame')
-    eff_wjets['samples'][sample_wjets_mc].Draw('epsame')
+    eff_dijet['samples'][sample_dijet_data_wPU.name].Draw('epsame')
+    eff_dijet['samples'][sample_dijet_mc_wPU.name].Draw('epsame')
+    eff_ppmux['samples'][sample_ppmux_data.name].Draw('epsame')
+    eff_ppmux['samples'][sample_ppmux_mc.name].Draw('epsame')
+    eff_wjets['samples'][sample_wjets_data.name].Draw('epsame')
+    eff_wjets['samples'][sample_wjets_mc.name].Draw('epsame')
 
     # Draw legend
     legend = ROOT.TLegend(0.45, 0.68, 0.88, 0.88, "","brNDC")
@@ -196,7 +196,7 @@ def makeFakeratePlots(algorithm, numerator,
     diff_dijet_wPU = plotter_dijet.plot_dist_deviations(
         eff_dijet,
         sample_dijet_mc_wPU.name,
-        sample_dijet_data_wPU.name,
+        [ sample_dijet_data_wPU.name ],
         x_axis_title = x_axis_title,
         y_axis_title = "#frac{Data - Simulation}{Simulation}",
         y_min = -0.28, y_max = +0.28, logy = False
@@ -206,7 +206,7 @@ def makeFakeratePlots(algorithm, numerator,
     diff_ppmux = plotter_ppmux.plot_dist_deviations(
         eff_ppmux,
         sample_ppmux_mc.name,
-        sample_ppmux_data.name,
+        [ sample_ppmux_data.name ],
         x_axis_title = x_axis_title,
         y_axis_title = "#frac{Data - Simulation}{Simulation}",
         y_min = -0.28, y_max = +0.28, logy = False
@@ -216,7 +216,7 @@ def makeFakeratePlots(algorithm, numerator,
     diff_wjets = plotter_wjets.plot_dist_deviations(
         eff_wjets,
         sample_wjets_mc.name,
-        sample_wjets_data.name,
+        [ sample_wjets_data.name ],
         x_axis_title = x_axis_title,
         y_axis_title = "#frac{Data - Simulation}{Simulation}",
         y_min = -0.28, y_max = +0.28, logy = False
@@ -232,6 +232,11 @@ def makeFakeratePlots(algorithm, numerator,
     diff_dijet_wPU['background'].GetYaxis().SetTitleSize(0.08)
     diff_dijet_wPU['background'].GetYaxis().SetLabelSize(0.08)
     diff_dijet_wPU['background'].GetYaxis().SetTickLength(0.04)
+    diff_dijet_wPU['background'].Draw()
+
+    diff_dijet_wPU['samples'][sample_dijet_data_wPU.name].Draw("epsame")
+    diff_ppmux['samples'][sample_ppmux_data.name].Draw("epsame")
+    diff_wjets['samples'][sample_wjets_data.name].Draw("epsame")
 
     canvas_diff.cd()
     canvas_diff.Update()
@@ -242,6 +247,8 @@ def makeFakeratePlots(algorithm, numerator,
     # Show difference in fake-rate between QCD di-jet with/without pile-up
     topPad_diff.cd()
 
+    eff_dijet['background'].Draw()
+    
     # Draw fake-rate plots
     eff_dijet['samples'][sample_dijet_data_woPU.name].Draw('epsame')
     eff_dijet['samples'][sample_dijet_mc_woPU.name].Draw('epsame')
@@ -285,7 +292,7 @@ def makeFakeratePlots(algorithm, numerator,
     diff_dijet_pileup_data = plotter_dijet.plot_dist_deviations(
         eff_dijet,
         sample_dijet_data_woPU.name,
-        sample_dijet_data_wPU.name,
+        [ sample_dijet_data_wPU.name ],
         x_axis_title = x_axis_title,
         y_axis_title = "#frac{w. PU - wo. PU}{wo. PU}",
         y_min = -0.28, y_max = +0.28, logy = False
@@ -295,7 +302,7 @@ def makeFakeratePlots(algorithm, numerator,
     diff_dijet_pileup_mc = plotter_ppmux.plot_dist_deviations(
         eff_dijet,
         sample_dijet_mc_woPU.name,
-        sample_dijet_mc_wPU.name,
+        [ sample_dijet_mc_wPU.name ],
         x_axis_title = x_axis_title,
         y_axis_title = "#frac{w. PU - wo. PU}{wo. PU}",
         y_min = -0.28, y_max = +0.28, logy = False
@@ -311,6 +318,10 @@ def makeFakeratePlots(algorithm, numerator,
     diff_dijet_pileup_data['background'].GetYaxis().SetTitleSize(0.08)
     diff_dijet_pileup_data['background'].GetYaxis().SetLabelSize(0.08)
     diff_dijet_pileup_data['background'].GetYaxis().SetTickLength(0.04)
+    diff_dijet_pileup_data['background'].Draw()
+
+    diff_dijet_pileup_data['samples'][sample_dijet_data_wPU.name].Draw("epsame")
+    diff_dijet_pileup_mc['samples'][sample_dijet_mc_wPU.name].Draw("epsame")
 
     canvas_diff.cd()
     canvas_diff.Update()
