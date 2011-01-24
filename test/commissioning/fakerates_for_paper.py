@@ -152,16 +152,16 @@ def makeFakeratePlots(algorithm, numerator,
     # Draw legend
     legend = ROOT.TLegend(0.45, 0.68, 0.88, 0.88, "","brNDC")
     legend.SetTextSize(0.03)
-    legend.SetFillColor(0);
-    legend.SetLineColor(1);
-    legend.SetBorderSize(1);
+    legend.SetFillColor(0)
+    legend.SetLineColor(1)
+    legend.SetBorderSize(1)
     legend.AddEntry(eff_wjets['samples'][sample_wjets_data.name],         "W #rightarrow #mu #nu Data",       "p")
     legend.AddEntry(eff_wjets['samples'][sample_wjets_mc.name],           "W #rightarrow #mu #nu Simulation", "p")
-    legend.AddEntry(eff_dijet_wPU['samples'][sample_dijet_data_wPU.name], "QCDj Data",                        "p")
-    legend.AddEntry(eff_dijet_wPU['samples'][sample_dijet_mc_wPU.name],   "QCDj Simulation",                  "p")
+    legend.AddEntry(eff_dijet['samples'][sample_dijet_data_wPU.name], "QCDj Data",                        "p")
+    legend.AddEntry(eff_dijet['samples'][sample_dijet_mc_wPU.name],   "QCDj Simulation",                  "p")
     legend.AddEntry(eff_ppmux['samples'][sample_ppmux_data.name],         "QCD#mu Data",                      "p")
     legend.AddEntry(eff_ppmux['samples'][sample_ppmux_mc.name],           "QCD#mu Simulation",                "p")
-    legend.Draw();
+    legend.Draw()
 
     # Draw CMS preliminary, luminosity and center-of-mass energy labels
     style.CMS_PRELIMINARY_UPPER_LEFT.Draw()
@@ -174,8 +174,6 @@ def makeFakeratePlots(algorithm, numerator,
 
     for extra_label in extra_labels:
         extra_label.Draw()
-
-    algo_label.Draw()
 
     canvas_diff.SaveAs(outputFileName[:outputFileName.find(".")] + "_%s.png" % algorithm)
     canvas_diff.SaveAs(outputFileName[:outputFileName.find(".")] + "_%s.pdf" % algorithm)
@@ -193,7 +191,7 @@ def makeFakeratePlots(algorithm, numerator,
     bottomPad_diff.cd()
 
     # Show (normalized) difference (Data - MC)/MC
-    diff_dijet_wPU = plotter_dijet.plot_dist_deviations(
+    diff_dijet_wPU = plotter_dijet.plot_eff_deviations(
         eff_dijet,
         sample_dijet_mc_wPU.name,
         [ sample_dijet_data_wPU.name ],
@@ -203,7 +201,7 @@ def makeFakeratePlots(algorithm, numerator,
     )
     result_algorithm['dijet_DataToMC_diff'] = diff_dijet_wPU
     
-    diff_ppmux = plotter_ppmux.plot_dist_deviations(
+    diff_ppmux = plotter_ppmux.plot_eff_deviations(
         eff_ppmux,
         sample_ppmux_mc.name,
         [ sample_ppmux_data.name ],
@@ -213,7 +211,7 @@ def makeFakeratePlots(algorithm, numerator,
     )
     result_algorithm['ppmux_DataToMC_diff'] = diff_ppmux
     
-    diff_wjets = plotter_wjets.plot_dist_deviations(
+    diff_wjets = plotter_wjets.plot_eff_deviations(
         eff_wjets,
         sample_wjets_mc.name,
         [ sample_wjets_data.name ],
@@ -258,14 +256,14 @@ def makeFakeratePlots(algorithm, numerator,
     # Draw legend
     legend = ROOT.TLegend(0.45, 0.68, 0.88, 0.88, "","brNDC")
     legend.SetTextSize(0.03)
-    legend.SetFillColor(0);
-    legend.SetLineColor(1);
-    legend.SetBorderSize(1);
-    legend.AddEntry(eff_dijet_woPU['samples'][sample_dijet_data_woPU.name], "QCDj Data, wo. PU", "p")
-    legend.AddEntry(eff_dijet_woPU['samples'][sample_dijet_mc_woPU.name], "QCDj Simulation, wo. PU", "p")
-    legend.AddEntry(eff_dijet_wPU['samples'][sample_dijet_data_wPU.name], "QCDj Data, w. PU", "p")
-    legend.AddEntry(eff_dijet_wPU['samples'][sample_dijet_mc_wPU.name], "QCDj Simulation, w. PU", "p")
-    legend.Draw();
+    legend.SetFillColor(0)
+    legend.SetLineColor(1)
+    legend.SetBorderSize(1)
+    legend.AddEntry(eff_dijet['samples'][sample_dijet_data_woPU.name], "QCDj Data, wo. PU", "p")
+    legend.AddEntry(eff_dijet['samples'][sample_dijet_mc_woPU.name], "QCDj Simulation, wo. PU", "p")
+    legend.AddEntry(eff_dijet['samples'][sample_dijet_data_wPU.name], "QCDj Data, w. PU", "p")
+    legend.AddEntry(eff_dijet['samples'][sample_dijet_mc_wPU.name], "QCDj Simulation, w. PU", "p")
+    legend.Draw()
 
     # Draw CMS preliminary, luminosity and center-of-mass energy labels
     style.CMS_PRELIMINARY_UPPER_LEFT.Draw()
@@ -279,8 +277,6 @@ def makeFakeratePlots(algorithm, numerator,
     for extra_label in extra_labels:
         extra_label.Draw()
 
-    algo_label.Draw()
-
     canvas_diff.SaveAs(outputFileName[:outputFileName.find(".")] + "_%s_pileup.png" % algorithm)
     canvas_diff.SaveAs(outputFileName[:outputFileName.find(".")] + "_%s_pileup.pdf" % algorithm)
 
@@ -289,7 +285,7 @@ def makeFakeratePlots(algorithm, numerator,
     bottomPad_diff.cd()
 
     # Show (normalized) difference (Data - MC)/MC
-    diff_dijet_pileup_data = plotter_dijet.plot_dist_deviations(
+    diff_dijet_pileup_data = plotter_dijet.plot_eff_deviations(
         eff_dijet,
         sample_dijet_data_woPU.name,
         [ sample_dijet_data_wPU.name ],
@@ -299,7 +295,7 @@ def makeFakeratePlots(algorithm, numerator,
     )
     result_algorithm['dijet_Data_pileup_diff'] = diff_dijet_pileup_data
         
-    diff_dijet_pileup_mc = plotter_ppmux.plot_dist_deviations(
+    diff_dijet_pileup_mc = plotter_ppmux.plot_eff_deviations(
         eff_dijet,
         sample_dijet_mc_woPU.name,
         [ sample_dijet_mc_wPU.name ],
