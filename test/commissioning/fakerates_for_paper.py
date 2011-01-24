@@ -100,9 +100,9 @@ def makeFakeratePlots(algorithm, numerator,
 
     # Make fake-rate plots
     eff_dijet = plotter_dijet.efficiency(
-        expression, 
-        denominator_dijet,
+        expression,
         denominator_dijet & numerator,
+        denominator_dijet,
         binning = binning,
         maxNumEntries = maxNumEntries, verbose = True, x_error_bars = True,
         x_axis_title = x_axis_title,
@@ -111,9 +111,9 @@ def makeFakeratePlots(algorithm, numerator,
     result_algorithm['dijet'] = eff_dijet
 
     eff_ppmux = plotter.efficiency(
-        expression, 
-        denominator_ppmux,
+        expression,
         denominator_ppmux & numerator,
+        denominator_ppmux,
         binning = binning,
         maxNumEntries = maxNumEntries, verbose = True, x_error_bars = True,
         x_axis_title = x_axis_title,
@@ -122,9 +122,9 @@ def makeFakeratePlots(algorithm, numerator,
     result_algorithm['ppmux'] = eff_ppmux
 
     eff_wjets = plotter.efficiency(
-        expression, 
-        denominator_wjets,
+        expression,
         denominator_wjets & numerator,
+        denominator_wjets,
         binning = binning,
         maxNumEntries = maxNumEntries, verbose = True, x_error_bars = True,
         x_axis_title = x_axis_title,
@@ -300,7 +300,7 @@ def makeFakeratePlots(algorithm, numerator,
         y_axis_title = "#frac{w. PU - wo. PU}{wo. PU}",
         y_min = -0.28, y_max = +0.28, logy = False
     )
-    result_algorithm['dijet_MC_pileup_diff'] = diff_ppmux
+    result_algorithm['dijet_MC_pileup_diff'] = diff_dijet_pileup_mc
 
     diff_dijet_pileup_data['background'].GetYaxis().SetNdivisions(505)
     diff_dijet_pileup_data['background'].GetXaxis().SetTitleOffset(1.1)
