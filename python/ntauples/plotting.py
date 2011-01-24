@@ -80,6 +80,12 @@ def efficiency(events, expression, numerator = "", denominator = "", binning = (
     from math import sqrt
     nNum = float(numerator_h.Integral())
     nDenom = denominator_h.Integral()
+    if nDenom == 0:
+        print("Error in <efficiency>: nDenom = 0 --> skipping !!")
+        return 
+    elif nNum > nDenom:
+        print("Error in <efficiency>: nNum = %e exceeds nDenom = %e --> skipping !!" % (nNum, nDenom))
+        return 
     err = 1/nDenom*sqrt(nNum*(1-nNum/nDenom) )
     efficiencyLogHack("%e / %e = %e +- %e\n" % (nNum, nDenom, nNum/nDenom, err))
     efficiencyLogHack("", timestamp=True)
