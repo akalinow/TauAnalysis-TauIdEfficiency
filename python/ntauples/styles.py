@@ -309,6 +309,14 @@ MINBIAS_MC_STYLE = {
     'line_color' :  ROOT.EColor.kBlack,
 }
 
+WJETS_MC_STYLE_HIST = {
+    'draw_option' : "e1p",
+    'marker_style' : 23,        # solid triangle
+    'marker_size' : 1.0,
+    'marker_color' : ROOT.EColor.kBlue,
+    'line_color' :  ROOT.EColor.kBlack,
+}
+
 HISTO_METHOD_MAP = {
     'draw_option' : lambda histo: histo.SetDrawOption ,
     'marker_color' : lambda histo: histo.SetMarkerColor,
