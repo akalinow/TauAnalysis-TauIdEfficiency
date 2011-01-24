@@ -43,31 +43,31 @@ maxNumEntries = 10000
 
 # Define marker styles
 custom_style_dijet_data_wPU = copy.deepcopy(style.DATA_STYLE)
-custom_style_dijet_data_wPU['marker_color']  = colors.color_darkBlue
-custom_style_dijet_data_wPU['line_color']    = colors.color_darkBlue
+custom_style_dijet_data_wPU['marker_color']  = colors.color_darkBlue.value()
+custom_style_dijet_data_wPU['line_color']    = colors.color_darkBlue.value()
 custom_style_dijet_mc_wPU = copy.deepcopy(style.QCD_MC_STYLE_DOTS)
-custom_style_dijet_mc_wPU['marker_color']    = colors.color_darkBlue
-custom_style_dijet_mc_wPU['line_color']      = colors.color_darkBlue
+custom_style_dijet_mc_wPU['marker_color']    = colors.color_darkBlue.value()
+custom_style_dijet_mc_wPU['line_color']      = colors.color_darkBlue.value()
 custom_style_dijet_data_woPU = copy.deepcopy(style.DATA_STYLE)
-custom_style_dijet_data_woPU['marker_color'] = colors.color_lightBlue
-custom_style_dijet_data_woPU['line_color']   = colors.color_lightBlue
+custom_style_dijet_data_woPU['marker_color'] = colors.color_lightBlue.value()
+custom_style_dijet_data_woPU['line_color']   = colors.color_lightBlue.value()
 custom_style_dijet_mc_woPU = copy.deepcopy(style.QCD_MC_STYLE_DOTS)
-custom_style_dijet_mc_woPU['marker_color']   = colors.color_lightBlue
-custom_style_dijet_mc_woPU['line_color']     = colors.color_lightBlue
+custom_style_dijet_mc_woPU['marker_color']   = colors.color_lightBlue.value()
+custom_style_dijet_mc_woPU['line_color']     = colors.color_lightBlue.value()
 
 custom_style_ppmux_data = copy.deepcopy(style.DATA_STYLE)
-custom_style_ppmux_data['marker_color']      = colors.color_green
-custom_style_ppmux_data['line_color']        = colors.color_green
+custom_style_ppmux_data['marker_color']      = colors.color_green.value()
+custom_style_ppmux_data['line_color']        = colors.color_green.value()
 custom_style_ppmux_mc = copy.deepcopy(style.QCD_MC_STYLE_DOTS)
-custom_style_ppmux_mc['marker_color']        = colors.color_green
-custom_style_ppmux_mc['line_color']          = colors.color_green
+custom_style_ppmux_mc['marker_color']        = colors.color_green.value()
+custom_style_ppmux_mc['line_color']          = colors.color_green.value()
 
 custom_style_wjets_data = copy.deepcopy(style.DATA_STYLE)
-custom_style_wjets_data['marker_color']      = colors.color_red
-custom_style_wjets_data['line_color']        = colors.color_red
+custom_style_wjets_data['marker_color']      = colors.color_red.value()
+custom_style_wjets_data['line_color']        = colors.color_red.value()
 custom_style_wjets_mc = copy.deepcopy(style.QCD_MC_STYLE_DOTS)
-custom_style_wjets_mc['marker_color']        = colors.color_red
-custom_style_wjets_mc['line_color']          = colors.color_red
+custom_style_wjets_mc['marker_color']        = colors.color_red.value()
+custom_style_wjets_mc['line_color']          = colors.color_red.value()
 
 # Adjust position of labels
 custom_CMS_PRELIMINARY_UPPER_LEFT = copy.deepcopy(style.CMS_PRELIMINARY_UPPER_LEFT)
