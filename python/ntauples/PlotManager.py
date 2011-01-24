@@ -206,7 +206,7 @@ class PlotManager(object):
             # Build a background histogram and efficiency curve for this sample
             # Nota Bene: TGraphAsymmErrors cannot handle non-unit weights.  For
             # non-merged samples (i.e. no pt hat bins), we can just set the target
-            # luminosity to None, and each sample will get unit scaling.  Since we 
+            # luminosity to None, and each sample will get unit scaling.  Since we
             # only care about the ratio, this is fine.  However, pt-hat binned samples
             # the errors will be overestimated in regions of phase space where high-lumi
             # samples are the only contribution.  (i.e. it will think that there are a few
