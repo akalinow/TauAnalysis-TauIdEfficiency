@@ -318,7 +318,7 @@ WJETS_MC_STYLE_HIST = {
 }
 
 HISTO_METHOD_MAP = {
-    'draw_option' : lambda histo: histo.SetDrawOption ,
+    'draw_option' : lambda histo: histo.SetDrawOption,
     'marker_color' : lambda histo: histo.SetMarkerColor,
     'marker_size' : lambda histo: histo.SetMarkerSize,
     'marker_style' : lambda histo: histo.SetMarkerStyle,
@@ -334,6 +334,25 @@ HISTO_METHOD_MAP = {
     'y_min' : lambda histo: histo.SetMinimum,
     'y_max' : lambda histo: histo.SetMaximum,
     'title' : lambda histo: histo.SetTitle,
+}
+
+GRAPH_METHOD_MAP = {
+    'draw_option' : lambda graph: graph.SetDrawOption,
+    'marker_color' : lambda graph: graph.SetMarkerColor,
+    'marker_size' : lambda graph: graph.SetMarkerSize,
+    'marker_style' : lambda graph: graph.SetMarkerStyle,
+    'fill_color': lambda graph: graph.SetFillColor,
+    'fill_style': lambda graph: graph.SetFillStyle,
+    'line_width': lambda graph: graph.SetLineWidth,
+    'line_color': lambda graph: graph.SetLineColor,
+    'x_axis_title' : lambda graph: graph.GetXaxis().SetTitle,
+    'y_axis_title' : lambda graph: graph.GetYaxis().SetTitle,
+    'y_axis_label_size' : lambda graph: graph.GetYaxis().SetLabelSize,
+    'x_axis_label_size' : lambda graph: graph.GetXaxis().SetLabelSize,
+    'n_divisions' : lambda graph: graph.GetXaxis().SetNdivisions,
+    'y_min' : lambda graph: graph.SetMinimum,
+    'y_max' : lambda graph: graph.SetMaximum,
+    'title' : lambda graph: graph.SetTitle,
 }
 
 def adjust_coordinates(pad, x1, y1, x2, y2):
@@ -409,11 +428,25 @@ def update_canvas_style(pad, style_dict):
     return to_keep 
 
 def update_histo_style(histo, style_dict):
-    " Update a histograms style, given style dict "
+    " Update a histogram's style, given style dict "
     to_keep = []
     for style_item, value in style_dict.iteritems():
         if style_item in HISTO_METHOD_MAP:
             item = HISTO_METHOD_MAP[style_item](histo)(value)
+            if item is not None:
+                to_keep.append(item)
+        elif style_item in CANVAS_METHOD_MAP:
+            pass # ignore
+        else:
+            print "Warning: Unrecognized style option %s" % style_item
+    return to_keep
+
+def update_graph_style(graph, style_dict):
+    " Update a graph's style, given style dict "
+    to_keep = []
+    for style_item, value in style_dict.iteritems():
+        if style_item in GRAPH_METHOD_MAP:
+            item = GRAPH_METHOD_MAP[style_item](graph)(value)
             if item is not None:
                 to_keep.append(item)
         elif style_item in CANVAS_METHOD_MAP:

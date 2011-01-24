@@ -325,9 +325,8 @@ class PlotManager(object):
     def plot_dist_deviations(self, plot_result, base_sample, probe_samples = [], **options):
         output = {}
         # Construct background
-        background = plot_result['samples'][base_sample]['plot'].Clone(
-            plot_result['samples'][base_sample]['plot'].GetName() + "_diff")
-
+        plot_for_background = plot_result['samples'][base_sample]['plot']
+        background = plot_for_background.Clone(plot_for_background.GetName() + "_diff")
         background.Reset()
         background_style_options = {
             'y_max' : 1.0,
@@ -336,15 +335,13 @@ class PlotManager(object):
         ROOT.gPad.SetLogy(False)
         background_style_options.update(options)
         style.update_histo_style(background, options)
-        # CV: SetRangeUser overwrites y-axis range;
-        #     I don't think this is what we want (?)
-        #background.GetYaxis().SetRangeUser(-2, 2)
         background.SetStats(False)
         background.Draw()
+        
         output['background'] = background
         output['samples'] = {}
         output['legend'] = LegendMaker()
-
+        
         base_histo = plot_result['samples'][base_sample]['plot']
         for probe_name in probe_samples:
             print "Comparing", probe_name
@@ -359,15 +356,14 @@ class PlotManager(object):
                 probe_error = probe_histo.GetBinError(bin)
                 base_error = base_histo.GetBinError(bin)
                 print bin, base_content, probe_content
-                if probe_content > 0:
-                    diff = (base_content - probe_content)/probe_content
+                if base_content > 0:
+                    diff = (base_content - probe_content)/base_content
 
-                    base_error_norm = 0
-                    if base_content > 0:
-                        base_error_norm = base_error/base_content
+                    probe_error_norm = 0
+                    if probe_content > 0:
+                        probe_error_norm = probe_error/probe_content
 
-                    err = (base_content/probe_content)*math.sqrt(
-                        (probe_error/probe_content)**2 + base_error_norm**2)
+                    err = (probe_content/base_content)*math.sqrt(probe_error_norm**2 + (base_error/base_content)**2)
 
                     difference_histo.SetBinContent(bin, diff)
                     difference_histo.SetBinError(bin, err)
@@ -378,6 +374,80 @@ class PlotManager(object):
             difference_histo.Draw("same,pe")
 
         return output
+
+    def plot_eff_deviations(self, plot_result, base_sample, probe_samples = [], **options):
+        output = {}
+        # Construct background
+        plot_for_background = plot_result['background']
+        background = plot_for_background.Clone(plot_for_background.GetName() + "_diff")
+        background.Reset()
+        background_style_options = {
+            'y_max' : 1.0,
+            'y_min': -1.0,
+        }
+        ROOT.gPad.SetLogy(False)
+        background_style_options.update(options)
+        style.update_histo_style(background, options)
+        background.SetStats(False)
+        background.Draw()
+
+        output['background'] = background
+        output['samples'] = {}
+        output['legend'] = LegendMaker()
+        
+        base_graph = plot_result['samples'][base_sample]
+        for probe_name in probe_samples:
+            print "Comparing", probe_name
+            probe_graph = plot_result['samples'][probe_name]
+            difference_graph = probe_graph.Clone(probe_graph.GetName()+"_diff")
+            output['samples'][probe_name] = difference_graph
+            # Set each point
+            numPoints = difference_graph.GetN()
+            probe_x = ROOT.TArrayD(numPoints)
+            probe_y = ROOT.TArrayD(numPoints)
+            base_x = ROOT.TArrayD(numPoints)
+            base_y = ROOT.TArrayD(numPoints)
+            for point in range(numPoints):
+                probe_graph.GetPoint(point, probe_x[point], probe_y[point])
+                probe_yErrUp   = probe_graph.GetErrorYhigh(point)
+                probe_yErrDown = probe_graph.GetErrorYlow(point)                
+                base_graph.GetPoint(point, base_x[point], base_y[point])
+                base_xErrUp   = base_graph.GetErrorXhigh(point)
+                base_xErrDown = base_graph.GetErrorXlow(point)
+                base_yErrUp   = base_graph.GetErrorYhigh(point)
+                base_yErrDown = base_graph.GetErrorYlow(point)
+                print("point = %i: X = %e + %e - %e; Y(base) = %e + %e - %e, Y(probe) = %e + %e - %e"
+                  % (point, base_x[point], base_xErrUp, base_xErrDown,
+                     base_y[point], base_yErrUp, base_yErrDown, probe_y[point], probe_yErrUp, probe_yErrDown))
+                if base_y[point] > 0:
+                    diff = (base_y[point] - probe_y[point])/base_y[point]
+
+                    probe_yErrUp_norm = 0
+                    probe_yErrDown_norm = 0
+                    if probe_y[point] > 0:
+                        probe_yErrUp_norm   = probe_yErrUp/probe_y[point]
+                        probe_yErrDown_norm = probe_yErrDown/probe_y[point]
+
+                    base_yErrUp_norm = probe_yErrUp/probe_y[point]
+                    base_yErrDown_norm = probe_yErrDown/probe_y[point]
+
+                    yErrUp   = (probe_y[point]/base_y[point])*math.sqrt(probe_yErrUp_norm**2 + base_yErrDown_norm**2)
+                    yErrDown = (probe_y[point]/base_y[point])*math.sqrt(probe_yErrDown_norm**2 + base_yErrUp_norm**2)
+                    
+                    difference_graph.SetBinContent(point, diff)
+                    difference_graph.SetPointError(point, base_xErrDown, base_xErrUp, yErrDown, yErrUp)
+                                        
+            style.update_graph_style(difference_graph, self.samples[probe_name]['style'])
+            output['legend'].add_object(
+                difference_graph, self.samples[probe_name]['nice_name'], 'p')
+            difference_graph.Draw("p")
+
+        return output
+
+
+
+
+
 
 
 
