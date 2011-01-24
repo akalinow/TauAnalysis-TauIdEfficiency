@@ -403,38 +403,38 @@ class PlotManager(object):
             output['samples'][probe_name] = difference_graph
             # Set each point
             numPoints = difference_graph.GetN()
-            probe_x = ROOT.TArrayD(numPoints)
-            probe_y = ROOT.TArrayD(numPoints)
-            base_x = ROOT.TArrayD(numPoints)
-            base_y = ROOT.TArrayD(numPoints)
             for point in range(numPoints):
-                probe_graph.GetPoint(point, probe_x[point], probe_y[point])
+                probe_x = ROOT.Double(0.)
+                probe_y = ROOT.Double(0.)
+                probe_graph.GetPoint(point, probe_x, probe_y)
                 probe_yErrUp   = probe_graph.GetErrorYhigh(point)
-                probe_yErrDown = probe_graph.GetErrorYlow(point)                
-                base_graph.GetPoint(point, base_x[point], base_y[point])
+                probe_yErrDown = probe_graph.GetErrorYlow(point)
+                base_x = ROOT.Double(0.)
+                base_y = ROOT.Double(0.)
+                base_graph.GetPoint(point, base_x, base_y)
                 base_xErrUp   = base_graph.GetErrorXhigh(point)
                 base_xErrDown = base_graph.GetErrorXlow(point)
                 base_yErrUp   = base_graph.GetErrorYhigh(point)
                 base_yErrDown = base_graph.GetErrorYlow(point)
                 print("point = %i: X = %e + %e - %e; Y(base) = %e + %e - %e, Y(probe) = %e + %e - %e"
-                  % (point, base_x[point], base_xErrUp, base_xErrDown,
-                     base_y[point], base_yErrUp, base_yErrDown, probe_y[point], probe_yErrUp, probe_yErrDown))
-                if base_y[point] > 0:
-                    diff = (base_y[point] - probe_y[point])/base_y[point]
+                  % (point, base_x, base_xErrUp, base_xErrDown,
+                     base_y, base_yErrUp, base_yErrDown, probe_y, probe_yErrUp, probe_yErrDown))
+                if base_y > 0:
+                    diff = (base_y - probe_y)/base_y
 
                     probe_yErrUp_norm = 0
                     probe_yErrDown_norm = 0
-                    if probe_y[point] > 0:
-                        probe_yErrUp_norm   = probe_yErrUp/probe_y[point]
-                        probe_yErrDown_norm = probe_yErrDown/probe_y[point]
+                    if probe_y > 0:
+                        probe_yErrUp_norm   = probe_yErrUp/probe_y
+                        probe_yErrDown_norm = probe_yErrDown/probe_y
 
-                    base_yErrUp_norm = probe_yErrUp/probe_y[point]
-                    base_yErrDown_norm = probe_yErrDown/probe_y[point]
+                    base_yErrUp_norm = base_yErrUp/base_y
+                    base_yErrDown_norm = base_yErrDown/base_y
 
-                    yErrUp   = (probe_y[point]/base_y[point])*math.sqrt(probe_yErrUp_norm**2 + base_yErrDown_norm**2)
-                    yErrDown = (probe_y[point]/base_y[point])*math.sqrt(probe_yErrDown_norm**2 + base_yErrUp_norm**2)
+                    yErrUp   = (probe_y/base_y)*math.sqrt(probe_yErrUp_norm**2 + base_yErrDown_norm**2)
+                    yErrDown = (probe_y/base_y)*math.sqrt(probe_yErrDown_norm**2 + base_yErrUp_norm**2)
                     
-                    difference_graph.SetBinContent(point, diff)
+                    difference_graph.SetPoint(point, base_x, diff)
                     difference_graph.SetPointError(point, base_xErrDown, base_xErrUp, yErrDown, yErrUp)
                                         
             style.update_graph_style(difference_graph, self.samples[probe_name]['style'])
