@@ -14,6 +14,7 @@ Author: Christian Veelken
 import ROOT
 from TauAnalysis.TauIdEfficiency.ntauples.PlotManager import PlotManager
 import TauAnalysis.TauIdEfficiency.ntauples.styles as style
+import TauAnalysis.DQMTools.plotterStyleDefinitions_cfi as colors
 import copy
 
 # Define of input files.
@@ -39,6 +40,51 @@ denominator_phase_space = "$jetPt > 10.0 & abs($jetEta) < 2.5"
 # (NOTE: use values different from 1000000000 for debugging purposes only !!)
 #maxNumEntries = 1000000000
 maxNumEntries = 10000
+
+# Define marker styles
+custom_style_dijet_data_wPU = copy.deepcopy(style.DATA_STYLE)
+custom_style_dijet_data_wPU['marker_color']  = colors.color_darkBlue
+custom_style_dijet_data_wPU['line_color']    = colors.color_darkBlue
+custom_style_dijet_mc_wPU = copy.deepcopy(style.QCD_MC_STYLE_DOTS)
+custom_style_dijet_mc_wPU['marker_color']    = colors.color_darkBlue
+custom_style_dijet_mc_wPU['line_color']      = colors.color_darkBlue
+custom_style_dijet_data_woPU = copy.deepcopy(style.DATA_STYLE)
+custom_style_dijet_data_woPU['marker_color'] = colors.color_lightBlue
+custom_style_dijet_data_woPU['line_color']   = colors.color_lightBlue
+custom_style_dijet_mc_woPU = copy.deepcopy(style.QCD_MC_STYLE_DOTS)
+custom_style_dijet_mc_woPU['marker_color']   = colors.color_lightBlue
+custom_style_dijet_mc_woPU['line_color']     = colors.color_lightBlue
+
+custom_style_ppmux_data = copy.deepcopy(style.DATA_STYLE)
+custom_style_ppmux_data['marker_color']      = colors.color_green
+custom_style_ppmux_data['line_color']        = colors.color_green
+custom_style_ppmux_mc = copy.deepcopy(style.QCD_MC_STYLE_DOTS)
+custom_style_ppmux_mc['marker_color']        = colors.color_green
+custom_style_ppmux_mc['line_color']          = colors.color_green
+
+custom_style_wjets_data = copy.deepcopy(style.DATA_STYLE)
+custom_style_wjets_data['marker_color']      = colors.color_red
+custom_style_wjets_data['line_color']        = colors.color_red
+custom_style_wjets_mc = copy.deepcopy(style.QCD_MC_STYLE_DOTS)
+custom_style_wjets_mc['marker_color']        = colors.color_red
+custom_style_wjets_mc['line_color']          = colors.color_red
+
+# Adjust position of labels
+custom_CMS_PRELIMINARY_UPPER_LEFT = copy.deepcopy(style.CMS_PRELIMINARY_UPPER_LEFT)
+custom_CMS_PRELIMINARY_UPPER_LEFT.SetX1NDC(0.175)
+custom_CMS_PRELIMINARY_UPPER_LEFT.SetX2NDC(0.500)
+
+custom_LUMI_LABEL_UPPER_LEFT = copy.deepcopy(style.LUMI_LABEL_UPPER_LEFT)
+custom_LUMI_LABEL_UPPER_LEFT.SetX1NDC(0.175)
+custom_LUMI_LABEL_UPPER_LEFT.SetX2NDC(0.500)
+custom_LUMI_LABEL_UPPER_LEFT.SetTextSize(0.0375)
+custom_LUMI_LABEL_UPPER_LEFT.Clear()
+custom_LUMI_LABEL_UPPER_LEFT.AddText("Data, L = 36.1pb^{-1}")
+custom_LUMI_LABEL_UPPER_LEFT.Draw()
+
+custom_SQRTS_LABEL_UPPER_LEFT = copy.deepcopy(style.SQRTS_LABEL_UPPER_LEFT)
+custom_SQRTS_LABEL_UPPER_LEFT.SetX1NDC(0.175)
+custom_SQRTS_LABEL_UPPER_LEFT.SetX2NDC(0.500)
 
 # Define labels for different algorithms
 algo_label_template = ROOT.TPaveText(0.50, 0.615, 0.88, 0.655, "NDC")
@@ -150,27 +196,23 @@ def makeFakeratePlots(algorithm, numerator,
     eff_wjets['samples'][sample_wjets_mc.name].Draw('epsame')
 
     # Draw legend
-    legend = ROOT.TLegend(0.45, 0.68, 0.88, 0.88, "","brNDC")
+    legend = ROOT.TLegend(0.50, 0.73, 0.93, 0.93, "", "brNDC")
     legend.SetTextSize(0.03)
     legend.SetFillColor(0)
     legend.SetLineColor(1)
     legend.SetBorderSize(1)
-    legend.AddEntry(eff_wjets['samples'][sample_wjets_data.name],         "W #rightarrow #mu #nu Data",       "p")
-    legend.AddEntry(eff_wjets['samples'][sample_wjets_mc.name],           "W #rightarrow #mu #nu Simulation", "p")
+    legend.AddEntry(eff_wjets['samples'][sample_wjets_data.name],     "W #rightarrow #mu #nu Data",       "p")
+    legend.AddEntry(eff_wjets['samples'][sample_wjets_mc.name],       "W #rightarrow #mu #nu Simulation", "p")
     legend.AddEntry(eff_dijet['samples'][sample_dijet_data_wPU.name], "QCDj Data",                        "p")
     legend.AddEntry(eff_dijet['samples'][sample_dijet_mc_wPU.name],   "QCDj Simulation",                  "p")
-    legend.AddEntry(eff_ppmux['samples'][sample_ppmux_data.name],         "QCD#mu Data",                      "p")
-    legend.AddEntry(eff_ppmux['samples'][sample_ppmux_mc.name],           "QCD#mu Simulation",                "p")
+    legend.AddEntry(eff_ppmux['samples'][sample_ppmux_data.name],     "QCD#mu Data",                      "p")
+    legend.AddEntry(eff_ppmux['samples'][sample_ppmux_mc.name],       "QCD#mu Simulation",                "p")
     legend.Draw()
 
     # Draw CMS preliminary, luminosity and center-of-mass energy labels
-    style.CMS_PRELIMINARY_UPPER_LEFT.Draw()
-    custom_LUMI_LABEL_UPPER_LEFT = copy.deepcopy(style.LUMI_LABEL_UPPER_LEFT)
-    custom_LUMI_LABEL_UPPER_LEFT.SetTextSize(0.0375)
-    custom_LUMI_LABEL_UPPER_LEFT.Clear()
-    custom_LUMI_LABEL_UPPER_LEFT.AddText("Data, L = 36.1pb^{-1}")
+    custom_CMS_PRELIMINARY_UPPER_LEFT.Draw()
     custom_LUMI_LABEL_UPPER_LEFT.Draw()
-    style.SQRTS_LABEL_UPPER_LEFT.Draw()
+    custom_SQRTS_LABEL_UPPER_LEFT.Draw()
 
     for extra_label in extra_labels:
         extra_label.Draw()
@@ -254,25 +296,21 @@ def makeFakeratePlots(algorithm, numerator,
     eff_dijet['samples'][sample_dijet_mc_wPU.name].Draw('epsame')
 
     # Draw legend
-    legend = ROOT.TLegend(0.45, 0.68, 0.88, 0.88, "","brNDC")
+    legend = ROOT.TLegend(0.50, 0.73, 0.93, 0.93, "", "brNDC")
     legend.SetTextSize(0.03)
     legend.SetFillColor(0)
     legend.SetLineColor(1)
     legend.SetBorderSize(1)
     legend.AddEntry(eff_dijet['samples'][sample_dijet_data_woPU.name], "QCDj Data, wo. PU", "p")
-    legend.AddEntry(eff_dijet['samples'][sample_dijet_mc_woPU.name], "QCDj Simulation, wo. PU", "p")
-    legend.AddEntry(eff_dijet['samples'][sample_dijet_data_wPU.name], "QCDj Data, w. PU", "p")
-    legend.AddEntry(eff_dijet['samples'][sample_dijet_mc_wPU.name], "QCDj Simulation, w. PU", "p")
+    legend.AddEntry(eff_dijet['samples'][sample_dijet_mc_woPU.name],   "QCDj Simulation, wo. PU", "p")
+    legend.AddEntry(eff_dijet['samples'][sample_dijet_data_wPU.name],  "QCDj Data, w. PU", "p")
+    legend.AddEntry(eff_dijet['samples'][sample_dijet_mc_wPU.name],    "QCDj Simulation, w. PU", "p")
     legend.Draw()
 
     # Draw CMS preliminary, luminosity and center-of-mass energy labels
-    style.CMS_PRELIMINARY_UPPER_LEFT.Draw()
-    custom_LUMI_LABEL_UPPER_LEFT = copy.deepcopy(style.LUMI_LABEL_UPPER_LEFT)
-    custom_LUMI_LABEL_UPPER_LEFT.SetTextSize(0.0375)
-    custom_LUMI_LABEL_UPPER_LEFT.Clear()
-    custom_LUMI_LABEL_UPPER_LEFT.AddText("Data, L = 36.1pb^{-1}")
+    custom_CMS_PRELIMINARY_UPPER_LEFT.Draw()
     custom_LUMI_LABEL_UPPER_LEFT.Draw()
-    style.SQRTS_LABEL_UPPER_LEFT.Draw()
+    custom_SQRTS_LABEL_UPPER_LEFT.Draw()
 
     for extra_label in extra_labels:
         extra_label.Draw()
@@ -331,20 +369,20 @@ if __name__ == "__main__":
 
     # define PlotManagers for QCD multi-jet, QCD muon enriched and W + jets samples
     plotter_dijet = PlotManager()
-    plotter_dijet.add_sample(sample_dijet_data_woPU, "QCDj Data, wo. PU",                **style.DATA_STYLE)
-    plotter_dijet.add_sample(sample_dijet_mc_woPU,   "QCDj Simulation, wo. PU",          **style.MINBIAS_MC_STYLE)
-    plotter_dijet.add_sample(sample_dijet_data_wPU,  "QCDj Data, w. PU",                 **style.DATA_STYLE)
-    plotter_dijet.add_sample(sample_dijet_mc_wPU,    "QCDj Simulation, w. PU",           **style.QCD_MC_PYTHIA6_STYLE_HIST)
+    plotter_dijet.add_sample(sample_dijet_data_woPU, "QCDj Data, wo. PU",                **custom_style_dijet_data_woPU)
+    plotter_dijet.add_sample(sample_dijet_mc_woPU,   "QCDj Simulation, wo. PU",          **custom_style_dijet_mc_woPU)
+    plotter_dijet.add_sample(sample_dijet_data_wPU,  "QCDj Data, w. PU",                 **custom_style_dijet_data_wPU)
+    plotter_dijet.add_sample(sample_dijet_mc_wPU,    "QCDj Simulation, w. PU",           **custom_style_dijet_mc_wPU)
     plotter_dijet.set_integrated_lumi(intLumiData)
     
     plotter_ppmux = PlotManager()
-    plotter_ppmux.add_sample(sample_ppmux_data,      "QCD#mu Data",                      **style.DATA_STYLE)
-    plotter_ppmux.add_sample(sample_ppmux_mc, "       QCD#mu Simulation",                **style.QCD_MC_STYLE_HIST)
+    plotter_ppmux.add_sample(sample_ppmux_data,      "QCD#mu Data",                      **custom_style_ppmux_data)
+    plotter_ppmux.add_sample(sample_ppmux_mc, "       QCD#mu Simulation",                **custom_style_ppmux_mc)
     plotter_ppmux.set_integrated_lumi(intLumiData)
         
     plotter_wjets = PlotManager()
-    plotter_wjets.add_sample(sample_wjets_data,      "W #rightarrow #mu #nu Data",       **style.DATA_STYLE)
-    plotter_wjets.add_sample(sample_wjets_mc,        "W #rightarrow #mu #nu Simulation", **style.WJETS_MC_STYLE_HIST)
+    plotter_wjets.add_sample(sample_wjets_data,      "W #rightarrow #mu #nu Data",       **custom_style_wjets_data)
+    plotter_wjets.add_sample(sample_wjets_mc,        "W #rightarrow #mu #nu Simulation", **custom_style_wjets_mc)
     plotter_wjets.set_integrated_lumi(intLumiData)
     
     # Build the ntuple manager
@@ -453,7 +491,7 @@ if __name__ == "__main__":
                           denominator_ppmux, plotter_ppmux, 
                           denominator_wjets, plotter_wjets, 
                           nTuples[algorithm].expr('$jetPt'), binning_pt,
-                          'Jet P_{T} [GeV/c]', 1e-4, 9.9, extra_labels[algorithm_discriminator],
+                          'Jet P_{T} [GeV/c]', 4e-5, 9.9, extra_labels[algorithm_discriminator],
                           maxNumEntries,
                           "plots/fakerates_for_pas_jetPt.pdf")
         ##makeFakeratePlots(algorithm, numerator[algorithm]['expr'],
