@@ -13,10 +13,10 @@ from samples import ztautau_mc, zttPU156bx_mc, \
         ppmux10_mc_noCuts, ppmux10PU156bx_mc_noCuts, ppmux15_mc_noCuts, ppmux15PU156bx_mc_noCuts, \
         wjets_mc, wjetsPU156bx_mc, \
         wjets_mc_noCuts, wjetsPU156bx_mc_noCuts, \
-        data_dijet, data_ppmux, data_wjets
+        data_dijet_woPU, data_dijet_wPU, data_ppmux, data_wjets
 
-#mirror.LOCAL_DIRECTORY = "/tmp/tau_commissioning_friis"
-mirror.LOCAL_DIRECTORY = "/data2/friis/tau_fakerate_ntuples"
+mirror.LOCAL_DIRECTORY = "/tmp/abdollah/tau_commissioning_abdollah" # on lxplus430
+#mirror.LOCAL_DIRECTORY = "/data2/friis/tau_fakerate_ntuples"
 
 class SampleWrapper(object):
     " Wrapper class to automatically update a sample when it is accessed "
@@ -71,10 +71,14 @@ _sample_list.extend([ ztautau_mc, zttPU156bx_mc ])
 
 #--------------------------------------------------------------------------------
 # define QCD di-jet samples
-_sample_list.extend([ qcddijet_mc, qcddijetPU156bx_mc, data_dijet,
+_sample_list.extend([ qcddijet_mc, qcddijetPU156bx_mc, data_dijet_woPU, data_dijet_wPU,
                       qcddijet_mc_noCuts, qcddijetPU156bx_mc_noCuts ])
 #_sample_list.append(qcddijet_mc)
 #_sample_list.append(data_dijet)
+_sample_list = [ zttPU156bx_mc,
+                 qcddijet_mc, qcddijetPU156bx_mc, data_dijet_woPU, data_dijet_wPU,
+                 ppmux10PU156bx_mc, data_ppmux,
+                 wjetsPU156bx_mc, data_wjets ]
 #--------------------------------------------------------------------------------
 
 if __name__ == "__main__":

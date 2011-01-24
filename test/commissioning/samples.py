@@ -7,7 +7,7 @@ samples.py
 
 Central defintion of data sources for commissioning.
 
-$Id: samples.py,v 1.36 2011/01/21 10:33:02 veelken Exp $
+$Id: samples.py,v 1.37 2011/01/21 11:17:18 veelken Exp $
 
 '''
 
@@ -16,35 +16,27 @@ $Id: samples.py,v 1.36 2011/01/21 10:33:02 veelken Exp $
 # ntuple manager.  Other samples (W+jets etc) can rename their tau collections
 # to match these.
 dijetSampleAliasMap = {
-    'patPFTausDijetTagAndProbeHPS': 'hps',
-    'patPFTausDijetTagAndProbeShrinkingCone': 'shrinking',
-    'patPFTausDijetTagAndProbeFixedCone': 'fixed',
-    'patPFTausDijetTagAndProbeHPSpTaNC': 'hpstanc',
-    'patCaloTausDijetTagAndProbe': 'calo'
+    'patPFTausDijetTagAndProbeHPS':               'hps',
+    'patPFTausDijetTagAndProbeShrinkingCone':     'shrinking',
+    'patPFTausDijetTagAndProbeFixedCone':         'fixed',
+    'patPFTausDijetTagAndProbeHPSpTaNC':          'hpstanc',
+    'patCaloTausDijetTagAndProbe':                'calo'
 }
 
 muEnrichedSampleAliasMap = {
-    'patPFTausCleanedHPS': 'hps',
-    'patPFTausCleanedHPSpTaNC': 'hpstanc',
-    'patPFTausCleanedShrinkingCone': 'shrinking',
-    'patPFTausCleanedFixedCone': 'fixed',
-    'patCaloTausCleaned': 'calo'
+    'patPFTausCleanedHPS':                        'hps',
+    'patPFTausCleanedHPSpTaNC':                   'hpstanc',
+    'patPFTausCleanedShrinkingCone':              'shrinking',
+    'patPFTausCleanedFixedCone':                  'fixed',
+    'patCaloTausCleaned':                         'calo'
 }
 
-#wJetsSampleAliasMap = {
-    #'patPFTausCleanedHPS': 'hps',
-    #'patPFTausCleanedHPSpTaNC': 'hpstanc',
-    #'patPFTausCleanedShrinkingCone': 'shrinking',
-    #'patPFTausCleanedFixedCone': 'fixed',
-    #'patCaloTausCleaned': 'calo'
-#}
-
 wJetsSampleAliasMap = {
-    'patPFTausLoosePFIsoEmbeddedHPS': 'hps',
-    'patPFTausLoosePFIsoEmbedded06HPSpTaNC': 'hpstanc',
-    'patPFTausLoosePFIsoEmbeddedShrinkingCone': 'shrinking',
-    'patPFTausLoosePFIsoEmbeddedFixedCone': 'fixed',
-    'patCaloTausLoosePFIsoEmbedded': 'calo'
+    'patPFTausLoosePFIsoEmbedded06HPS':           'hps',
+    'patPFTausLoosePFIsoEmbedded06HPSpTaNC':      'hpstanc',
+    'patPFTausLoosePFIsoEmbedded06ShrinkingCone': 'shrinking',
+    'patPFTausLoosePFIsoEmbedded06FixedCone':     'fixed',
+    'patCaloTausLoosePFIsoEmbedded06':            'calo'
 }
 
 muEnrichedSampleAliasMap = wJetsSampleAliasMap
@@ -75,7 +67,7 @@ print "loading definition of QCD background Monte Carlo samples..."
 qcddijet_mc = build_sample(
     _MC_LUMI_MAP_FILE, "mc_qcddijet", "merge",
     take_every=1, datasets = [
-        "mcQCDdiJetPtHat5to15",
+        #"mcQCDdiJetPtHat5to15",
         "mcQCDdiJetPtHat15to30",
         "mcQCDdiJetPtHat30to50",
         "mcQCDdiJetPtHat50to80"
@@ -84,7 +76,7 @@ qcddijet_mc = build_sample(
 qcddijet_mc_noCuts = build_sample(
     _MC_LUMI_MAP_FILE, "mc_qcddijet_noCuts", "merge",
     take_every=1, datasets = [
-        "mcQCDdiJetPtHat5to15_noCuts",
+        #"mcQCDdiJetPtHat5to15_noCuts",
         "mcQCDdiJetPtHat15to30_noCuts",
         "mcQCDdiJetPtHat30to50_noCuts",
         "mcQCDdiJetPtHat50to80_noCuts"
@@ -93,7 +85,7 @@ qcddijet_mc_noCuts = build_sample(
 qcddijetPU156bx_mc = build_sample(
     _MC_LUMI_MAP_FILE, "mc_qcddijetPU156bx", "merge",
     take_every=1, datasets = [
-        "mcQCDdiJetPtHat5to15PU156bx",
+        #"mcQCDdiJetPtHat5to15PU156bx",
         "mcQCDdiJetPtHat15to30PU156bx",
         "mcQCDdiJetPtHat30to50PU156bx",
         "mcQCDdiJetPtHat50to80PU156bx"
@@ -102,7 +94,7 @@ qcddijetPU156bx_mc = build_sample(
 qcddijetPU156bx_mc_noCuts = build_sample(
     _MC_LUMI_MAP_FILE, "mc_qcddijetPU156bx_noCuts", "merge",
     take_every=1, datasets = [
-        "mcQCDdiJetPtHat5to15PU156bx_noCuts",
+        #"mcQCDdiJetPtHat5to15PU156bx_noCuts",
         "mcQCDdiJetPtHat15to30PU156bx_noCuts",
         "mcQCDdiJetPtHat30to50PU156bx_noCuts",
         "mcQCDdiJetPtHat50to80PU156bx_noCuts"
@@ -162,13 +154,22 @@ wjetsPU156bx_mc_noCuts = build_sample(
 
 # For data, we use the add mode, to concatenate data
 print "loading definition of Data samples..."
-data_dijet = build_sample(
-    _DATA_LUMI_MAP_FILE, "qcdDiJet_data", "add",
+data_dijet_woPU = build_sample(
+    _DATA_LUMI_MAP_FILE, "qcdDiJet_data_woPU", "add",
     take_every=1, datasets = [
         "qcdDiJet_data_MinBiasCommissioning_Jun14ReReco",
         #"qcdDiJet_data_JetMETTau_Run2010Ai_Sep17ReReco",
         #"qcdDiJet_data_JetMET_Run2010Aii_Sep17ReReco",
         #"qcdDiJet_data_Jet_Run2010B_Nov4ReReco"
+    ],
+    alias_map = dijetSampleAliasMap)
+data_dijet_wPU = build_sample(
+    _DATA_LUMI_MAP_FILE, "qcdDiJet_data_wPU", "add",
+    take_every=1, datasets = [
+        #"qcdDiJet_data_MinBiasCommissioning_Jun14ReReco",
+        #"qcdDiJet_data_JetMETTau_Run2010Ai_Sep17ReReco",
+        #"qcdDiJet_data_JetMET_Run2010Aii_Sep17ReReco",
+        "qcdDiJet_data_Jet_Run2010B_Nov4ReReco"
     ],
     alias_map = dijetSampleAliasMap)
 
