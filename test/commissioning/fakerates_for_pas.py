@@ -3,6 +3,8 @@
 '''
 Plot fake-rates of different tau id algorithms for Data compared to QCD multi-jet Monte Carlo predictions
 
+Used to make plots for PFT-10-004
+
 Authors: Matthias Edelhoff, Christian Veelken
 
 '''

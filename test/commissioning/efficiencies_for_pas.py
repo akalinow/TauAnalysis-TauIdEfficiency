@@ -3,6 +3,8 @@
 '''
 Plot efficiency of different tau id algorithms for ZTT hadronic taus
 
+Used to make plots for PFT-10-004
+
 Authors: Aruna Nayak, Evan K. Friis
 
 '''
