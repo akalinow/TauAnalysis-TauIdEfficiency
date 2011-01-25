@@ -437,10 +437,10 @@ class PlotManager(object):
                     difference_graph.SetPoint(point, base_x, diff)
                     difference_graph.SetPointError(point, base_xErrDown, base_xErrUp, yErrDown, yErrUp)
                                         
-            style.update_graph_style(difference_graph, self.samples[probe_name]['style'])
-            output['legend'].add_object(
-                difference_graph, self.samples[probe_name]['nice_name'], 'p')
-            difference_graph.Draw("p")
+            ##style.update_graph_style(difference_graph, self.samples[probe_name]['style'])
+            ##output['legend'].add_object(
+            ##    difference_graph, self.samples[probe_name]['nice_name'], 'p')
+            ##difference_graph.Draw("p")
 
         return output
 
