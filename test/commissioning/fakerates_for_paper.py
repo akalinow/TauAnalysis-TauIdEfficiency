@@ -7,6 +7,8 @@ Plot fake-rates of different tau id algorithms for
  o W --> mu nu + jets
 Data compared to Monte Carlo predictions
 
+Used to make plots for TAU-11-001
+
 Author: Christian Veelken
 
 '''
@@ -43,56 +45,62 @@ maxNumEntries = 10000
 
 # Define marker styles
 custom_style_dijet_data_wPU = copy.deepcopy(style.DATA_STYLE)
-custom_style_dijet_data_wPU['marker_color']  = colors.color_darkBlue.value()
-custom_style_dijet_data_wPU['line_color']    = colors.color_darkBlue.value()
-custom_style_dijet_data_wPU['marker_style']    = 22 #closed upward-facing triangle
+custom_style_dijet_data_wPU['marker_color']  = colors.color_lightBlue.value()
+custom_style_dijet_data_wPU['line_color']    = colors.color_lightBlue.value()
+custom_style_dijet_data_wPU['marker_style']  = 22 # closed upward-facing triangle
 custom_style_dijet_mc_wPU = copy.deepcopy(style.QCD_MC_STYLE_DOTS)
-custom_style_dijet_mc_wPU['marker_color']    = colors.color_darkBlue.value()
-custom_style_dijet_mc_wPU['line_color']      = colors.color_darkBlue.value()
-custom_style_dijet_mc_wPU['marker_style']    = 26 # open  upward-facing triangle
+custom_style_dijet_mc_wPU['marker_color']    = colors.color_lightBlue.value()
+custom_style_dijet_mc_wPU['line_color']      = colors.color_lightBlue.value()
+custom_style_dijet_mc_wPU['marker_style']    = 26 # open upward-facing triangle
 custom_style_dijet_data_woPU = copy.deepcopy(style.DATA_STYLE)
-custom_style_dijet_data_woPU['marker_color'] = colors.color_lightBlue.value()
-custom_style_dijet_data_woPU['line_color']   = colors.color_lightBlue.value()
-custom_style_dijet_data_woPU['marker_style']    = 23 #closed downward-facing triangle
+custom_style_dijet_data_woPU['marker_color'] = colors.color_darkGray.value()
+custom_style_dijet_data_woPU['line_color']   = colors.color_darkGray.value()
+custom_style_dijet_data_woPU['marker_style'] = 23 # closed downward-facing triangle
 custom_style_dijet_mc_woPU = copy.deepcopy(style.QCD_MC_STYLE_DOTS)
-custom_style_dijet_mc_woPU['marker_color']   = colors.color_lightBlue.value()
-custom_style_dijet_mc_woPU['line_color']     = colors.color_lightBlue.value()
-custom_style_dijet_mc_woPU['marker_style']    = 27 # open downward-facing triangle
+custom_style_dijet_mc_woPU['marker_color']   = colors.color_darkGray.value()
+custom_style_dijet_mc_woPU['line_color']     = colors.color_darkGray.value()
+custom_style_dijet_mc_woPU['marker_style']   = 27 # open downward-facing triangle
 
 custom_style_ppmux_data = copy.deepcopy(style.DATA_STYLE)
-custom_style_ppmux_data['marker_color']      = colors.color_green.value()
-custom_style_ppmux_data['line_color']        = colors.color_green.value()
-custom_style_ppmux_data['marker_style']    = 21 #closed square
+custom_style_ppmux_data['marker_color']      = colors.color_violett.value()
+custom_style_ppmux_data['line_color']        = colors.color_violett.value()
+custom_style_ppmux_data['marker_style']      = 21 # closed square
 custom_style_ppmux_mc = copy.deepcopy(style.QCD_MC_STYLE_DOTS)
-custom_style_ppmux_mc['marker_color']        = colors.color_green.value()
-custom_style_ppmux_mc['line_color']          = colors.color_green.value()
-custom_style_ppmux_mc['marker_style']    =  25 # open sqaure
+custom_style_ppmux_mc['marker_color']        = colors.color_violett.value()
+custom_style_ppmux_mc['line_color']          = colors.color_violett.value()
+custom_style_ppmux_mc['marker_style']        = 25 # open square
 
 custom_style_wjets_data = copy.deepcopy(style.DATA_STYLE)
 custom_style_wjets_data['marker_color']      = colors.color_red.value()
 custom_style_wjets_data['line_color']        = colors.color_red.value()
-custom_style_wjets_data['marker_style']    = 20 #closed circle
+custom_style_wjets_data['marker_style']      = 20 # closed circle
 custom_style_wjets_mc = copy.deepcopy(style.QCD_MC_STYLE_DOTS)
 custom_style_wjets_mc['marker_color']        = colors.color_red.value()
 custom_style_wjets_mc['line_color']          = colors.color_red.value()
-custom_style_wjets_mc['marker_style']    = 24 #open circle
+custom_style_wjets_mc['marker_style']        = 24 # open circle
 
 # Adjust position of labels
 custom_CMS_PRELIMINARY_UPPER_LEFT = copy.deepcopy(style.CMS_PRELIMINARY_UPPER_LEFT)
-custom_CMS_PRELIMINARY_UPPER_LEFT.SetX1NDC(0.175)
-custom_CMS_PRELIMINARY_UPPER_LEFT.SetX2NDC(0.500)
+custom_CMS_PRELIMINARY_UPPER_LEFT.SetX1(style.CMS_PRELIMINARY_UPPER_LEFT.GetX1() + 0.050)
+custom_CMS_PRELIMINARY_UPPER_LEFT.SetX2(style.CMS_PRELIMINARY_UPPER_LEFT.GetX2() + 0.050)
+custom_CMS_PRELIMINARY_UPPER_LEFT.SetY1(style.CMS_PRELIMINARY_UPPER_LEFT.GetY1() + 0.050)
+custom_CMS_PRELIMINARY_UPPER_LEFT.SetY2(style.CMS_PRELIMINARY_UPPER_LEFT.GetY2() + 0.050)
+
+style.LUMI_LABEL_UPPER_LEFT.Clear()
+style.LUMI_LABEL_UPPER_LEFT.AddText("Data, L = 36.1pb^{-1}")
 
 custom_LUMI_LABEL_UPPER_LEFT = copy.deepcopy(style.LUMI_LABEL_UPPER_LEFT)
-custom_LUMI_LABEL_UPPER_LEFT.SetX1NDC(0.175)
-custom_LUMI_LABEL_UPPER_LEFT.SetX2NDC(0.500)
+custom_LUMI_LABEL_UPPER_LEFT.SetX1(style.LUMI_LABEL_UPPER_LEFT.GetX1() + 0.050)
+custom_LUMI_LABEL_UPPER_LEFT.SetX2(style.LUMI_LABEL_UPPER_LEFT.GetX2() + 0.050)
+custom_LUMI_LABEL_UPPER_LEFT.SetY1(style.LUMI_LABEL_UPPER_LEFT.GetY1() + 0.050)
+custom_LUMI_LABEL_UPPER_LEFT.SetY2(style.LUMI_LABEL_UPPER_LEFT.GetY2() + 0.050)
 custom_LUMI_LABEL_UPPER_LEFT.SetTextSize(0.0375)
-custom_LUMI_LABEL_UPPER_LEFT.Clear()
-custom_LUMI_LABEL_UPPER_LEFT.AddText("Data, L = 36.1pb^{-1}")
-custom_LUMI_LABEL_UPPER_LEFT.Draw()
 
 custom_SQRTS_LABEL_UPPER_LEFT = copy.deepcopy(style.SQRTS_LABEL_UPPER_LEFT)
-custom_SQRTS_LABEL_UPPER_LEFT.SetX1NDC(0.175)
-custom_SQRTS_LABEL_UPPER_LEFT.SetX2NDC(0.500)
+custom_SQRTS_LABEL_UPPER_LEFT.SetX1(style.SQRTS_LABEL_UPPER_LEFT.GetX1() + 0.050)
+custom_SQRTS_LABEL_UPPER_LEFT.SetX2(style.SQRTS_LABEL_UPPER_LEFT.GetX2() + 0.050)
+custom_SQRTS_LABEL_UPPER_LEFT.SetY1(style.SQRTS_LABEL_UPPER_LEFT.GetY1() + 0.050)
+custom_SQRTS_LABEL_UPPER_LEFT.SetY2(style.SQRTS_LABEL_UPPER_LEFT.GetY2() + 0.050)
 
 # Define labels for different algorithms
 algo_label_template = ROOT.TPaveText(0.50, 0.615, 0.88, 0.655, "NDC")
@@ -136,23 +144,16 @@ def makeFakeratePlots(algorithm, numerator,
 
     #print("<makeFakeratePlots>:")
 
-    result_algorithm = {}   
-
-    canvas_diff = ROOT.TCanvas("canvas_diff", "canvas_diff", 500, 625)
-    canvas_diff.cd()
+    result_algorithm = {}
     
-    topPad_diff = ROOT.TPad("topPad_diff", "topPad_diff", 0.00, 0.35, 1.00, 1.00)
-    topPad_diff.SetFillColor(10)
-    topPad_diff.SetLogy(True)
-    topPad_diff.SetTopMargin(0.05)
-    topPad_diff.SetLeftMargin(0.15)
-    topPad_diff.SetBottomMargin(0.00)
-    topPad_diff.SetRightMargin(0.05)
-    topPad_diff.SetGridy()
-    topPad_diff.Draw()
-    topPad_diff.cd()
+    #----------------------------------------------------------------------------
+    # Make "regular" fake-rate plots
+    #----------------------------------------------------------------------------
 
-    # Make fake-rate plots
+    canvas = ROOT.TCanvas("canvas_diff", "canvas_diff", 600, 600)
+    canvas.cd()
+
+    # Show difference in fake-rate between QCD di-jet, QCD muon enriched and W + jets events
     eff_dijet = plotter_dijet.efficiency(
         expression,
         denominator_dijet & numerator,
@@ -186,6 +187,94 @@ def makeFakeratePlots(algorithm, numerator,
         y_min = y_min, y_max = y_max, logy = True)
     result_algorithm['wjets'] = eff_wjets
 
+    # Draw fake-rate plots
+    eff_dijet['samples'][sample_dijet_data_wPU.name].Draw('epsame')
+    eff_dijet['samples'][sample_dijet_mc_wPU.name].Draw('epsame')
+    eff_ppmux['samples'][sample_ppmux_data.name].Draw('epsame')
+    eff_ppmux['samples'][sample_ppmux_mc.name].Draw('epsame')
+    eff_wjets['samples'][sample_wjets_data.name].Draw('epsame')
+    eff_wjets['samples'][sample_wjets_mc.name].Draw('epsame')
+
+    # Draw legend
+    legend = ROOT.TLegend(0.45, 0.68, 0.88, 0.88, "", "brNDC")
+    legend.SetTextSize(0.03)
+    legend.SetFillColor(0)
+    legend.SetLineColor(1)
+    legend.SetBorderSize(1)
+    legend.AddEntry(eff_wjets['samples'][sample_wjets_data.name],     "W #rightarrow #mu #nu Data",       "p")
+    legend.AddEntry(eff_wjets['samples'][sample_wjets_mc.name],       "W #rightarrow #mu #nu Simulation", "p")
+    legend.AddEntry(eff_dijet['samples'][sample_dijet_data_wPU.name], "QCDj Data",                        "p")
+    legend.AddEntry(eff_dijet['samples'][sample_dijet_mc_wPU.name],   "QCDj Simulation",                  "p")
+    legend.AddEntry(eff_ppmux['samples'][sample_ppmux_data.name],     "QCD#mu Data",                      "p")
+    legend.AddEntry(eff_ppmux['samples'][sample_ppmux_mc.name],       "QCD#mu Simulation",                "p")
+    legend.Draw()
+
+    # Draw CMS preliminary, luminosity and center-of-mass energy labels
+    style.CMS_PRELIMINARY_UPPER_LEFT.Draw()
+    style.LUMI_LABEL_UPPER_LEFT.Draw()
+    style.SQRTS_LABEL_UPPER_LEFT.Draw()
+
+    for extra_label in extra_labels:
+        extra_label.Draw()
+
+    canvas.SaveAs(outputFileName[:outputFileName.find(".")] + "_%s.png" % algorithm)
+    canvas.SaveAs(outputFileName[:outputFileName.find(".")] + "_%s.pdf" % algorithm)
+
+    #----------------------------------------------------------------------------
+    # Show difference in fake-rate between QCD di-jet with/without pile-up
+    #----------------------------------------------------------------------------
+
+    canvas.Clear()
+
+    eff_dijet['background'].Draw()
+    
+    # Draw fake-rate plots
+    eff_dijet['samples'][sample_dijet_data_woPU.name].Draw('epsame')
+    eff_dijet['samples'][sample_dijet_mc_woPU.name].Draw('epsame')
+    eff_dijet['samples'][sample_dijet_data_wPU.name].Draw('epsame')
+    eff_dijet['samples'][sample_dijet_mc_wPU.name].Draw('epsame')
+
+    # Draw legend
+    legend2 = ROOT.TLegend(0.45, 0.68, 0.88, 0.88, "", "brNDC")
+    legend2.SetTextSize(0.03)
+    legend2.SetFillColor(0)
+    legend2.SetLineColor(1)
+    legend2.SetBorderSize(1)
+    legend2.AddEntry(eff_dijet['samples'][sample_dijet_data_woPU.name], "QCDj Data, wo. PU", "p")
+    legend2.AddEntry(eff_dijet['samples'][sample_dijet_mc_woPU.name],   "QCDj Simulation, wo. PU", "p")
+    legend2.AddEntry(eff_dijet['samples'][sample_dijet_data_wPU.name],  "QCDj Data, w. PU", "p")
+    legend2.AddEntry(eff_dijet['samples'][sample_dijet_mc_wPU.name],    "QCDj Simulation, w. PU", "p")
+    legend2.Draw()
+
+    # Draw CMS preliminary, luminosity and center-of-mass energy labels
+    style.CMS_PRELIMINARY_UPPER_LEFT.Draw()
+    style.LUMI_LABEL_UPPER_LEFT.Draw()
+    style.SQRTS_LABEL_UPPER_LEFT.Draw()
+
+    for extra_label in extra_labels:
+        extra_label.Draw()
+
+    canvas.SaveAs(outputFileName[:outputFileName.find(".")] + "_%s_pileup.png" % algorithm)
+    canvas.SaveAs(outputFileName[:outputFileName.find(".")] + "_%s_pileup.pdf" % algorithm)
+
+    #----------------------------------------------------------------------------
+    # Make fake-rate plots with normalized differences added below plots
+    #----------------------------------------------------------------------------
+    
+    canvas_diff = ROOT.TCanvas("canvas_diff", "canvas_diff", 500, 625)
+    canvas_diff.cd()
+    
+    topPad_diff = ROOT.TPad("topPad_diff", "topPad_diff", 0.00, 0.35, 1.00, 1.00)
+    topPad_diff.SetFillColor(10)
+    topPad_diff.SetLogy(True)
+    topPad_diff.SetTopMargin(0.05)
+    topPad_diff.SetLeftMargin(0.18)
+    topPad_diff.SetBottomMargin(0.00)
+    topPad_diff.SetRightMargin(0.05)
+    topPad_diff.SetGridy()
+    topPad_diff.Draw()
+    topPad_diff.cd()
+
     # Adjust offset of y-axis title
     #eff_dijet['background'].GetYaxis().SetTitle("Efficiency" )
     eff_dijet['background'].GetYaxis().SetNdivisions(505)
@@ -204,32 +293,22 @@ def makeFakeratePlots(algorithm, numerator,
     eff_wjets['samples'][sample_wjets_mc.name].Draw('epsame')
 
     # Draw legend
-    legend = ROOT.TLegend(0.50, 0.73, 0.93, 0.93, "", "brNDC")
-    legend.SetTextSize(0.03)
-    legend.SetFillColor(0)
-    legend.SetLineColor(1)
-    legend.SetBorderSize(1)
-    legend.AddEntry(eff_wjets['samples'][sample_wjets_data.name],     "W #rightarrow #mu #nu Data",       "p")
-    legend.AddEntry(eff_wjets['samples'][sample_wjets_mc.name],       "W #rightarrow #mu #nu Simulation", "p")
-    legend.AddEntry(eff_dijet['samples'][sample_dijet_data_wPU.name], "QCDj Data",                        "p")
-    legend.AddEntry(eff_dijet['samples'][sample_dijet_mc_wPU.name],   "QCDj Simulation",                  "p")
-    legend.AddEntry(eff_ppmux['samples'][sample_ppmux_data.name],     "QCD#mu Data",                      "p")
-    legend.AddEntry(eff_ppmux['samples'][sample_ppmux_mc.name],       "QCD#mu Simulation",                "p")
+    legend.SetX1NDC(legend.GetX1NDC() + 0.050)
+    legend.SetX2NDC(legend.GetX2NDC() + 0.050)
+    legend.SetY1NDC(legend.GetY1NDC() + 0.050)
+    legend.SetY2NDC(legend.GetY2NDC() + 0.050)
     legend.Draw()
 
     # Draw CMS preliminary, luminosity and center-of-mass energy labels
     custom_CMS_PRELIMINARY_UPPER_LEFT.Draw()
     custom_LUMI_LABEL_UPPER_LEFT.Draw()
     custom_SQRTS_LABEL_UPPER_LEFT.Draw()
-
+    
     for extra_label in extra_labels:
         extra_label.Draw()
 
-    canvas_diff.SaveAs(outputFileName[:outputFileName.find(".")] + "_%s.png" % algorithm)
-    canvas_diff.SaveAs(outputFileName[:outputFileName.find(".")] + "_%s.pdf" % algorithm)
-
     canvas_diff.cd()
-
+    
     bottomPad_diff = ROOT.TPad("bottomPad_diff", "bottomPad_diff", 0.00, 0.00, 1.00, 0.35)
     bottomPad_diff.SetFillColor(10)
     bottomPad_diff.SetLogy(False)
@@ -237,17 +316,18 @@ def makeFakeratePlots(algorithm, numerator,
     bottomPad_diff.SetLeftMargin(0.18)
     bottomPad_diff.SetBottomMargin(0.20)
     bottomPad_diff.SetRightMargin(0.05)
+    bottomPad_diff.SetGridy()
     bottomPad_diff.Draw()
     bottomPad_diff.cd()
 
-    # Show (normalized) difference (Data - MC)/MC
+    # Show normalized difference (Data - MC)/MC
     diff_dijet_wPU = plotter_dijet.plot_eff_deviations(
         eff_dijet,
         sample_dijet_mc_wPU.name,
         [ sample_dijet_data_wPU.name ],
         x_axis_title = x_axis_title,
         y_axis_title = "#frac{Data - Simulation}{Simulation}",
-        y_min = -0.28, y_max = +0.28, logy = False
+        y_min = -0.34, y_max = +0.34, logy = False
     )
     result_algorithm['dijet_DataToMC_diff'] = diff_dijet_wPU
     
@@ -257,7 +337,7 @@ def makeFakeratePlots(algorithm, numerator,
         [ sample_ppmux_data.name ],
         x_axis_title = x_axis_title,
         y_axis_title = "#frac{Data - Simulation}{Simulation}",
-        y_min = -0.28, y_max = +0.28, logy = False
+        y_min = -0.34, y_max = +0.34, logy = False
     )
     result_algorithm['ppmux_DataToMC_diff'] = diff_ppmux
     
@@ -267,7 +347,7 @@ def makeFakeratePlots(algorithm, numerator,
         [ sample_wjets_data.name ],
         x_axis_title = x_axis_title,
         y_axis_title = "#frac{Data - Simulation}{Simulation}",
-        y_min = -0.28, y_max = +0.28, logy = False
+        y_min = -0.34, y_max = +0.34, logy = False
     )
     result_algorithm['wjets_DataToMC_diff'] = diff_wjets
 
@@ -276,6 +356,7 @@ def makeFakeratePlots(algorithm, numerator,
     diff_dijet_wPU['background'].GetXaxis().SetTitleSize(0.08)
     diff_dijet_wPU['background'].GetXaxis().SetLabelSize(0.08)
     diff_dijet_wPU['background'].GetXaxis().SetTickLength(0.055)
+    diff_dijet_wPU['background'].GetYaxis().CenterTitle()
     diff_dijet_wPU['background'].GetYaxis().SetTitleOffset(0.9)
     diff_dijet_wPU['background'].GetYaxis().SetTitleSize(0.08)
     diff_dijet_wPU['background'].GetYaxis().SetLabelSize(0.08)
@@ -292,11 +373,24 @@ def makeFakeratePlots(algorithm, numerator,
     canvas_diff.SaveAs(outputFileName[:outputFileName.find(".")] + "_%s_diff.png" % algorithm)
     canvas_diff.SaveAs(outputFileName[:outputFileName.find(".")] + "_%s_diff.pdf" % algorithm)
 
-    # Show difference in fake-rate between QCD di-jet with/without pile-up
+    canvas_diff.Clear()
+
+    canvas_diff.cd()
+
+    # CV: for some reason, the top and bottom pads need to be recreated ?!
+    topPad_diff = ROOT.TPad("topPad_diff", "topPad_diff", 0.00, 0.35, 1.00, 1.00)
+    topPad_diff.SetFillColor(10)
+    topPad_diff.SetLogy(True)
+    topPad_diff.SetTopMargin(0.05)
+    topPad_diff.SetLeftMargin(0.18)
+    topPad_diff.SetBottomMargin(0.00)
+    topPad_diff.SetRightMargin(0.05)
+    topPad_diff.SetGridy()
+    topPad_diff.Draw()
     topPad_diff.cd()
 
     eff_dijet['background'].Draw()
-    
+
     # Draw fake-rate plots
     eff_dijet['samples'][sample_dijet_data_woPU.name].Draw('epsame')
     eff_dijet['samples'][sample_dijet_mc_woPU.name].Draw('epsame')
@@ -304,16 +398,11 @@ def makeFakeratePlots(algorithm, numerator,
     eff_dijet['samples'][sample_dijet_mc_wPU.name].Draw('epsame')
 
     # Draw legend
-    legend = ROOT.TLegend(0.50, 0.73, 0.93, 0.93, "", "brNDC")
-    legend.SetTextSize(0.03)
-    legend.SetFillColor(0)
-    legend.SetLineColor(1)
-    legend.SetBorderSize(1)
-    legend.AddEntry(eff_dijet['samples'][sample_dijet_data_woPU.name], "QCDj Data, wo. PU", "p")
-    legend.AddEntry(eff_dijet['samples'][sample_dijet_mc_woPU.name],   "QCDj Simulation, wo. PU", "p")
-    legend.AddEntry(eff_dijet['samples'][sample_dijet_data_wPU.name],  "QCDj Data, w. PU", "p")
-    legend.AddEntry(eff_dijet['samples'][sample_dijet_mc_wPU.name],    "QCDj Simulation, w. PU", "p")
-    legend.Draw()
+    legend2.SetX1NDC(legend2.GetX1NDC() + 0.050)
+    legend2.SetX2NDC(legend2.GetX2NDC() + 0.050)
+    legend2.SetY1NDC(legend2.GetY1NDC() + 0.050)
+    legend2.SetY2NDC(legend2.GetY2NDC() + 0.050)
+    legend2.Draw()
 
     # Draw CMS preliminary, luminosity and center-of-mass energy labels
     custom_CMS_PRELIMINARY_UPPER_LEFT.Draw()
@@ -323,21 +412,27 @@ def makeFakeratePlots(algorithm, numerator,
     for extra_label in extra_labels:
         extra_label.Draw()
 
-    canvas_diff.SaveAs(outputFileName[:outputFileName.find(".")] + "_%s_pileup.png" % algorithm)
-    canvas_diff.SaveAs(outputFileName[:outputFileName.find(".")] + "_%s_pileup.pdf" % algorithm)
-
     canvas_diff.cd()
 
-    bottomPad_diff.cd()
+    bottomPad_diff = ROOT.TPad("bottomPad_diff", "bottomPad_diff", 0.00, 0.00, 1.00, 0.35)
+    bottomPad_diff.SetFillColor(10)
+    bottomPad_diff.SetLogy(False)
+    bottomPad_diff.SetTopMargin(0.00)
+    bottomPad_diff.SetLeftMargin(0.18)
+    bottomPad_diff.SetBottomMargin(0.20)
+    bottomPad_diff.SetRightMargin(0.05)
+    bottomPad_diff.SetGridy()
+    bottomPad_diff.Draw()
+    bottomPad_diff.cd()    
 
-    # Show (normalized) difference (Data - MC)/MC
+    # Show (normalized) difference (w. PU - wo. PU)/w. PU
     diff_dijet_pileup_data = plotter_dijet.plot_eff_deviations(
         eff_dijet,
         sample_dijet_data_woPU.name,
         [ sample_dijet_data_wPU.name ],
         x_axis_title = x_axis_title,
         y_axis_title = "#frac{w. PU - wo. PU}{wo. PU}",
-        y_min = -0.28, y_max = +0.28, logy = False
+        y_min = -0.34, y_max = +0.34, logy = False
     )
     result_algorithm['dijet_Data_pileup_diff'] = diff_dijet_pileup_data
         
@@ -347,7 +442,7 @@ def makeFakeratePlots(algorithm, numerator,
         [ sample_dijet_mc_wPU.name ],
         x_axis_title = x_axis_title,
         y_axis_title = "#frac{w. PU - wo. PU}{wo. PU}",
-        y_min = -0.28, y_max = +0.28, logy = False
+        y_min = -0.34, y_max = +0.34, logy = False
     )
     result_algorithm['dijet_MC_pileup_diff'] = diff_dijet_pileup_mc
 
@@ -356,6 +451,7 @@ def makeFakeratePlots(algorithm, numerator,
     diff_dijet_pileup_data['background'].GetXaxis().SetTitleSize(0.08)
     diff_dijet_pileup_data['background'].GetXaxis().SetLabelSize(0.08)
     diff_dijet_pileup_data['background'].GetXaxis().SetTickLength(0.055)
+    diff_dijet_pileup_data['background'].GetYaxis().CenterTitle()
     diff_dijet_pileup_data['background'].GetYaxis().SetTitleOffset(0.9)
     diff_dijet_pileup_data['background'].GetYaxis().SetTitleSize(0.08)
     diff_dijet_pileup_data['background'].GetYaxis().SetLabelSize(0.08)
@@ -499,7 +595,7 @@ if __name__ == "__main__":
                           denominator_ppmux, plotter_ppmux, 
                           denominator_wjets, plotter_wjets, 
                           nTuples[algorithm].expr('$jetPt'), binning_pt,
-                          'Jet P_{T} [GeV/c]', 4e-5, 9.9, extra_labels[algorithm_discriminator],
+                          'Jet P_{T} [GeV/c]', 6.5e-4, 5.9, extra_labels[algorithm_discriminator],
                           maxNumEntries,
                           "plots/fakerates_for_pas_jetPt.pdf")
         ##makeFakeratePlots(algorithm, numerator[algorithm]['expr'],
@@ -507,7 +603,7 @@ if __name__ == "__main__":
         ##                  denominator_ppmux, plotter_ppmux, 
         ##                  denominator_wjets, plotter_wjets,
         ##                  nTuples[algorithm].expr('$jetEta'), binning_eta,
-        ##                  'Jet #eta', 1e-4, 9.9, extra_labels[algorithm],
+        ##                  'Jet #eta', 6.5e-4, 5.9, extra_labels[algorithm],
         ##                  maxNumEntries,
         ##                  "plots/fakerates_for_pas_jetEta.pdf")
         ##makeFakeratePlots(algorithm, numerator[algorithm]['expr'],
@@ -515,7 +611,7 @@ if __name__ == "__main__":
         ##                  denominator_ppmux, plotter_ppmux, 
         ##                  denominator_wjets, plotter_wjets,
         ##                  nTuples[algorithm].expr('$jetPhi'), binning_phi,
-        ##                  'Jet #phi', 1e-4, 9.9, extra_labels[algorithm],
+        ##                  'Jet #phi', 6.5e-4, 5.9, extra_labels[algorithm],
         ##                  maxNumEntries,
         ##                  "plots/fakerates_for_pas_jetPhi.pdf")
 
