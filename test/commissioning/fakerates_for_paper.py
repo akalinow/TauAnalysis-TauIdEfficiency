@@ -40,8 +40,8 @@ denominator_phase_space = "$jetPt > 10.0 & abs($jetEta) < 2.5"
 
 # Define maximum number of Ntuple entries to process
 # (NOTE: use values different from 1000000000 for debugging purposes only !!)
-#maxNumEntries = 1000000000
-maxNumEntries = 10000
+maxNumEntries = 1000000000
+#maxNumEntries = 10000
 
 # Define marker styles
 custom_style_dijet_data_wPU = copy.deepcopy(style.DATA_STYLE)
@@ -161,7 +161,7 @@ def makeFakeratePlots(algorithm, numerator,
         binning = binning,
         maxNumEntries = maxNumEntries, verbose = True, x_error_bars = True,
         x_axis_title = x_axis_title,
-        y_axis_title = "Efficiency",
+        y_axis_title = "Fake Rate",
         y_min = y_min, y_max = y_max, logy = True)
     result_algorithm['dijet'] = eff_dijet
 
@@ -172,7 +172,7 @@ def makeFakeratePlots(algorithm, numerator,
         binning = binning,
         maxNumEntries = maxNumEntries, verbose = True, x_error_bars = True,
         x_axis_title = x_axis_title,
-        y_axis_title = "Efficiency",
+        y_axis_title = "Fake Rate",
         y_min = y_min, y_max = y_max, logy = True)
     result_algorithm['ppmux'] = eff_ppmux
 
@@ -183,7 +183,7 @@ def makeFakeratePlots(algorithm, numerator,
         binning = binning,
         maxNumEntries = maxNumEntries, verbose = True, x_error_bars = True,
         x_axis_title = x_axis_title,
-        y_axis_title = "Efficiency",
+        y_axis_title = "Fake Rate",
         y_min = y_min, y_max = y_max, logy = True)
     result_algorithm['wjets'] = eff_wjets
 
@@ -276,7 +276,6 @@ def makeFakeratePlots(algorithm, numerator,
     topPad_diff.cd()
 
     # Adjust offset of y-axis title
-    #eff_dijet['background'].GetYaxis().SetTitle("Efficiency" )
     eff_dijet['background'].GetYaxis().SetNdivisions(505)
     eff_dijet['background'].GetYaxis().SetTickLength(0.04)
     eff_dijet['background'].GetYaxis().SetTitleOffset(1.2)
