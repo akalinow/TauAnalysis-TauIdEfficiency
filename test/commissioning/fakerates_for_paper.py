@@ -45,29 +45,37 @@ maxNumEntries = 10000
 custom_style_dijet_data_wPU = copy.deepcopy(style.DATA_STYLE)
 custom_style_dijet_data_wPU['marker_color']  = colors.color_darkBlue.value()
 custom_style_dijet_data_wPU['line_color']    = colors.color_darkBlue.value()
+custom_style_dijet_data_wPU['marker_style']    = 22 #closed upward-facing triangle
 custom_style_dijet_mc_wPU = copy.deepcopy(style.QCD_MC_STYLE_DOTS)
 custom_style_dijet_mc_wPU['marker_color']    = colors.color_darkBlue.value()
 custom_style_dijet_mc_wPU['line_color']      = colors.color_darkBlue.value()
+custom_style_dijet_mc_wPU['marker_style']    = 26 # open  upward-facing triangle
 custom_style_dijet_data_woPU = copy.deepcopy(style.DATA_STYLE)
 custom_style_dijet_data_woPU['marker_color'] = colors.color_lightBlue.value()
 custom_style_dijet_data_woPU['line_color']   = colors.color_lightBlue.value()
+custom_style_dijet_data_woPU['marker_style']    = 23 #closed downward-facing triangle
 custom_style_dijet_mc_woPU = copy.deepcopy(style.QCD_MC_STYLE_DOTS)
 custom_style_dijet_mc_woPU['marker_color']   = colors.color_lightBlue.value()
 custom_style_dijet_mc_woPU['line_color']     = colors.color_lightBlue.value()
+custom_style_dijet_mc_woPU['marker_style']    = 27 # open downward-facing triangle
 
 custom_style_ppmux_data = copy.deepcopy(style.DATA_STYLE)
 custom_style_ppmux_data['marker_color']      = colors.color_green.value()
 custom_style_ppmux_data['line_color']        = colors.color_green.value()
+custom_style_ppmux_data['marker_style']    = 21 #closed square
 custom_style_ppmux_mc = copy.deepcopy(style.QCD_MC_STYLE_DOTS)
 custom_style_ppmux_mc['marker_color']        = colors.color_green.value()
 custom_style_ppmux_mc['line_color']          = colors.color_green.value()
+custom_style_ppmux_mc['marker_style']    =  25 # open sqaure
 
 custom_style_wjets_data = copy.deepcopy(style.DATA_STYLE)
 custom_style_wjets_data['marker_color']      = colors.color_red.value()
 custom_style_wjets_data['line_color']        = colors.color_red.value()
+custom_style_wjets_data['marker_style']    = 20 #closed circle
 custom_style_wjets_mc = copy.deepcopy(style.QCD_MC_STYLE_DOTS)
 custom_style_wjets_mc['marker_color']        = colors.color_red.value()
 custom_style_wjets_mc['line_color']          = colors.color_red.value()
+custom_style_wjets_mc['marker_style']    = 24 #open circle
 
 # Adjust position of labels
 custom_CMS_PRELIMINARY_UPPER_LEFT = copy.deepcopy(style.CMS_PRELIMINARY_UPPER_LEFT)
