@@ -45,21 +45,21 @@ maxNumEntries = 1000000000
 
 # Define marker styles
 custom_style_dijet_data_wPU = copy.deepcopy(style.DATA_STYLE)
-custom_style_dijet_data_wPU['marker_color']  = colors.color_lightBlue.value()
-custom_style_dijet_data_wPU['line_color']    = colors.color_lightBlue.value()
+custom_style_dijet_data_wPU['marker_color']  = colors.color_darkBlue.value()
+custom_style_dijet_data_wPU['line_color']    = colors.color_darkBlue.value()
 custom_style_dijet_data_wPU['marker_style']  = 22 # closed upward-facing triangle
 custom_style_dijet_mc_wPU = copy.deepcopy(style.QCD_MC_STYLE_DOTS)
-custom_style_dijet_mc_wPU['marker_color']    = colors.color_lightBlue.value()
-custom_style_dijet_mc_wPU['line_color']      = colors.color_lightBlue.value()
+custom_style_dijet_mc_wPU['marker_color']    = colors.color_darkBlue.value()
+custom_style_dijet_mc_wPU['line_color']      = colors.color_darkBlue.value()
 custom_style_dijet_mc_wPU['marker_style']    = 26 # open upward-facing triangle
 custom_style_dijet_data_woPU = copy.deepcopy(style.DATA_STYLE)
-custom_style_dijet_data_woPU['marker_color'] = colors.color_darkGray.value()
-custom_style_dijet_data_woPU['line_color']   = colors.color_darkGray.value()
+custom_style_dijet_data_woPU['marker_color'] = colors.color_black.value()
+custom_style_dijet_data_woPU['line_color']   = colors.color_black.value()
 custom_style_dijet_data_woPU['marker_style'] = 23 # closed downward-facing triangle
 custom_style_dijet_mc_woPU = copy.deepcopy(style.QCD_MC_STYLE_DOTS)
-custom_style_dijet_mc_woPU['marker_color']   = colors.color_darkGray.value()
-custom_style_dijet_mc_woPU['line_color']     = colors.color_darkGray.value()
-custom_style_dijet_mc_woPU['marker_style']   = 27 # open downward-facing triangle
+custom_style_dijet_mc_woPU['marker_color']   = colors.color_black.value()
+custom_style_dijet_mc_woPU['line_color']     = colors.color_black.value()
+custom_style_dijet_mc_woPU['marker_style']   = 32 # open downward-facing triangle
 
 custom_style_ppmux_data = copy.deepcopy(style.DATA_STYLE)
 custom_style_ppmux_data['marker_color']      = colors.color_violett.value()
