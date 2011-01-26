@@ -36,7 +36,7 @@ sample_wjets_mc        = samples.wjetsPU156bx_mc
 intLumiData = 36100 # nb^-1
 
 # Define denominator (phase-space) for which fake-rates are to be determined
-denominator_phase_space = "$jetPt > 10.0 & abs($jetEta) < 2.5"
+denominator_phase_space = "$jetPt > 20.0 & abs($jetEta) < 2.3"
 
 # Define maximum number of Ntuple entries to process
 # (NOTE: use values different from 1000000000 for debugging purposes only !!)
@@ -101,6 +101,31 @@ custom_SQRTS_LABEL_UPPER_LEFT.SetX1(style.SQRTS_LABEL_UPPER_LEFT.GetX1() + 0.050
 custom_SQRTS_LABEL_UPPER_LEFT.SetX2(style.SQRTS_LABEL_UPPER_LEFT.GetX2() + 0.050)
 custom_SQRTS_LABEL_UPPER_LEFT.SetY1(style.SQRTS_LABEL_UPPER_LEFT.GetY1() + 0.050)
 custom_SQRTS_LABEL_UPPER_LEFT.SetY2(style.SQRTS_LABEL_UPPER_LEFT.GetY2() + 0.050)
+
+custom_PT_CUT_LABEL_UPPER_LEFT = copy.deepcopy(style.PT_CUT_LABEL_UPPER_LEFT)
+custom_PT_CUT_LABEL_UPPER_LEFT.SetX1(style.PT_CUT_LABEL_UPPER_LEFT.GetX1() + 0.050)
+custom_PT_CUT_LABEL_UPPER_LEFT.SetX2(style.PT_CUT_LABEL_UPPER_LEFT.GetX2() + 0.050)
+custom_PT_CUT_LABEL_UPPER_LEFT.SetY1(style.PT_CUT_LABEL_UPPER_LEFT.GetY1() + 0.050)
+custom_PT_CUT_LABEL_UPPER_LEFT.SetY2(style.PT_CUT_LABEL_UPPER_LEFT.GetY2() + 0.050)
+custom_PT_CUT_LABEL_UPPER_LEFT.AddText("P_{T} > 20 GeV/c")
+custom_PT_CUT_LABEL_UPPER_LEFT.Clear()
+
+custom_ETA_CUT_LABEL_UPPER_LEFT = copy.deepcopy(style.ETA_CUT_LABEL_UPPER_LEFT)
+custom_ETA_CUT_LABEL_UPPER_LEFT.SetX1(style.ETA_CUT_LABEL_UPPER_LEFT.GetX1() + 0.050)
+custom_ETA_CUT_LABEL_UPPER_LEFT.SetX2(style.ETA_CUT_LABEL_UPPER_LEFT.GetX2() + 0.050)
+custom_ETA_CUT_LABEL_UPPER_LEFT.SetY1(style.ETA_CUT_LABEL_UPPER_LEFT.GetY1() + 0.050)
+custom_ETA_CUT_LABEL_UPPER_LEFT.SetY2(style.ETA_CUT_LABEL_UPPER_LEFT.GetY2() + 0.050)
+custom_ETA_CUT_LABEL_UPPER_LEFT.Clear()
+custom_ETA_CUT_LABEL_UPPER_LEFT.AddText("|#eta| < 2.3")
+
+custom_PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT = copy.deepcopy(style.PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT)
+custom_PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT.SetX1(style.PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT.GetX1() + 0.050)
+custom_PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT.SetX2(style.PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT.GetX2() + 0.050)
+custom_PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT.SetY1(style.PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT.GetY1() + 0.050)
+custom_PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT.SetY2(style.PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT.GetY2() + 0.050)
+custom_PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT.Clear()
+custom_PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT.AddText("P_{T} > 20 GeV/c,\n")
+custom_PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT.AddText("|#eta| < 2.3")
 
 # Define labels for different algorithms
 algo_label_template = ROOT.TPaveText(0.50, 0.615, 0.88, 0.655, "NDC")
@@ -589,12 +614,19 @@ if __name__ == "__main__":
         denominator_ppmux     = nTuples[algorithm].expr(denominator_phase_space) & denominator_e_mu_veto
         denominator_wjets     = nTuples[algorithm].expr(denominator_phase_space) & denominator_e_mu_veto
 
+        extra_labels_pt  = copy.deepcopy(extra_labels[algorithm_discriminator])
+        extra_labels_pt.append(custom_ETA_CUT_LABEL_UPPER_LEFT)
+        extra_labels_eta = copy.deepcopy(extra_labels[algorithm_discriminator])
+        extra_labels_eta.append(custom_PT_CUT_LABEL_UPPER_LEFT)
+        extra_labels_phi = copy.deepcopy(extra_labels[algorithm_discriminator])
+        extra_labels_phi.append(custom_PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT)
+        
         makeFakeratePlots(algorithm, numerators[algorithm_discriminator]['expr'],
                           denominator_dijet, plotter_dijet, 
                           denominator_ppmux, plotter_ppmux, 
                           denominator_wjets, plotter_wjets, 
                           nTuples[algorithm].expr('$jetPt'), binning_pt,
-                          'Jet P_{T} [GeV/c]', 6.5e-4, 5.9, extra_labels[algorithm_discriminator],
+                          'Jet P_{T} [GeV/c]', 6.5e-4, 5.9, extra_labels_pt,
                           maxNumEntries,
                           "plots/fakerates_for_pas_jetPt.pdf")
         ##makeFakeratePlots(algorithm, numerator[algorithm]['expr'],
@@ -602,7 +634,7 @@ if __name__ == "__main__":
         ##                  denominator_ppmux, plotter_ppmux, 
         ##                  denominator_wjets, plotter_wjets,
         ##                  nTuples[algorithm].expr('$jetEta'), binning_eta,
-        ##                  'Jet #eta', 6.5e-4, 5.9, extra_labels[algorithm],
+        ##                  'Jet #eta', 6.5e-4, 5.9, extra_labels_eta,
         ##                  maxNumEntries,
         ##                  "plots/fakerates_for_pas_jetEta.pdf")
         ##makeFakeratePlots(algorithm, numerator[algorithm]['expr'],
@@ -610,7 +642,7 @@ if __name__ == "__main__":
         ##                  denominator_ppmux, plotter_ppmux, 
         ##                  denominator_wjets, plotter_wjets,
         ##                  nTuples[algorithm].expr('$jetPhi'), binning_phi,
-        ##                  'Jet #phi', 6.5e-4, 5.9, extra_labels[algorithm],
+        ##                  'Jet #phi', 6.5e-4, 5.9, extra_labels_phi,
         ##                  maxNumEntries,
         ##                  "plots/fakerates_for_pas_jetPhi.pdf")
 
