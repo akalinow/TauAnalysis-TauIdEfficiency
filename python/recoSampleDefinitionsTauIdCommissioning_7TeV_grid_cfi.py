@@ -250,7 +250,7 @@ RECO_SAMPLES = {
         'hlt'           : 'REDIGI38XPU'
     },
     'WplusJets' : {
-        'datasetpath'   : "/WJetsToLNu_TuneD6T_7TeV-madgraph-tauola/Fall10-START38_V12-v1/GEN-SIM-RECO",
+        'datasetpath'   : "/WJetsToLNu_TuneZ2_7TeV-madgraph-tauola/Fall10-START38_V12-v1/GEN-SIM-RECO",
         'dbs_url'       :  "http://cmsdbsprod.cern.ch/cms_dbs_prod_global/servlet/DBSServlet",
         'jobs'          : [ 'WplusJets' ], 
         'type'          : 'MC',
