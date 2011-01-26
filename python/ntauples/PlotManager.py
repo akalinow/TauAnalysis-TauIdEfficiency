@@ -357,7 +357,7 @@ class PlotManager(object):
                 base_error = base_histo.GetBinError(bin)
                 print bin, base_content, probe_content
                 if base_content > 0:
-                    diff = (base_content - probe_content)/base_content
+                    diff = (probe_content - base_content)/base_content
 
                     probe_error_norm = 0
                     if probe_content > 0:
@@ -420,7 +420,7 @@ class PlotManager(object):
                   % (point, base_x, base_xErrUp, base_xErrDown,
                      base_y, base_yErrUp, base_yErrDown, probe_y, probe_yErrUp, probe_yErrDown))
                 if base_y > 0:
-                    diff = (base_y - probe_y)/base_y
+                    diff = (probe_y - base_y)/base_y
 
                     probe_yErrUp_norm = 0
                     probe_yErrDown_norm = 0
