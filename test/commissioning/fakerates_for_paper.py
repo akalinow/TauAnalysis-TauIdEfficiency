@@ -59,7 +59,7 @@ custom_style_dijet_data_woPU['marker_style'] = 23 # closed downward-facing trian
 custom_style_dijet_mc_woPU = copy.deepcopy(style.QCD_MC_STYLE_DOTS)
 custom_style_dijet_mc_woPU['marker_color']   = colors.color_black.value()
 custom_style_dijet_mc_woPU['line_color']     = colors.color_black.value()
-custom_style_dijet_mc_woPU['marker_style']   = 32 # open downward-facing triangle
+custom_style_dijet_mc_woPU['marker_style']   = 27 # open downward-facing triangle
 
 custom_style_ppmux_data = copy.deepcopy(style.DATA_STYLE)
 custom_style_ppmux_data['marker_color']      = colors.color_violett.value()
@@ -163,7 +163,7 @@ def makeFakeratePlots(algorithm, numerator,
                       denominator_ppmux, plotter_ppmux,
                       denominator_wjets, plotter_wjets,
                       expression, binning,
-                      x_axis_title, y_min = 1e-3, y_max = 0.9, extra_labels = [],
+                      x_axis_title, y_min = 1e-3, y_max = 0.9, extra_labels = [], extra_labels_diff = [],
                       maxNumEntries = 1000000000,
                       outputFileName = "fakerates_for_paper.pdf"):
 
@@ -328,8 +328,8 @@ def makeFakeratePlots(algorithm, numerator,
     custom_LUMI_LABEL_UPPER_LEFT.Draw()
     custom_SQRTS_LABEL_UPPER_LEFT.Draw()
     
-    for extra_label in extra_labels:
-        extra_label.Draw()
+    for extra_label_diff in extra_labels_diff:
+        extra_label_diff.Draw()
 
     canvas_diff.cd()
     
@@ -433,8 +433,8 @@ def makeFakeratePlots(algorithm, numerator,
     custom_LUMI_LABEL_UPPER_LEFT.Draw()
     custom_SQRTS_LABEL_UPPER_LEFT.Draw()
 
-    for extra_label in extra_labels:
-        extra_label.Draw()
+    for extra_label_diff in extra_labels_diff:
+        extra_label_diff.Draw()
 
     canvas_diff.cd()
 
@@ -519,7 +519,8 @@ if __name__ == "__main__":
     nTuples = {
         "shrinkingCone" : ntuple_manager.get_ntuple("shrinking"),
         "fixedCone"     : ntuple_manager.get_ntuple("fixed"),
-        "TaNC"          : ntuple_manager.get_ntuple("shrinking"),
+        ##"TaNC"          : ntuple_manager.get_ntuple("shrinking"), # "old" TaNC
+        "TaNC"          : ntuple_manager.get_ntuple("hpstanc"),     # "new" TaNC
         "hps"           : ntuple_manager.get_ntuple("hps"),
         "calo"          : ntuple_manager.get_ntuple("calo")
     }
@@ -548,19 +549,34 @@ if __name__ == "__main__":
             'style_name' : "OneOrThreeProng",
             'nice_name'  : ""
         },
-        "TaNC_loose" : {
-            'expr'       : nTuples["TaNC"].expr('$byLeadTrackFinding > 0.5 & $byLeadTrackPtCut > 0.5 & $byTaNCfrOnePercent > 0.5'),
-            'style_name' : "byTaNCfrOnePercent",
+        ##"TaNC_loose" : { # "old" TaNC
+        ##    'expr'       : nTuples["TaNC"].expr('$byLeadTrackFinding > 0.5 & $byLeadTrackPtCut > 0.5 & $byTaNCfrOnePercent > 0.5'),
+        ##    'style_name' : "byTaNCfrOnePercent",
+        ##    'nice_name'  : "TaNC loose"
+        ##},
+        ##"TaNC_medium" : {
+        ##    'expr'       : nTuples["TaNC"].expr('$byLeadTrackFinding > 0.5 & $byLeadTrackPtCut > 0.5 & $byTaNCfrHalfPercent > 0.5'),
+        ##    'style_name' :"byTaNCfrHalfPercent",
+        ##    'nice_name'  : "TaNC medium"
+        ##},
+        ##"TaNC_tight" : {
+        ##    'expr'       : nTuples["TaNC"].expr('$byLeadTrackFinding > 0.5 & $byLeadTrackPtCut > 0.5 & $byTaNCfrQuarterPercent > 0.5'),
+        ##    'style_name' : "byTaNCfrQuarterPercent",
+        ##    'nice_name'  : "TaNC tight"
+        ##},
+        "TaNC_loose" : { # "new" TaNC
+            'expr'       : nTuples["TaNC"].expr('$byLeadTrackFinding > 0.5 & $byLeadTrackPtCut > 0.5 & $byTaNCloose > 0.5'),
+            'style_name' : "byTaNCloose",
             'nice_name'  : "TaNC loose"
         },
         "TaNC_medium" : {
-            'expr'       : nTuples["TaNC"].expr('$byLeadTrackFinding > 0.5 & $byLeadTrackPtCut > 0.5 & $byTaNCfrHalfPercent > 0.5'),
-            'style_name' :"byTaNCfrHalfPercent",
+            'expr'       : nTuples["TaNC"].expr('$byLeadTrackFinding > 0.5 & $byLeadTrackPtCut > 0.5 & $byTaNCmedium > 0.5'),
+            'style_name' :"byTaNCmedium",
             'nice_name'  : "TaNC medium"
         },
         "TaNC_tight" : {
-            'expr'       : nTuples["TaNC"].expr('$byLeadTrackFinding > 0.5 & $byLeadTrackPtCut > 0.5 & $byTaNCfrQuarterPercent > 0.5'),
-            'style_name' : "byTaNCfrQuarterPercent",
+            'expr'       : nTuples["TaNC"].expr('$byLeadTrackFinding > 0.5 & $byLeadTrackPtCut > 0.5 & $byTaNCtight > 0.5'),
+            'style_name' : "byTaNCtight",
             'nice_name'  : "TaNC tight"
         },
         "hps_loose" : {
@@ -615,34 +631,44 @@ if __name__ == "__main__":
         denominator_wjets     = nTuples[algorithm].expr(denominator_phase_space) & denominator_e_mu_veto
 
         extra_labels_pt  = copy.deepcopy(extra_labels[algorithm_discriminator])
-        extra_labels_pt.append(custom_ETA_CUT_LABEL_UPPER_LEFT)
-        extra_labels_eta = copy.deepcopy(extra_labels[algorithm_discriminator])
-        extra_labels_eta.append(custom_PT_CUT_LABEL_UPPER_LEFT)
-        extra_labels_phi = copy.deepcopy(extra_labels[algorithm_discriminator])
-        extra_labels_phi.append(custom_PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT)
+        extra_labels_pt.append(style.ETA_CUT_LABEL_UPPER_LEFT)
+        extra_labels_diff_pt  = copy.deepcopy(extra_labels[algorithm_discriminator])
+        extra_labels_diff_pt.append(custom_ETA_CUT_LABEL_UPPER_LEFT)
         
         makeFakeratePlots(algorithm, numerators[algorithm_discriminator]['expr'],
                           denominator_dijet, plotter_dijet, 
                           denominator_ppmux, plotter_ppmux, 
                           denominator_wjets, plotter_wjets, 
                           nTuples[algorithm].expr('$jetPt'), binning_pt,
-                          'Jet P_{T} [GeV/c]', 6.5e-4, 5.9, extra_labels_pt,
+                          'Jet P_{T} [GeV/c]', 6.5e-4, 5.9, extra_labels_pt, extra_labels_diff_pt,
                           maxNumEntries,
                           "plots/fakerates_for_pas_jetPt.pdf")
+
+        extra_labels_eta = copy.deepcopy(extra_labels[algorithm_discriminator])
+        extra_labels_eta.append(style.PT_CUT_LABEL_UPPER_LEFT)
+        extra_labels_diff_eta = copy.deepcopy(extra_labels[algorithm_discriminator])
+        extra_labels_diff_eta.append(custom_PT_CUT_LABEL_UPPER_LEFT)
+        
         ##makeFakeratePlots(algorithm, numerator[algorithm]['expr'],
         ##                  denominator_dijet, plotter_dijet, 
         ##                  denominator_ppmux, plotter_ppmux, 
         ##                  denominator_wjets, plotter_wjets,
         ##                  nTuples[algorithm].expr('$jetEta'), binning_eta,
-        ##                  'Jet #eta', 6.5e-4, 5.9, extra_labels_eta,
+        ##                  'Jet #eta', 6.5e-4, 5.9, extra_labels_eta, extra_labels_diff_eta,
         ##                  maxNumEntries,
         ##                  "plots/fakerates_for_pas_jetEta.pdf")
+
+        extra_labels_phi = copy.deepcopy(extra_labels[algorithm_discriminator])
+        extra_labels_phi.append(style.PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT)
+        extra_labels_diff_phi = copy.deepcopy(extra_labels[algorithm_discriminator])
+        extra_labels_diff_phi.append(custom_PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT)
+        
         ##makeFakeratePlots(algorithm, numerator[algorithm]['expr'],
         ##                  denominator_dijet, plotter_dijet, 
         ##                  denominator_ppmux, plotter_ppmux, 
         ##                  denominator_wjets, plotter_wjets,
         ##                  nTuples[algorithm].expr('$jetPhi'), binning_phi,
-        ##                  'Jet #phi', 6.5e-4, 5.9, extra_labels_phi,
+        ##                  'Jet #phi', 6.5e-4, 5.9, extra_labels_phi, extra_labels_diff_phi,
         ##                  maxNumEntries,
         ##                  "plots/fakerates_for_pas_jetPhi.pdf")
 
