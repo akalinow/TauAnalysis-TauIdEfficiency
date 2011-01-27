@@ -56,20 +56,20 @@ void compTauIdEffNumbers()
   leadTrackPtCorrFactor["HPStight"]   = 1./(1. - 0.068);
 
   std::map<std::string, double> fitResult;
-  fitResult["TaNCloose"]  = 0.732;
-  fitResult["TaNCmedium"] = 0.655;
-  fitResult["TaNCtight"]  = 0.450;
-  fitResult["HPSloose"]   = 0.668;
-  fitResult["HPSmedium"]  = 0.562;
-  fitResult["HPStight"]   = 0.382;
+  fitResult["TaNCloose"]  = 0.680;
+  fitResult["TaNCmedium"] = 0.534;
+  fitResult["TaNCtight"]  = 0.363;
+  fitResult["HPSloose"]   = 0.638;
+  fitResult["HPSmedium"]  = 0.499;
+  fitResult["HPStight"]   = 0.340;
 
   std::map<std::string, double> mcExp; 
-  mcExp["TaNCloose"]  = 0.690;
-  mcExp["TaNCmedium"] = 0.550;
-  mcExp["TaNCtight"]  = 0.363;
-  mcExp["HPSloose"]   = 0.682;
-  mcExp["HPSmedium"]  = 0.514;
-  mcExp["HPStight"]   = 0.382;
+  mcExp["TaNCloose"]  = 0.703;
+  mcExp["TaNCmedium"] = 0.574;
+  mcExp["TaNCtight"]  = 0.392;
+  mcExp["HPSloose"]   = 0.675;
+  mcExp["HPSmedium"]  = 0.520;
+  mcExp["HPStight"]   = 0.378;
 
 //-------------------------------------------------------------------------------
 // define numbers entering computation of  tau id. efficiency uncertainties
@@ -110,12 +110,12 @@ void compTauIdEffNumbers()
   tauJetEnScaleErr["HPStight"]   = 0.005;
 
   std::map<std::string, double> fitStatErr;
-  fitStatErr["TaNCloose"]  = 0.234;
-  fitStatErr["TaNCmedium"] = 0.251;
-  fitStatErr["TaNCtight"]  = 0.270;
-  fitStatErr["HPSloose"]   = 0.219;
-  fitStatErr["HPSmedium"]  = 0.274;
-  fitStatErr["HPStight"]   = 0.290;
+  fitStatErr["TaNCloose"]  = 0.215;
+  fitStatErr["TaNCmedium"] = 0.227;
+  fitStatErr["TaNCtight"]  = 0.245;
+  fitStatErr["HPSloose"]   = 0.214;
+  fitStatErr["HPSmedium"]  = 0.229;
+  fitStatErr["HPStight"]   = 0.253;
 
 //-------------------------------------------------------------------------------
 // compute tau id. efficiency "central values" and uncertainties
@@ -148,5 +148,6 @@ void compTauIdEffNumbers()
                    * leadTrackPtCorrFactor[*tauId]
                    * mcExp[*tauId];
     std::cout << (*tauId) << ": MC exp. = " << totEffExp << std::endl;
+    std::cout << (*tauId) << ": Data/MC = " << totEff/totEffExp << " +/- " << TMath::Sqrt(totErr2) << std::endl;
   }
 }
