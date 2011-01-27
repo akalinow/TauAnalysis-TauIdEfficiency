@@ -505,7 +505,7 @@ if __name__ == "__main__":
     
     plotter_ppmux = PlotManager()
     plotter_ppmux.add_sample(sample_ppmux_data,      "QCD#mu Data",                      **custom_style_ppmux_data)
-    plotter_ppmux.add_sample(sample_ppmux_mc, "       QCD#mu Simulation",                **custom_style_ppmux_mc)
+    plotter_ppmux.add_sample(sample_ppmux_mc,        "QCD#mu Simulation",                **custom_style_ppmux_mc)
     plotter_ppmux.set_integrated_lumi(intLumiData)
         
     plotter_wjets = PlotManager()
@@ -613,7 +613,9 @@ if __name__ == "__main__":
     extra_labels['calo']          = [ algo_label_calo        ]
         
     #for algorithm in numerators:
-    for algorithm_discriminator in [ 'TaNC_loose', 'hps_loose' ]:
+    for algorithm_discriminator in [ 'TaNC_loose',  'hps_loose',
+                                     'TaNC_medium', 'hps_medium',
+                                     'TaNC_tight',  'hps_tight' ]:
 
         import sys
         if sys.argv[1:] != [] and (not algorithm in sys.argv[1:]):
@@ -635,42 +637,42 @@ if __name__ == "__main__":
         extra_labels_diff_pt  = copy.deepcopy(extra_labels[algorithm_discriminator])
         extra_labels_diff_pt.append(custom_ETA_CUT_LABEL_UPPER_LEFT)
         
-        makeFakeratePlots(algorithm, numerators[algorithm_discriminator]['expr'],
+        makeFakeratePlots(algorithm_discriminator, numerators[algorithm_discriminator]['expr'],
                           denominator_dijet, plotter_dijet, 
                           denominator_ppmux, plotter_ppmux, 
                           denominator_wjets, plotter_wjets, 
                           nTuples[algorithm].expr('$jetPt'), binning_pt,
                           'Jet P_{T} [GeV/c]', 6.5e-4, 5.9, extra_labels_pt, extra_labels_diff_pt,
                           maxNumEntries,
-                          "plots/fakerates_for_pas_jetPt.pdf")
+                          "plots/fakerates_for_paper_jetPt.pdf")
 
         extra_labels_eta = copy.deepcopy(extra_labels[algorithm_discriminator])
         extra_labels_eta.append(style.PT_CUT_LABEL_UPPER_LEFT)
         extra_labels_diff_eta = copy.deepcopy(extra_labels[algorithm_discriminator])
         extra_labels_diff_eta.append(custom_PT_CUT_LABEL_UPPER_LEFT)
         
-        ##makeFakeratePlots(algorithm, numerator[algorithm]['expr'],
+        ##makeFakeratePlots(algorithm_discriminator, numerator[algorithm]['expr'],
         ##                  denominator_dijet, plotter_dijet, 
         ##                  denominator_ppmux, plotter_ppmux, 
         ##                  denominator_wjets, plotter_wjets,
         ##                  nTuples[algorithm].expr('$jetEta'), binning_eta,
         ##                  'Jet #eta', 6.5e-4, 5.9, extra_labels_eta, extra_labels_diff_eta,
         ##                  maxNumEntries,
-        ##                  "plots/fakerates_for_pas_jetEta.pdf")
+        ##                  "plots/fakerates_for_paper_jetEta.pdf")
 
         extra_labels_phi = copy.deepcopy(extra_labels[algorithm_discriminator])
         extra_labels_phi.append(style.PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT)
         extra_labels_diff_phi = copy.deepcopy(extra_labels[algorithm_discriminator])
         extra_labels_diff_phi.append(custom_PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT)
         
-        ##makeFakeratePlots(algorithm, numerator[algorithm]['expr'],
+        ##makeFakeratePlots(algorithm_discriminator, numerator[algorithm]['expr'],
         ##                  denominator_dijet, plotter_dijet, 
         ##                  denominator_ppmux, plotter_ppmux, 
         ##                  denominator_wjets, plotter_wjets,
         ##                  nTuples[algorithm].expr('$jetPhi'), binning_phi,
         ##                  'Jet #phi', 6.5e-4, 5.9, extra_labels_phi, extra_labels_diff_phi,
         ##                  maxNumEntries,
-        ##                  "plots/fakerates_for_pas_jetPhi.pdf")
+        ##                  "plots/fakerates_for_paper_jetPhi.pdf")
 
 
 
