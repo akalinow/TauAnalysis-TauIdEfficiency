@@ -91,7 +91,7 @@ configurePrePatProduction(process, pfCandidateCollection = pfCandidateCollection
 # produce PAT objects
 #
 from TauAnalysis.TauIdEfficiency.tools.configurePatTupleProduction import configurePatTupleProduction
-from TauAnalysis.TauIdEfficiency.tools.sequenceBuilder import buildQCDmuEnrichedTauSequence
+from TauAnalysis.TauIdEfficiency.tools.sequenceBuilder import buildGenericTauSequence
 
 # add muon isolation variables
 process.load("PhysicsTools.PFCandProducer.Isolation.pfMuonIsolation_cff")
@@ -136,7 +136,7 @@ patPFTauCleanerPrototype = patCaloTauCleanerPrototype.clone(
 )
 
 retVal = configurePatTupleProduction(
-    process, patSequenceBuilder = buildQCDmuEnrichedTauSequence,
+    process,
     patPFTauCleanerPrototype = patPFTauCleanerPrototype,
     patCaloTauCleanerPrototype = patCaloTauCleanerPrototype,
     hltProcess = HLTprocessName,
@@ -156,7 +156,6 @@ process.load("TauAnalysis.TauIdEfficiency.ntupleConfigPFTauFixedCone_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigPFTauShrinkingCone_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigPFTauHPS_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigPFTauHPSpTaNC_cfi")
-process.load("TauAnalysis.TauIdEfficiency.ntupleConfigPFTauShrinkingConeEllipticPhotonIso_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigDiTauKinematics_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigGenJets_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigGenPhaseSpaceEventInfo_cfi")
@@ -220,16 +219,7 @@ process.ntupleProducer = cms.EDProducer("ObjValEDNtupleProducer",
         ),
         muPFTauPairsHPSpTaNC_rec = process.diTaus_recInfo.clone(
             src = cms.InputTag(retVal["muonPFTauCollectionHPSpTaNC"])                       
-        ),                                            
-
-        # variables specific to shrinking cone PFTaus
-        # reconstructed using ellipse for photon isolation
-        pfTausShrinkingConeEllPhotonIso_rec = process.pfTausShrinkingConeEllipticPhotonIso_recInfo.clone(
-            src = cms.InputTag(retVal["pfTauCollectionShrinkingConeEllipticPhotonIso"])                       
-        ),
-        muPFTauPairsShrinkingConeEllPhotonIso_rec = process.diTaus_recInfo.clone(
-            src = cms.InputTag(retVal["muonPFTauCollectionShrinkingConeEllipticPhotonIso"])                       
-        ),                                            
+        )                                           
     )
 )
 
@@ -245,8 +235,6 @@ if isMC:
     setattr(process.ntupleProducer.sources, "pfTausHPS_gen", process.pfTausHPS_genInfo)
     process.pfTausHPSpTaNC_genInfo.src = cms.InputTag(retVal["pfTauCollectionHPSpTaNC"])
     setattr(process.ntupleProducer.sources, "pfTausHPSpTaNC_gen", process.pfTausHPSpTaNC_genInfo)    
-    process.pfTausShrinkingConeEllipticPhotonIso_genInfo.src = cms.InputTag(retVal["pfTauCollectionShrinkingConeEllipticPhotonIso"])
-    setattr(process.ntupleProducer.sources, "pfTausShrinkingConeEllPhotonIso_gen", process.pfTausShrinkingConeEllipticPhotonIso_genInfo)
     # add in information about generator level visible taus and all generator level jets
     setattr(process.ntupleProducer.sources, "tauGenJets", process.tauGenJets_genInfo)
     setattr(process.ntupleProducer.sources, "genJets", process.genJets_genInfo)

@@ -18,9 +18,8 @@ def configurePrePatProduction(process, pfCandidateCollection = "particleFlow",
     # recreate collection of PFTaus
     # with latest tags of RecoTauTag package used by TauAnalysis software
     process.load("RecoTauTag.Configuration.RecoPFTauTag_cff")
-    process.pfRecoTauTagInfoProducer.PFCandidateProducer = cms.InputTag(
-        pfCandidateCollection)
-    tau_producers = ['shrinkingConePFTauProducer', 'combinatoricRecoTaus']
+    process.pfRecoTauTagInfoProducer.PFCandidateProducer = cms.InputTag(pfCandidateCollection)
+    tau_producers = [ 'shrinkingConePFTauProducer', 'combinatoricRecoTaus' ]
     # Update the pfCandidate collection for each builder
     for producer in tau_producers:
         if hasattr(process, producer):
@@ -34,6 +33,14 @@ def configurePrePatProduction(process, pfCandidateCollection = "particleFlow",
     #--------------------------------------------------------------------------------
 
     #--------------------------------------------------------------------------------
+    # add collection of fixed-cone PFTaus
+    # (not produced per default anymore)
+    process.load("RecoTauTag.Configuration.FixedConePFTaus_cfi")
+
+    process.prePatProductionSequence += process.produceAndDiscriminateFixedConePFTaus
+    #--------------------------------------------------------------------------------
+
+    #--------------------------------------------------------------------------------
     # recreate collection of CaloTaus
     # with four-momenta determined by TCTau instead of (regular) CaloTau algorithm
     #
@@ -42,15 +49,8 @@ def configurePrePatProduction(process, pfCandidateCollection = "particleFlow",
     #       on tau identification efficiency and fake-rate
     #
     process.load("RecoTauTag.Configuration.RecoTCTauTag_cff")
-    ##process.JPTCaloRecoTauProducer.LeadTrack_minPt = cms.double(0.5)
 
     process.prePatProductionSequence += process.tautagging
-    #--------------------------------------------------------------------------------
-
-    #--------------------------------------------------------------------------------
-    # produce collection of PFTaus reconstructed using ellipse for photon isolation
-    process.load("TauAnalysis.TauIdEfficiency.ShrinkingConePFTausEllipticPhotonIso_cfi")
-    process.prePatProductionSequence += process.produceAndDiscriminateShrinkingConePFTausEllipticPhotonIso
     #--------------------------------------------------------------------------------
 
     #--------------------------------------------------------------------------------

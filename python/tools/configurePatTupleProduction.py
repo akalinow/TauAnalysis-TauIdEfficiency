@@ -2,15 +2,6 @@ import FWCore.ParameterSet.Config as cms
 import copy
 
 from PhysicsTools.PatAlgos.tools.tauTools import *
-#
-# CV: functions starting with an underscore are not imported
-#     by "from module import *" statements
-#    (cf. http://docs.python.org/reference/lexical_analysis.html#reserved-classes-of-identifiers);
-#     need to import _switchToPFTau function explicitely,
-#     as it is needed to produce collection of pat::Tau objects representing PFTaus
-#     reconstructed by shrinking signal cone algorithm using ellipse for photon isolation
-#
-from PhysicsTools.PatAlgos.tools.tauTools import _switchToPFTau
 from PhysicsTools.PatAlgos.tools.jetTools import *
 from PhysicsTools.PatAlgos.tools.trigTools import switchOnTrigger
 from PhysicsTools.PatAlgos.tools.coreTools import removeMCMatching
@@ -19,9 +10,11 @@ from TauAnalysis.Configuration.tools.metTools import *
 
 # Get the files to support embedding of TaNC inputs
 from RecoTauTag.TauTagTools.PFTauMVAInputDiscriminatorTranslator_cfi import \
-        loadMVAInputsIntoPatTauDiscriminants
+     loadMVAInputsIntoPatTauDiscriminants
 
-def configurePatTupleProduction(process, patSequenceBuilder = None, 
+from TauAnalysis.TauIdEfficiency.tools.sequenceBuilder import buildGenericTauSequence
+
+def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSequence, 
                                 patPFTauCleanerPrototype = None, 
                                 patCaloTauCleanerPrototype = None,
                                 hltProcess = "HLT",
@@ -29,9 +22,9 @@ def configurePatTupleProduction(process, patSequenceBuilder = None,
 
     # check that patSequenceBuilder and patTauCleanerPrototype are defined and non-null
     if patSequenceBuilder is None:
-        raise ValueError("Undefined patSequenceBuilder Parameter !!")
+        raise ValueError("Undefined 'patSequenceBuilder' Parameter !!")
     if patPFTauCleanerPrototype is None or patCaloTauCleanerPrototype is None:
-        raise ValueError("Undefined patTauCleanerPrototype Parameter !!")
+        raise ValueError("Undefined 'patTauCleanerPrototype' Parameter !!")
 
     #--------------------------------------------------------------------------------
     # produce PAT objects
@@ -72,12 +65,15 @@ def configurePatTupleProduction(process, patSequenceBuilder = None,
 
     #--------------------------------------------------------------------------------
     # compute Pt sum of charged + neutral hadrons and photons within isolation cones of size dR = 0.4/0.6
+
+    process.load("PhysicsTools.PFCandProducer.pfNoPileUp_cff")
+    
     process.patMuonsLoosePFIsoEmbedded04 = cms.EDProducer("PATMuonPFIsolationEmbedder",
         src = cms.InputTag('patMuons'),                                       
         userFloatName = cms.string('pfLooseIsoPt04'),
         pfCandidateSource = cms.InputTag('pfNoPileUp'),
         chargedHadronIso = cms.PSet(
-            ptMin = cms.double(1.0),        
+            ptMin = cms.double(0.5),        
             dRvetoCone = cms.double(-1.),
             dRisoCone = cms.double(0.4)
         ),
@@ -110,7 +106,10 @@ def configurePatTupleProduction(process, patSequenceBuilder = None,
         )
     )
 
-    process.patMuonsLoosePFIsoEmbedded = cms.Sequence(process.patMuonsLoosePFIsoEmbedded04 * process.patMuonsLoosePFIsoEmbedded06)
+    process.patMuonsLoosePFIsoEmbedded = cms.Sequence(
+        process.pfNoPileUpSequence
+       * process.patMuonsLoosePFIsoEmbedded04 * process.patMuonsLoosePFIsoEmbedded06
+    )
     #--------------------------------------------------------------------------------
 
     #-------------------------------------------------------------------------------- 
@@ -268,48 +267,6 @@ def configurePatTupleProduction(process, patSequenceBuilder = None,
     #--------------------------------------------------------------------------------
 
     #--------------------------------------------------------------------------------
-    #
-    # produce collection of pat::Tau objects representing PFTaus
-    # reconstructed by shrinking signal cone algorithm using ellipse for photon isolation
-    # (plus combinations of muon + tau-jet pairs)
-    #
-    # NOTE: call _switchToPFTau function for switching to shrinking signal cone
-    #       PFTau collection reconstructed using ellipse for photon isolation,
-    #       in order **NOT** to add TaNC discriminator to corresponding pat::Tau collection
-    #      (as TaNC was trained using "regular" photon isolation parameters)
-    #
-    pfTauShrinkingConeEllipticPhotonIsoTauIdSources = copy.deepcopy(classicTauIDSources)
-    pfTauShrinkingConeEllipticPhotonIsoTauIdSources.extend(classicPFTauIDSources)
-    _switchToPFTau(
-        process,
-        pfTauLabelOld = cms.InputTag('shrinkingConePFTauProducer'),
-        pfTauLabelNew = cms.InputTag('shrinkingConePFTauEllipticPhotonIsoProducer'),
-        pfTauType = 'shrinkingConePFTauEllipticPhotonIso',
-        idSources = pfTauShrinkingConeEllipticPhotonIsoTauIdSources,
-        postfix = ""
-    )
-    process.patPFTauProducerShrinkingConeEllipticPhotonIso = copy.deepcopy(process.patTaus)
-
-    retVal_pfTauShrinkingConeEllipticPhotonIso = patSequenceBuilder(
-        process,
-        collectionName = [ "patPFTaus", "ShrinkingConeEllipticPhotonIso" ],
-        patTauProducerPrototype = process.patPFTauProducerShrinkingConeEllipticPhotonIso,
-        patTauCleanerPrototype = patPFTauCleanerPrototype,
-        triggerMatcherProtoType = process.patTauTriggerMatchHLTsingleJet15UprotoType,
-        addGenInfo = addGenInfo
-    )
-    process.pfTauSequenceShrinkingConeEllipticPhotonIso = retVal_pfTauShrinkingConeEllipticPhotonIso["sequence"]
-
-    process.patMuonPFTauPairsShrinkingConeEllipticPhotonIso = process.allMuTauPairs.clone(
-        srcLeg1 = cms.InputTag('patMuonsLoosePFIsoEmbedded06'),
-        srcLeg2 = cms.InputTag(retVal_pfTauShrinkingConeEllipticPhotonIso["collection"]),
-        srcMET = cms.InputTag('patPFMETs'),
-        srcGenParticles = cms.InputTag(''),
-        doSVreco = cms.bool(False)
-    )
-    #--------------------------------------------------------------------------------
-
-    #--------------------------------------------------------------------------------
     # replace caloJets by pfJets
     switchJetCollection(process, jetCollection = cms.InputTag("iterativeCone5PFJets"), outputModule = '')
     #
@@ -335,11 +292,9 @@ def configurePatTupleProduction(process, patSequenceBuilder = None,
        + process.produceTancMVAInputDiscriminators
        + process.pfTauSequenceFixedCone + process.pfTauSequenceShrinkingCone + process.pfTauSequenceHPS
        + process.pfTauSequenceHPSpTaNC
-       + process.pfTauSequenceShrinkingConeEllipticPhotonIso
        + process.patMuonCaloTauPairs
        + process.patMuonPFTauPairsFixedCone + process.patMuonPFTauPairsShrinkingCone + process.patMuonPFTauPairsHPS
-       + process.patMuonPFTauPairsHPSpTaNC 
-       + process.patMuonPFTauPairsShrinkingConeEllipticPhotonIso
+       + process.patMuonPFTauPairsHPSpTaNC
     )
 
     # return names of "final" collections of CaloTaus/different types of PFTaus
@@ -355,6 +310,4 @@ def configurePatTupleProduction(process, patSequenceBuilder = None,
     retVal["muonPFTauCollectionHPS"] = process.patMuonPFTauPairsHPS.label()
     retVal["pfTauCollectionHPSpTaNC"] = retVal_pfTauHPSpTaNC["collection"]
     retVal["muonPFTauCollectionHPSpTaNC"] = process.patMuonPFTauPairsHPSpTaNC.label()
-    retVal["pfTauCollectionShrinkingConeEllipticPhotonIso"] = retVal_pfTauShrinkingConeEllipticPhotonIso["collection"]
-    retVal["muonPFTauCollectionShrinkingConeEllipticPhotonIso"] = process.patMuonPFTauPairsShrinkingConeEllipticPhotonIso.label()
     return retVal

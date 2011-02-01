@@ -1,6 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 
 from TauAnalysis.TauIdEfficiency.filterDataQuality_cfi import *
+from TauAnalysis.RecoTools.recoVertexSelection_cff import *
 
 #--------------------------------------------------------------------------------
 # select QCD di-jet (/multi-jet) events

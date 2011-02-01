@@ -44,6 +44,11 @@ pfTausFixedCone_recInfo = cms.PSet(
         numPhotonsIsoCone = cms.string("isolationPFGammaCands().size()"),
         numParticlesIsoCone = cms.string("isolationPFCands().size()"),
 
+        numChargedParticles = cms.string("signalPFChargedHadrCands().size() + isolationPFChargedHadrCands().size()"),
+        numNeutralHadrons = cms.string("signalPFNeutrHadrCands().size() + isolationPFNeutrHadrCands().size()"),
+        numPhotons = cms.string("signalPFGammaCands().size() + isolationPFGammaCands().size()"),
+        numParticles = cms.string("signalPFCands().size() + isolationPFCands().size()"),
+
         ptSumChargedParticlesIsoCone = cms.string("isolationPFChargedHadrCandsPtSum()"),
         ptSumPhotonsIsoCone = cms.string("isolationPFGammaCandsEtSum()"),
 

@@ -133,7 +133,6 @@ process.load("TauAnalysis.TauIdEfficiency.ntupleConfigPFTauFixedCone_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigPFTauShrinkingCone_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigPFTauHPS_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigPFTauHPSpTaNC_cfi")
-process.load("TauAnalysis.TauIdEfficiency.ntupleConfigPFTauShrinkingConeEllipticPhotonIso_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigGlobalVariables_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigTrackVariables_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigGenJets_cfi")
@@ -207,18 +206,6 @@ process.ntupleProducer = cms.EDProducer("ObjValEDNtupleProducer",
         ),
         pfTausHPSpTaNC_rec02 = process.tauTrackVariables_template.clone(
             src = cms.InputTag(retVal["pfTauCollectionHPSpTaNC"])
-        ),
-
-        # variables specific to shrinking cone PFTaus
-        # reconstructed using ellipse for photon isolation
-        pfTausShrinkingConeEllPhotonIso_rec01 = process.pfTausShrinkingConeEllipticPhotonIso_recInfo.clone(
-            src = cms.InputTag(retVal["pfTauCollectionShrinkingConeEllipticPhotonIso"])
-        ),
-        pfTausShrinkingConeEllPhotonIso_rec02 = process.extraTauCandVariables_template.clone(
-            src = cms.InputTag(retVal["pfTauCollectionShrinkingConeEllipticPhotonIso"])
-        ),
-        pfTausShrinkingConeEllPhotonIso_rec03 = process.tauTrackVariables_template.clone(
-            src = cms.InputTag(retVal["pfTauCollectionShrinkingConeEllipticPhotonIso"])
         )
     )
 )
@@ -234,8 +221,6 @@ if isMC:
     setattr(process.ntupleProducer.sources, "pfTausHPS_gen", process.pfTausHPS_genInfo)
     process.pfTausHPSpTaNC_genInfo.src = cms.InputTag(retVal["pfTauCollectionHPSpTaNC"])
     setattr(process.ntupleProducer.sources, "pfTausHPSpTaNC_gen", process.pfTausHPSpTaNC_genInfo)
-    process.pfTausShrinkingConeEllipticPhotonIso_genInfo.src = cms.InputTag(retVal["pfTauCollectionShrinkingConeEllipticPhotonIso"])
-    setattr(process.ntupleProducer.sources, "pfTausShrinkingConeEllPhotonIso_gen", process.pfTausShrinkingConeEllipticPhotonIso_genInfo)
     # add in information about generator level visible taus and all generator level jets
     setattr(process.ntupleProducer.sources, "tauGenJets", process.tauGenJets_genInfo)
     setattr(process.ntupleProducer.sources, "genJets", process.genJets_genInfo)

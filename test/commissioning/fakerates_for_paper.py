@@ -565,17 +565,17 @@ if __name__ == "__main__":
         ##    'nice_name'  : "TaNC tight"
         ##},
         "TaNC_loose" : { # "new" TaNC
-            'expr'       : nTuples["TaNC"].expr('$byLeadTrackFinding > 0.5 & $byLeadTrackPtCut > 0.5 & $byTaNCloose > 0.5'),
+            'expr'       : nTuples["TaNC"].expr('$byLeadTrackFinding > 0.5 & $byLeadTrackPtCut > 0.5 & $byTaNCloose > 0.5 & $pt > 15.0'),
             'style_name' : "byTaNCloose",
             'nice_name'  : "TaNC loose"
         },
         "TaNC_medium" : {
-            'expr'       : nTuples["TaNC"].expr('$byLeadTrackFinding > 0.5 & $byLeadTrackPtCut > 0.5 & $byTaNCmedium > 0.5'),
+            'expr'       : nTuples["TaNC"].expr('$byLeadTrackFinding > 0.5 & $byLeadTrackPtCut > 0.5 & $byTaNCmedium > 0.5 & $pt > 15.0'),
             'style_name' :"byTaNCmedium",
             'nice_name'  : "TaNC medium"
         },
         "TaNC_tight" : {
-            'expr'       : nTuples["TaNC"].expr('$byLeadTrackFinding > 0.5 & $byLeadTrackPtCut > 0.5 & $byTaNCtight > 0.5'),
+            'expr'       : nTuples["TaNC"].expr('$byLeadTrackFinding > 0.5 & $byLeadTrackPtCut > 0.5 & $byTaNCtight > 0.5 & $pt > 15.0'),
             'style_name' : "byTaNCtight",
             'nice_name'  : "TaNC tight"
         },
@@ -613,9 +613,10 @@ if __name__ == "__main__":
     extra_labels['calo']          = [ algo_label_calo        ]
         
     #for algorithm in numerators:
-    for algorithm_discriminator in [ 'TaNC_loose',  'hps_loose',
-                                     'TaNC_medium', 'hps_medium',
-                                     'TaNC_tight',  'hps_tight' ]:
+    ##for algorithm_discriminator in [ 'TaNC_loose',  'hps_loose',
+    ##                                 'TaNC_medium', 'hps_medium',
+    ##                                 'TaNC_tight',  'hps_tight' ]:
+    for algorithm_discriminator in [ 'TaNC_loose' ]: 
 
         import sys
         if sys.argv[1:] != [] and (not algorithm in sys.argv[1:]):

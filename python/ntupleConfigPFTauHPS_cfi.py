@@ -24,6 +24,34 @@ pfTausHPS_recInfo = cms.PSet(
         phi = cms.string("phi()"),
         mass = cms.string("mass()"),
 
+        # charge of PFTau
+        # (sum of charges of charged particles within signal cone)
+        charge = cms.string("charge()"),
+
+        # transverse momentum of leading charged/neutral particle within signal cone
+        leadChargedParticlePt = cms.string("? leadPFChargedHadrCand().isNonnull() ? leadPFChargedHadrCand().pt() : 0."),
+        leadNeutralParticlePt = cms.string("? leadPFNeutralCand().isNonnull() ? leadPFNeutralCand().pt() : 0."),
+        leadParticlePt = cms.string("? leadPFCand().isNonnull() ? leadPFCand().pt() : 0."),
+
+        # multiplicity and Pt sum of charged/neutral particles within signal and isolation cones
+        numChargedParticlesSignalCone = cms.string("signalPFChargedHadrCands().size()"),
+        numNeutralHadronsSignalCone = cms.string("signalPFNeutrHadrCands().size()"),
+        numPhotonsSignalCone = cms.string("signalPFGammaCands().size()"),
+        numParticlesSignalCone = cms.string("signalPFCands().size()"),
+
+        numChargedParticlesIsoCone = cms.string("isolationPFChargedHadrCands().size()"),
+        numNeutralHadronsIsoCone = cms.string("isolationPFNeutrHadrCands().size()"),
+        numPhotonsIsoCone = cms.string("isolationPFGammaCands().size()"),
+        numParticlesIsoCone = cms.string("isolationPFCands().size()"),
+
+        numChargedParticles = cms.string("signalPFChargedHadrCands().size() + isolationPFChargedHadrCands().size()"),
+        numNeutralHadrons = cms.string("signalPFNeutrHadrCands().size() + isolationPFNeutrHadrCands().size()"),
+        numPhotons = cms.string("signalPFGammaCands().size() + isolationPFGammaCands().size()"),
+        numParticles = cms.string("signalPFCands().size() + isolationPFCands().size()"),
+
+        ptSumChargedParticlesIsoCone = cms.string("isolationPFChargedHadrCandsPtSum()"),
+        ptSumPhotonsIsoCone = cms.string("isolationPFGammaCandsEtSum()"),
+
         # kinematic variables for PFJet associated to PFTau
         jetPt = cms.string("pfTauTagInfoRef().pfjetRef().pt()"),
         jetEta = cms.string("pfTauTagInfoRef().pfjetRef().eta()"),
@@ -53,21 +81,7 @@ pfTausHPS_recInfo = cms.PSet(
         # discriminators against electrons/muons
         againstElectron = cms.string("tauID('againstElectron')"),
         pfElectronMVA = cms.string("? leadPFCand().isNonnull() ? leadPFCand().mva_e_pi() : +1."),
-        againstMuon = cms.string("tauID('againstMuon')"),                             
-
-        # multiplicity and Pt sum of charged/neutral particles within signal and isolation cones
-        numChargedParticlesSignalCone = cms.string("signalPFChargedHadrCands().size()"),
-        numNeutralHadronsSignalCone = cms.string("signalPFNeutrHadrCands().size()"),
-        numPhotonsSignalCone = cms.string("signalPFGammaCands().size()"),
-        numParticlesSignalCone = cms.string("signalPFCands().size()"),
-
-        numChargedParticlesIsoCone = cms.string("isolationPFChargedHadrCands().size()"),
-        numNeutralHadronsIsoCone = cms.string("isolationPFNeutrHadrCands().size()"),
-        numPhotonsIsoCone = cms.string("isolationPFGammaCands().size()"),
-        numParticlesIsoCone = cms.string("isolationPFCands().size()"),
-
-        ptSumChargedParticlesIsoCone = cms.string("isolationPFChargedHadrCandsPtSum()"),
-        ptSumPhotonsIsoCone = cms.string("isolationPFGammaCandsEtSum()"),
+        againstMuon = cms.string("tauID('againstMuon')")                        
     )
 )                
 

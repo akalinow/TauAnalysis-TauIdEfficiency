@@ -15,8 +15,8 @@ from samples import ztautau_mc, zttPU156bx_mc, \
         wjets_mc_noCuts, wjetsPU156bx_mc_noCuts, \
         data_dijet_woPU, data_dijet_wPU, data_ppmux, data_wjets
 
-mirror.LOCAL_DIRECTORY = "/tmp/abdollah/tau_commissioning_abdollah" # on lxplus430
-#mirror.LOCAL_DIRECTORY = "/data2/friis/tau_fakerate_ntuples"
+##mirror.LOCAL_DIRECTORY = "/tmp/abdollah/tau_commissioning_abdollah" # on lxplus430
+mirror.LOCAL_DIRECTORY = "/data2/friis/tau_fakerate_ntuples"
 
 class SampleWrapper(object):
     " Wrapper class to automatically update a sample when it is accessed "

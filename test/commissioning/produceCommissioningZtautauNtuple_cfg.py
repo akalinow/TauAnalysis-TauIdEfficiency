@@ -137,7 +137,6 @@ process.load("TauAnalysis.TauIdEfficiency.ntupleConfigCaloTau_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigPFTauFixedCone_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigPFTauShrinkingCone_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigPFTauHPS_cfi")
-process.load("TauAnalysis.TauIdEfficiency.ntupleConfigPFTauShrinkingConeEllipticPhotonIso_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigGlobalVariables_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigTrackVariables_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigGenJets_cfi")
@@ -203,18 +202,6 @@ process.ntupleProducer = cms.EDProducer("ObjValEDNtupleProducer",
         ),
         pfTausHPS_rec02 = process.tauTrackVariables_template.clone(
             src = cms.InputTag(retVal["pfTauCollectionHPS"])                       
-        ),
-
-        # variables specific to shrinking cone PFTaus
-        # reconstructed using ellipse for photon isolation
-        pfTausShrinkingConeEllPhotonIso_rec01 = process.pfTausShrinkingConeEllipticPhotonIso_recInfo.clone(
-            src = cms.InputTag(retVal["pfTauCollectionShrinkingConeEllipticPhotonIso"])                       
-        ),
-        pfTausShrinkingConeEllPhotonIso_rec02 = process.extraTauCandVariables_template.clone(
-            src = cms.InputTag(retVal["pfTauCollectionShrinkingConeEllipticPhotonIso"])                       
-        ),                                
-        pfTausShrinkingConeEllPhotonIso_rec03 = process.tauTrackVariables_template.clone(
-            src = cms.InputTag(retVal["pfTauCollectionShrinkingConeEllipticPhotonIso"])                       
         )
     )
 )
@@ -228,8 +215,6 @@ if isMC:
     setattr(process.ntupleProducer.sources, "pfTausShrinkingCone_gen", process.pfTausShrinkingCone_genInfo)
     process.pfTausHPS_genInfo.src = cms.InputTag(retVal["pfTauCollectionHPS"])
     setattr(process.ntupleProducer.sources, "pfTausHPS_gen", process.pfTausHPS_genInfo)
-    process.pfTausShrinkingConeEllipticPhotonIso_genInfo.src = cms.InputTag(retVal["pfTauCollectionShrinkingConeEllipticPhotonIso"])
-    setattr(process.ntupleProducer.sources, "pfTausShrinkingConeEllPhotonIso_gen", process.pfTausShrinkingConeEllipticPhotonIso_genInfo)
     # add in information about generator level visible taus and all generator level jets
     setattr(process.ntupleProducer.sources, "tauGenJets", process.tauGenJets_genInfo)
     setattr(process.ntupleProducer.sources, "genJets", process.genJets_genInfo)
@@ -245,8 +230,6 @@ if addMCEmbeddingFlags:
     setattr(process.ntupleProducer.sources, "pfTausShrinkingCone_gen", process.pfTausShrinkingCone_mcEmbeddingInfo)
     process.pfTausHPS_mcEmbeddingInfo.src = cms.InputTag(retVal["pfTauCollectionHPS"])
     setattr(process.ntupleProducer.sources, "pfTausHPS_gen", process.pfTausHPS_mcEmbeddingInfo)
-    process.pfTausShrinkingConeEllipticPhotonIso_mcEmbeddingInfo.src = cms.InputTag(retVal["pfTauCollectionShrinkingConeEllipticPhotonIso"])
-    setattr(process.ntupleProducer.sources, "pfTausShrinkingConeEllPhotonIso_gen", process.pfTausShrinkingConeEllipticPhotonIso_mcEmbeddingInfo)    
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
@@ -300,15 +283,11 @@ if addMCEmbeddingFlags:
     process.mcEmbeddingTagAndProbeFlags_pfTauHPS = process.mcEmbeddingTagAndProbeFlags_template.clone(
         src = cms.InputTag(retVal["pfTauCollectionHPS"])
     )
-    process.mcEmbeddingTagAndProbeFlags_pfTauShrinkingConeEllipticPhotonIso = process.mcEmbeddingTagAndProbeFlags_template.clone(
-        src = cms.InputTag(retVal["pfTauCollectionShrinkingConeEllipticPhotonIso"])
-    )
     process.patTupleProductionSequence._seq = process.patTupleProductionSequence._seq
       * process.mcEmbeddingTagAndProbeFlags_caloTau
       * process.mcEmbeddingTagAndProbeFlags_pfTauFixedCone
       * process.mcEmbeddingTagAndProbeFlags_pfTauShrinkingCone
       * process.mcEmbeddingTagAndProbeFlags_pfTauHPS
-      * process.mcEmbeddingTagAndProbeFlags_pfTauShrinkingConeEllipticPhotonIso
 
 process.p = cms.Path(
     process.prePatProductionSequence

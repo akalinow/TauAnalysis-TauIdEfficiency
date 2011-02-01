@@ -42,7 +42,8 @@ caloTaus_recInfo = cms.PSet(
         # loose PFIsolation Pt sum
         # (computed by summing PFChargedHadrons of Pt > 1.0 GeV + PFGammas of Pt > 1.5 GeV
         #  in pfNoPileUp collection within region 0.15 < dR < 0.6 centered on PFTau direction)
-        ptSumLooseIsolation = cms.string("userFloat('pfLooseIsoPt')"),
+        ptSumLooseIsolation04 = cms.string("userFloat('pfLooseIsoPt04')"),
+        ptSumLooseIsolation06 = cms.string("userFloat('pfLooseIsoPt06')"),
 
         # momentum of leading charged/neutral particle within signal cone
         leadTrackPt = cms.string("? leadTrack().isNonnull() ? leadTrack().pt() : 0."),
@@ -53,6 +54,7 @@ caloTaus_recInfo = cms.PSet(
         # multiplicity of tracks within signal/isolations cones
         numSignalTracks = cms.string("signalTracks().size()"),
         numIsolationTracks = cms.string("isolationTracks().size()"),
+        numTracks = cms.string("signalTracks().size() + isolationTracks().size()"),
 
         # Pt sum of tracks/Et sum of ECAL energy deposits within isolation cone
         ptSumIsolationTracks = cms.string("isolationTracksPtSum()"),
