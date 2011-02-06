@@ -15,7 +15,7 @@ crabFilePath = "/data1/veelken/CMSSW_3_8_x/crab/TauIdEfficiency/"
 pfCandidateCollection = "particleFlow" # pile-up removal disabled
 #pfCandidateCollection = "pfNoPileUp"   # pile-up removal enabled
 
-version = "v4_2b"
+version = "v4_3"
 
 crab_template = """
 [CRAB]
