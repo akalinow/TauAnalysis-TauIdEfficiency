@@ -267,7 +267,36 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
     #--------------------------------------------------------------------------------
 
     #--------------------------------------------------------------------------------
-    # replace caloJets by pfJets
+    #
+    # produce collections of pat::Jets for CaloJets and PFJets
+    #
+    # NOTE: needed for evaluating jetId for Calo/TCTaus and PFTaus
+    #
+    addJetCollection(process, cms.InputTag('ak5PFJets'),
+                     'AK5', 'PF',
+                     doJTA            = False,
+                     doBTagging       = False,
+                     jetCorrLabel     = ('AK5Calo', cms.vstring(['L2Relative', 'L3Absolute', 'L2L3Residual'])),
+                     doType1MET       = False,
+                     genJetCollection = cms.InputTag("ak5GenJets"),
+                     doJetID          = True,
+                     outputModule     = ''
+    )
+
+    addJetCollection(process, cms.InputTag('ak5CaloJets'),
+                     'AK5', 'Calo',
+                     doJTA            = False,
+                     doBTagging       = False,
+                     jetCorrLabel     = ('AK5PF', cms.vstring(['L2Relative', 'L3Absolute', 'L2L3Residual'])),
+                     doType1MET       = False,
+                     genJetCollection = cms.InputTag("ak5GenJets"),
+                     doJetID          = True,
+                     outputModule     = ''
+    )
+    #--------------------------------------------------------------------------------
+
+    #--------------------------------------------------------------------------------
+    # replace CaloJets by PFJets for "standard" pat::Jet collection
     switchJetCollection(process, jetCollection = cms.InputTag("iterativeCone5PFJets"), outputModule = '')
     #
     # NOTE: need to delete empty sequence produced by call to "switchJetCollection"
