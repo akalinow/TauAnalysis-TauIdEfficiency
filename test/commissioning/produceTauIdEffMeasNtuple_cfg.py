@@ -21,8 +21,9 @@ process.source = cms.Source("PoolSource",
         #'/store/relval/CMSSW_3_6_1/RelValZTT/GEN-SIM-RECO/START36_V7-v1/0020/EE3E8F74-365D-DF11-AE3D-002618FDA211.root'
         ##'file:/data1/veelken/CMSSW_3_6_x/skims/pseudoData_Ztautau.root'
         ##'file:/data1/veelken/CMSSW_3_6_x/skims/Ztautau_1_1_sXK.root'
-        'file:/data1/veelken/CMSSW_3_8_x/skims/test/mcDYttPU156bx_GEN_SIM_RECO_1_1_1VV.root'
+        ##'file:/data1/veelken/CMSSW_3_8_x/skims/test/mcDYttPU156bx_GEN_SIM_RECO_1_1_1VV.root'
         ##'file:/data1/veelken/CMSSW_3_8_x/skims/AHtoMuTau/selEvents_AHtoMuTau_HPSloose_friis_RECO.root'
+        'file:/data1/veelken/CMSSW_3_8_x/skims/test/skim_ZtautauPU156bx_chunk_1_8a2f.root'
     ),
     skipEvents = cms.untracked.uint32(0)            
 )
@@ -94,7 +95,7 @@ from TauAnalysis.TauIdEfficiency.tools.configurePrePatProduction import configur
 
 configurePrePatProduction(process, pfCandidateCollection = pfCandidateCollection, addGenInfo = isMC)
 
-process.prePatProductionSequence.remove(process.tautagging)
+#process.prePatProductionSequence.remove(process.tautagging)
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
@@ -163,6 +164,14 @@ patTauTemplates = {
     "pfTauHPSpTaNC"      : process.pfTausHPSpTaNC_recInfo
 }
 
+muTauTemplates = {
+    "caloTau"            : [ process.tauIdEffMeas_template03caloTau, process.tauIdEffMeas_template04caloTau ], 
+    "pfTauFixedCone"     : [ process.tauIdEffMeas_template03pfTau,   process.tauIdEffMeas_template04pfTau   ],
+    "pfTauShrinkingCone" : [ process.tauIdEffMeas_template03pfTau,   process.tauIdEffMeas_template04pfTau   ],
+    "pfTauHPS"           : [ process.tauIdEffMeas_template03pfTau,   process.tauIdEffMeas_template04pfTau   ],
+    "pfTauHPSpTaNC"      : [ process.tauIdEffMeas_template03pfTau,   process.tauIdEffMeas_template04pfTau   ]
+}
+
 # add branches for collections of Tau-jet candidates and Muon + Tau-Jet candidate pairs
 # (including collecions shifted Up/Down in energy/momentum and with Z-recoil corrections applied)
 for algorithm in patTupleConfig["algorithms"]:
@@ -181,15 +190,21 @@ for algorithm in patTupleConfig["algorithms"]:
             src = cms.InputTag(patTauCollection)
         )
         setattr(process.ntupleProducer.sources, attr02Name, attr02)
+        if algorithm == "pfTauShrinkingCone":
+            attr02dmName = "tauIdEffMeas02dm_%s" % patTauCollection
+            attr02dm = process.pfTausShrinkingCone_recDecayModeInfo.clone(
+                src = cms.InputTag(patTauCollection)
+            )
+            setattr(process.ntupleProducer.sources, attr02dmName, attr02dm)
 
     for muTauPairCollection in patTupleConfig[algorithm]["muTauPairCollections"]:
         attr03Name = "tauIdEffMeas03_%s" % muTauPairCollection
-        attr03 = process.tauIdEffMeas_template03.clone(
+        attr03 = muTauTemplates[algorithm][0].clone(
             src = cms.InputTag(muTauPairCollection)
         )
         setattr(process.ntupleProducer.sources, attr03Name, attr03)
         attr04Name = "tauIdEffMeas04_%s" % muTauPairCollection
-        attr04 = process.tauIdEffMeas_template04.clone(
+        attr04 = muTauTemplates[algorithm][1].clone(
             src = cms.InputTag(muTauPairCollection)
         )
         setattr(process.ntupleProducer.sources, attr04Name, attr04)
