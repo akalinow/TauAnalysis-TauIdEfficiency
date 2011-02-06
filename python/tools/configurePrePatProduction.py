@@ -54,6 +54,14 @@ def configurePrePatProduction(process, pfCandidateCollection = "particleFlow",
     #--------------------------------------------------------------------------------
 
     #--------------------------------------------------------------------------------
+    # recreate collection of PFTauDecayMode objects,
+    # not stored on AOD/RECO
+    process.load("RecoTauTag.Configuration.ShrinkingConePFTaus_cfi")
+
+    process.prePatProductionSequence += process.shrinkingConePFTauDecayModeProducer
+    #--------------------------------------------------------------------------------
+
+    #--------------------------------------------------------------------------------
     # if running on Monte Carlo, produce ak5GenJets collection "on-the-fly",
     # as it is needed for matching reconstructed particles to generator level information by PAT,
     # but not contained in Monte Carlo samples produced with CMSSW_3_5_x
@@ -63,3 +71,5 @@ def configurePrePatProduction(process, pfCandidateCollection = "particleFlow",
         process.prePatProductionSequenceGen = cms.Sequence(process.genParticlesForJets * process.ak5GenJets)
         process.prePatProductionSequence += process.prePatProductionSequenceGen
     #--------------------------------------------------------------------------------
+
+   
