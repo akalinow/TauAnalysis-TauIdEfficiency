@@ -17,8 +17,9 @@ diTaus_recInfo = cms.PSet(
     
     # Variables to compute for this source
     columns = cms.PSet(
-	Mt = cms.string("mt1MET()"),  
-        pZeta = cms.string("pZeta()"),
+	Mt       = cms.string("mt1MET()"),  
+        pZeta    = cms.string("pZeta()"),
         pZetaVis = cms.string("pZetaVis()"),
+        ptW      = cms.string("pt1MET()")
     )
 )
