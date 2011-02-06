@@ -1,7 +1,7 @@
-#ifndef TauAnalysis_TauIdEfficiency_VectorGenJetValExtractor_h  
-#define TauAnalysis_TauIdEfficiency_VectorGenJetValExtractor_h
+#ifndef TauAnalysis_TauIdEfficiency_PATTauVectorTrackValExtractor_h  
+#define TauAnalysis_TauIdEfficiency_PATTauVectorTrackValExtractor_h
 
-/** \class VectorGenJetValExtractor
+/** \class PATTauVectorTrackValExtractor
  *
  * Auxiliary class for extracting track quantities
  * of leading track, tracks in signal cone or tracks in isolation cone
@@ -10,9 +10,9 @@
  * 
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.1 $
+ * \version $Revision: 1.2 $
  *
- * $Id: PATTauVectorTrackValExtractor.h,v 1.1 2010/06/19 14:15:43 veelken Exp $
+ * $Id: PATTauVectorTrackValExtractor.h,v 1.2 2010/09/28 11:23:39 jkolb Exp $
  *
  */
 

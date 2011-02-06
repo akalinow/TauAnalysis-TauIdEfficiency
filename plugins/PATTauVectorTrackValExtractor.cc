@@ -38,7 +38,8 @@ PATTauVectorTrackValExtractor::PATTauVectorTrackValExtractor(const edm::Paramete
   else if ( value_string == "ptErr"          ) value_ = kPtErr;
   else if ( value_string == "quality"        ) value_ = kQuality;
   else {
-    edm::LogError ("PATTauVectorTrackValExtractor") << " Invalid configuration parameter value = " << value_string << " !!";
+    edm::LogError ("PATTauVectorTrackValExtractor") 
+      << " Invalid Configuration Parameter 'value' = " << value_string << " !!";
     value_ = -1;
   }
 

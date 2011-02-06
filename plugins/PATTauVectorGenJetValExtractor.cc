@@ -49,7 +49,8 @@ VectorGenJetValExtractor<T>::VectorGenJetValExtractor(const edm::ParameterSet& c
     srcGenParticles_ = cfg.getParameter<edm::InputTag>("srcGenParticles");
     skipPdgIdsGenParticleMatch_ = cfg.getParameter<vint>("skipPdgIdsGenParticleMatch");
   } else {
-    edm::LogError ("VectorGenJetValExtractor") << " Invalid configuration parameter value = " << value_string << " !!";
+    edm::LogError ("VectorGenJetValExtractor") 
+      << " Invalid Configuration Parameter 'value' = " << value_string << " !!";
     value_ = -1;
   }
 }
