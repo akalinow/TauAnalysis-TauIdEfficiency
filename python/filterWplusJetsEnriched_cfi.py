@@ -96,7 +96,7 @@ muonCaloTauPairs = cms.EDProducer("DiCandidatePairProducer",
 
 selectedMuonCaloTauPairs = cms.EDFilter("DiCandidatePairSelector",
     src = cms.InputTag('muonCaloTauPairs'),
-    cut = cms.string("dR12 > 0.7 & mt1MET > 40."),
+    cut = cms.string("dR12 > 0.7 & mt1MET > 50."),
     filter = cms.bool(False)                                     
 )
 
@@ -141,7 +141,7 @@ muonPFTauPairs = cms.EDProducer("DiCandidatePairProducer",
 
 selectedMuonPFTauPairs = cms.EDFilter("DiCandidatePairSelector",
     src = cms.InputTag('muonPFTauPairs'),
-    cut = cms.string("dR12 > 0.7 & mt1MET > 40."),
+    cut = cms.string("dR12 > 0.7 & mt1MET > 50."),
     filter = cms.bool(False)                                     
 )
 
