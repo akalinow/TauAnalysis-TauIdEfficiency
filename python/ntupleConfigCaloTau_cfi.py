@@ -79,6 +79,28 @@ caloTaus_recInfo = cms.PSet(
     )
 )
 
+caloTaus_recJetIdInfo = cms.PSet(
+    # Select multiplicy of object(s) to store
+    vector = cms.bool(True), # Store a value for all objects in this collection
+    #indices = cms.vuint_32([0, 1, 2]) # Store values for first, second, third objects
+    
+    # Extractor plugin
+    pluginType = cms.string("PATTauVectorCaloJetIdValExtractor"),
+    
+    # Collection to extract from
+    src = cms.InputTag("patCaloTausDijetTagAndProbe"),
+    srcJet = cms.InputTag("patJetsAK5Calo"),
+    
+    # Variables to compute for this source
+    columns = cms.PSet(
+        # jetId bits
+        jetIdMinimal = cms.string("minimal"),
+        jetIdLooseAOD = cms.string("loose_AOD"),
+        jetIdLoose = cms.string("loose"),
+        jetIdTight = cms.string("tight")
+    )
+)   
+
 caloTaus_genInfo = caloTaus_recInfo.clone(
     pluginType = cms.string("PATTauVectorGenJetValExtractor"),
 

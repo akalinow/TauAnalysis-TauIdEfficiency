@@ -22,10 +22,16 @@ pfTausShrinkingCone_recInfo = cms.PSet(
     # Variables to compute for this source
     columns = cms.PSet(
         # kinematic variables for PFTau
-        pt = cms.string("pt()"),
-        eta = cms.string("eta()"),
-        phi = cms.string("phi()"),
-        mass = cms.string("mass()"),
+        # CV: pt, eta, phi and mass disabled;
+        #     take values from reco::PFTauDecayMode object instead
+        #pt = cms.string("pt()"),
+        #eta = cms.string("eta()"),
+        #phi = cms.string("phi()"),
+        #mass = cms.string("mass()"),
+        ptSignalCone = cms.string("pt()"),
+        etaSignalCone = cms.string("eta()"),
+        phiSignalCone = cms.string("phi()"),
+        massSignalCone = cms.string("mass()"),
 
         # charge of PFTau
         # (sum of charges of charged particles within signal cone)
@@ -114,6 +120,55 @@ for tancInputInfo in produceTancMVAInputDiscriminators.discriminants:
         # single input
         setattr(pfTausShrinkingCone_recInfo.columns, name, cms.string(
                 "tauID('%s')" % name ))
+
+pfTausShrinkingCone_recDecayModeInfo = cms.PSet(
+    # Select multiplicy of object(s) to store
+    vector = cms.bool(True), # Store a value for all objects in this collection
+    #indices = cms.vuint_32([0, 1, 2]) # Store values for first, second, third objects
+    
+    # Extractor plugin
+    pluginType = cms.string("PATTauVectorDecayModeValExtractor"),
+    
+    # Collection to extract from
+    src = cms.InputTag("patPFTausDijetTagAndProbeShrinkingCone"),
+    srcPFTau = cms.InputTag("shrinkingConePFTauProducer"),
+    srcPFTauDecayMode = cms.InputTag("shrinkingConePFTauDecayModeProducer"),
+    
+    # Variables to compute for this source
+    columns = cms.PSet(
+        # kinematic variables of PFTau,
+        # taen from PFTauDecayMode object
+        pt = cms.string("pt"),
+        eta = cms.string("eta"),
+        phi = cms.string("phi"),
+        mass = cms.string("mass"),
+
+        ptDecayMode = cms.string("pt"),
+        etaDecayMode = cms.string("eta"),
+        phiDecayMode = cms.string("phi"),
+        massDecayMode = cms.string("mass")
+    )
+)   
+
+pfTausShrinkingCone_recJetIdInfo = cms.PSet(
+    # Select multiplicy of object(s) to store
+    vector = cms.bool(True), # Store a value for all objects in this collection
+    #indices = cms.vuint_32([0, 1, 2]) # Store values for first, second, third objects
+    
+    # Extractor plugin
+    pluginType = cms.string("PATTauVectorPFJetIdValExtractor"),
+    
+    # Collection to extract from
+    src = cms.InputTag("patPFTausDijetTagAndProbeShrinkingCone"),
+    srcJet = cms.InputTag("patJetsAK5PF"),
+    
+    # Variables to compute for this source
+    columns = cms.PSet(
+        # jetId bits
+        jetIdLoose = cms.string("loose"),
+        jetIdTight = cms.string("tight")
+    )
+)   
 
 pfTausShrinkingCone_genInfo = pfTausShrinkingCone_recInfo.clone(
     pluginType = cms.string("PATTauVectorGenJetValExtractor"),

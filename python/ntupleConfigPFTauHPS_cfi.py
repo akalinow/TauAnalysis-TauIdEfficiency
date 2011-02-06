@@ -83,7 +83,27 @@ pfTausHPS_recInfo = cms.PSet(
         pfElectronMVA = cms.string("? leadPFCand().isNonnull() ? leadPFCand().mva_e_pi() : +1."),
         againstMuon = cms.string("tauID('againstMuon')")                        
     )
-)                
+)
+
+pfTausHPS_recJetIdInfo = cms.PSet(
+    # Select multiplicy of object(s) to store
+    vector = cms.bool(True), # Store a value for all objects in this collection
+    #indices = cms.vuint_32([0, 1, 2]) # Store values for first, second, third objects
+    
+    # Extractor plugin
+    pluginType = cms.string("PATTauVectorPFJetIdValExtractor"),
+    
+    # Collection to extract from
+    src = cms.InputTag("patPFTausDijetTagAndProbeHPS"),
+    srcJet = cms.InputTag("patJetsAK5PF"),
+    
+    # Variables to compute for this source
+    columns = cms.PSet(
+        # jetId bits
+        jetIdLoose = cms.string("loose"),
+        jetIdTight = cms.string("tight")
+    )
+)   
 
 pfTausHPS_genInfo = pfTausHPS_recInfo.clone(
     pluginType = cms.string("PATTauVectorGenJetValExtractor"),

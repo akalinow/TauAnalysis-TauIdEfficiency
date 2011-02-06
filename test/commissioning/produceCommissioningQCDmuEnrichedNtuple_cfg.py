@@ -185,6 +185,9 @@ process.ntupleProducer = cms.EDProducer("ObjValEDNtupleProducer",
         caloTaus_rec = process.caloTaus_recInfo.clone(
             src = cms.InputTag(retVal["caloTauCollection"])                       
         ),
+        caloTaus_recJetId = process.caloTaus_recJetIdInfo.clone(
+            src = cms.InputTag(retVal["caloTauCollection"])                       
+        ),                                    
         muCaloTauPairs_rec = process.diTaus_recInfo.clone(
             src = cms.InputTag(retVal["muonCaloTauCollection"])                       
         ),                                             
@@ -193,6 +196,9 @@ process.ntupleProducer = cms.EDProducer("ObjValEDNtupleProducer",
         pfTausFixedCone_rec = process.pfTausFixedCone_recInfo.clone(
             src = cms.InputTag(retVal["pfTauCollectionFixedCone"])                       
         ),
+        pfTausFixedCone_recJetId = process.pfTausFixedCone_recJetIdInfo.clone(
+            src = cms.InputTag(retVal["pfTauCollectionFixedCone"])                       
+        ),                                      
         muPFTauPairsFixedCone_rec = process.diTaus_recInfo.clone(
             src = cms.InputTag(retVal["muonPFTauCollectionFixedCone"])                       
         ),                                           
@@ -200,7 +206,13 @@ process.ntupleProducer = cms.EDProducer("ObjValEDNtupleProducer",
         # variables specific to shrinking cone PFTaus                                            
         pfTausShrinkingCone_rec = process.pfTausShrinkingCone_recInfo.clone(
             src = cms.InputTag(retVal["pfTauCollectionShrinkingCone"])                       
+        ),                                            
+        pfTausShrinkingCone_recDecayMode = process.pfTausShrinkingCone_recDecayModeInfo.clone(
+            src = cms.InputTag(retVal["pfTauCollectionShrinkingCone"])
         ),
+        pfTausShrinkingCone_recJetId = process.pfTausShrinkingCone_recJetIdInfo.clone(
+            src = cms.InputTag(retVal["pfTauCollectionShrinkingCone"])
+        ),                                   
         muPFTauPairsShrinkingCone_rec = process.diTaus_recInfo.clone(
             src = cms.InputTag(retVal["muonPFTauCollectionShrinkingCone"])                       
         ),                                            
@@ -209,6 +221,9 @@ process.ntupleProducer = cms.EDProducer("ObjValEDNtupleProducer",
         pfTausHPS_rec = process.pfTausHPS_recInfo.clone(
             src = cms.InputTag(retVal["pfTauCollectionHPS"])                       
         ),
+        pfTausHPS_recJetId = process.pfTausHPS_recJetIdInfo.clone(
+            src = cms.InputTag(retVal["pfTauCollectionHPS"])
+        ),                                       
         muPFTauPairsHPS_rec = process.diTaus_recInfo.clone(
             src = cms.InputTag(retVal["muonPFTauCollectionHPS"])                       
         ),                                            
@@ -217,6 +232,9 @@ process.ntupleProducer = cms.EDProducer("ObjValEDNtupleProducer",
         pfTausHPSpTaNC_rec = process.pfTausHPSpTaNC_recInfo.clone(
             src = cms.InputTag(retVal["pfTauCollectionHPSpTaNC"])
         ),
+        pfTausHPSpTaNC_recJetId = process.pfTausHPSpTaNC_recJetIdInfo.clone(
+            src = cms.InputTag(retVal["pfTauCollectionHPSpTaNC"])
+        ),                                       
         muPFTauPairsHPSpTaNC_rec = process.diTaus_recInfo.clone(
             src = cms.InputTag(retVal["muonPFTauCollectionHPSpTaNC"])                       
         )                                           

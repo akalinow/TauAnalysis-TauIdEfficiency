@@ -184,24 +184,42 @@ process.ntupleProducer = cms.EDProducer("ObjValEDNtupleProducer",
         caloTaus_rec = process.caloTaus_recInfo.clone(
             src = cms.InputTag(retVal["caloTauCollection"])                       
         ),
+        caloTaus_recJetId = process.caloTaus_recJetIdInfo.clone(
+            src = cms.InputTag(retVal["caloTauCollection"])                       
+        ),                                      
 
         # variables specific to fixed cone PFTaus                                            
         pfTausFixedCone_rec = process.pfTausFixedCone_recInfo.clone(
             src = cms.InputTag(retVal["pfTauCollectionFixedCone"])                       
         ),
+        pfTausFixedCone_recJetId = process.pfTausFixedCone_recJetIdInfo.clone(
+            src = cms.InputTag(retVal["pfTauCollectionFixedCone"])                       
+        ),                                      
 
         # variables specific to shrinking cone PFTaus                                            
         pfTausShrinkingCone_rec = process.pfTausShrinkingCone_recInfo.clone(
             src = cms.InputTag(retVal["pfTauCollectionShrinkingCone"])                       
         ),
+        pfTausShrinkingCone_recDecayMode = process.pfTausShrinkingCone_recDecayModeInfo.clone(
+            src = cms.InputTag(retVal["pfTauCollectionShrinkingCone"])
+        ),
+        pfTausShrinkingCone_recJetId = process.pfTausShrinkingCone_recJetIdInfo.clone(
+            src = cms.InputTag(retVal["pfTauCollectionShrinkingCone"])
+        ),                                    
 
         # variables specific to PFTaus reconstructed by hadron + strips (HPS) algorithm                                           
         pfTausHPS_rec = process.pfTausHPS_recInfo.clone(
             src = cms.InputTag(retVal["pfTauCollectionHPS"])                       
         ),
+        pfTausHPS_recJetId = process.pfTausHPS_recJetIdInfo.clone(
+            src = cms.InputTag(retVal["pfTauCollectionHPS"])
+        ),                                     
 
         # variables specific to PFTaus reconstructed by HPS + TaNC combined tau id. algorithm
-        pfTausHPSpTaNC_rec01 = process.pfTausHPSpTaNC_recInfo.clone(
+        pfTausHPSpTaNC_rec = process.pfTausHPSpTaNC_recInfo.clone(
+            src = cms.InputTag(retVal["pfTauCollectionHPSpTaNC"])
+        ),
+        pfTausHPSpTaNC_recJetId = process.pfTausHPSpTaNC_recJetIdInfo.clone(
             src = cms.InputTag(retVal["pfTauCollectionHPSpTaNC"])
         )
     )

@@ -195,6 +195,9 @@ process.ntupleProducer = cms.EDProducer("ObjValEDNtupleProducer",
         pfTausShrinkingCone_rec03 = process.tauTrackVariables_template.clone(
             src = cms.InputTag(retVal["pfTauCollectionShrinkingCone"])                       
         ),
+        pfTausShrinkingCone_rec04 = process.pfTausShrinkingCone_recDecayModeInfo.clone(
+            src = cms.InputTag(retVal["pfTauCollectionShrinkingCone"])
+        ),                                    
 
         # variables specific to PFTaus reconstructed by hadron + strips (HPS) algorithm                                           
         pfTausHPS_rec01 = process.pfTausHPS_recInfo.clone(

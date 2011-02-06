@@ -184,6 +184,9 @@ process.ntupleProducer = cms.EDProducer("ObjValEDNtupleProducer",
         caloTaus_rec = process.caloTaus_recInfo.clone(
             src = cms.InputTag(retVal["caloTauCollection"])                       
         ),
+        caloTaus_recJetId = process.caloTaus_recJetIdInfo.clone(
+            src = cms.InputTag(retVal["caloTauCollection"])                       
+        ),                                      
         muCaloTauPairs_rec = process.diTaus_recInfo.clone(
             src = cms.InputTag(retVal["muonCaloTauCollection"])                       
         ),                                 
@@ -192,6 +195,9 @@ process.ntupleProducer = cms.EDProducer("ObjValEDNtupleProducer",
         pfTausFixedCone_rec = process.pfTausFixedCone_recInfo.clone(
             src = cms.InputTag(retVal["pfTauCollectionFixedCone"])                       
         ),
+        pfTausFixedCone_recJetId = process.pfTausFixedCone_recJetIdInfo.clone(
+            src = cms.InputTag(retVal["pfTauCollectionFixedCone"])                       
+        ),                                    
         muPFTauPairsFixedCone_rec = process.diTaus_recInfo.clone(
             src = cms.InputTag(retVal["muonPFTauCollectionFixedCone"])                       
         ),                                     
@@ -200,6 +206,12 @@ process.ntupleProducer = cms.EDProducer("ObjValEDNtupleProducer",
         pfTausShrinkingCone_rec = process.pfTausShrinkingCone_recInfo.clone(
             src = cms.InputTag(retVal["pfTauCollectionShrinkingCone"])                       
         ),
+        pfTausShrinkingCone_recDecayMode = process.pfTausShrinkingCone_recDecayModeInfo.clone(
+            src = cms.InputTag(retVal["pfTauCollectionShrinkingCone"])
+        ),
+        pfTausShrinkingCone_recJetId = process.pfTausShrinkingCone_recJetIdInfo.clone(
+            src = cms.InputTag(retVal["pfTauCollectionShrinkingCone"])
+        ),                                               
         muPFTauPairsShrinkingCone_rec = process.diTaus_recInfo.clone(
             src = cms.InputTag(retVal["muonPFTauCollectionShrinkingCone"])                       
         ),
@@ -208,33 +220,41 @@ process.ntupleProducer = cms.EDProducer("ObjValEDNtupleProducer",
         pfTausHPS_rec = process.pfTausHPS_recInfo.clone(
             src = cms.InputTag(retVal["pfTauCollectionHPS"])                       
         ),
+        pfTausHPS_recJetId = process.pfTausHPS_recJetIdInfo.clone(
+            src = cms.InputTag(retVal["pfTauCollectionHPS"])
+        ),                                       
         muPFTauPairsHPS_rec = process.diTaus_recInfo.clone(
             src = cms.InputTag(retVal["muonPFTauCollectionHPS"])                       
         ),                                    
 
         # variables specific to PFTaus reconstructed by HPS + TaNC combined tau id. algorithm
-        pfTausHPSpTaNC_rec01 = process.pfTausHPSpTaNC_recInfo.clone(
+        pfTausHPSpTaNC_rec = process.pfTausHPSpTaNC_recInfo.clone(
             src = cms.InputTag(retVal["pfTauCollectionHPSpTaNC"])
         ),
+        pfTausHPSpTaNC_recJetId = process.pfTausHPSpTaNC_recJetIdInfo.clone(
+            src = cms.InputTag(retVal["pfTauCollectionHPSpTaNC"])
+        ),                                      
         muPFTauPairsHPSpTaNC_rec = process.diTaus_recInfo.clone(
             src = cms.InputTag(retVal["muonPFTauCollectionHPSpTaNC"])                       
         ),                                   
 
         # global event variables specific to W + jets selection
         caloMet_rec = process.caloMet_template,
-        pfMet_rec = process.pfMet_template,
-        caloMetDiTau_rec = process.diTau_template.clone(
-            src = cms.InputTag("selectedMuonCaloTauPairs"),
-            columns = cms.PSet(
-                caloMt1MET = cms.string("mt1MET()")
-            )
-        ),
-        pfMetDiTau_rec = process.diTau_template.clone(
-            src = cms.InputTag("selectedMuonPFTauPairs"),
-            columns = cms.PSet(
-                pfMt1MET = cms.string("mt1MET()")
-            )
-        )
+        pfMet_rec = process.pfMet_template
+        #caloMetDiTau_rec = process.diTau_template.clone(
+        #    src = cms.InputTag("selectedMuonCaloTauPairs"),
+        #    columns = cms.PSet(
+        #        caloMt1MET = cms.string("mt1MET()"),
+        #        caloPt1MET = cms.string("pt1MET()")                                     
+        #    )
+        #),
+        #pfMetDiTau_rec = process.diTau_template.clone(
+        #    src = cms.InputTag("selectedMuonPFTauPairs"),
+        #    columns = cms.PSet(
+        #        pfMt1MET = cms.string("mt1MET()"),
+        #        pfPt1MET = cms.string("pt1MET()")                     
+        #    )
+        #)
     )
 )
 
