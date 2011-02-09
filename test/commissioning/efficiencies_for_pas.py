@@ -80,7 +80,7 @@ def makeEfficiencyComparisonPlots(numerators):
             legend.AddEntry(efficiency_fixed, "Fixed signal cone", "P")
 
         if numerators['shrinkingCone'] != "":
-            numerator_shrinking = numerators['shrinkingCone']    
+            numerator_shrinking = numerators['shrinkingCone']
             efficiency_shrinking = efficiency_results[x_var]['shrinkingCone'][numerator_shrinking]
             efficiency_shrinking.SetMarkerStyle(21)
             efficiency_shrinking.SetMarkerColor(ROOT.EColor.kRed)
@@ -100,7 +100,7 @@ def makeEfficiencyComparisonPlots(numerators):
             legend.AddEntry(efficiency_tanc, "TaNC medium", "P")
 
         if numerators['hps'] != "":
-            numerator_hps = numerators['hps']    
+            numerator_hps = numerators['hps']
             efficiency_hps = efficiency_results[x_var]['hps'][numerator_hps]
             efficiency_hps.SetMarkerStyle(23)
             efficiency_hps.SetMarkerColor(28)
@@ -110,7 +110,7 @@ def makeEfficiencyComparisonPlots(numerators):
             legend.AddEntry(efficiency_hps, "HPS medium", "P")
 
         if numerators['calo'] != "":
-            numerator_tctau = numerators['calo']     
+            numerator_tctau = numerators['calo']
             efficiency_tctau = efficiency_results[x_var]['calo'][numerator_tctau]
             efficiency_tctau.SetMarkerStyle(29)
             efficiency_tctau.SetMarkerColor(ROOT.EColor.kBlack)
@@ -120,7 +120,7 @@ def makeEfficiencyComparisonPlots(numerators):
 
         # Draw legend
         legend.Draw()
-            
+
         # Draw the preliminary label
         style.CMS_PRELIMINARY_UPPER_LEFT.Draw()
         style.ZTAUTAU_LABEL_UPPER_LEFT.Draw()
@@ -148,8 +148,8 @@ if __name__ == "__main__":
 
     # Binning for PT
     ##pt_bins = (
-    ##    0, 2.5, 5., 7.5, 10, 12.5, 15, 17.5, 20, 22.5, 25, 27.5, 30, 32.5, 
-    ##    35, 37.5, 40, 42.5, 45, 47.5, 50, 52.5, 55, 57.5, 60, 63, 66, 69, 72, 
+    ##    0, 2.5, 5., 7.5, 10, 12.5, 15, 17.5, 20, 22.5, 25, 27.5, 30, 32.5,
+    ##    35, 37.5, 40, 42.5, 45, 47.5, 50, 52.5, 55, 57.5, 60, 63, 66, 69, 72,
     ##    76, 80, 85, 90, 95, 100, 110, 120, 130, 140, 150
     ##)
     pt_bins = ( 0, 10, 15, 20, 25, 30, 40, 60, 80, 100, 150 )
@@ -194,6 +194,19 @@ if __name__ == "__main__":
             'label' : "1 or 3 Prong"
         },
         # For TaNC
+        'byTaNCfrOnePercent': {
+            'expr_str': '$byTaNCfrOnePercent',
+            'label' : "TaNC 1.0%"
+        },
+        'byTaNCfrHalfPercent': {
+            'expr_str': '$byTaNCfrHalfPercent',
+            'label' : "TaNC 0.5%"
+        },
+        'byTaNCfrQuarterPercent': {
+            'expr_str': '$byTaNCfrQuarterPercent',
+            'label' : "TaNC 0.25%"
+        },
+        # For TaNC
         'byTaNCloose': {
             'expr_str': '$byTaNCloose',
             'label' : "TaNC loose"
@@ -223,6 +236,18 @@ if __name__ == "__main__":
             'expr_str': '$byHPStight',
             'label': "HPS tight"
         },
+        'byLooseIsolation' : {
+            'expr_str': '$byIsolationLoose',
+            'label': "HPS loose"
+        },
+        'byMediumIsolation' : {
+            'expr_str': '$byIsolationMedium',
+            'label': "HPS medium"
+        },
+        'byTightIsolation' : {
+            'expr_str': '$byIsolationTight',
+            'label': "HPS tight"
+        },
     }
 
     parameterizations = {
@@ -231,7 +256,7 @@ if __name__ == "__main__":
             'binning': pt_bins,
             'label': 'Generated #tau visible P_{T} [GeV/c]',
             'cutLabel': style.ETAVIS_CUT_LABEL_UPPER_LEFT,
-        }, 
+        },
         'eta' : {
             'expr_str': '$genEta',
             ##'binning': (50, -2.5, 2.5),
@@ -247,9 +272,13 @@ if __name__ == "__main__":
         'matching',
         'byLeadTrackFinding',
         'byLeadTrackPtCut',
-        'byTrackIsolation',
-        'byEcalIsolation',
-        'OneOrThreeProng'
+        #'byTrackIsolation',
+        #'byEcalIsolation',
+        #'OneOrThreeProng',
+        'byTaNCfrOnePercent',
+        'byTaNCfrHalfPercent',
+        'byTaNCfrQuarterPercent',
+        #'byTaNCfrTenthPercent',
     ]
 
     tanc_sequence = [
@@ -263,10 +292,11 @@ if __name__ == "__main__":
 
     hps_sequence = [
         'matching',
-        'byDecayModeFinding',
-        'byHPSloose',
-        'byHPSmedium',
-        'byHPStight'
+        'byLeadTrackFinding',
+        #'byDecayModeFinding',
+        'byLooseIsolation',
+        'byMediumIsolation',
+        'byTightIsolation',
     ]
 
     calo_sequence = [
@@ -280,18 +310,19 @@ if __name__ == "__main__":
 
     # Match up sequences to tau algos
     sequences_and_algos = [
-        ( "shrinkingCone", standard_sequence ),
-        ( "fixedCone", standard_sequence ),
-        ( "TaNC", tanc_sequence ),
+        #( "shrinkingCone", standard_sequence ),
+        #( "fixedCone", standard_sequence ),
+        #( "TaNC", tanc_sequence ),
         ( "hps", hps_sequence ),
-        ( "calo", calo_sequence )
+        #( "calo", calo_sequence )
     ]
 
     nTuples = {
         "shrinkingCone": "patPFTausDijetTagAndProbeShrinkingCone",
         "fixedCone": "patPFTausDijetTagAndProbeFixedCone",
         "TaNC": "patPFTausDijetTagAndProbeHPSpTaNC",
-        "hps": "patPFTausDijetTagAndProbeHPSpTaNC",
+        #"hps": "patPFTausDijetTagAndProbeHPSpTaNC",
+        "hps": "patPFTausDijetTagAndProbeHPS",
         "calo": "patCaloTausDijetTagAndProbe"
     }
 
@@ -314,21 +345,21 @@ if __name__ == "__main__":
     canvas = ROOT.TCanvas("canvas", "canvas", 500, 500)
     canvas.SetLeftMargin(0.11)
     canvas.SetGridy(1)
-    
+
     for algorithm, sequence in sequences_and_algos:
         print "Plotting", algorithm
         # Get the ntuple
         ntuple = ntuple_manager.get_ntuple(nTuples[algorithm])
         # Loop over different horizontal axes
         for x_var, x_var_info in parameterizations.iteritems():
-            
+
             # build legend
             legend = ROOT.TLegend(0.45, 0.68, 0.88, 0.88, "","brNDC")
             legend.SetTextSize(0.03)
             legend.SetFillColor(0);
             legend.SetLineColor(1);
             legend.SetBorderSize(1);
-            
+
             # build denominator
             print "Building denominator for", x_var
             denominator = draw(
@@ -340,7 +371,7 @@ if __name__ == "__main__":
                 maxNumEntries = maxNumEntries
             )
             print "denominator: entries = %i" % denominator.GetEntries()
-            
+
             # Loop over sequence of numerators
             numerator_effs = []
             running_cut = ntuple.expr(denom_selection_from_reco_str)
@@ -365,7 +396,7 @@ if __name__ == "__main__":
                 print "numerator: entries = %i" % numerator.GetEntries()
 
                 #raise ValueError("STOPped for debugging")
-                
+
                 # FIXME: clean this up
                 from math import sqrt
                 nNum = float(numerator.Integral())
@@ -374,9 +405,9 @@ if __name__ == "__main__":
                 efficiencyLogHack("%s -> %s: " % (nTuples[algorithm], numerator_name), timestamp=True)
                 efficiencyLogHack("%e / %e = %e +- %e\n" % (nNum, nDenom, nNum/nDenom,err))
                 # end cleanup
-                
+
                 my_eff = ROOT.TGraphAsymmErrors(numerator, denominator)
-                                    
+
                 # Overwrite the additional spacing by root
                 if len(x_var_info['binning']) == 3:
                     my_eff.GetXaxis().SetRangeUser(x_var_info['binning'][1],
@@ -384,20 +415,20 @@ if __name__ == "__main__":
                 else:
                     my_eff.GetXaxis().SetRangeUser(min(x_var_info['binning']),
                                                    max(x_var_info['binning']))
-                    
+
                 # Update style
                 style.update_histo_style(
                     my_eff, style.EFFICIENCY_STYLES[numerator_name])
-                
+
                 numerator_effs.append(my_eff)
-                
+
                 efficiency_results.setdefault(x_var, {})
                 efficiency_results[x_var].setdefault(algorithm, {})
                 efficiency_results[x_var][algorithm].setdefault(algorithm, {})
                 efficiency_results[x_var][algorithm][numerator_name] = my_eff
-                
+
                 legend.AddEntry(my_eff, numerator_info['label'], "P")
-                
+
             # Make the actual plots
             print "Building plots"
             for index, numerator_eff in enumerate(numerator_effs):
@@ -413,7 +444,7 @@ if __name__ == "__main__":
 
             # Draw legend
             legend.Draw()
-            
+
             # Draw the preliminary label
             style.CMS_PRELIMINARY_UPPER_LEFT.Draw()
             style.ZTAUTAU_LABEL_UPPER_LEFT.Draw()
@@ -429,13 +460,13 @@ if __name__ == "__main__":
     # Make comparison plot of efficiencies after all tau id. criteria are applied
     # for different algorithms
     numerators = {}
-    numerators['fixedCone'] = ""
+    #numerators['fixedCone'] = ""
     numerators['shrinkingCone'] = 'OneOrThreeProng'
     numerators['TaNC'] = 'byTaNCmedium'
     numerators['hps'] = 'byHPSmedium'
-    numerators['calo'] = 'OneOrThreeProng_calo'
-    makeEfficiencyComparisonPlots(numerators)
-            
+    #numerators['calo'] = 'OneOrThreeProng_calo'
+    #makeEfficiencyComparisonPlots(numerators)
+
 
 
 

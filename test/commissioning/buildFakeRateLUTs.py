@@ -20,15 +20,15 @@ skipExisting = True
 
 sample_filterfunc = None
 # Uncomment to skip loose iso
-sample_filterfunc = lambda x: x.find('closure') == -1 and x.find('mc.cfg') == -1
 
 def matches_any(x, types):
-    return any(x.find(type) != -1 for type in types)
+    return any(type in x for type in types)
 
 type_filter = None
-my_types = ['PP', 'WplusJets', 'Ztau', 'iJet']
+#my_types = ['PP', 'WplusJets', 'Ztau', 'iJet']
+my_types = ['PP', 'WplusJets', 'Ztau', ]
 #type_filter = lambda x: x.find('WplusJets') != -1 and x.find('Loose') == -1
-type_filter = lambda x: matches_any(x, my_types) and x.find('terLoose') == -1
+type_filter = lambda x: matches_any(x, my_types) and 'terLoose' not in x
 
 for fakeRateType, fakeRateConfig in fakerates.fakeRateDef.items():
     for sampleLabel, sampleConfig in fakeRateConfig['samples'].items():
@@ -41,7 +41,7 @@ for fakeRateType, fakeRateConfig in fakerates.fakeRateDef.items():
 
             if type_filter:
                 if not type_filter(fakeRateType):
-                    print "Skipping", fakeRateType
+                    print "Skipping by type", fakeRateType
                     continue
 
             if sample_filterfunc:

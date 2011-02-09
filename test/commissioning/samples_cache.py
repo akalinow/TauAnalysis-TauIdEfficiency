@@ -1,4 +1,4 @@
-import TauAnalysis.TauIdEfficiency.tools.castor_mirror as mirror
+import TauAnalysis.TauIdEfficiency.tools.castor_mirror2 as mirror
 
 #--------------------------------------------------------------------------------
 # Script usage: python samples_cache.py
@@ -75,13 +75,16 @@ _sample_list.extend([ qcddijet_mc, qcddijetPU156bx_mc, data_dijet_woPU, data_dij
                       qcddijet_mc_noCuts, qcddijetPU156bx_mc_noCuts ])
 #_sample_list.append(qcddijet_mc)
 #_sample_list.append(data_dijet)
-_sample_list = [ zttPU156bx_mc,
-                 qcddijet_mc, qcddijetPU156bx_mc, data_dijet_woPU, data_dijet_wPU,
-                 ppmux10PU156bx_mc, data_ppmux,
-                 wjetsPU156bx_mc, data_wjets ]
+_sample_list = [
+    zttPU156bx_mc,
+    #qcddijet_mc,
+    #qcddijetPU156bx_mc, data_dijet_woPU, data_dijet_wPU,
+    wjetsPU156bx_mc, data_wjets,
+    ppmux10PU156bx_mc, data_ppmux,
+]
 #--------------------------------------------------------------------------------
 
 if __name__ == "__main__":
     print "Copying CASTOR files to local area:", mirror.LOCAL_DIRECTORY
     # run up to 20 rfcp jobs concurrently
-    mirror.mirror_samples(_sample_list, max_jobs = 30)
+    mirror.mirror_samples(_sample_list, max_jobs = 4)
