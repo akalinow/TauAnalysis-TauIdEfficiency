@@ -51,6 +51,9 @@ const reco::PFTauDecayMode* getDecayMode_pfTau(const pat::Tau& tau,
 
 std::vector<double> PATTauVectorDecayModeValExtractor::operator()(const edm::Event& evt) const
 {
+  //std::cout << "<PATTauVectorDecayModeValExtractor::operator()>:" << std::endl;
+  //std::cout << " src = " << srcPFTau_.label() << std::endl;
+
   std::vector<double> vec;
 
   typedef edm::View<pat::Tau> patTauCollectionType;
