@@ -53,7 +53,6 @@ tauIdEffMeas_template03 = cms.PSet(
         pZetaVis = cms.string("pZetaVis()"),
 
         visMass = cms.string("p4Vis.mass()"),
-        #visMassFromJet = cms.string("(leg1().p4() + leg2().pfTauTagInfoRef().pfjetRef().p4()).mass()"),        
         Ht = cms.string("leg1.pt() + leg2.pt() + met.pt()")
     )
 )
