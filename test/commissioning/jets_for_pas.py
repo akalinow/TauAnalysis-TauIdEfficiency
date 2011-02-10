@@ -10,6 +10,10 @@ import samples_cache as samples
 import os
 import sys
 
+# Define sample names
+sample_qcddijet_data = samples.data_dijet_wPU
+sample_qcddijet_mc   = samples.qcddijetPU156bx_mc
+
 # style Definitions
 jets_CMS_PRELIMINARY_UPPER_LEFT = style.CMS_PRELIMINARY_UPPER_LEFT.Clone()
 jets_CMS_PRELIMINARY_UPPER_LEFT.SetX2(0.60)
@@ -73,7 +77,7 @@ def makeJetPlot(expression, selection, extra_labels,
         selection = selection,
         extra_labels = extra_labels,
         binning = binning,
-        normalize = "data",
+        normalize = sample_qcddijet_data.name,
         x_axis_title = x_axis_title,
         y_axis_title = "Number of Events",
         y_min = y_min, y_max = y_max, logy = logy
@@ -153,8 +157,8 @@ def makeJetPlot(expression, selection, extra_labels,
     # Make plot of (normalized) difference (Data - MC)/MC
     diff_result = plotter.plot_dist_deviations(
         distribution_result,
-        "data",
-        [ "mc_qcd_pythia8" ],
+        sample_qcddijet_data.name,
+        [ sample_qcddijet_mc.name ],
         x_axis_title = x_axis_title,
         y_axis_title = "#frac{Data - Simulation}{Simulation}",
         y_min = -0.28, y_max = +0.28, logy = False
@@ -191,17 +195,17 @@ if __name__ == "__main__":
     plotter = PlotManager()
 
     # Add each sample we want to plot/compare
-    plotter.add_sample(samples.qcd_mc_pythia8, "Simulation", **style.QCD_MC_STYLE_HIST)
-    plotter.add_sample(samples.data, "Data", **style.DATA_STYLE)
+    plotter.add_sample(sample_qcddijet_mc,   "Simulation", **style.QCD_MC_STYLE_HIST)
+    plotter.add_sample(sample_qcddijet_data, "Data",       **style.DATA_STYLE)
 
     # Normalize everything to the data luminosity
-    plotter.set_integrated_lumi(samples.data.effective_luminosity())
+    plotter.set_integrated_lumi(sample_qcddijet_data.effective_luminosity())
 
     # Build the ntuple manager
-    ntuple_manager = samples.data.build_ntuple_manager("tauIdEffNtuple")
+    ntuple_manager = sample_qcddijet_data.build_ntuple_manager("tauIdEffNtuple")
 
     # Get HLT trigger decisions
-    hlt = ntuple_manager.get_ntuple("TriggerResults")
+    hlt_ntuple = ntuple_manager.get_ntuple("patTriggerEvent")
  
     ######################################################
     ####      Plot PFJet distributions                ####
@@ -211,7 +215,7 @@ if __name__ == "__main__":
     pfTau_ntuple = ntuple_manager.get_ntuple("patPFTausDijetTagAndProbeShrinkingCone")
 
     # Basic requirement HLT + Probe object
-    pfTau_base_selection = hlt.expr('$hltJet15U > 0.5') & pfTau_ntuple.expr('$probe > 0.5')
+    pfTau_base_selection = hlt_ntuple.expr('$hltJet15Ubit > 0.5') & pfTau_ntuple.expr('$probe > 0.5')
 
     # Make plots of jetPt, jetEta and jetPhi
     makeJetPlot(
@@ -252,7 +256,7 @@ if __name__ == "__main__":
     caloTau_ntuple = ntuple_manager.get_ntuple("patCaloTausDijetTagAndProbe")
 
     # Basic requirement HLT + Probe object
-    caloTau_base_selection = hlt.expr('$hltJet15U > 0.5') & caloTau_ntuple.expr('$probe > 0.5')
+    caloTau_base_selection = hlt_ntuple.expr('$hltJet15Ubit > 0.5') & caloTau_ntuple.expr('$probe > 0.5')
 
     # Make plots of jetPt, jetEta and jetPhi
     makeJetPlot(
