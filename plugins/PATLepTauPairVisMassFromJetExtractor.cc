@@ -22,6 +22,9 @@ PATLepTauPairVisMassFromJetExtractor<T>::~PATLepTauPairVisMassFromJetExtractor()
 template<typename T>
 double PATLepTauPairVisMassFromJetExtractor<T>::operator()(const edm::Event& evt) const
 {
+  //std::cout << "<PATLepTauPairVisMassFromJetExtractor::operator()>:" << std::endl;
+  //std::cout << " src = " << src_.label() << std::endl;
+
   typedef CompositePtrCandidateT1T2MEt<T, pat::Tau> diTauType;
 
   typedef edm::View<diTauType> diTauCollectionType;
@@ -31,7 +34,13 @@ double PATLepTauPairVisMassFromJetExtractor<T>::operator()(const edm::Event& evt
   if ( diTauPairs->size() > index_ ) {
     edm::Ptr<diTauType> diTauPairPtr = diTauPairs->ptrAt(index_);
 
-    return (diTauPairPtr->leg1()->p4() + diTauPairPtr->leg2()->pfTauTagInfoRef()->pfjetRef()->p4()).mass();
+    const edm::Ptr<pat::Tau> patTauPtr = diTauPairPtr->leg2();
+    reco::Candidate::LorentzVector p4Tau;
+    if      ( patTauPtr->isPFTau()   ) p4Tau = patTauPtr->pfTauTagInfoRef()->pfjetRef()->p4();
+    else if ( patTauPtr->isCaloTau() ) p4Tau = patTauPtr->caloTauTagInfoRef()->calojetRef()->p4();
+    else assert(0);
+
+    return (diTauPairPtr->leg1()->p4() + p4Tau).mass();
   } else {
     return -1.;
   }
