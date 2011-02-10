@@ -72,7 +72,9 @@ def buildTauSequence(
     # to trigger primitives;
     # produce new collection of pat::Taus with trigger primitives embedded
     patTauTriggerMatch = triggerMatcherProtoType.clone(
-        src = cms.InputTag(patTauProducerName)
+        src = cms.InputTag(patTauProducerName),
+        filterLabels = cms.vstring('hlt1jet15U', 'hlt1jet30U', 'hlt1jet50U', 'hlt1jet70U', 'hlt1jet100U'),
+        pathNames    = cms.vstring('HLT_Jet15U', 'HLT_Jet30U', 'HLT_Jet50U', 'HLT_Jet70U', 'HLT_Jet100U')
     )
     patTauTriggerMatchName = collectionName[0]  + "TriggerMatched" + collectionName[1]
     setattr(process, patTauTriggerMatchName, patTauTriggerMatch)
@@ -185,7 +187,7 @@ def buildQCDdiJetTauSequence(
     #  o indicate whether tau-jet candidate is tag/probe
     patTauDijetTagAndProbe = cms.EDProducer("TauIdTagAndProbeProducer",
         source = cms.InputTag(retVal_tau["collection"]),
-        triggerPath = cms.string(triggerMatcherProtoType.pathNames.value()[0])
+        triggerPaths = cms.vstring('HLT_Jet15U', 'HLT_Jet30U', 'HLT_Jet50U', 'HLT_Jet70U', 'HLT_Jet100U')
     )
     patTauDijetTagAndProbeName = collectionName[0] + "DijetTagAndProbe" + collectionName[1]
     setattr(process, patTauDijetTagAndProbeName, patTauDijetTagAndProbe)
