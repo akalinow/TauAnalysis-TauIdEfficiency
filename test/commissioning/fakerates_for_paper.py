@@ -86,14 +86,13 @@ custom_CMS_PRELIMINARY_UPPER_LEFT.SetX2(style.CMS_PRELIMINARY_UPPER_LEFT.GetX2()
 custom_CMS_PRELIMINARY_UPPER_LEFT.SetY1(style.CMS_PRELIMINARY_UPPER_LEFT.GetY1() + 0.050)
 custom_CMS_PRELIMINARY_UPPER_LEFT.SetY2(style.CMS_PRELIMINARY_UPPER_LEFT.GetY2() + 0.050)
 
-style.LUMI_LABEL_UPPER_LEFT.Clear()
-style.LUMI_LABEL_UPPER_LEFT.AddText("Data, L = 36.1pb^{-1}")
-
 custom_LUMI_LABEL_UPPER_LEFT = copy.deepcopy(style.LUMI_LABEL_UPPER_LEFT)
 custom_LUMI_LABEL_UPPER_LEFT.SetX1(style.LUMI_LABEL_UPPER_LEFT.GetX1() + 0.050)
 custom_LUMI_LABEL_UPPER_LEFT.SetX2(style.LUMI_LABEL_UPPER_LEFT.GetX2() + 0.050)
 custom_LUMI_LABEL_UPPER_LEFT.SetY1(style.LUMI_LABEL_UPPER_LEFT.GetY1() + 0.050)
 custom_LUMI_LABEL_UPPER_LEFT.SetY2(style.LUMI_LABEL_UPPER_LEFT.GetY2() + 0.050)
+custom_LUMI_LABEL_UPPER_LEFT.Clear()
+custom_LUMI_LABEL_UPPER_LEFT.AddText("Data, L = 36.1pb^{-1}")
 custom_LUMI_LABEL_UPPER_LEFT.SetTextSize(0.0375)
 
 custom_SQRTS_LABEL_UPPER_LEFT = copy.deepcopy(style.SQRTS_LABEL_UPPER_LEFT)
@@ -107,8 +106,8 @@ custom_PT_CUT_LABEL_UPPER_LEFT.SetX1(style.PT_CUT_LABEL_UPPER_LEFT.GetX1() + 0.0
 custom_PT_CUT_LABEL_UPPER_LEFT.SetX2(style.PT_CUT_LABEL_UPPER_LEFT.GetX2() + 0.050)
 custom_PT_CUT_LABEL_UPPER_LEFT.SetY1(style.PT_CUT_LABEL_UPPER_LEFT.GetY1() + 0.050)
 custom_PT_CUT_LABEL_UPPER_LEFT.SetY2(style.PT_CUT_LABEL_UPPER_LEFT.GetY2() + 0.050)
-custom_PT_CUT_LABEL_UPPER_LEFT.AddText("P_{T} > 20 GeV/c")
 custom_PT_CUT_LABEL_UPPER_LEFT.Clear()
+custom_PT_CUT_LABEL_UPPER_LEFT.AddText("P_{T} > 20 GeV/c")
 
 custom_ETA_CUT_LABEL_UPPER_LEFT = copy.deepcopy(style.ETA_CUT_LABEL_UPPER_LEFT)
 custom_ETA_CUT_LABEL_UPPER_LEFT.SetX1(style.ETA_CUT_LABEL_UPPER_LEFT.GetX1() + 0.050)
@@ -519,8 +518,8 @@ if __name__ == "__main__":
     nTuples = {
         "shrinkingCone" : ntuple_manager.get_ntuple("shrinking"),
         "fixedCone"     : ntuple_manager.get_ntuple("fixed"),
-        ##"TaNC"          : ntuple_manager.get_ntuple("shrinking"), # "old" TaNC
-        "TaNC"          : ntuple_manager.get_ntuple("hpstanc"),     # "new" TaNC
+        "TaNC"          : ntuple_manager.get_ntuple("shrinking"), # "old" TaNC
+        ##"TaNC"          : ntuple_manager.get_ntuple("hpstanc"),     # "new" TaNC
         "hps"           : ntuple_manager.get_ntuple("hps"),
         "calo"          : ntuple_manager.get_ntuple("calo")
     }
@@ -528,7 +527,7 @@ if __name__ == "__main__":
     hlt = ntuple_manager.get_ntuple("patTriggerEvent")
 
     # Define binning options
-    binning_pt  = (0, 10,  15,  20,  25, 30, 40, 50, 65, 80, 100)
+    binning_pt  = (0, 10,  15,  20,  25, 30, 40, 60, 100, 200)
     binning_eta = (15, -2.5,  +2.5)
     binning_phi = (15, -3.14, +3.14)
 
@@ -549,48 +548,48 @@ if __name__ == "__main__":
             'style_name' : "OneOrThreeProng",
             'nice_name'  : ""
         },
-        ##"TaNC_loose" : { # "old" TaNC
-        ##    'expr'       : nTuples["TaNC"].expr('$byLeadTrackFinding > 0.5 & $byLeadTrackPtCut > 0.5 & $byTaNCfrOnePercent > 0.5'),
-        ##    'style_name' : "byTaNCfrOnePercent",
-        ##    'nice_name'  : "TaNC loose"
-        ##},
-        ##"TaNC_medium" : {
-        ##    'expr'       : nTuples["TaNC"].expr('$byLeadTrackFinding > 0.5 & $byLeadTrackPtCut > 0.5 & $byTaNCfrHalfPercent > 0.5'),
-        ##    'style_name' :"byTaNCfrHalfPercent",
-        ##    'nice_name'  : "TaNC medium"
-        ##},
-        ##"TaNC_tight" : {
-        ##    'expr'       : nTuples["TaNC"].expr('$byLeadTrackFinding > 0.5 & $byLeadTrackPtCut > 0.5 & $byTaNCfrQuarterPercent > 0.5'),
-        ##    'style_name' : "byTaNCfrQuarterPercent",
-        ##    'nice_name'  : "TaNC tight"
-        ##},
-        "TaNC_loose" : { # "new" TaNC
-            'expr'       : nTuples["TaNC"].expr('$byLeadTrackFinding > 0.5 & $byLeadTrackPtCut > 0.5 & $byTaNCloose > 0.5 & $pt > 15.0'),
-            'style_name' : "byTaNCloose",
+        "TaNC_loose" : { # "old" TaNC
+            'expr'       : nTuples["TaNC"].expr('$byLeadTrackFinding > 0.5 & $byLeadTrackPtCut > 0.5 & $byTaNCfrOnePercent > 0.5 & $pt > 15.0'),
+            'style_name' : "byTaNCfrOnePercent",
             'nice_name'  : "TaNC loose"
         },
         "TaNC_medium" : {
-            'expr'       : nTuples["TaNC"].expr('$byLeadTrackFinding > 0.5 & $byLeadTrackPtCut > 0.5 & $byTaNCmedium > 0.5 & $pt > 15.0'),
-            'style_name' :"byTaNCmedium",
+            'expr'       : nTuples["TaNC"].expr('$byLeadTrackFinding > 0.5 & $byLeadTrackPtCut > 0.5 & $byTaNCfrHalfPercent > 0.5 & $pt > 15.0'),
+            'style_name' :"byTaNCfrHalfPercent",
             'nice_name'  : "TaNC medium"
         },
         "TaNC_tight" : {
-            'expr'       : nTuples["TaNC"].expr('$byLeadTrackFinding > 0.5 & $byLeadTrackPtCut > 0.5 & $byTaNCtight > 0.5 & $pt > 15.0'),
-            'style_name' : "byTaNCtight",
+            'expr'       : nTuples["TaNC"].expr('$byLeadTrackFinding > 0.5 & $byLeadTrackPtCut > 0.5 & $byTaNCfrQuarterPercent > 0.5 & $pt > 15.0'),
+            'style_name' : "byTaNCfrQuarterPercent",
             'nice_name'  : "TaNC tight"
         },
+        ##"TaNC_loose" : { # "new" TaNC
+        ##    'expr'       : nTuples["TaNC"].expr('$byLeadTrackFinding > 0.5 & $byLeadTrackPtCut > 0.5 & $byTaNCloose > 0.5 & $pt > 15.0'),
+        ##    'style_name' : "byTaNCloose",
+        ##    'nice_name'  : "TaNC loose"
+        ##},
+        ##"TaNC_medium" : {
+        ##    'expr'       : nTuples["TaNC"].expr('$byLeadTrackFinding > 0.5 & $byLeadTrackPtCut > 0.5 & $byTaNCmedium > 0.5 & $pt > 15.0'),
+        ##    'style_name' :"byTaNCmedium",
+        ##    'nice_name'  : "TaNC medium"
+        ##},
+        ##"TaNC_tight" : {
+        ##    'expr'       : nTuples["TaNC"].expr('$byLeadTrackFinding > 0.5 & $byLeadTrackPtCut > 0.5 & $byTaNCtight > 0.5 & $pt > 15.0'),
+        ##    'style_name' : "byTaNCtight",
+        ##    'nice_name'  : "TaNC tight"
+        ##},
         "hps_loose" : {
-            'expr'       : nTuples["hps"].expr('$byLeadTrackFinding > 0.5 & $byIsolationLoose > 0.5'),
+            'expr'       : nTuples["hps"].expr('$byLeadTrackFinding > 0.5 & $byIsolationLoose > 0.5 & $pt > 15.0'),
             'style_name' : "byIsolationLoose",
             'nice_name'  : "HPS loose"
         },
         "hps_medium" : {
-            'expr'       : nTuples["hps"].expr('$byLeadTrackFinding > 0.5 & $byIsolationMedium > 0.5'),
+            'expr'       : nTuples["hps"].expr('$byLeadTrackFinding > 0.5 & $byIsolationMedium > 0.5 & $pt > 15.0'),
             'style_name' : "byIsolationMedium",
             'nice_name'  : "HPS medium"
         },
         "hps_tight" : {
-            'expr'       : nTuples["hps"].expr('$byLeadTrackFinding > 0.5 & $byIsolationTight > 0.5'),
+            'expr'       : nTuples["hps"].expr('$byLeadTrackFinding > 0.5 & $byIsolationTight > 0.5 & $pt > 15.0'),
             'style_name' : "byIsolationTight",
             'nice_name'  : "HPS tight"
         },
@@ -612,26 +611,29 @@ if __name__ == "__main__":
     extra_labels['hps_tight']     = [ algo_label_hps_tight   ]
     extra_labels['calo']          = [ algo_label_calo        ]
         
-    #for algorithm in numerators:
-    ##for algorithm_discriminator in [ 'TaNC_loose',  'hps_loose',
-    ##                                 'TaNC_medium', 'hps_medium',
-    ##                                 'TaNC_tight',  'hps_tight' ]:
-    for algorithm_discriminator in [ 'TaNC_loose' ]: 
+    for algorithm_discriminator in [ 'TaNC_loose', 'TaNC_medium', 'TaNC_tight',
+                                     'HPS_loose',  'HPS_medium',  'HPS_tight'  ]: 
 
         import sys
         if sys.argv[1:] != [] and (not algorithm in sys.argv[1:]):
             continue
-        
-        algorithm     = algorithm_discriminator[:algorithm_discriminator.find("_")]
-        discriminator = algorithm_discriminator[algorithm_discriminator.find("_") + 1:]
+
+        algorithm     = algorithm_discriminator
+        discriminator = ""
+        if algorithm_discriminator.find("_") != -1:
+            algorithm     = algorithm_discriminator[:algorithm_discriminator.find("_")]
+            discriminator = algorithm_discriminator[algorithm_discriminator.find("_") + 1:]
         print("algorithm = %s, discriminator = %s" % (algorithm, discriminator))
         
         # Define the denominators
+        denominator_jetId     = nTuples[algorithm].expr("$jetIdLoose > 0.5")
         denominator_e_mu_veto = nTuples[algorithm].expr("$pfElectronMVA < 0.6 & $againstMuon > 0.5")
-        denominator_dijet     = nTuples[algorithm].expr(denominator_phase_space) & denominator_e_mu_veto \
+        denominator_dijet     = nTuples[algorithm].expr(denominator_phase_space) & denominator_jetId & denominator_e_mu_veto \
                                & hlt.expr('$hltJet15Ubit > 0.5') & nTuples[algorithm].expr("$probe > 0.5")
-        denominator_ppmux     = nTuples[algorithm].expr(denominator_phase_space) & denominator_e_mu_veto
-        denominator_wjets     = nTuples[algorithm].expr(denominator_phase_space) & denominator_e_mu_veto
+        denominator_ppmux     = nTuples[algorithm].expr(denominator_phase_space) & denominator_jetId & denominator_e_mu_veto \
+                               & hlt.expr('$hltMu9bit > 0.5') 
+        denominator_wjets     = nTuples[algorithm].expr(denominator_phase_space) & denominator_jetId & denominator_e_mu_veto
+        ##                     & hlt.expr('$hltMu15v1bit > 0.5')
 
         extra_labels_pt  = copy.deepcopy(extra_labels[algorithm_discriminator])
         extra_labels_pt.append(style.ETA_CUT_LABEL_UPPER_LEFT)
