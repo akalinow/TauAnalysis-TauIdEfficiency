@@ -422,35 +422,35 @@ def buildSequenceTauIdEffMeasSpecific(process,
     retVal = {}
     retVal["sequence"] = sequence
     retVal["patTauCollections"] = [
-        composeModuleName([selTauCollectionName,                                                  "cumulative"]),
-        composeModuleName([selTauCollectionName,                               "sysTauJetEnUp",   "cumulative"]),
-        composeModuleName([selTauCollectionName,                               "sysTauJetEnDown", "cumulative"])
+        composeModuleName([selTauCollectionName,                                                             "cumulative"]),
+        composeModuleName([selTauCollectionName,                               "sysTauJetEnUp",              "cumulative"]),
+        composeModuleName([selTauCollectionName,                               "sysTauJetEnDown",            "cumulative"])
     ]        
     retVal["muTauPairCollections"] = [
-        composeModuleName([selectedMuTauPairsModuleName,                                          "cumulative"]),
-        composeModuleName([selectedMuTauPairsModuleName,                       "sysMuonPtUp",     "cumulative"]),
-        composeModuleName([selectedMuTauPairsModuleName,                       "sysMuonPtDown",   "cumulative"]),
-        composeModuleName([selectedMuTauPairsModuleName,                       "sysTauJetEnUp",   "cumulative"]),
-        composeModuleName([selectedMuTauPairsModuleName,                       "sysTauJetEnDown", "cumulative"]),
-        composeModuleName([selectedMuTauPairsModuleName,                       "sysJetEnUp",      "cumulative"]),
-        composeModuleName([selectedMuTauPairsModuleName,                       "sysJetEnDown",    "cumulative"])
+        composeModuleName([selectedMuTauPairsModuleName,                                                     "cumulative"]),
+        composeModuleName([selectedMuTauPairsModuleName,                       "sysMuonPtUp",                "cumulative"]),
+        composeModuleName([selectedMuTauPairsModuleName,                       "sysMuonPtDown",              "cumulative"]),
+        composeModuleName([selectedMuTauPairsModuleName,                       "sysTauJetEnUp",              "cumulative"]),
+        composeModuleName([selectedMuTauPairsModuleName,                       "sysTauJetEnDown",            "cumulative"]),
+        composeModuleName([selectedMuTauPairsModuleName,                       "sysJetEnUp",                 "cumulative"]),
+        composeModuleName([selectedMuTauPairsModuleName,                       "sysJetEnDown",               "cumulative"])
     ]
     if applyZrecoilCorrection:
         retVal["muTauPairCollections"].extend([
-            composeModuleName([selectedMuTauPairsZllRecoilCorrectedModuleName,                    "cumulative"]),
-            composeModuleName([selectedMuTauPairsZllRecoilCorrectedModuleName, "sysMuonPtUp",     "cumulative"]),
-            composeModuleName([selectedMuTauPairsZllRecoilCorrectedModuleName, "sysMuonPtDown",   "cumulative"]),
-            composeModuleName([selectedMuTauPairsZllRecoilCorrectedModuleName, "sysTauJetEnUp",   "cumulative"]),
-            composeModuleName([selectedMuTauPairsZllRecoilCorrectedModuleName, "sysTauJetEnDown", "cumulative"]),
-            composeModuleName([selectedMuTauPairsZllRecoilCorrectedModuleName, "sysJetEnUp",      "cumulative"]),
-            composeModuleName([selectedMuTauPairsZllRecoilCorrectedModuleName, "sysJetEnDown",    "cumulative"]),
-            composeModuleName([selectedMuTauPairsZllRecoilCorrectedModuleName, "sysUp",           "cumulative"]),
-            composeModuleName([selectedMuTauPairsZllRecoilCorrectedModuleName, "sysDown",         "cumulative"])
+            composeModuleName([selectedMuTauPairsZllRecoilCorrectedModuleName,                               "cumulative"]),
+            composeModuleName([selectedMuTauPairsZllRecoilCorrectedModuleName, "sysMuonPtUp",                "cumulative"]),
+            composeModuleName([selectedMuTauPairsZllRecoilCorrectedModuleName, "sysMuonPtDown",              "cumulative"]),
+            composeModuleName([selectedMuTauPairsZllRecoilCorrectedModuleName, "sysTauJetEnUp",              "cumulative"]),
+            composeModuleName([selectedMuTauPairsZllRecoilCorrectedModuleName, "sysTauJetEnDown",            "cumulative"]),
+            composeModuleName([selectedMuTauPairsZllRecoilCorrectedModuleName, "sysJetEnUp",                 "cumulative"]),
+            composeModuleName([selectedMuTauPairsZllRecoilCorrectedModuleName, "sysJetEnDown",               "cumulative"]),
+            composeModuleName([selectedMuTauPairsZllRecoilCorrectedModuleName, "sysZllRecoilCorrectionUp",   "cumulative"]),
+            composeModuleName([selectedMuTauPairsZllRecoilCorrectedModuleName, "sysZllRecoilCorrectionDown", "cumulative"])
         ])
     retVal["patJetCollections"] = [
-        composeModuleName([selectedPatJetsEt20ModuleName,                                         "cumulative"]),
-        composeModuleName([selectedPatJetsEt20ModuleName,                      "sysJetEnUp",      "cumulative"]),
-        composeModuleName([selectedPatJetsEt20ModuleName,                      "sysJetEnDown",    "cumulative"])
+        composeModuleName([selectedPatJetsEt20ModuleName,                                                    "cumulative"]),
+        composeModuleName([selectedPatJetsEt20ModuleName,                      "sysJetEnUp",                 "cumulative"]),
+        composeModuleName([selectedPatJetsEt20ModuleName,                      "sysJetEnDown",               "cumulative"])
     ]    
     return retVal
     
