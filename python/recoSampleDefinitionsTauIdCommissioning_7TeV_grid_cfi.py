@@ -6,14 +6,14 @@ import TauAnalysis.DQMTools.plotterStyleDefinitions_cfi as styles
 
 # List of samples to run in the analysis
 SAMPLES_TO_RUN = [
-    'data_MinBias_Commissioning_Jun14ReReco',
-    'data_JetMETTau_Run2010Ai_Sep17ReReco',
-    'data_JetMET_Run2010Aii_Sep17ReReco',
+    #'data_MinBias_Commissioning_Jun14ReReco',
+    #'data_JetMETTau_Run2010Ai_Sep17ReReco',
+    #'data_JetMET_Run2010Aii_Sep17ReReco',
     'data_Jet_Run2010B_Nov4ReReco',
-    'data_Mu_Run2010A_Nov4ReReco',
-    'data_Mu_Run2010B_Nov4ReReco',
-    'Ztautau',
-    'ZtautauPU156bx',
+    #'data_Mu_Run2010A_Nov4ReReco',
+    #'data_Mu_Run2010B_Nov4ReReco',
+    #'Ztautau',
+    #'ZtautauPU156bx',
     'qcdDiJetPtHat5to15',
     'qcdDiJetPtHat5to15PU156bx',
     'qcdDiJetPtHat15to30',
@@ -22,21 +22,27 @@ SAMPLES_TO_RUN = [
     'qcdDiJetPtHat30to50PU156bx',
     'qcdDiJetPtHat50to80',
     'qcdDiJetPtHat50to80PU156bx',
-    'PPmuXptGt20Mu10',
-    'PPmuXptGt20Mu10PU156bx',
-    'PPmuXptGt20Mu15',
-    'PPmuXptGt20Mu15PU156bx',
-    'WplusJets',
-    'WplusJetsPU156bx'
+    'qcdDiJetPtHat80to120',
+    'qcdDiJetPtHat80to120PU156bx',
+    'qcdDiJetPtHat120to170',
+    'qcdDiJetPtHat120to170PU156bx',
+    'qcdDiJetPtHat170to300',
+    'qcdDiJetPtHat170to300PU156bx',
+    #'PPmuXptGt20Mu10',
+    #'PPmuXptGt20Mu10PU156bx',
+    #'PPmuXptGt20Mu15',
+    #'PPmuXptGt20Mu15PU156bx',
+    #'WplusJets',
+    #'WplusJetsPU156bx'
 ]
 
 JOBS_TO_RUN = [
     'qcdDiJet',
-    'qcdDiJet_mcNoCuts',
-    'qcdMuEnriched',
-    'qcdMuEnriched_mcNoCuts',
-    'WplusJets',
-    'WplusJets_mcNoCuts'
+    #'qcdDiJet_mcNoCuts',
+    #'qcdMuEnriched',
+    #'qcdMuEnriched_mcNoCuts',
+    #'WplusJets',
+    #'WplusJets_mcNoCuts'
 ]
 
 CONFIG_FILES = {
@@ -215,6 +221,48 @@ RECO_SAMPLES = {
     },
     'qcdDiJetPtHat50to80PU156bx' : {
         'datasetpath'   : "/QCD_Pt_50to80_TuneZ2_7TeV_pythia6/Fall10-E7TeV_ProbDist_2010Data_BX156_START38_V12-v1/GEN-SIM-RECO",
+        'dbs_url'       : "http://cmsdbsprod.cern.ch/cms_dbs_prod_global/servlet/DBSServlet",
+        'jobs'          : [ 'qcdDiJet' ], 
+        'type'          : 'MC',
+        'hlt'           : 'REDIGI38XPU'
+    },
+    'qcdDiJetPtHat80to120' : {
+        'datasetpath'   : "/QCD_Pt_80to120_TuneZ2_7TeV_pythia6/Fall10-START38_V12-v1/GEN-SIM-RECO",
+        'dbs_url'       : "http://cmsdbsprod.cern.ch/cms_dbs_prod_global/servlet/DBSServlet",
+        'jobs'          : [ 'qcdDiJet' ], 
+        'type'          : 'MC',
+        'hlt'           : 'REDIGI38X'
+    },
+    'qcdDiJetPtHat80to120PU156bx' : {
+        'datasetpath'   : "/QCD_Pt_80to120_TuneZ2_7TeV_pythia6/Fall10-E7TeV_ProbDist_2010Data_BX156_START38_V12-v1/GEN-SIM-RECO",
+        'dbs_url'       : "http://cmsdbsprod.cern.ch/cms_dbs_prod_global/servlet/DBSServlet",
+        'jobs'          : [ 'qcdDiJet' ], 
+        'type'          : 'MC',
+        'hlt'           : 'REDIGI38XPU'
+    },
+    'qcdDiJetPtHat120to170' : {
+        'datasetpath'   : "/QCD_Pt_120to170_TuneZ2_7TeV_pythia6/Fall10-START38_V12-v1/GEN-SIM-RECO",
+        'dbs_url'       : "http://cmsdbsprod.cern.ch/cms_dbs_prod_global/servlet/DBSServlet",
+        'jobs'          : [ 'qcdDiJet' ], 
+        'type'          : 'MC',
+        'hlt'           : 'REDIGI38X'
+    },
+    'qcdDiJetPtHat120to170PU156bx' : {
+        'datasetpath'   : "/QCD_Pt_120to170_TuneZ2_7TeV_pythia6/Fall10-E7TeV_ProbDist_2010Data_BX156_START38_V12-v1/GEN-SIM-RECO",
+        'dbs_url'       : "http://cmsdbsprod.cern.ch/cms_dbs_prod_global/servlet/DBSServlet",
+        'jobs'          : [ 'qcdDiJet' ], 
+        'type'          : 'MC',
+        'hlt'           : 'REDIGI38XPU'
+    },
+    'qcdDiJetPtHat170to300' : {
+        'datasetpath'   : "/QCD_Pt_170to300_TuneZ2_7TeV_pythia6/Fall10-START38_V12-v1/GEN-SIM-RECO",
+        'dbs_url'       : "http://cmsdbsprod.cern.ch/cms_dbs_prod_global/servlet/DBSServlet",
+        'jobs'          : [ 'qcdDiJet' ], 
+        'type'          : 'MC',
+        'hlt'           : 'REDIGI38X'
+    },
+    'qcdDiJetPtHat170to300PU156bx' : {
+        'datasetpath'   : "/QCD_Pt_170to300_TuneZ2_7TeV_pythia6/Fall10-E7TeV_ProbDist_2010Data_BX156_START38_V12-v1/GEN-SIM-RECO",
         'dbs_url'       : "http://cmsdbsprod.cern.ch/cms_dbs_prod_global/servlet/DBSServlet",
         'jobs'          : [ 'qcdDiJet' ], 
         'type'          : 'MC',
