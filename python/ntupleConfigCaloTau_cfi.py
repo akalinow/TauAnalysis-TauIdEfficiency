@@ -62,8 +62,16 @@ caloTaus_recInfo = cms.PSet(
 
         # flags for tag/probe and Pt_index for distinguishing between
         # highest Pt, second highest Pt and third highest Pt jet
-        tag = cms.string("userFloat('tag')"),
-        probe = cms.string("userFloat('probe')"),
+        tagJet15U = cms.string("userFloat('tagJet15U')"),
+        probeJet15U = cms.string("userFloat('probeJet15U')"),
+        tagJet30U = cms.string("userFloat('tagJet30U')"),
+        probeJet30U = cms.string("userFloat('probeJet30U')"),
+        tagJet50U = cms.string("userFloat('tagJet50U')"),
+        probeJet50U = cms.string("userFloat('probeJet50U')"),
+        tagJet70U = cms.string("userFloat('tagJet70U')"),
+        probeJet70U = cms.string("userFloat('probeJet70U')"),
+        tagJet100U = cms.string("userFloat('tagJet100U')"),
+        probeJet100U = cms.string("userFloat('probeJet100U')"),
         ptIndex = cms.string("userFloat('pt_index')"),
         
         # tau id. discriminators based on leading track
