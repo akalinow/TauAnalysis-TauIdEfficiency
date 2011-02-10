@@ -26,13 +26,13 @@ def unixtime_from_timestamp(time_str):
     parsed = time.strptime(time_str, format)
     return parsed
 
-def local_version(castor_file):
+def local_version(castor_file, local_directory = LOCAL_DIRECTORY):
     ''' Map a castor file to a local file '''
-    return _CASTOR_MATCHER.sub(LOCAL_DIRECTORY, castor_file)
+    return _CASTOR_MATCHER.sub(local_directory, castor_file)
 
-def local_version_current(castor_file):
+def local_version_current(castor_file, local_directory = LOCAL_DIRECTORY):
     ''' Check if the local copy of [castor_file] exists and is up to date '''
-    local_file = local_version(castor_file)
+    local_file = local_version(castor_file, local_directory)
     if not os.path.exists(local_file):
         return False
     local_stat = os.stat(local_file)
@@ -61,30 +61,31 @@ def local_version_current(castor_file):
 
 
 class CopyWorker(threading.Thread):
-    def __init__(self, work_queue, results_queue):
+    def __init__(self, work_queue, results_queue, local_directory):
         super(CopyWorker, self).__init__()
-        self.work_queue = work_queue
+        self.work_queue = work_queue        
         self.results_queue = results_queue
+        self.local_directory = local_directory
     def run(self):
         while True:
             try:
                 castor_file = self.work_queue.get()
                 if castor_file is None:
                     break
-                self.mirror(castor_file)
+                self.mirror(castor_file, self.local_directory)
             except KeyboardInterrupt:
                 sys.exit(2)
             finally:
                 self.work_queue.task_done()
 
-    def mirror(self, castor_file):
+    def mirror(self, castor_file, local_directory):
         ''' Initiate copy a castor file to the local directory.
 
         Returns a dictionary containing the background subprocess
         and information about the file.
         '''
         # Get file path for new file
-        local_path = local_version(castor_file)
+        local_path = local_version(castor_file, local_directory)
         local_dirname = os.path.dirname(local_path)
         # Create the directories if necessary
         if not os.path.isdir(local_dirname):
@@ -107,7 +108,7 @@ def print_results(results_queue):
         finally:
             results_queue.task_done()
 
-def mirror_files(castor_files, max_jobs=10):
+def mirror_files(castor_files, local_directory = LOCAL_DIRECTORY, max_jobs=10):
     ''' Copy [castor_files] to local disk.
 
     max_jobs specifies maximum number of concurrent copies
@@ -115,7 +116,7 @@ def mirror_files(castor_files, max_jobs=10):
     work_queue = Queue.Queue()
     results_queue = Queue.Queue()
     print "Building %i worker threads" % max_jobs
-    workers = [CopyWorker(work_queue, results_queue) for i in range(max_jobs)]
+    workers = [CopyWorker(work_queue, results_queue, local_directory) for i in range(max_jobs)]
     # Start all our workers
     map(CopyWorker.start, workers)
     results_worker = threading.Thread(
@@ -131,10 +132,10 @@ def mirror_files(castor_files, max_jobs=10):
     results_queue.put(None)
     results_queue.join()
 
-def needs_local_copy(castor_files, verbose=False):
+def needs_local_copy(castor_files, local_directory = LOCAL_DIRECTORY, verbose=False):
     ''' Yield files from castor files that aren't current on local disk'''
     for file in castor_files:
-        if not local_version_current(file):
+        if not local_version_current(file, local_directory):
             yield file
 
 def expand_file_list(fileEntries):
@@ -152,17 +153,17 @@ def castor_files_in(sample):
             if is_on_castor(file):
                 yield clean_name(file)
 
-def mirror_sample(sample, max_jobs=10):
+def mirror_sample(sample, local_directory = LOCAL_DIRECTORY, max_jobs=10):
     ''' Mirror files associated witha  sample'''
-    mirror_files(needs_local_copy(castor_files_in(sample)), max_jobs)
+    mirror_files(needs_local_copy(castor_files_in(sample), local_directory), local_directory, max_jobs)
 
-def mirror_samples(samples, max_jobs=10):
+def mirror_samples(samples, local_directory = LOCAL_DIRECTORY, max_jobs=10):
     ''' Mirror all the files associated to a list of samples '''
-    sample_files = [needs_local_copy(castor_files_in(sample))
+    sample_files = [needs_local_copy(castor_files_in(sample), local_directory)
                     for sample in samples]
-    mirror_files(itertools.chain(*sample_files), max_jobs)
+    mirror_files(itertools.chain(*sample_files), local_directory, max_jobs)
 
-def update_sample_to_use_local_files(sample, tiny_mode=False, only_local=False):
+def update_sample_to_use_local_files(sample, local_directory = LOCAL_DIRECTORY, tiny_mode=False, only_local=False):
     ''' Update a sample to use any available local files '''
     if tiny_mode:
         print "Warning, tiny mode is on! Only taking 1 file"
@@ -182,10 +183,10 @@ def update_sample_to_use_local_files(sample, tiny_mode=False, only_local=False):
                 # strip rfio:
                 clean_file = clean_name(input_file)
                 # Check if it is cached locally
-                if local_version_current(clean_file):
+                if local_version_current(clean_file, local_directory):
                     #print "is current"
                     local_count += 1
-                    input_file = "file:%s" % local_version(clean_file)
+                    input_file = "file:%s" % local_version(clean_file, local_directory)
                 else:
                     if only_local:
                         skipped_count += 1
