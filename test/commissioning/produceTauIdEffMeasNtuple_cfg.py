@@ -23,7 +23,8 @@ process.source = cms.Source("PoolSource",
         ##'file:/data1/veelken/CMSSW_3_6_x/skims/Ztautau_1_1_sXK.root'
         ##'file:/data1/veelken/CMSSW_3_8_x/skims/test/mcDYttPU156bx_GEN_SIM_RECO_1_1_1VV.root'
         ##'file:/data1/veelken/CMSSW_3_8_x/skims/AHtoMuTau/selEvents_AHtoMuTau_HPSloose_friis_RECO.root'
-        'file:/data1/veelken/CMSSW_3_8_x/skims/test/skim_ZtautauPU156bx_chunk_1_8a2f.root'
+        ##'file:/data1/veelken/CMSSW_3_8_x/skims/test/skim_ZtautauPU156bx_chunk_1_8a2f.root'
+        'file:/data1/veelken/CMSSW_3_8_x/skims/test/skim_data_Mu_Run2010B_Nov4ReReco_chunk_8_7b59.root'
     ),
     skipEvents = cms.untracked.uint32(0)            
 )
