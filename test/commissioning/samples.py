@@ -7,7 +7,7 @@ samples.py
 
 Central defintion of data sources for commissioning.
 
-$Id: samples.py,v 1.38 2011/01/24 14:29:08 veelken Exp $
+$Id: samples.py,v 1.39 2011/01/26 17:22:13 veelken Exp $
 
 '''
 
@@ -65,7 +65,10 @@ qcddijet_mc = build_sample(
         #"mcQCDdiJetPtHat5to15",
         "mcQCDdiJetPtHat15to30",
         "mcQCDdiJetPtHat30to50",
-        "mcQCDdiJetPtHat50to80"
+        "mcQCDdiJetPtHat50to80",
+        "mcQCDdiJetPtHat80to120",
+        "mcQCDdiJetPtHat120to170",
+        "mcQCDdiJetPtHat170to300"
     ],
     alias_map = dijetSampleAliasMap)
 qcddijet_mc_noCuts = build_sample(
@@ -83,7 +86,10 @@ qcddijetPU156bx_mc = build_sample(
         #"mcQCDdiJetPtHat5to15PU156bx",
         "mcQCDdiJetPtHat15to30PU156bx",
         "mcQCDdiJetPtHat30to50PU156bx",
-        "mcQCDdiJetPtHat50to80PU156bx"
+        "mcQCDdiJetPtHat50to80PU156bx",
+        "mcQCDdiJetPtHat80to120PU156bx",
+        "mcQCDdiJetPtHat120to170PU156bx",
+        "mcQCDdiJetPtHat170to300PU156bx"
     ],
     alias_map = dijetSampleAliasMap)
 qcddijetPU156bx_mc_noCuts = build_sample(
