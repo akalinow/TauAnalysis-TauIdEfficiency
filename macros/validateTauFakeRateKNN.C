@@ -169,17 +169,16 @@ void validateTauFakeRateKNN(TString inputFilePath)
 
   std::string ptName = "Pt";
   std::string etaName = "AbsEta";
-  // Figure out if it is JetPt instead of tau pt
+  // Figure out if it is jetPt instead or tau Pt
   if (testTree->GetBranch("JetPt")) {
     std::cout << "Using Jet variables" << std::endl;
     ptName = "JetPt";
     etaName = "AbsJetEta";
   }
 
-  //makePlot(canvas, "validateTauFakeRateKNN_JetPt.png", testTree, "JetPt", 10, 0., 100.);
-  //makePlot(canvas, "validateTauFakeRateKNN_JetEta.png", testTree, "JetEta", 10, -2.5, +2.5);
   makePlot(canvas, "validateTauFakeRateKNN_JetPt.png", testTree, ptName, 10, 0., 100.);
   makePlot(canvas, "validateTauFakeRateKNN_JetEta.png", testTree, etaName, 10, -2.5, +2.5);
+  makePlot(canvas, "validateTauFakeRateKNN_JetRadius.png", testTree, "jetWidth", 10, -0.01, 0.51);
   
   delete file;
 
