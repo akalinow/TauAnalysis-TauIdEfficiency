@@ -30,6 +30,10 @@ def configurePrePatProduction(process, pfCandidateCollection = "particleFlow",
                 for builder in builders:
                     builder.pfCandSrc = cms.InputTag(pfCandidateCollection)
     process.prePatProductionSequence += process.PFTau
+
+    # CV: discriminator against calo. muons currently disabled per default;
+    #     add manually
+    process.prePatProductionSequence += process.hpsTancTausDiscriminationAgainstCaloMuon
     #--------------------------------------------------------------------------------
 
     #--------------------------------------------------------------------------------
