@@ -8,9 +8,9 @@
  *
  * \author Christian Veelken, Evan Friis, UC Davis
  *
- * \version $Revision: 1.2 $
+ * \version $Revision: 1.3 $
  *
- * $Id: ObjValEDNtupleProducer.h,v 1.2 2010/05/27 16:24:26 veelken Exp $
+ * $Id: ObjValEDNtupleProducer.h,v 1.3 2010/09/28 11:23:39 jkolb Exp $
  *
  */
 
@@ -23,6 +23,8 @@
 #include "TauAnalysis/BgEstimationTools/interface/ObjValExtractorBase.h"
 #include "TauAnalysis/BgEstimationTools/interface/ObjValVectorExtractorBase.h"
 
+#include "TauAnalysis/DQMTools/interface/generalAuxFunctions.h"
+
 #include <string>
 #include <vector>
 #include <memory>
@@ -32,7 +34,9 @@ class ObjValEDNtupleProducer : public edm::EDProducer
   struct ntupleEntryType
   {
     ntupleEntryType(const std::string& ntupleName, ObjValExtractorBase* objValExtractor)
-      : ntupleName_(ntupleName), objValExtractor_(objValExtractor) {}
+      : ntupleName_(ntupleName), 
+	objValExtractor_(objValExtractor) 
+    {}
     ~ntupleEntryType() { delete objValExtractor_; }
     std::string ntupleName_;
     ObjValExtractorBase* objValExtractor_;
@@ -40,11 +44,19 @@ class ObjValEDNtupleProducer : public edm::EDProducer
   
   struct ntupleVectorEntryType
   {
-    ntupleVectorEntryType(const std::string& ntupleName, ObjValVectorExtractorBase* objValExtractor)
-      : ntupleName_(ntupleName), objValExtractor_(objValExtractor) {}
+    ntupleVectorEntryType(const std::string& ntupleName, ObjValVectorExtractorBase* objValExtractor, 
+			  const std::vector<unsigned>& indices)
+      : ntupleName_(ntupleName), 
+	objValExtractor_(objValExtractor),
+	indices_(indices)
+    {
+      //std::cout << "<ntupleVectorEntryType>:" << std::endl;
+      //std::cout << " indices = " << format_vunsigned(indices_) << std::endl;
+    }
     ~ntupleVectorEntryType() { delete objValExtractor_; }
     std::string ntupleName_;
     ObjValVectorExtractorBase* objValExtractor_;
+    std::vector<unsigned> indices_;
   };
 
  public:

@@ -1,20 +1,23 @@
 #include "TauAnalysis/TauIdEfficiency/plugins/ObjValEDNtupleProducer.h"
+
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 
+typedef std::vector<unsigned> vunsigned;
+
 namespace {
-// Function to build a nice name for the column
-std::string createBranchName(const std::string& ntupleName, const std::string& collection,
-                             const std::string& varName, const int index=-1)
-{
-  std::ostringstream out;
-  out << ntupleName << "#" << collection;
-  // Determine if this collection is indexed
-  if ( index >= 0 ) {
-    out << "@idx" << index;
+  // Function to build a nice name for the column
+  std::string createBranchName(const std::string& ntupleName, const std::string& collection,
+                               const std::string& varName, const int index=-1)
+  {
+    std::ostringstream out;
+    out << ntupleName << "#" << collection;
+    // Determine if this collection is indexed
+    if ( index >= 0 ) {
+      out << "@idx" << index;
+    }
+    out << "#" << varName;
+    return out.str();
   }
-  out << "#" << varName;
-  return out.str();
-}
 }
 
 ObjValEDNtupleProducer::ObjValEDNtupleProducer(const edm::ParameterSet& cfg)
@@ -35,16 +38,14 @@ ObjValEDNtupleProducer::ObjValEDNtupleProducer(const edm::ParameterSet& cfg)
     std::string pluginTypeObjValExtractor = cfgObjValExtractor.getParameter<std::string>("pluginType");
     edm::InputTag cfgCollection = cfgObjValExtractor.getParameter<edm::InputTag>("src");
 
-    // Determine if we want the whole collection or just specific indices. Default case: index = 0 only
-    typedef std::vector<unsigned> vunsigned;
+    bool isVectorExtractor = cfgObjValExtractor.getParameter<bool>("vector");
+    
+    // Determine if we want the whole collection or just specific indices. 
+    // Default case: index = 0 only
     vunsigned indices;
-
     if ( cfgObjValExtractor.exists("indices") ) {
-      vunsigned cfgIndices = cfgObjValExtractor.getParameter<vunsigned>("indices");
-      for ( vunsigned::const_iterator index = cfgIndices.begin(); index != cfgIndices.end(); ++index ) {
-        indices.push_back(*index);
-      }
-    } else if ( cfgObjValExtractor.exists("vector") && cfgObjValExtractor.getParameter<bool>("vector") == true ) {
+      indices = cfgObjValExtractor.getParameter<vunsigned>("indices");
+    } else if ( isVectorExtractor ) {
       // if we want all objects, indicate it by leaving indices empty
     } else {
       // default case = take first index
@@ -65,9 +66,17 @@ ObjValEDNtupleProducer::ObjValEDNtupleProducer(const edm::ParameterSet& cfg)
       tempNtupleCfg.addParameter<std::string>("value", columnCfg);
 
       // Check if we are taking specific indices
-      if ( indices.size() ) {
+      if ( isVectorExtractor ) {
+	// Build a vector getter
+        ObjValVectorExtractorBase* objValExtractor =
+            ObjValVectorExtractorPluginFactory::get()->create(pluginTypeObjValExtractor, tempNtupleCfg);
+        std::string niceColumnName = createBranchName(ntupleName_, cfgCollection.label(), *columnName);
+        ntupleVectorEntryType* ntupleEntry = new ntupleVectorEntryType(niceColumnName, objValExtractor, indices);
+        ntupleVectorEntries_.push_back(ntupleEntry);
+      } else {
         // Loop over each index
-        for ( vunsigned::const_iterator index = indices.begin(); index != indices.end(); ++index ) {
+        for ( vunsigned::const_iterator index = indices.begin(); 
+	      index != indices.end(); ++index ) {
           edm::ParameterSet tempNtupleCfgWithIndex = tempNtupleCfg;
           tempNtupleCfgWithIndex.addParameter<unsigned>("index", *index);
           // Build entry
@@ -78,17 +87,11 @@ ObjValEDNtupleProducer::ObjValEDNtupleProducer(const edm::ParameterSet& cfg)
             niceColumnName = createBranchName(ntupleName_, cfgCollection.label(), *columnName);
           else
             niceColumnName = createBranchName(ntupleName_, cfgCollection.label(), *columnName, *index);
+	  
           ntupleEntryType* ntupleEntry = new ntupleEntryType(niceColumnName, objValExtractor);
           ntupleEntries_.push_back(ntupleEntry);
         }
-      } else {
-        // Build a vector getter
-        ObjValVectorExtractorBase* objValExtractor =
-            ObjValVectorExtractorPluginFactory::get()->create(pluginTypeObjValExtractor, tempNtupleCfg);
-        std::string niceColumnName = createBranchName(ntupleName_, cfgCollection.label(), *columnName);
-        ntupleVectorEntryType* ntupleEntry = new ntupleVectorEntryType(niceColumnName, objValExtractor);
-        ntupleVectorEntries_.push_back(ntupleEntry);
-      }
+      } 
     }
   }
 
@@ -141,6 +144,8 @@ void ObjValEDNtupleProducer::beginJob() {}
 
 void ObjValEDNtupleProducer::produce(edm::Event& evt, const edm::EventSetup& es)
 {
+  //std::cout << "<ObjValEDNtupleProducer::produce>:" << std::endl;
+
 //--- add run, luminosity section and event number
   std::auto_ptr<edm::RunNumber_t> runNumberPtr(new edm::RunNumber_t(evt.id().run()));
   evt.put(runNumberPtr, "run");
@@ -174,9 +179,23 @@ void ObjValEDNtupleProducer::produce(edm::Event& evt, const edm::EventSetup& es)
       continue;
     }
     
-    std::auto_ptr<vdouble> toPut = std::auto_ptr<vdouble>(new vdouble((*(*ntupleEntry)->objValExtractor_)(evt)));
-    
-    evt.put(toPut, (*ntupleEntry)->ntupleName_);
+    vdouble values = (*(*ntupleEntry)->objValExtractor_)(evt);
+
+    if ( (*ntupleEntry)->indices_.size() == 0 ) {
+      std::auto_ptr<vdouble> toPut = std::auto_ptr<vdouble>(new vdouble((*(*ntupleEntry)->objValExtractor_)(evt)));
+      evt.put(toPut, (*ntupleEntry)->ntupleName_);
+    } else {
+      vdouble values = (*(*ntupleEntry)->objValExtractor_)(evt);
+      //std::cout << " values = " << format_vdouble(values) << std::endl;
+      std::auto_ptr<vdouble> toPut = std::auto_ptr<vdouble>(new vdouble());
+      for ( vunsigned::const_iterator index = (*ntupleEntry)->indices_.begin(); 
+	    index != (*ntupleEntry)->indices_.end(); ++index ) {
+	//std::cout << "index = " << (*index) << std::endl;
+	if ( (*index) < values.size() ) toPut->push_back(values[*index]);
+      }
+      //std::cout << "--> toPut = " << format_vdouble(*toPut) << std::endl;
+      evt.put(toPut, (*ntupleEntry)->ntupleName_);
+    }
   }
 
   ++numEvents_processed_;
