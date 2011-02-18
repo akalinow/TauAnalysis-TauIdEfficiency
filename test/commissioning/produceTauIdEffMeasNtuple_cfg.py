@@ -188,13 +188,17 @@ for algorithm in patTupleConfig["algorithms"]:
     for patTauCollection in patTupleConfig[algorithm]["patTauCollections"]:                
         attr02Name = "tauIdEffMeas02_%s" % patTauCollection
         attr02 = patTauTemplates[algorithm].clone(
-            src = cms.InputTag(patTauCollection)
+            src = cms.InputTag(patTauCollection),
+            vector = cms.bool(True),
+            indices = cms.vuint32([0])
         )
         setattr(process.ntupleProducer.sources, attr02Name, attr02)
         if algorithm == "pfTauShrinkingCone":
             attr02dmName = "tauIdEffMeas02dm_%s" % patTauCollection
             attr02dm = process.pfTausShrinkingCone_recDecayModeInfo.clone(
-                src = cms.InputTag(patTauCollection)
+                src = cms.InputTag(patTauCollection),
+                vector = cms.bool(True),
+                indices = cms.vuint32([0])
             )
             setattr(process.ntupleProducer.sources, attr02dmName, attr02dm)
 
