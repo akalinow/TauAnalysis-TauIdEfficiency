@@ -21,7 +21,7 @@
         "int_lumi": 9.73 
     },
     "qcdDiJet_data_Jet_Run2010B_Nov4ReReco" : {
-        "directory": "rfio:/castor/cern.ch/user/v/veelken/TauIdCommissioning/qcdDiJet/v4_3/data_Jet_Run2010B_Nov4ReReco/",
+        "directory": "rfio:/castor/cern.ch/user/v/veelken/TauIdCommissioning/qcdDiJet/v4_4/data_Jet_Run2010B_Nov4ReReco/",
         "files": [
 	    "tauIdEffEDNtuple_qcdDiJet_*.root"
         ],
