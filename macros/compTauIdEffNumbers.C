@@ -32,12 +32,12 @@ void compTauIdEffNumbers()
 //    but failing the loose isolation requirement
 //
   std::map<std::string, double> pfLooseIsoCorrFactor;
-  pfLooseIsoCorrFactor["TaNCloose"]  = 1./(1. - 0.084);
-  pfLooseIsoCorrFactor["TaNCmedium"] = 1./(1. - 0.056);
-  pfLooseIsoCorrFactor["TaNCtight"]  = 1./(1. - 0.035);
-  pfLooseIsoCorrFactor["HPSloose"]   = 1./(1. - 0.056);
+  pfLooseIsoCorrFactor["TaNCloose"]  = 1./(1. - 0.128);
+  pfLooseIsoCorrFactor["TaNCmedium"] = 1./(1. - 0.097);
+  pfLooseIsoCorrFactor["TaNCtight"]  = 1./(1. - 0.072);
+  pfLooseIsoCorrFactor["HPSloose"]   = 1./(1. - 0.054);
   pfLooseIsoCorrFactor["HPSmedium"]  = 1./(1. - 0.041);
-  pfLooseIsoCorrFactor["HPStight"]   = 1./(1. - 0.034);
+  pfLooseIsoCorrFactor["HPStight"]   = 1./(1. - 0.033);
 
 //--- define correction factors (specific to HPS)
 //    for lead. track Pt cut applied in preselection, 
@@ -56,20 +56,20 @@ void compTauIdEffNumbers()
   leadTrackPtCorrFactor["HPStight"]   = 1./(1. - 0.068);
 
   std::map<std::string, double> fitResult;
-  fitResult["TaNCloose"]  = 0.680;
-  fitResult["TaNCmedium"] = 0.534;
-  fitResult["TaNCtight"]  = 0.363;
-  fitResult["HPSloose"]   = 0.638;
-  fitResult["HPSmedium"]  = 0.499;
-  fitResult["HPStight"]   = 0.340;
+  fitResult["TaNCloose"]  = 0.775;
+  fitResult["TaNCmedium"] = 0.565;
+  fitResult["TaNCtight"]  = 0.466;
+  fitResult["HPSloose"]   = 0.647;
+  fitResult["HPSmedium"]  = 0.476;
+  fitResult["HPStight"]   = 0.287;
 
   std::map<std::string, double> mcExp; 
-  mcExp["TaNCloose"]  = 0.703;
-  mcExp["TaNCmedium"] = 0.574;
-  mcExp["TaNCtight"]  = 0.392;
-  mcExp["HPSloose"]   = 0.675;
-  mcExp["HPSmedium"]  = 0.520;
-  mcExp["HPStight"]   = 0.378;
+  mcExp["TaNCloose"]  = 0.784;
+  mcExp["TaNCmedium"] = 0.700;
+  mcExp["TaNCtight"]  = 0.564;
+  mcExp["HPSloose"]   = 0.621;
+  mcExp["HPSmedium"]  = 0.468;
+  mcExp["HPStight"]   = 0.330;
 
 //-------------------------------------------------------------------------------
 // define numbers entering computation of  tau id. efficiency uncertainties
@@ -94,12 +94,12 @@ void compTauIdEffNumbers()
   leadTrackPtEffErr["HPStight"]   = 0.068;
 
   std::map<std::string, double> pfLooseIso06Eff2Err;
-  pfLooseIso06Eff2Err["TaNCloose"]  = 0.084;
-  pfLooseIso06Eff2Err["TaNCmedium"] = 0.056;
-  pfLooseIso06Eff2Err["TaNCtight"]  = 0.035;
-  pfLooseIso06Eff2Err["HPSloose"]   = 0.056;
+  pfLooseIso06Eff2Err["TaNCloose"]  = 0.128;
+  pfLooseIso06Eff2Err["TaNCmedium"] = 0.097;
+  pfLooseIso06Eff2Err["TaNCtight"]  = 0.072;
+  pfLooseIso06Eff2Err["HPSloose"]   = 0.054;
   pfLooseIso06Eff2Err["HPSmedium"]  = 0.041;
-  pfLooseIso06Eff2Err["HPStight"]   = 0.034;
+  pfLooseIso06Eff2Err["HPStight"]   = 0.033;
 
   std::map<std::string, double> tauJetEnScaleErr;
   tauJetEnScaleErr["TaNCloose"]  = 0.004;
@@ -110,12 +110,12 @@ void compTauIdEffNumbers()
   tauJetEnScaleErr["HPStight"]   = 0.005;
 
   std::map<std::string, double> fitStatErr;
-  fitStatErr["TaNCloose"]  = 0.215;
-  fitStatErr["TaNCmedium"] = 0.227;
-  fitStatErr["TaNCtight"]  = 0.245;
-  fitStatErr["HPSloose"]   = 0.214;
-  fitStatErr["HPSmedium"]  = 0.229;
-  fitStatErr["HPStight"]   = 0.253;
+  fitStatErr["TaNCloose"]  = 0.219;
+  fitStatErr["TaNCmedium"] = 0.209;
+  fitStatErr["TaNCtight"]  = 0.212;
+  fitStatErr["HPSloose"]   = 0.207;
+  fitStatErr["HPSmedium"]  = 0.200;
+  fitStatErr["HPStight"]   = 0.230;
 
 //-------------------------------------------------------------------------------
 // compute tau id. efficiency "central values" and uncertainties

@@ -306,7 +306,8 @@ std::map<std::string, TH1*> makeHistograms(
     extTreeSelection.append(" && ").append(branchNames["tauPt"]).append(" > 20.");
     extTreeSelection.append(" && abs(").append(branchNames["tauEta"]).append(") < 2.3");
     extTreeSelection.append(" && ").append(branchNames["tauLooseIsoPtSum06"]).append(" < 2.5");
-   
+    extTreeSelection.append(" && ").append(branchNames["diTauHt"]).append(" > 40.");
+
 //--- add tau id. passed/failed selection
     if      ( (*tauIdValue) == "passed" ) extTreeSelection.append(" && ").append(branchNames[tauId]).append(" > 0.5");
     else if ( (*tauIdValue) == "failed" ) extTreeSelection.append(" && ").append(branchNames[tauId]).append(" < 0.5");
@@ -1606,9 +1607,9 @@ void fitTauIdEff_wConstraints()
   clock.Start("fitTauIdEff_wConstraints");
 
   std::string inputFilePath = "/data1/veelken/CMSSW_3_8_x/ntuples/TauIdEffMeas/2011Feb03b/";
-  //inputFilePath.append("user/v/veelken/CMSSW_3_8_x/ntuples/TauIdEffMeas/");
+  inputFilePath.append("user/v/veelken/CMSSW_3_8_x/ntuples/TauIdEffMeas/");
 
-  const std::string jobId = "2011Feb03b";
+  const std::string jobId = "2011Feb03bV2";
 
   //const std::string branchName_suffix = "local";
   const std::string branchName_suffix = "lxbatch";
@@ -1623,10 +1624,11 @@ void fitTauIdEff_wConstraints()
   bool fitTauIdEffC2 = true;
 
   //const std::string histogramFileName = "fitTauIdEff_wConstraints_mcClosure_2011Feb10.root";
-  const std::string histogramFileName = "fitTauIdEff_wConstraints_data_2011Feb10fixedQCD.root";
+  //const std::string histogramFileName = "fitTauIdEff_wConstraints_data_2011Feb10fixedQCD.root";
+  const std::string histogramFileName = "fitTauIdEff_wConstraints_data_2011Feb18.root";
 
-  //bool loadHistogramsFromFile = false;
-  bool loadHistogramsFromFile = true;
+  bool loadHistogramsFromFile = false;
+  //bool loadHistogramsFromFile = true;
 
   bool saveHistogramsToFile = (!loadHistogramsFromFile);
 
@@ -1887,6 +1889,7 @@ void fitTauIdEff_wConstraints()
 
 //--- obtain template for QCD background from data,
 //    from SS && Mt < 40 GeV && (Pzeta - 1.5 PzetaVis) > -20 GeV sideband
+/*
     for ( std::vector<std::string>::const_iterator tauId = tauIds.begin();
 	  tauId != tauIds.end(); ++tauId ) {
       for ( std::vector<std::string>::const_iterator fitVariable = fitVariables.begin();
@@ -1918,7 +1921,7 @@ void fitTauIdEff_wConstraints()
     }
 
     templatesAll["QCD"] = templatesQCD;
-
+ */
 //--- save histograms
     if ( saveHistogramsToFile ) {
       TFile* histogramOutputFile = new TFile(histogramFileName.data(), "RECREATE");
