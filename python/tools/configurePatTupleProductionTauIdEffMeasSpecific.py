@@ -56,6 +56,22 @@ def configurePatTupleProductionTauIdEffMeasSpecific(process, patSequenceBuilder 
     process.producePatTupleTauIdEffMeasSpecific += process.selectPrimaryVertex
 
     #--------------------------------------------------------------------------------
+    # produce collections of "global" and "stand-alone" Muons for di-Muon veto
+    #--------------------------------------------------------------------------------
+
+    process.patMuonsGlobal = cms.EDFilter("PATMuonSelector",
+        src = cms.InputTag('patMuons'),                                            
+        cut = cms.string('isGlobalMuon()'),
+        filter = cms.bool(False)
+    )
+    process.producePatTupleTauIdEffMeasSpecific += process.patMuonsGlobal
+
+    process.patMuonsStandAlone = process.patMuonsGlobal.clone(
+        cut = cms.string('isStandAloneMuon()')
+    )
+    process.producePatTupleTauIdEffMeasSpecific += process.patMuonsStandAlone   
+
+    #--------------------------------------------------------------------------------
     # define Muon momentum scale corrections
     #--------------------------------------------------------------------------------
 
