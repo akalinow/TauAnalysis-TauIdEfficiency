@@ -24,7 +24,8 @@ process.source = cms.Source("PoolSource",
         ##'file:/data1/veelken/CMSSW_3_8_x/skims/test/mcDYttPU156bx_GEN_SIM_RECO_1_1_1VV.root'
         ##'file:/data1/veelken/CMSSW_3_8_x/skims/AHtoMuTau/selEvents_AHtoMuTau_HPSloose_friis_RECO.root'
         ##'file:/data1/veelken/CMSSW_3_8_x/skims/test/skim_ZtautauPU156bx_chunk_1_8a2f.root'
-        'file:/data1/veelken/CMSSW_3_8_x/skims/test/skim_data_Mu_Run2010B_Nov4ReReco_chunk_8_7b59.root'
+        ##'file:/data1/veelken/CMSSW_3_8_x/skims/test/skim_data_Mu_Run2010B_Nov4ReReco_chunk_8_7b59.root'
+        'file:/data1/veelken/CMSSW_3_8_x/skims/debug/debugTauIdEffMeasSample_data_all_2011Feb03bV2_RECO.root'
     ),
     skipEvents = cms.untracked.uint32(0)            
 )
@@ -44,9 +45,9 @@ process.maxEvents = cms.untracked.PSet(
 
 ##isMC = True # use for MC
 isMC = False # use for Data
-##HLTprocessName = "HLT" # use for non-reprocessed MC samples and Data
+HLTprocessName = "HLT" # use for non-reprocessed MC samples and Data
 ##HLTprocessName = "REDIGI36X" # use for Spring'10 reprocessed MC
-HLTprocessName = "REDIGI38XPU" # use for Fall'10 reprocessed MC with pile-up
+##HLTprocessName = "REDIGI38XPU" # use for Fall'10 reprocessed MC with pile-up
 ##HLTprocessName = "REDIGI38X" # use for Fall'10 reprocessed MC without pile-up
 pfCandidateCollection = "particleFlow" # pile-up removal disabled
 ##pfCandidateCollection = "pfNoPileUp" # pile-up removal enabled
@@ -144,6 +145,10 @@ process.ntupleProducer = cms.EDProducer("ObjValEDNtupleProducer",
         # number of reconstructed primary event vertices
         # with sum(trackPt) exceeding different thresholds
         vertexMultiplicity = process.vertexMultiplicity_template,
+
+        # number of reconstructed global muons in the event
+        numGlobalMuons = process.numGlobalMuons_template,
+        numStandAloneMuons = process.numStandAloneMuons_template,                                    
 
         # global variables describing the underlying event/
         # amount of hadronic activity                                                                                            
