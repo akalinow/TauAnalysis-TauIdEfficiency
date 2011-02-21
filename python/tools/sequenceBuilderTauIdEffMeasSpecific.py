@@ -73,9 +73,10 @@ def buildSequenceTauIdEffMeasSpecific(process,
     patTauSelectionModules.append(selectedPatTausAntiOverlapWithMuonsVeto)
 
     allPatTauPreselectionCriteria = []
-    allPatTauPreselectionCriteria.append(["Eta23", "abs(eta) < 2.3"])
-    allPatTauPreselectionCriteria.append(["Pt20",  "pt > 20."      ])
+    allPatTauPreselectionCriteria.append(["Eta23",    "abs(eta) < 2.3"                     ])
+    allPatTauPreselectionCriteria.append(["Pt20",     "pt > 20."                           ])
     allPatTauPreselectionCriteria.extend(patTauPreselectionCriteria)
+    allPatTauPreselectionCriteria.append(["PFRelIso", "userFloat('pfLooseIsoPt06') < 1000."])
 
     lastModuleName = None
     
