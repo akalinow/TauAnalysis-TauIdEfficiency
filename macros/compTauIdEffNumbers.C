@@ -56,20 +56,20 @@ void compTauIdEffNumbers()
   leadTrackPtCorrFactor["HPStight"]   = 1./(1. - 0.068);
 
   std::map<std::string, double> fitResult;
-  fitResult["TaNCloose"]  = 0.775;
-  fitResult["TaNCmedium"] = 0.565;
-  fitResult["TaNCtight"]  = 0.466;
-  fitResult["HPSloose"]   = 0.647;
-  fitResult["HPSmedium"]  = 0.476;
-  fitResult["HPStight"]   = 0.287;
+  fitResult["TaNCloose"]  = 0.813;
+  fitResult["TaNCmedium"] = 0.649;
+  fitResult["TaNCtight"]  = 0.568;
+  fitResult["HPSloose"]   = 0.692;
+  fitResult["HPSmedium"]  = 0.534;
+  fitResult["HPStight"]   = 0.337;
 
   std::map<std::string, double> mcExp; 
-  mcExp["TaNCloose"]  = 0.784;
-  mcExp["TaNCmedium"] = 0.700;
-  mcExp["TaNCtight"]  = 0.564;
-  mcExp["HPSloose"]   = 0.621;
-  mcExp["HPSmedium"]  = 0.468;
-  mcExp["HPStight"]   = 0.330;
+  mcExp["TaNCloose"]  = 0.726;
+  mcExp["TaNCmedium"] = 0.672;
+  mcExp["TaNCtight"]  = 0.557;
+  mcExp["HPSloose"]   = 0.689;
+  mcExp["HPSmedium"]  = 0.519;
+  mcExp["HPStight"]   = 0.370;
 
 //-------------------------------------------------------------------------------
 // define numbers entering computation of  tau id. efficiency uncertainties
@@ -110,12 +110,12 @@ void compTauIdEffNumbers()
   tauJetEnScaleErr["HPStight"]   = 0.005;
 
   std::map<std::string, double> fitStatErr;
-  fitStatErr["TaNCloose"]  = 0.219;
-  fitStatErr["TaNCmedium"] = 0.209;
-  fitStatErr["TaNCtight"]  = 0.212;
-  fitStatErr["HPSloose"]   = 0.207;
-  fitStatErr["HPSmedium"]  = 0.200;
-  fitStatErr["HPStight"]   = 0.230;
+  fitStatErr["TaNCloose"]  = 0.210;
+  fitStatErr["TaNCmedium"] = 0.140;
+  fitStatErr["TaNCtight"]  = 0.157;
+  fitStatErr["HPSloose"]   = 0.150;
+  fitStatErr["HPSmedium"]  = 0.118;
+  fitStatErr["HPStight"]   = 0.082;
 
 //-------------------------------------------------------------------------------
 // compute tau id. efficiency "central values" and uncertainties
@@ -124,11 +124,13 @@ void compTauIdEffNumbers()
 
   for ( std::vector<std::string>::const_iterator tauId = tauIds.begin();
 	tauId != tauIds.end(); ++tauId ) {
+    std::cout << (*tauId) << ": stat. uncertainty = " << fitStatErr[*tauId]/fitResult[*tauId] << std::endl;
+
     double totErr2 = square(pfLooseIso06Eff1Err) 
                     + square(leadTrackPtEffErr[*tauId])
                     + square(pfLooseIso06Eff2Err[*tauId])
                     + square(tauJetEnScaleErr[*tauId])
-                    + square(fitStatErr[*tauId]);
+                    + square(fitStatErr[*tauId]/fitResult[*tauId]);
     std::cout << (*tauId) << ": total uncertainty = " << TMath::Sqrt(totErr2) << std::endl;
 
     std::cout << (*tauId) << ": loose iso. corr. factor = " << pfLooseIsoCorrFactor[*tauId] << std::endl;
@@ -148,6 +150,6 @@ void compTauIdEffNumbers()
                    * leadTrackPtCorrFactor[*tauId]
                    * mcExp[*tauId];
     std::cout << (*tauId) << ": MC exp. = " << totEffExp << std::endl;
-    std::cout << (*tauId) << ": Data/MC = " << totEff/totEffExp << " +/- " << TMath::Sqrt(totErr2) << std::endl;
+    std::cout << (*tauId) << ": Data/MC = " << totEff/totEffExp << " +/- " << totEff/totEffExp*TMath::Sqrt(totErr2) << std::endl;
   }
 }

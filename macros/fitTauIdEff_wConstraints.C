@@ -105,22 +105,22 @@ std::map<std::string, std::map<std::string, std::string> > makeBranchNameDict(
     if (        (*tauId) == "tauDiscrTaNCfrOnePercent"     ||
 	        (*tauId) == "tauDiscrTaNCfrHalfPercent"    ||
 	        (*tauId) == "tauDiscrTaNCfrQuarterPercent" ) { // "old" TaNC algorithm
-      branchNameTau   = "selectedPatPFTausShrinkingConeElectronVetoCumulative"; // "old" TaNC algorithm
+      branchNameTau   = "selectedPatPFTausShrinkingConePFRelIsoCumulative"; // "old" TaNC algorithm
       branchNameDiTau = "selectedMuPFTauShrinkingConePairsForTauIdEffCumulative";  
     } else if ( (*tauId) == "tauDiscrTaNCloose"            || 
 		(*tauId) == "tauDiscrTaNCmedium"           || 
 		(*tauId) == "tauDiscrTaNCtight"            ) { // "new" TaNC implemented in HPS+TaNC combined algorithm
-      branchNameTau   = "selectedPatPFTausHPSpTaNCCaloMuonVetoCumulative";    
+      branchNameTau   = "selectedPatPFTausHPSpTaNCPFRelIsoCumulative";    
       branchNameDiTau = "selectedMuPFTauHPSpTaNCpairsForTauIdEffCumulative"; 
     } else if ( (*tauId) == "tauDiscrIsolationLoose"       ||
 		(*tauId) == "tauDiscrIsolationMedium"      ||
 		(*tauId) == "tauDiscrIsolationTight"       ) { // "old" HPS algorithm
-      branchNameTau   = "selectedPatPFTausHPSElectronVetoCumulative";           // "old" HPS algorithm 
+      branchNameTau   = "selectedPatPFTausHPSPFRelIsoCumulative";           
       branchNameDiTau = "selectedMuPFTauHPSpairsForTauIdEffCumulative";
     } else if ( (*tauId) == "tauDiscrHPSloose"             ||
 		(*tauId) == "tauDiscrHPSmedium"            || 
 		(*tauId) == "tauDiscrHPStight"             ) { // "new" HPS implemented in HPS+TaNC combined algorithm
-      branchNameTau   = "selectedPatPFTausHPSpTaNCCaloMuonVetoCumulative"; 
+      branchNameTau   = "selectedPatPFTausHPSpTaNCPFRelIsoCumulative"; 
       branchNameDiTau = "selectedMuPFTauHPSpTaNCpairsForTauIdEffCumulative";
     } else {
       std::cout << "Error in <makeBranchNameDict>: invalid tauId = " << (*tauId) << " --> aborting !!";
@@ -155,7 +155,9 @@ std::map<std::string, std::map<std::string, std::string> > makeBranchNameDict(
     branchNames["muonEta"] = getBranchName("double", branchNameMuon, "eta", branchName_suffix);
     branchNames["muonLooseIsoPtSum04"] = getBranchName("double", branchNameMuon, "ptSumLooseIsolation04", branchName_suffix);
     branchNames["muonLooseIsoPtSum06"] = getBranchName("double", branchNameMuon, "ptSumLooseIsolation06", branchName_suffix);
-    
+    branchNames["numMuonsGlobal"] = getBranchName("double", "patMuonsGlobal", "multiplicity", branchName_suffix);
+    branchNames["numMuonsStandAlone"] = getBranchName("double", "patMuonsStandAlone", "multiplicity", branchName_suffix);
+
     branchNames["tauPt"] = getBranchName("doubles", branchNameTau, "pt", branchName_suffix);
     branchNames["tauEta"] = getBranchName("doubles", branchNameTau, "eta", branchName_suffix);
     branchNames["tauLooseIsoPtSum04"] = getBranchName("doubles", branchNameTau, "ptSumLooseIsolation04", branchName_suffix);
@@ -308,6 +310,7 @@ std::map<std::string, TH1*> makeHistograms(
     extTreeSelection.append(" && abs(").append(branchNames["tauEta"]).append(") < 2.3");
     extTreeSelection.append(" && abs(").append(branchNames["tauJetEta"]).append(") < 2.3");
     extTreeSelection.append(" && ").append(branchNames["tauLooseIsoPtSum06"]).append(" < 2.5");
+    extTreeSelection.append(" && ").append(branchNames["numMuonsStandAlone"]).append(" < 1.5");
 
 //--- add tau id. passed/failed selection
     if      ( (*tauIdValue) == "passed" ) extTreeSelection.append(" && ").append(branchNames[tauId]).append(" > 0.5");
@@ -328,18 +331,18 @@ std::map<std::string, TH1*> makeHistograms(
       double min, max;
       
       if ( (*observable) == "diTauMt" ) {
-	numBins = 16;
+	numBins = 8;
 	min = 0.;
 	max = 80.;
       } else if ( (*observable) == "diTauVisMass"        ||
 		  (*observable) == "diTauVisMassFromJet" ) {
-	numBins = 18;
+	numBins = 12;
 	min = 20.;
 	max = 200.;
       } else if ( (*observable) == "diTauHt"         || 
 		  (*observable) == "diTauSVfitMass1" || 
 		  (*observable) == "diTauSVfitMass2" ) {
-	numBins = 18;
+	numBins = 12;
 	min = 20.;
 	max = 200.;
       } else if ( (*observable) == "muonPt"  ||
@@ -443,8 +446,8 @@ void applyStyleOption(TH1* histogram, const std::string& histogramTitle,
 
 void drawHistograms(TH1* histogramZtautau, double normZtautau,
 		    TH1* histogramZmumu, double normZmumu,
-		    TH1* histogramDYmumuM2to10, double normDYmumuM2to10,
-		    TH1* histogramDYmumuM10to20, double normDYmumuM10to20,		    
+		    //TH1* histogramDYmumuM2to10, double normDYmumuM2to10,
+		    //TH1* histogramDYmumuM10to20, double normDYmumuM10to20,		    
 		    TH1* histogramQCD, double normQCD,
 		    TH1* histogramWplusJets, double normWplusJets,
 		    TH1* histogramTTplusJets, double normTTplusJets,
@@ -484,11 +487,11 @@ void drawHistograms(TH1* histogramZtautau, double normZtautau,
   
 //--- sum Z/gamma* --> mu+ mu- contributions
   TH1* templateZmumu         = ( normZmumu         > 0. ) ? normalize(histogramZmumu,         normZmumu)         : histogramZmumu;
-  TH1* templateDYmumuM2to10  = ( normDYmumuM2to10  > 0. ) ? normalize(histogramDYmumuM2to10,  normDYmumuM2to10)  : histogramDYmumuM2to10;
-  TH1* templateDYmumuM10to20 = ( normDYmumuM10to20 > 0. ) ? normalize(histogramDYmumuM10to20, normDYmumuM10to20) : histogramDYmumuM10to20;
+  //TH1* templateDYmumuM2to10  = ( normDYmumuM2to10  > 0. ) ? normalize(histogramDYmumuM2to10,  normDYmumuM2to10)  : histogramDYmumuM2to10;
+  //TH1* templateDYmumuM10to20 = ( normDYmumuM10to20 > 0. ) ? normalize(histogramDYmumuM10to20, normDYmumuM10to20) : histogramDYmumuM10to20;
   TH1* templateDYmumuSum = (TH1*)templateZmumu->Clone();
-  templateDYmumuSum->Add(templateDYmumuM2to10);
-  templateDYmumuSum->Add(templateDYmumuM10to20);
+  //templateDYmumuSum->Add(templateDYmumuM2to10);
+  //templateDYmumuSum->Add(templateDYmumuM10to20);
   applyStyleOption(templateDYmumuSum, histogramTitle, xAxisTitle);
   templateDYmumuSum->SetFillColor(596);
 
@@ -636,8 +639,8 @@ void drawHistograms(TH1* histogramZtautau, double normZtautau,
 
   if ( templateZtautau       != histogramZtautau       ) delete templateZtautau;
   if ( templateZmumu         != histogramZmumu         ) delete templateZmumu;
-  if ( templateDYmumuM2to10  != histogramDYmumuM2to10  ) delete templateDYmumuM2to10;
-  if ( templateDYmumuM10to20 != histogramDYmumuM10to20 ) delete templateDYmumuM10to20;
+  //if ( templateDYmumuM2to10  != histogramDYmumuM2to10  ) delete templateDYmumuM2to10;
+  //if ( templateDYmumuM10to20 != histogramDYmumuM10to20 ) delete templateDYmumuM10to20;
   delete templateDYmumuSum;
   if ( templateQCD           != histogramQCD           ) delete templateQCD;
   if ( templateWplusJets     != histogramWplusJets     ) delete templateWplusJets;
@@ -662,10 +665,10 @@ void drawHistograms(std::map<std::string, std::map<std::string, TH1*> >& distrib
 		 normFactors["Ztautau"]->getVal()*fittedFractions["Ztautau"][region][observable_key],
 		 templatesAll["Zmumu"][region][observable_key], 
 		 normFactors["Zmumu"]->getVal()*fittedFractions["Zmumu"][region][observable_key],
-		 templatesAll["DYmumuM2to10"][region][observable_key], 
-		 normFactors["DYmumuM2to10"]->getVal()*fittedFractions["DYmumuM2to10"][region][observable_key],
-		 templatesAll["DYmumuM10to20"][region][observable_key], 
-		 normFactors["DYmumuM10to20"]->getVal()*fittedFractions["DYmumuM10to20"][region][observable_key],
+		 //templatesAll["DYmumuM2to10"][region][observable_key], 
+		 //normFactors["DYmumuM2to10"]->getVal()*fittedFractions["DYmumuM2to10"][region][observable_key],
+		 //templatesAll["DYmumuM10to20"][region][observable_key], 
+		 //normFactors["DYmumuM10to20"]->getVal()*fittedFractions["DYmumuM10to20"][region][observable_key],
 		 templatesAll["QCD"][region][observable_key], 
 		 normFactors["QCD"]->getVal()*fittedFractions["QCD"][region][observable_key],
 		 templatesAll["WplusJets"][region][observable_key], 
@@ -1245,15 +1248,15 @@ void fitUsingRooFit(std::map<std::string, std::map<std::string, TH1*> >& distrib
   pMuonIso_tight_loose["Ztautau"]->setConstant(true);
   pDiTauKine_Sig_Bgr["Ztautau"]->setConstant(true);
 
-  pDiTauCharge_OS_SS["Zmumu"]->setConstant(true);
+  //pDiTauCharge_OS_SS["Zmumu"]->setConstant(true);
   pMuonIso_tight_loose["Zmumu"]->setConstant(true);
   pDiTauKine_Sig_Bgr["Zmumu"]->setConstant(true);
-  pDiTauCharge_OS_SS["DYmumuM2to10"]->setConstant(true);
-  pMuonIso_tight_loose["DYmumuM2to10"]->setConstant(true);
-  pDiTauKine_Sig_Bgr["DYmumuM2to10"]->setConstant(true);
-  pDiTauCharge_OS_SS["DYmumuM10to20"]->setConstant(true);
-  pMuonIso_tight_loose["DYmumuM10to20"]->setConstant(true);
-  pDiTauKine_Sig_Bgr["DYmumuM10to20"]->setConstant(true);
+  //pDiTauCharge_OS_SS["DYmumuM2to10"]->setConstant(true);
+  //pMuonIso_tight_loose["DYmumuM2to10"]->setConstant(true);
+  //pDiTauKine_Sig_Bgr["DYmumuM2to10"]->setConstant(true);
+  //pDiTauCharge_OS_SS["DYmumuM10to20"]->setConstant(true);
+  //pMuonIso_tight_loose["DYmumuM10to20"]->setConstant(true);
+  //pDiTauKine_Sig_Bgr["DYmumuM10to20"]->setConstant(true);
 
   pDiTauCharge_OS_SS["TTplusJets"]->setConstant(true);
   pMuonIso_tight_loose["TTplusJets"]->setConstant(true);
@@ -1264,17 +1267,17 @@ void fitUsingRooFit(std::map<std::string, std::map<std::string, TH1*> >& distrib
 
   TObjArray fitConstraintsC1;
   fitConstraintsC1.Add(makeFitConstraint(normABCD["Zmumu"],      
-					 normABCD["Zmumu"]->getVal(),                 0.5*normABCD["Zmumu"]->getVal()));
-  fitConstraintsC1.Add(makeFitConstraint(normABCD["DYmumuM2to10"],      
-					 normABCD["DYmumuM2to10"]->getVal(),          1.0*normABCD["DYmumuM2to10"]->getVal()));
-  fitConstraintsC1.Add(makeFitConstraint(normABCD["DYmumuM10to20"],      
-					 normABCD["DYmumuM10to20"]->getVal(),         1.0*normABCD["DYmumuM10to20"]->getVal()));  
+					 normABCD["Zmumu"]->getVal(),                 2.0*normABCD["Zmumu"]->getVal()));
+  //fitConstraintsC1.Add(makeFitConstraint(normABCD["DYmumuM2to10"],      
+  //					   normABCD["DYmumuM2to10"]->getVal(),          1.0*normABCD["DYmumuM2to10"]->getVal()));
+  //fitConstraintsC1.Add(makeFitConstraint(normABCD["DYmumuM10to20"],      
+  //					   normABCD["DYmumuM10to20"]->getVal(),         1.0*normABCD["DYmumuM10to20"]->getVal()));  
   fitConstraintsC1.Add(makeFitConstraint(normABCD["QCD"],        
-					 normABCD["QCD"]->getVal(),                   0.5*normABCD["QCD"]->getVal()));
+					 normABCD["QCD"]->getVal(),                   1.0*normABCD["QCD"]->getVal()));
   fitConstraintsC1.Add(makeFitConstraint(normABCD["WplusJets"],  
-					 normABCD["WplusJets"]->getVal(),             0.5*normABCD["WplusJets"]->getVal()));
+					 normABCD["WplusJets"]->getVal(),             1.0*normABCD["WplusJets"]->getVal()));
   fitConstraintsC1.Add(makeFitConstraint(normABCD["TTplusJets"], 
-					 normABCD["TTplusJets"]->getVal(),            0.5*normABCD["TTplusJets"]->getVal()));
+					 normABCD["TTplusJets"]->getVal(),            1.0*normABCD["TTplusJets"]->getVal()));
   //fitConstraintsC1.Add(makeFitConstraint(pTauId_passed_failed["Zmumu"],      
   //					   pTauId_passed_failed["Zmumu"]->getVal(),        1.0*pTauId_passed_failed["Zmumu"]->getVal()));
   //fitConstraintsC1.Add(makeFitConstraint(pTauId_passed_failed["QCD"],        
@@ -1578,6 +1581,8 @@ std::map<std::string, std::map<std::string, TH1*> > loadHistograms(
 	    assert(0);
 	  }
 
+	  histogram->Rebin(2);
+
 	  std::string key = getKey(*observable, *tauId, *tauIdValue);	
 	  if ( histogram != 0 ) retVal[*region][key] = histogram;
 	}
@@ -1747,7 +1752,7 @@ void fitTauIdEff_wConstraints()
   std::string inputFilePath = "/data1/veelken/CMSSW_3_8_x/ntuples/TauIdEffMeas/2011Feb03b/";
   inputFilePath.append("user/v/veelken/CMSSW_3_8_x/ntuples/TauIdEffMeas/");
 
-  const std::string jobId = "2011Feb03bV2";
+  const std::string jobId = "2011Feb03bV3";
 
   //const std::string branchName_suffix = "local";
   const std::string branchName_suffix = "lxbatch";
@@ -1755,18 +1760,18 @@ void fitTauIdEff_wConstraints()
   bool runClosureTest = false;
   //bool runClosureTest = true;
 
-  //bool runQuickTest = false;
-  bool runQuickTest = true;
+  bool runQuickTest = false;
+  //bool runQuickTest = true;
 
   //bool fitTauIdEffC2 = false;
   bool fitTauIdEffC2 = true;
 
   //const std::string histogramFileName = "fitTauIdEff_wConstraints_mcClosure_2011Feb10.root";
   //const std::string histogramFileName = "fitTauIdEff_wConstraints_data_2011Feb10fixedQCD.root";
-  const std::string histogramFileName = "fitTauIdEff_wConstraints_data_2011Feb19.root";
+  const std::string histogramFileName = "fitTauIdEff_wConstraints_data_2011Feb21v2.root";
 
-  bool loadHistogramsFromFile = false;
-  //bool loadHistogramsFromFile = true;
+  //bool loadHistogramsFromFile = false;
+  bool loadHistogramsFromFile = true;
 
   bool saveHistogramsToFile = (!loadHistogramsFromFile);
 
@@ -1819,12 +1824,12 @@ void fitTauIdEff_wConstraints()
   double weightFactorZtautau = dataIntLumi*1666/2568490;       // Z --> l+ l- xSection (FEWZ @ NNLO) / numEvents (POWHEG sample)
   double corrFactorZtautau = 1.000*1.000;                      // first  number: correction for event looses during skimming
                                                                // second number: correction for event looses during Ntuple production
-  std::string sampleDYmumuM2to10 = "DYmumuM2to10_pythia";
-  double weightFactorDYmumuM2to10 = dataIntLumi*1.282*72990/1091900;         
-  double corrFactorDYmumuM2to10 = 1.000*1.000;
-  std::string sampleDYmumuM10to20 = "DYmumuM10to20_pythia";
-  double weightFactorDYmumuM10to20 = dataIntLumi*1.282*2659/2184640;      
-  double corrFactorDYmumuM10to20 = 1.000*1.000;
+  //std::string sampleDYmumuM2to10 = "DYmumuM2to10_pythia";
+  //double weightFactorDYmumuM2to10 = dataIntLumi*1.282*72990/1091900;         
+  //double corrFactorDYmumuM2to10 = 1.000*1.000;
+  //std::string sampleDYmumuM10to20 = "DYmumuM10to20_pythia";
+  //double weightFactorDYmumuM10to20 = dataIntLumi*1.282*2659/2184640;      
+  //double corrFactorDYmumuM10to20 = 1.000*1.000;
   std::string sampleZmumu = "Zmumu_pythia";
   double weightFactorZmumu = dataIntLumi*1666/1998931;         // Z --> l+ l- xSection (FEWZ @ NNLO) / numEvents (POWHEG sample)
   double corrFactorZmumu = 1.000*1.000;
@@ -1859,7 +1864,7 @@ void fitTauIdEff_wConstraints()
   //fitVariables.push_back("diTauHt");
   //fitVariables.push_back("diTauSVfitMass1");
   //fitVariables.push_back("diTauSVfitMass2");
-  fitVariables.push_back("diTauVisMass");
+  //fitVariables.push_back("diTauVisMass");
   fitVariables.push_back("diTauVisMassFromJet");
   //fitVariables.push_back("muonPt");
   //fitVariables.push_back("muonEta");
@@ -1915,8 +1920,8 @@ void fitTauIdEff_wConstraints()
       TChain* chainData_2011RunB = new TChain("Events");
       if ( !runQuickTest ) { addFileNames(chainData_2011RunA, inputFilePath, "data_Mu_Run2010A_Nov4ReReco", jobId);
   	                     addFileNames(chainData_2011RunB, inputFilePath, "data_Mu_Run2010B_Nov4ReReco", jobId); } 
-      else                 { chainData_2011RunA->Add(std::string(inputFilePath).append("tauIdEffMeasEDNtuple_data_Mu_Run2010A_Nov4ReReco_2011Feb03b_0_8d77.root").data());
-	                     chainData_2011RunB->Add(std::string(inputFilePath).append("tauIdEffMeasEDNtuple_data_Mu_Run2010B_Nov4ReReco_2011Feb03b_0_5508.root").data()); }
+      else                 { chainData_2011RunA->Add(std::string(inputFilePath).append("tauIdEffMeasEDNtuple_data_Mu_Run2010A_Nov4ReReco_2011Feb03bV3_0_8d77.root").data());
+	                     chainData_2011RunB->Add(std::string(inputFilePath).append("tauIdEffMeasEDNtuple_data_Mu_Run2010B_Nov4ReReco_2011Feb03bV3_0_5508.root").data()); }
       printFileInfo(chainData_2011RunA, "chainData_2011RunA");
       printFileInfo(chainData_2011RunB, "chainData_2011RunB");
       TChain* chainData = new TChain("Events");
@@ -1936,38 +1941,38 @@ void fitTauIdEff_wConstraints()
     } else {
       TChain* chainZtautau = new TChain("Events");
       if ( !runQuickTest ) addFileNames(chainZtautau, inputFilePath, sampleZtautau, jobId);
-      else                 chainZtautau->Add(std::string(inputFilePath).append("tauIdEffMeasEDNtuple_ZtautauPU156bx_2011Feb03b_0_53ca.root").data());
+      else                 chainZtautau->Add(std::string(inputFilePath).append("tauIdEffMeasEDNtuple_ZtautauPU156bx_2011Feb03bV3_0_53ca.root").data());
       printFileInfo(chainZtautau, "chainZtautau");
       templatesZtautau = makeDistributionsAllRegions("Ztautau", weightFactorZtautau*corrFactorZtautau, chainZtautau, regions, 
 						     tauIds, fitVariables, branchNamesMCwZrecoilCorr, *sysShift);
       delete chainZtautau;
     }
 
-    std::map<std::string, std::map<std::string, TH1*> > templatesDYmumuM2to10; // key = (region, observable)
-    if ( loadHistogramsFromFile ) { 
-      templatesDYmumuM2to10 = loadHistograms(histogramInputFile, "DYmumuM2to10", regions, tauIds, fitVariables, *sysShift);
-    } else {
-      TChain* chainDYmumuM2to10 = new TChain("Events");
-      if ( !runQuickTest ) addFileNames(chainDYmumuM2to10, inputFilePath, sampleDYmumuM2to10, jobId);
-      else                 chainDYmumuM2to10->Add(std::string(inputFilePath).append("").data());
-      printFileInfo(chainDYmumuM2to10, "chainDYmumuM2to10");
-      templatesDYmumuM2to10 = makeDistributionsAllRegions("DYmumuM2to10", weightFactorDYmumuM2to10*corrFactorDYmumuM2to10, chainDYmumuM2to10, regions, 
-							 tauIds, fitVariables, branchNamesMCwZrecoilCorr, *sysShift);
-      delete chainDYmumuM2to10;
-    }
+    //std::map<std::string, std::map<std::string, TH1*> > templatesDYmumuM2to10; // key = (region, observable)
+    //if ( loadHistogramsFromFile ) { 
+    //  templatesDYmumuM2to10 = loadHistograms(histogramInputFile, "DYmumuM2to10", regions, tauIds, fitVariables, *sysShift);
+    //} else {
+    //  TChain* chainDYmumuM2to10 = new TChain("Events");
+    //  if ( !runQuickTest ) addFileNames(chainDYmumuM2to10, inputFilePath, sampleDYmumuM2to10, jobId);
+    //  else                 chainDYmumuM2to10->Add(std::string(inputFilePath).append("tauIdEffMeasEDNtuple_DYmumuM2to10_pythia_2011Feb03bV3_0_8ab2.root").data());
+    //  printFileInfo(chainDYmumuM2to10, "chainDYmumuM2to10");
+    //  templatesDYmumuM2to10 = makeDistributionsAllRegions("DYmumuM2to10", weightFactorDYmumuM2to10*corrFactorDYmumuM2to10, chainDYmumuM2to10, regions, 
+    //							    tauIds, fitVariables, branchNamesMCwZrecoilCorr, *sysShift);
+    //  delete chainDYmumuM2to10;
+    //}
 
-    std::map<std::string, std::map<std::string, TH1*> > templatesDYmumuM10to20; // key = (region, observable)
-    if ( loadHistogramsFromFile ) { 
-      templatesDYmumuM10to20 = loadHistograms(histogramInputFile, "DYmumuM10to20", regions, tauIds, fitVariables, *sysShift);
-    } else {
-      TChain* chainDYmumuM10to20 = new TChain("Events");
-      if ( !runQuickTest ) addFileNames(chainDYmumuM10to20, inputFilePath, sampleDYmumuM10to20, jobId);
-      else                 chainDYmumuM10to20->Add(std::string(inputFilePath).append("").data());
-      printFileInfo(chainDYmumuM10to20, "chainDYmumuM10to20");
-      templatesDYmumuM10to20 = makeDistributionsAllRegions("DYmumuM10to20", weightFactorDYmumuM10to20*corrFactorDYmumuM10to20, chainDYmumuM10to20, regions, 
-							   tauIds, fitVariables, branchNamesMCwZrecoilCorr, *sysShift);
-      delete chainDYmumuM10to20;
-    }
+    //std::map<std::string, std::map<std::string, TH1*> > templatesDYmumuM10to20; // key = (region, observable)
+    //if ( loadHistogramsFromFile ) { 
+    //  templatesDYmumuM10to20 = loadHistograms(histogramInputFile, "DYmumuM10to20", regions, tauIds, fitVariables, *sysShift);
+    //} else {
+    //  TChain* chainDYmumuM10to20 = new TChain("Events");
+    //  if ( !runQuickTest ) addFileNames(chainDYmumuM10to20, inputFilePath, sampleDYmumuM10to20, jobId);
+    //  else                 chainDYmumuM10to20->Add(std::string(inputFilePath).append("tauIdEffMeasEDNtuple_DYmumuM10to20_pythia_2011Feb03bV3_0_2636.root").data());
+    //  printFileInfo(chainDYmumuM10to20, "chainDYmumuM10to20");
+    //  templatesDYmumuM10to20 = makeDistributionsAllRegions("DYmumuM10to20", weightFactorDYmumuM10to20*corrFactorDYmumuM10to20, chainDYmumuM10to20, regions, 
+    //							     tauIds, fitVariables, branchNamesMCwZrecoilCorr, *sysShift);
+    //  delete chainDYmumuM10to20;
+    //}
 
     std::map<std::string, std::map<std::string, TH1*> > templatesZmumu; // key = (region, observable)
     if ( loadHistogramsFromFile ) { 
@@ -1975,7 +1980,7 @@ void fitTauIdEff_wConstraints()
     } else {
       TChain* chainZmumu = new TChain("Events");
       if ( !runQuickTest ) addFileNames(chainZmumu, inputFilePath, sampleZmumu, jobId);
-      else                 chainZmumu->Add(std::string(inputFilePath).append("tauIdEffMeasEDNtuple_Zmumu_pythia_2011Feb03b_0_2f1a.root").data());
+      else                 chainZmumu->Add(std::string(inputFilePath).append("tauIdEffMeasEDNtuple_Zmumu_pythia_2011Feb03bV3_0_2f1a.root").data());
       printFileInfo(chainZmumu, "chainZmumu");
       templatesZmumu = makeDistributionsAllRegions("Zmumu", weightFactorZmumu*corrFactorZmumu, chainZmumu, regions, 
 						   tauIds, fitVariables, branchNamesMCwZrecoilCorr, *sysShift);
@@ -1988,7 +1993,7 @@ void fitTauIdEff_wConstraints()
     } else {
       TChain* chainQCD = new TChain("Events");
       if ( !runQuickTest ) addFileNames(chainQCD, inputFilePath, sampleQCD, jobId);
-      else                 chainQCD->Add(std::string(inputFilePath).append("tauIdEffMeasEDNtuple_PPmuXptGt20Mu15_2011Feb03b_0_35f8.root").data());
+      else                 chainQCD->Add(std::string(inputFilePath).append("tauIdEffMeasEDNtuple_PPmuXptGt20Mu15_2011Feb03bV3_0_35f8.root").data());
       printFileInfo(chainQCD, "chainQCD");
       templatesQCD = makeDistributionsAllRegions("QCD", weightFactorQCD*corrFactorQCD, chainQCD, regions, 
 						 tauIds, fitVariables, branchNamesMCwoZrecoilCorr, *sysShift);
@@ -2001,7 +2006,7 @@ void fitTauIdEff_wConstraints()
     } else {
       TChain* chainWplusJets = new TChain("Events");
       if ( !runQuickTest ) addFileNames(chainWplusJets, inputFilePath, sampleWplusJets, jobId);
-      else                 chainWplusJets->Add(std::string(inputFilePath).append("tauIdEffMeasEDNtuple_WplusJets_madgraph_2011Feb03b_0_e872.root").data());
+      else                 chainWplusJets->Add(std::string(inputFilePath).append("tauIdEffMeasEDNtuple_WplusJets_madgraph_2011Feb03bV3_0_e872.root").data());
       printFileInfo(chainWplusJets, "chainWplusJets");
       templatesWplusJets = makeDistributionsAllRegions("WplusJets", weightFactorWplusJets*corrFactorWplusJets, chainWplusJets, regions, 
 						       tauIds, fitVariables, branchNamesMCwoZrecoilCorr, *sysShift);
@@ -2014,7 +2019,7 @@ void fitTauIdEff_wConstraints()
     } else {
       TChain* chainTTplusJets = new TChain("Events");
       if ( !runQuickTest ) addFileNames(chainTTplusJets, inputFilePath, sampleTTplusJets, jobId);
-      else                 chainTTplusJets->Add(std::string(inputFilePath).append("tauIdEffMeasEDNtuple_TTplusJets_madgraph_2011Feb03b_0_0f74.root").data());
+      else                 chainTTplusJets->Add(std::string(inputFilePath).append("tauIdEffMeasEDNtuple_TTplusJets_madgraph_2011Feb03bV3_0_0f74.root").data());
       printFileInfo(chainTTplusJets, "chainTTplusJets");
       templatesTTplusJets = makeDistributionsAllRegions("TTplusJets", weightFactorTTplusJets*corrFactorTTplusJets, chainTTplusJets, regions, 
 							tauIds, fitVariables, branchNamesMCwoZrecoilCorr, *sysShift);
@@ -2023,8 +2028,8 @@ void fitTauIdEff_wConstraints()
 
     std::map<std::string, std::map<std::string, std::map<std::string, TH1*> > > templatesAll; // key = (process, region, observable)
     templatesAll["Ztautau"]       = templatesZtautau;
-    templatesAll["DYmumuM2to10"]  = templatesZmumu;
-    templatesAll["DYmumuM10to20"] = templatesZmumu;
+    //templatesAll["DYmumuM2to10"]  = templatesDYmumuM2to10;
+    //templatesAll["DYmumuM10to20"] = templatesDYmumuM10to20;
     templatesAll["Zmumu"]         = templatesZmumu;
     templatesAll["QCD"]           = templatesQCD;
     templatesAll["WplusJets"]     = templatesWplusJets;
@@ -2032,8 +2037,8 @@ void fitTauIdEff_wConstraints()
     
     std::vector<std::string> processes;
     processes.push_back(std::string("Ztautau"));
-    processes.push_back(std::string("DYmumuM2to10"));
-    processes.push_back(std::string("DYmumuM10to20"));
+    //processes.push_back(std::string("DYmumuM2to10"));
+    //processes.push_back(std::string("DYmumuM10to20"));
     processes.push_back(std::string("Zmumu"));
     processes.push_back(std::string("QCD"));
     processes.push_back(std::string("WplusJets"));
@@ -2066,6 +2071,7 @@ void fitTauIdEff_wConstraints()
 
 //--- obtain template for QCD background from data,
 //    from SS && Mt < 40 GeV && (Pzeta - 1.5 PzetaVis) > -20 GeV sideband
+/*
     for ( std::vector<std::string>::const_iterator tauId = tauIds.begin();
 	  tauId != tauIds.end(); ++tauId ) {
       for ( std::vector<std::string>::const_iterator fitVariable = fitVariables.begin();
@@ -2097,16 +2103,16 @@ void fitTauIdEff_wConstraints()
     }
 
     templatesAll["QCD"] = templatesQCD;
- 
+ */ 
 /*
 //--- scale bins in 80..120 GeV range 
 //    of (pseudo)data distribution of fit variable in C1f region up by +20%
     scaleBins(distributionsData, "C1f", "diTauVisMassFromJet", 80., 110., 1.2, tauIds);
  */
+/*
 //--- exclude bins in 80..120 GeV range 
 //    of (pseudo)data distribution/templates in C1f region from fit
 //   (by setting bin-contents to zero)
-/*
     scaleBins(distributionsData, "C1f", "diTauVisMassFromJet", 80., 110., 0., tauIds);
     scaleBins(distributionsData, "C1p", "diTauVisMassFromJet", 80., 110., 0., tauIds);
     for ( std::vector<std::string>::const_iterator process = processes.begin();
@@ -2123,8 +2129,8 @@ void fitTauIdEff_wConstraints()
 	    key != region->second.end(); ++key ) {
 	drawHistograms(templatesZtautau[region->first][key->first], -1.,
 		       templatesZmumu[region->first][key->first], -1.,
-		       templatesDYmumuM2to10[region->first][key->first], -1.,
-		       templatesDYmumuM10to20[region->first][key->first], -1.,
+		       //templatesDYmumuM2to10[region->first][key->first], -1.,
+		       //templatesDYmumuM10to20[region->first][key->first], -1.,
 		       templatesQCD[region->first][key->first], -1.,
 		       templatesWplusJets[region->first][key->first], -1.,
 		       templatesTTplusJets[region->first][key->first], -1.,
