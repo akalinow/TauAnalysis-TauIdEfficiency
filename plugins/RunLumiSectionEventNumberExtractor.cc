@@ -5,7 +5,7 @@
 #include "DataFormats/PatCandidates/interface/TriggerEvent.h"
 #include "DataFormats/PatCandidates/interface/TriggerAlgorithm.h"
 
-#include "TauAnalysis/DQMTools/interface/generalAuxFunctions.h"
+#include "TauAnalysis/CandidateTools/interface/generalAuxFunctions.h"
 
 RunLumiSectionEventNumberExtractor::RunLumiSectionEventNumberExtractor(const edm::ParameterSet& cfg)
   : cfgError_(0)

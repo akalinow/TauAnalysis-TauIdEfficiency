@@ -8,7 +8,7 @@
 #include "PhysicsTools/JetMCUtils/interface/JetMCTag.h"
 
 #include "TauAnalysis/GenSimTools/interface/genParticleAuxFunctions.h"
-#include "TauAnalysis/DQMTools/interface/generalAuxFunctions.h"
+#include "TauAnalysis/CandidateTools/interface/generalAuxFunctions.h"
 
 #include <string>
 

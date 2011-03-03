@@ -8,9 +8,9 @@
  *
  * \author Christian Veelken, Evan Friis, UC Davis
  *
- * \version $Revision: 1.3 $
+ * \version $Revision: 1.4 $
  *
- * $Id: ObjValEDNtupleProducer.h,v 1.3 2010/09/28 11:23:39 jkolb Exp $
+ * $Id: ObjValEDNtupleProducer.h,v 1.4 2011/02/18 11:08:26 veelken Exp $
  *
  */
 
@@ -23,7 +23,7 @@
 #include "TauAnalysis/BgEstimationTools/interface/ObjValExtractorBase.h"
 #include "TauAnalysis/BgEstimationTools/interface/ObjValVectorExtractorBase.h"
 
-#include "TauAnalysis/DQMTools/interface/generalAuxFunctions.h"
+#include "TauAnalysis/CandidateTools/interface/generalAuxFunctions.h"
 
 #include <string>
 #include <vector>
