@@ -1671,7 +1671,7 @@ std::map<std::string, std::map<std::string, TH1*> > loadHistograms(
 	    assert(0);
 	  }
 
-	  //histogram->Rebin(2);
+	  histogram->Rebin(2);
 
 	  std::string key = getKey(*observable, *tauId, *tauIdValue);	
 	  if ( histogram != 0 ) retVal[*region][key] = histogram;
@@ -1859,8 +1859,8 @@ void fitTauIdEff_wConstraints()
   //const std::string histogramFileName = "fitTauIdEff_wConstraints_data_2011Feb21v2.root";
   const std::string histogramFileName = "fitTauIdEff_wConstraints_2011Mar01.root";
 
-  bool loadHistogramsFromFile = false;
-  //bool loadHistogramsFromFile = true;
+  //bool loadHistogramsFromFile = false;
+  bool loadHistogramsFromFile = true;
 
   bool saveHistogramsToFile = (!loadHistogramsFromFile);
 

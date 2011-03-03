@@ -83,6 +83,8 @@ void compTauIdEffNumbers()
   tauIds.push_back(std::string("HPSmedium"));
   tauIds.push_back(std::string("HPStight"));
 
+  double leadTrackFindingEffErr = 0.06;
+
   double pfLooseIso06Eff1Err = 0.02;
 
   std::map<std::string, double> leadTrackPtEffErr;
@@ -126,7 +128,8 @@ void compTauIdEffNumbers()
 	tauId != tauIds.end(); ++tauId ) {
     std::cout << (*tauId) << ": stat. uncertainty = " << fitStatErr[*tauId]/fitResult[*tauId] << std::endl;
 
-    double totErr2 = square(pfLooseIso06Eff1Err) 
+    double totErr2 = square(leadTrackFindingEffErr)
+                    + square(pfLooseIso06Eff1Err) 
                     + square(leadTrackPtEffErr[*tauId])
                     + square(pfLooseIso06Eff2Err[*tauId])
                     + square(tauJetEnScaleErr[*tauId])
