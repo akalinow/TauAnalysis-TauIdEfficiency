@@ -294,5 +294,13 @@
             "tauIdEffEDNtuple_qcdDiJet_*.root"
         ], 
         "int_lumi": 1208645.0
+    },
+    "Ztautau_powhegZ2" : {
+        "allEvents": 1995369, 
+        "directory": "rfio:/castor/cern.ch/user/v/veelken/TauIdCommissioning/qcdDiJet/v4_4/Ztautau_powhegZ2/",
+        "files": [
+            "tauIdEffEDNtuple_qcdDiJet_*.root"
+        ], 
+        "int_lumi": 1197700.0
     }
 }
