@@ -33,7 +33,7 @@ sample_wjets_data      = samples.data_wjets
 sample_wjets_mc        = samples.wjetsPU156bx_mc
 
 # Define integrated luminosity of analyzed dataset
-intLumiData = 36100 # nb^-1
+intLumiData = 36000 # nb^-1
 
 # Define denominator (phase-space) for which fake-rates are to be determined
 denominator_phase_space = "$jetPt > 20.0 & abs($jetEta) < 2.3"
@@ -85,6 +85,7 @@ custom_CMS_PRELIMINARY_UPPER_LEFT.SetX1(style.CMS_PRELIMINARY_UPPER_LEFT.GetX1()
 custom_CMS_PRELIMINARY_UPPER_LEFT.SetX2(style.CMS_PRELIMINARY_UPPER_LEFT.GetX2() + 0.050)
 custom_CMS_PRELIMINARY_UPPER_LEFT.SetY1(style.CMS_PRELIMINARY_UPPER_LEFT.GetY1() + 0.050)
 custom_CMS_PRELIMINARY_UPPER_LEFT.SetY2(style.CMS_PRELIMINARY_UPPER_LEFT.GetY2() + 0.050)
+custom_CMS_PRELIMINARY_UPPER_LEFT.SetTextSize(0.045)
 
 custom_LUMI_LABEL_UPPER_LEFT = copy.deepcopy(style.LUMI_LABEL_UPPER_LEFT)
 custom_LUMI_LABEL_UPPER_LEFT.SetX1(style.LUMI_LABEL_UPPER_LEFT.GetX1() + 0.050)
@@ -92,39 +93,40 @@ custom_LUMI_LABEL_UPPER_LEFT.SetX2(style.LUMI_LABEL_UPPER_LEFT.GetX2() + 0.050)
 custom_LUMI_LABEL_UPPER_LEFT.SetY1(style.LUMI_LABEL_UPPER_LEFT.GetY1() + 0.050)
 custom_LUMI_LABEL_UPPER_LEFT.SetY2(style.LUMI_LABEL_UPPER_LEFT.GetY2() + 0.050)
 custom_LUMI_LABEL_UPPER_LEFT.Clear()
-custom_LUMI_LABEL_UPPER_LEFT.AddText("Data, L = 36.1pb^{-1}")
-custom_LUMI_LABEL_UPPER_LEFT.SetTextSize(0.0375)
-
-custom_SQRTS_LABEL_UPPER_LEFT = copy.deepcopy(style.SQRTS_LABEL_UPPER_LEFT)
-custom_SQRTS_LABEL_UPPER_LEFT.SetX1(style.SQRTS_LABEL_UPPER_LEFT.GetX1() + 0.050)
-custom_SQRTS_LABEL_UPPER_LEFT.SetX2(style.SQRTS_LABEL_UPPER_LEFT.GetX2() + 0.050)
-custom_SQRTS_LABEL_UPPER_LEFT.SetY1(style.SQRTS_LABEL_UPPER_LEFT.GetY1() + 0.050)
-custom_SQRTS_LABEL_UPPER_LEFT.SetY2(style.SQRTS_LABEL_UPPER_LEFT.GetY2() + 0.050)
+custom_LUMI_LABEL_UPPER_LEFT.AddText("#sqrt{s} = 7 TeV, L = 36 pb^{-1}")
+custom_LUMI_LABEL_UPPER_LEFT.SetTextSize(0.045)
 
 custom_PT_CUT_LABEL_UPPER_LEFT = copy.deepcopy(style.PT_CUT_LABEL_UPPER_LEFT)
-custom_PT_CUT_LABEL_UPPER_LEFT.SetX1(style.PT_CUT_LABEL_UPPER_LEFT.GetX1() + 0.050)
-custom_PT_CUT_LABEL_UPPER_LEFT.SetX2(style.PT_CUT_LABEL_UPPER_LEFT.GetX2() + 0.050)
-custom_PT_CUT_LABEL_UPPER_LEFT.SetY1(style.PT_CUT_LABEL_UPPER_LEFT.GetY1() + 0.050)
-custom_PT_CUT_LABEL_UPPER_LEFT.SetY2(style.PT_CUT_LABEL_UPPER_LEFT.GetY2() + 0.050)
+custom_PT_CUT_LABEL_UPPER_LEFT.SetX1(style.PT_CUT_LABEL_UPPER_LEFT.GetX1() + 0.100)
+custom_PT_CUT_LABEL_UPPER_LEFT.SetX2(style.PT_CUT_LABEL_UPPER_LEFT.GetX2() + 0.100)
+custom_PT_CUT_LABEL_UPPER_LEFT.SetY1(style.PT_CUT_LABEL_UPPER_LEFT.GetY1() + 0.100)
+custom_PT_CUT_LABEL_UPPER_LEFT.SetY2(style.PT_CUT_LABEL_UPPER_LEFT.GetY2() + 0.100)
 custom_PT_CUT_LABEL_UPPER_LEFT.Clear()
 custom_PT_CUT_LABEL_UPPER_LEFT.AddText("P_{T} > 20 GeV/c")
+custom_PT_CUT_LABEL_UPPER_LEFT.SetTextSize(0.045)
 
 custom_ETA_CUT_LABEL_UPPER_LEFT = copy.deepcopy(style.ETA_CUT_LABEL_UPPER_LEFT)
-custom_ETA_CUT_LABEL_UPPER_LEFT.SetX1(style.ETA_CUT_LABEL_UPPER_LEFT.GetX1() + 0.050)
-custom_ETA_CUT_LABEL_UPPER_LEFT.SetX2(style.ETA_CUT_LABEL_UPPER_LEFT.GetX2() + 0.050)
-custom_ETA_CUT_LABEL_UPPER_LEFT.SetY1(style.ETA_CUT_LABEL_UPPER_LEFT.GetY1() + 0.050)
-custom_ETA_CUT_LABEL_UPPER_LEFT.SetY2(style.ETA_CUT_LABEL_UPPER_LEFT.GetY2() + 0.050)
+custom_ETA_CUT_LABEL_UPPER_LEFT.SetX1(style.ETA_CUT_LABEL_UPPER_LEFT.GetX1()+ 0.100)
+custom_ETA_CUT_LABEL_UPPER_LEFT.SetX2(style.ETA_CUT_LABEL_UPPER_LEFT.GetX2() + 0.100)
+custom_ETA_CUT_LABEL_UPPER_LEFT.SetY1(style.ETA_CUT_LABEL_UPPER_LEFT.GetY1() + 0.100)
+custom_ETA_CUT_LABEL_UPPER_LEFT.SetY2(style.ETA_CUT_LABEL_UPPER_LEFT.GetY2() + 0.100)
 custom_ETA_CUT_LABEL_UPPER_LEFT.Clear()
 custom_ETA_CUT_LABEL_UPPER_LEFT.AddText("|#eta| < 2.3")
+custom_ETA_CUT_LABEL_UPPER_LEFT.SetTextSize(0.045)
 
 custom_PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT = copy.deepcopy(style.PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT)
-custom_PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT.SetX1(style.PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT.GetX1() + 0.050)
-custom_PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT.SetX2(style.PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT.GetX2() + 0.050)
-custom_PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT.SetY1(style.PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT.GetY1() + 0.050)
-custom_PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT.SetY2(style.PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT.GetY2() + 0.050)
+custom_PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT.SetX1(style.PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT.GetX1() + 0.100)
+custom_PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT.SetX2(style.PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT.GetX2() + 0.100)
+custom_PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT.SetY1(style.PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT.GetY1() + 0.100)
+custom_PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT.SetY2(style.PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT.GetY2() + 0.100)
 custom_PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT.Clear()
 custom_PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT.AddText("P_{T} > 20 GeV/c,\n")
 custom_PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT.AddText("|#eta| < 2.3")
+custom_PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT.SetTextSize(0.045)
+
+# Define white background "patch" to clear grid lines in area used for labels and legend
+white_patch = ROOT.TPave(0.10, 0.65, 0.8975, 0.8950, 0, "NDC")
+white_patch.SetFillColor(10)
 
 # Define labels for different algorithms
 algo_label_template = ROOT.TPaveText(0.50, 0.615, 0.88, 0.655, "NDC")
@@ -219,8 +221,12 @@ def makeFakeratePlots(algorithm, numerator,
     eff_wjets['samples'][sample_wjets_data.name].Draw('epsame')
     eff_wjets['samples'][sample_wjets_mc.name].Draw('epsame')
 
+    # Clear grid lines in area used for labels and legend
+    white_patch.Draw()
+    eff_dijet['samples'][sample_dijet_data_wPU.name].Draw('axissame')
+
     # Draw legend
-    legend = ROOT.TLegend(0.45, 0.68, 0.88, 0.88, "", "brNDC")
+    legend = ROOT.TLegend(0.45, 0.61, 0.88, 0.88, "", "brNDC")
     legend.SetTextSize(0.03)
     legend.SetFillColor(0)
     legend.SetLineColor(1)
@@ -241,8 +247,9 @@ def makeFakeratePlots(algorithm, numerator,
     for extra_label in extra_labels:
         extra_label.Draw()
 
-    canvas.SaveAs(outputFileName[:outputFileName.find(".")] + "_%s.png" % algorithm)
-    canvas.SaveAs(outputFileName[:outputFileName.find(".")] + "_%s.pdf" % algorithm)
+    canvas.SaveAs(outputFileName[:outputFileName.find(".")] + "_%s.png"  % algorithm)
+    canvas.SaveAs(outputFileName[:outputFileName.find(".")] + "_%s.pdf"  % algorithm)
+    canvas.SaveAs(outputFileName[:outputFileName.find(".")] + "_%s.root" % algorithm)
 
     #----------------------------------------------------------------------------
     # Show difference in fake-rate between QCD di-jet with/without pile-up
@@ -258,6 +265,10 @@ def makeFakeratePlots(algorithm, numerator,
     eff_dijet['samples'][sample_dijet_data_wPU.name].Draw('epsame')
     eff_dijet['samples'][sample_dijet_mc_wPU.name].Draw('epsame')
 
+    # Clear grid lines in area used for labels and legend
+    white_patch.Draw()
+    eff_dijet['background'].Draw('axissame')
+    
     # Draw legend
     legend2 = ROOT.TLegend(0.45, 0.68, 0.88, 0.88, "", "brNDC")
     legend2.SetTextSize(0.03)
@@ -278,8 +289,9 @@ def makeFakeratePlots(algorithm, numerator,
     for extra_label in extra_labels:
         extra_label.Draw()
 
-    canvas.SaveAs(outputFileName[:outputFileName.find(".")] + "_%s_pileup.png" % algorithm)
-    canvas.SaveAs(outputFileName[:outputFileName.find(".")] + "_%s_pileup.pdf" % algorithm)
+    canvas.SaveAs(outputFileName[:outputFileName.find(".")] + "_%s_pileup.png"  % algorithm)
+    canvas.SaveAs(outputFileName[:outputFileName.find(".")] + "_%s_pileup.pdf"  % algorithm)
+    canvas.SaveAs(outputFileName[:outputFileName.find(".")] + "_%s_pileup.root" % algorithm)
 
     #----------------------------------------------------------------------------
     # Make fake-rate plots with normalized differences added below plots
@@ -295,7 +307,7 @@ def makeFakeratePlots(algorithm, numerator,
     topPad_diff.SetLeftMargin(0.18)
     topPad_diff.SetBottomMargin(0.00)
     topPad_diff.SetRightMargin(0.05)
-    topPad_diff.SetGridy()
+    #topPad_diff.SetGridy()
     topPad_diff.Draw()
     topPad_diff.cd()
 
@@ -315,6 +327,10 @@ def makeFakeratePlots(algorithm, numerator,
     eff_wjets['samples'][sample_wjets_data.name].Draw('epsame')
     eff_wjets['samples'][sample_wjets_mc.name].Draw('epsame')
 
+    # Clear grid lines in area used for labels and legend
+    white_patch.Draw()
+    eff_dijet['background'].Draw('axissame')
+    
     # Draw legend
     legend.SetX1NDC(legend.GetX1NDC() + 0.050)
     legend.SetX2NDC(legend.GetX2NDC() + 0.050)
@@ -325,7 +341,6 @@ def makeFakeratePlots(algorithm, numerator,
     # Draw CMS preliminary, luminosity and center-of-mass energy labels
     custom_CMS_PRELIMINARY_UPPER_LEFT.Draw()
     custom_LUMI_LABEL_UPPER_LEFT.Draw()
-    custom_SQRTS_LABEL_UPPER_LEFT.Draw()
     
     for extra_label_diff in extra_labels_diff:
         extra_label_diff.Draw()
@@ -393,8 +408,9 @@ def makeFakeratePlots(algorithm, numerator,
     canvas_diff.cd()
     canvas_diff.Update()
 
-    canvas_diff.SaveAs(outputFileName[:outputFileName.find(".")] + "_%s_diff.png" % algorithm)
-    canvas_diff.SaveAs(outputFileName[:outputFileName.find(".")] + "_%s_diff.pdf" % algorithm)
+    canvas_diff.SaveAs(outputFileName[:outputFileName.find(".")] + "_%s_diff.png"  % algorithm)
+    canvas_diff.SaveAs(outputFileName[:outputFileName.find(".")] + "_%s_diff.pdf"  % algorithm)
+    canvas_diff.SaveAs(outputFileName[:outputFileName.find(".")] + "_%s_diff.root" % algorithm)
 
     canvas_diff.Clear()
 
@@ -408,7 +424,7 @@ def makeFakeratePlots(algorithm, numerator,
     topPad_diff.SetLeftMargin(0.18)
     topPad_diff.SetBottomMargin(0.00)
     topPad_diff.SetRightMargin(0.05)
-    topPad_diff.SetGridy()
+    #topPad_diff.SetGridy()
     topPad_diff.Draw()
     topPad_diff.cd()
 
@@ -419,6 +435,10 @@ def makeFakeratePlots(algorithm, numerator,
     eff_dijet['samples'][sample_dijet_mc_woPU.name].Draw('epsame')
     eff_dijet['samples'][sample_dijet_data_wPU.name].Draw('epsame')
     eff_dijet['samples'][sample_dijet_mc_wPU.name].Draw('epsame')
+
+    # Clear grid lines in area used for labels and legend
+    white_patch.Draw()
+    eff_dijet['background'].Draw('axissame')
 
     # Draw legend
     legend2.SetX1NDC(legend2.GetX1NDC() + 0.050)
@@ -487,8 +507,9 @@ def makeFakeratePlots(algorithm, numerator,
     canvas_diff.cd()
     canvas_diff.Update()
 
-    canvas_diff.SaveAs(outputFileName[:outputFileName.find(".")] + "_%s_pileup_diff.png" % algorithm)
-    canvas_diff.SaveAs(outputFileName[:outputFileName.find(".")] + "_%s_pileup_diff.pdf" % algorithm)
+    canvas_diff.SaveAs(outputFileName[:outputFileName.find(".")] + "_%s_pileup_diff.png"  % algorithm)
+    canvas_diff.SaveAs(outputFileName[:outputFileName.find(".")] + "_%s_pileup_diff.pdf"  % algorithm)
+    canvas_diff.SaveAs(outputFileName[:outputFileName.find(".")] + "_%s_pileup_diff.root" % algorithm)
 
     return result_algorithm
        
@@ -611,8 +632,9 @@ if __name__ == "__main__":
     extra_labels['hps_tight']     = [ algo_label_hps_tight   ]
     extra_labels['calo']          = [ algo_label_calo        ]
         
-    for algorithm_discriminator in [ 'TaNC_loose', 'TaNC_medium', 'TaNC_tight',
-                                     'HPS_loose',  'HPS_medium',  'HPS_tight'  ]: 
+    ##for algorithm_discriminator in [ 'TaNC_loose', 'TaNC_medium', 'TaNC_tight',
+    ##                                 'HPS_loose',  'HPS_medium',  'HPS_tight'  ]:
+    for algorithm_discriminator in [ 'TaNC_loose', 'HPS_loose' ] :
 
         import sys
         if sys.argv[1:] != [] and (not algorithm in sys.argv[1:]):
@@ -645,7 +667,7 @@ if __name__ == "__main__":
                           denominator_ppmux, plotter_ppmux, 
                           denominator_wjets, plotter_wjets, 
                           nTuples[algorithm].expr('$jetPt'), binning_pt,
-                          'Jet P_{T} [GeV/c]', 6.5e-4, 5.9, extra_labels_pt, extra_labels_diff_pt,
+                          'Jet P_{T} [GeV/c]', 6.5e-4, 0.59, extra_labels_pt, extra_labels_diff_pt,
                           maxNumEntries,
                           "plots/fakerates_for_paper_jetPt.pdf")
 
@@ -659,7 +681,7 @@ if __name__ == "__main__":
         ##                  denominator_ppmux, plotter_ppmux, 
         ##                  denominator_wjets, plotter_wjets,
         ##                  nTuples[algorithm].expr('$jetEta'), binning_eta,
-        ##                  'Jet #eta', 6.5e-4, 5.9, extra_labels_eta, extra_labels_diff_eta,
+        ##                  'Jet #eta', 6.5e-4, 0.59, extra_labels_eta, extra_labels_diff_eta,
         ##                  maxNumEntries,
         ##                  "plots/fakerates_for_paper_jetEta.pdf")
 
@@ -673,7 +695,7 @@ if __name__ == "__main__":
         ##                  denominator_ppmux, plotter_ppmux, 
         ##                  denominator_wjets, plotter_wjets,
         ##                  nTuples[algorithm].expr('$jetPhi'), binning_phi,
-        ##                  'Jet #phi', 6.5e-4, 5.9, extra_labels_phi, extra_labels_diff_phi,
+        ##                  'Jet #phi', 6.5e-4, 0.59, extra_labels_phi, extra_labels_diff_phi,
         ##                  maxNumEntries,
         ##                  "plots/fakerates_for_paper_jetPhi.pdf")
 
