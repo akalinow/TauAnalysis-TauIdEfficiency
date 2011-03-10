@@ -222,8 +222,8 @@ def makeFakeratePlots(algorithm, numerator,
     eff_wjets['samples'][sample_wjets_mc.name].Draw('epsame')
 
     # Clear grid lines in area used for labels and legend
-    white_patch.Draw()
-    eff_dijet['samples'][sample_dijet_data_wPU.name].Draw('axissame')
+    #white_patch.Draw()
+    #eff_dijet['samples'][sample_dijet_data_wPU.name].Draw('axissame')
 
     # Draw legend
     legend = ROOT.TLegend(0.45, 0.61, 0.88, 0.88, "", "brNDC")
@@ -266,8 +266,8 @@ def makeFakeratePlots(algorithm, numerator,
     eff_dijet['samples'][sample_dijet_mc_wPU.name].Draw('epsame')
 
     # Clear grid lines in area used for labels and legend
-    white_patch.Draw()
-    eff_dijet['background'].Draw('axissame')
+    #white_patch.Draw()
+    #eff_dijet['background'].Draw('axissame')
     
     # Draw legend
     legend2 = ROOT.TLegend(0.45, 0.68, 0.88, 0.88, "", "brNDC")
@@ -328,8 +328,8 @@ def makeFakeratePlots(algorithm, numerator,
     eff_wjets['samples'][sample_wjets_mc.name].Draw('epsame')
 
     # Clear grid lines in area used for labels and legend
-    white_patch.Draw()
-    eff_dijet['background'].Draw('axissame')
+    #white_patch.Draw()
+    #eff_dijet['background'].Draw('axissame')
     
     # Draw legend
     legend.SetX1NDC(legend.GetX1NDC() + 0.050)
@@ -354,7 +354,7 @@ def makeFakeratePlots(algorithm, numerator,
     bottomPad_diff.SetLeftMargin(0.18)
     bottomPad_diff.SetBottomMargin(0.20)
     bottomPad_diff.SetRightMargin(0.05)
-    bottomPad_diff.SetGridy()
+    #bottomPad_diff.SetGridy()
     bottomPad_diff.Draw()
     bottomPad_diff.cd()
 
@@ -437,8 +437,8 @@ def makeFakeratePlots(algorithm, numerator,
     eff_dijet['samples'][sample_dijet_mc_wPU.name].Draw('epsame')
 
     # Clear grid lines in area used for labels and legend
-    white_patch.Draw()
-    eff_dijet['background'].Draw('axissame')
+    #white_patch.Draw()
+    #eff_dijet['background'].Draw('axissame')
 
     # Draw legend
     legend2.SetX1NDC(legend2.GetX1NDC() + 0.050)
@@ -464,7 +464,7 @@ def makeFakeratePlots(algorithm, numerator,
     bottomPad_diff.SetLeftMargin(0.18)
     bottomPad_diff.SetBottomMargin(0.20)
     bottomPad_diff.SetRightMargin(0.05)
-    bottomPad_diff.SetGridy()
+    #bottomPad_diff.SetGridy()
     bottomPad_diff.Draw()
     bottomPad_diff.cd()    
 
