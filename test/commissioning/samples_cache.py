@@ -6,7 +6,7 @@ import TauAnalysis.TauIdEfficiency.tools.castor_mirror2 as mirror
 #--------------------------------------------------------------------------------
 
 # Import the samples into this namespace
-from samples import ztautau_mc, zttPU156bx_mc, \
+from samples import ztautau_mc, zttPU156bx_mc, zttPOWHEGz2_mc, \
         qcddijet_mc, qcddijetPU156bx_mc, \
         qcddijet_mc_noCuts, qcddijetPU156bx_mc_noCuts, \
         ppmux10_mc, ppmux10PU156bx_mc, ppmux15_mc, ppmux15PU156bx_mc, \
@@ -65,7 +65,7 @@ _sample_list.extend([ wjets_mc, wjetsPU156bx_mc, data_wjets,
 
 #--------------------------------------------------------------------------------
 # define Z --> tau+ tau- samples for tau id. efficiency plots
-_sample_list.extend([ ztautau_mc, zttPU156bx_mc ])
+_sample_list.extend([ ztautau_mc, zttPU156bx_mc, zttPOWHEGz2_mc ])
 #_sample_list.extend([ zttPU156bx_mc ])
 #--------------------------------------------------------------------------------
 
@@ -77,14 +77,14 @@ _sample_list.extend([ qcddijet_mc, qcddijetPU156bx_mc, data_dijet_woPU, data_dij
 #_sample_list.append(data_dijet)
 _sample_list = [
     zttPU156bx_mc,
-    #qcddijet_mc,
-    #qcddijetPU156bx_mc, data_dijet_woPU, data_dijet_wPU,
+    zttPOWHEGz2_mc,
+    qcddijet_mc, qcddijetPU156bx_mc, data_dijet_woPU, data_dijet_wPU,
     wjetsPU156bx_mc, data_wjets,
-    ppmux10PU156bx_mc, data_ppmux,
+    ppmux10PU156bx_mc, data_ppmux
 ]
 #--------------------------------------------------------------------------------
 
 if __name__ == "__main__":
     print "Copying CASTOR files to local area:", mirror.LOCAL_DIRECTORY
-    # run up to 20 rfcp jobs concurrently
-    mirror.mirror_samples(_sample_list, max_jobs = 4)
+    # run up to 50 rfcp jobs concurrently
+    mirror.mirror_samples(_sample_list, max_jobs = 50)

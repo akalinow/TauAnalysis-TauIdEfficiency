@@ -7,7 +7,7 @@ samples.py
 
 Central defintion of data sources for commissioning.
 
-$Id: samples.py,v 1.39 2011/01/26 17:22:13 veelken Exp $
+$Id: samples.py,v 1.40 2011/02/10 13:49:41 veelken Exp $
 
 '''
 
@@ -56,6 +56,10 @@ ztautau_mc = build_sample(
 zttPU156bx_mc = build_sample(
     _MC_LUMI_MAP_FILE, "mc_zttPU156bx",
     "merge", datasets = ["ZtautauPU156bx"],
+    alias_map=dijetSampleAliasMap)
+zttPOWHEGz2_mc = build_sample(
+    _MC_LUMI_MAP_FILE, "mc_zttPOWHEGz2",
+    "merge", datasets = ["Ztautau_powhegZ2"],
     alias_map=dijetSampleAliasMap)
 
 print "loading definition of QCD background Monte Carlo samples..."
