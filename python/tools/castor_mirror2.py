@@ -9,7 +9,10 @@ import itertools
 import TauAnalysis.Configuration.tools.castor as castor
 
 # Where to store the files
-LOCAL_DIRECTORY = "/tmp/tau_commissioning"
+LOCAL_DIRECTORY = [
+    "/tmp/tau_commissioning",
+    "/data2/friis/tau_fakerate_ntuples"
+]
 
 # How to identify castor files
 _CASTOR_MATCHER = re.compile("/castor/cern.ch")
@@ -28,7 +31,15 @@ def unixtime_from_timestamp(time_str):
 
 def local_version(castor_file, local_directory = LOCAL_DIRECTORY):
     ''' Map a castor file to a local file '''
-    return _CASTOR_MATCHER.sub(local_directory, castor_file)
+    # Return the first directory where it is already local
+    # Otherwise return last restul
+    result = None
+    for dir in local_directory:
+        local_file = _CASTOR_MATCHER.sub(dir, castor_file)
+        if os.path.exists(local_file):
+            return local_file
+        result = local_file
+    return result
 
 def local_version_current(castor_file, local_directory = LOCAL_DIRECTORY):
     ''' Check if the local copy of [castor_file] exists and is up to date '''
@@ -63,7 +74,7 @@ def local_version_current(castor_file, local_directory = LOCAL_DIRECTORY):
 class CopyWorker(threading.Thread):
     def __init__(self, work_queue, results_queue, local_directory):
         super(CopyWorker, self).__init__()
-        self.work_queue = work_queue        
+        self.work_queue = work_queue
         self.results_queue = results_queue
         self.local_directory = local_directory
     def run(self):
@@ -92,7 +103,7 @@ class CopyWorker(threading.Thread):
             print "Creating local directory %s" % local_dirname
             os.makedirs(local_dirname, 0777)
         command = ['rfcp', castor_file, local_path]
-        print "Requesting %s" % (castor_file, )
+        print "Requesting %s -> %s" % (castor_file, local_path)
         result = subprocess.call(command)
         #result = 0
         self.results_queue.put((castor_file, result))
