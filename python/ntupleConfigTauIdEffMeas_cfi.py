@@ -85,7 +85,7 @@ tauIdEffMeas_template04 = cms.PSet(
 )
 
 tauIdEffMeas_template04pfTau = copy.deepcopy(tauIdEffMeas_template04)
-tauIdEffMeas_template04pfTau.columns.visMassFromJet = cms.string("(leg1().p4() + leg2().pfTauTagInfoRef().pfjetRef().p4()).mass()")
+tauIdEffMeas_template04pfTau.columns.visMassFromJet = cms.string("(leg1().p4() + leg2().jetRef().p4()).mass()")
 
 tauIdEffMeas_template04caloTau = copy.deepcopy(tauIdEffMeas_template04)
-tauIdEffMeas_template04caloTau.columns.visMassFromJet = cms.string("(leg1().p4() + leg2().caloTauTagInfoRef().calojetRef().p4()).mass()")
+tauIdEffMeas_template04caloTau.columns.visMassFromJet = cms.string("(leg1().p4() + leg2().jetRef().p4()).mass()")

@@ -14,11 +14,14 @@ analysisFilePath = getAnalysisFilePath(channel)
 #jobId = getJobId(channel)
 jobId = '2011Feb03b'
 
+version = "V3"
+
 pfCandidateCollection = "particleFlow" # pile-up removal disabled
 #pfCandidateCollection = "pfNoPileUp"   # pile-up removal enabled
 
 samplesToAnalyze = [
     # modify in case you want to submit jobs for some of the samples only...
+    'Ztautau_powheg', 'Ztautau_powhegZ2',
 ]
 
 outputFilePath = "/castor/cern.ch/user/v/veelken/CMSSW_3_8_x/ntuples/TauIdEffMeas"
@@ -35,7 +38,7 @@ def input_mapper(channel, sample, jobId):
 
 # Define what output ntuple file name a sample will have
 def output_mapper(channel, sample, jobId):
-    output_file = "tauIdEffMeasEDNtuple_%s_%s.root" % (sample, jobId)
+    output_file = "tauIdEffMeasEDNtuple_%s_%s%s.root" % (sample, jobId, version)
     return output_file
 
 # Function to prepare customized config files specific to Tau(ED)Ntuple production

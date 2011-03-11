@@ -18,11 +18,10 @@ Author: Evan Friis, UC Davis (friis@physics.ucdavis.edu)
 
 '''
 
-dijetTagAndProbes = cms.EDProducer(
-    "TauIdDijetTagAndProbeProducer",
+dijetTagAndProbes = cms.EDProducer("TauIdDijetTagAndProbeProducer",
     source = cms.InputTag("probeTauJets"),
     pluginType = cms.string("PATTauVectorValExtractor"),
-    expression = cms.string("pfTauTagInfoRef().pfjetRef().pt()"),
+    expression = cms.string("pfJetRef().pt()"),
     triggerThreshold = cms.double(15.0),
     minimumThreshold = cms.double(1.0)
 )

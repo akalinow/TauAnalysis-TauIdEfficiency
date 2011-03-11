@@ -29,7 +29,7 @@ class TauIdTagAndProbeProducer : public edm::EDProducer
     {
       // get Pt of jet associated to tau
       if ( tau.isPFTau() ) {
-	tauPt_ = tau.pfTauTagInfoRef()->pfjetRef()->pt();
+	tauPt_ = tau.pfJetRef()->pt();
       } else if ( tau.isCaloTau() ) {
 	tauPt_ = tau.caloTauTagInfoRef()->jetRef()->pt();
       } else {
@@ -110,7 +110,7 @@ TauIdTagAndProbeProducer::produce(edm::Event& evt, const edm::EventSetup& es)
     for ( vstring::const_iterator triggerPath = triggerPaths_.begin();
 	  triggerPath != triggerPaths_.end(); ++triggerPath ) {
 
-      std::cout << "triggerPath = " << (*triggerPath) << std::endl;
+      //std::cout << "triggerPath = " << (*triggerPath) << std::endl;
 
       // set probe flag
       bool isProbeTau = false;
@@ -128,12 +128,12 @@ TauIdTagAndProbeProducer::produce(edm::Event& evt, const edm::EventSetup& es)
       else triggerLabel = std::string(*triggerPath, triggerPath->rfind("_") + 1);
       
       std::string probeLabel = std::string("probe").append(triggerLabel);
-      std::cout << "probeLabel = " << probeLabel << std::endl;
+      //std::cout << "probeLabel = " << probeLabel << std::endl;
       newTau.addUserFloat(probeLabel.data(), isProbeTau);
       
       // set tag flag
       std::string tagLabel = std::string("tag").append(triggerLabel);
-      std::cout << "tagLabel = " << tagLabel << std::endl;
+      //std::cout << "tagLabel = " << tagLabel << std::endl;
       newTau.addUserFloat(tagLabel.data(), tauInfos[iTau].matchesTriggerObject_[*triggerPath]);      
     }
 

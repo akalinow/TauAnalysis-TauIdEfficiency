@@ -17,6 +17,10 @@ def configurePrePatProduction(process, pfCandidateCollection = "particleFlow",
     #--------------------------------------------------------------------------------
     # recreate collection of PFTaus
     # with latest tags of RecoTauTag package used by TauAnalysis software
+    #
+    # CV: switching from 'particleFlow' to 'pfNoPileUp' collection needs to be done in a different way
+    #     for the new shrinkingCone/combinatoricTau code <-- FIXME
+    #
     process.load("RecoTauTag.Configuration.RecoPFTauTag_cff")
     process.pfRecoTauTagInfoProducer.PFCandidateProducer = cms.InputTag(pfCandidateCollection)
     tau_producers = [ 'shrinkingConePFTauProducer', 'combinatoricRecoTaus' ]
@@ -30,18 +34,17 @@ def configurePrePatProduction(process, pfCandidateCollection = "particleFlow",
                 for builder in builders:
                     builder.pfCandSrc = cms.InputTag(pfCandidateCollection)
     process.prePatProductionSequence += process.PFTau
-
+    
     # CV: discriminator against calo. muons currently disabled per default;
     #     add manually
-    process.prePatProductionSequence += process.hpsTancTausDiscriminationAgainstCaloMuon
+    #process.prePatProductionSequence += process.hpsTancTausDiscriminationAgainstCaloMuon
     #--------------------------------------------------------------------------------
 
     #--------------------------------------------------------------------------------
     # add collection of fixed-cone PFTaus
     # (not produced per default anymore)
-    process.load("RecoTauTag.Configuration.FixedConePFTaus_cfi")
 
-    process.prePatProductionSequence += process.produceAndDiscriminateFixedConePFTaus
+    process.prePatProductionSequence += process.recoTauClassicFixedConeSequence
     #--------------------------------------------------------------------------------
 
     #--------------------------------------------------------------------------------

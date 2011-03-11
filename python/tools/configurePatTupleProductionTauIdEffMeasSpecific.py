@@ -31,7 +31,7 @@ def configurePatTupleProductionTauIdEffMeasSpecific(process, patSequenceBuilder 
         preselection = cms.string(''),
         checkOverlaps = cms.PSet(),
         finalCut = cms.string(
-            'pfTauTagInfoRef().pfjetRef().pt() > 5 & abs(pfTauTagInfoRef().pfjetRef().eta()) < 2.5'
+            'pfJetRef().pt() > 5 & abs(pfJetRef().eta()) < 2.5'
         )
     )
 
@@ -185,32 +185,35 @@ def configurePatTupleProductionTauIdEffMeasSpecific(process, patSequenceBuilder 
 
     commonTauPreselectionCriteria = [
         [ "LeadTrk",         'tauID("leadingTrackFinding") > 0.5'                       ],        
-        [ "MuonVeto",        'tauID("againstMuon") > 0.5'                               ],
         [ "EcalCrackVeto",   'abs(eta) < 1.460 | abs(eta) > 1.558'                      ]
     ]
 
     caloTauPreselectionCriteria = copy.deepcopy(commonTauPreselectionCriteria)
     caloTauPreselectionCriteria.extend([
         [ "TrkPt",           'tauID("leadingTrackPtCut") > 0.5'                         ],
+        [ "MuonVeto",        'tauID("againstMuon") > 0.5'                               ],
         [ "ElectronVeto",    'tauID("againstElectron") > 0.5'                           ]
     ])
 
     pfTauConeIsoPreselectionCriteria = copy.deepcopy(commonTauPreselectionCriteria)
     pfTauConeIsoPreselectionCriteria.extend([
         [ "TrkPt",           'tauID("leadingTrackPtCut") > 0.5'                         ],
+        [ "MuonVeto",        'tauID("againstMuon") > 0.5'                               ],
         [ "ElectronVeto",    'leadPFCand().isNonnull() & leadPFCand().mva_e_pi() < 0.6' ]
     ])
 
     pfTauHPSpreselectionCriteria = copy.deepcopy(commonTauPreselectionCriteria)
     pfTauHPSpreselectionCriteria.extend([
-        [ "ElectronVeto",    'leadPFCand().isNonnull() & leadPFCand().mva_e_pi() < 0.6' ]
+        [ "MuonVeto",        'tauID("againstMuonTight") > 0.5'                          ],
+        [ "ElectronVeto",    'tauID("againstElectronLoose") > 0.5'                      ]
     ])
 
     pfTauHPSpTaNCpreselectionCriteria = copy.deepcopy(commonTauPreselectionCriteria)
     pfTauHPSpTaNCpreselectionCriteria.extend([
         [ "TrkPt",           'tauID("leadingTrackPtCut") > 0.5'                         ],
-        [ "ElectronVeto",    'leadPFCand().isNonnull() & leadPFCand().mva_e_pi() < 0.6' ],
-        [ "CaloMuonVeto",    'tauID("againstCaloMuon") > 0.5'                           ]
+        [ "MuonVeto",        'tauID("againstMuonTight") > 0.5'                          ],
+        [ "ElectronVeto",    'tauID("againstElectronLoose") > 0.5'                      ],
+        #[ "CaloMuonVeto",    'tauID("againstCaloMuon") > 0.5'                           ]
     ])
     
     retVal_caloTau = \

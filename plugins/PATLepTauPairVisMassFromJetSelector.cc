@@ -33,7 +33,7 @@ void PATLepTauPairVisMassFromJetSelector<T>::select(const edm::Handle<collection
 	diTauCandidate != diTauCollection->end(); ++diTauCandidate ) {
     const edm::Ptr<pat::Tau> patTauPtr = diTauCandidate->leg2();
     reco::Candidate::LorentzVector p4Tau;
-    if      ( patTauPtr->isPFTau()   ) p4Tau = patTauPtr->pfTauTagInfoRef()->pfjetRef()->p4();
+    if      ( patTauPtr->isPFTau()   ) p4Tau = patTauPtr->pfJetRef()->p4();
     else if ( patTauPtr->isCaloTau() ) p4Tau = patTauPtr->caloTauTagInfoRef()->calojetRef()->p4();
     else assert(0);
 

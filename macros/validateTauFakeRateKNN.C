@@ -151,7 +151,7 @@ void makePlot(TCanvas* canvas, const std::string& outputFileName, TTree* testTre
   canvas->Print(outputFileName.data());
 }
 
-void validateTauFakeRateKNN(TString inputFilePath)
+void validateTauFakeRateKNN()
 {
   TCanvas* canvas = new TCanvas("canvas", "canvas", 1, 1, 800, 600);
   canvas->SetFillColor(10);
@@ -159,7 +159,8 @@ void validateTauFakeRateKNN(TString inputFilePath)
   
   canvas->SetLogy();
 
-  //TString inputFilePath = "/afs/cern.ch/user/v/veelken/scratch0/CMSSW_3_8_5/src/TauAnalysis/TauIdEfficiency/test/commissioning/train";
+  TString inputFilePath = "/data2/friis/FakeRatesHPSXCheck_V2/fakerate_ewkTauIdHPSloose_WplusJets_data_jetNoEta20FullVal/train";
+  //TString inputFilePath = "/data2/friis/FakeRatesHPSXCheck_V2/fakerate_ewkTauIdHPSloose_PPmuX_data_jetNoEta20FullVal/train";
   TString inputFileName = "train_FakeRateMethod_output.root";
 
   TFile* file = TFile::Open(TString(inputFilePath).Append("/").Append(inputFileName));
@@ -169,16 +170,19 @@ void validateTauFakeRateKNN(TString inputFilePath)
 
   std::string ptName = "Pt";
   std::string etaName = "AbsEta";
-  // Figure out if it is jetPt instead or tau Pt
-  if (testTree->GetBranch("JetPt")) {
+//--- Check if fake-rates are parametrized by jetPt or tau Pt
+  if ( testTree->GetBranch("JetPt") ) {
     std::cout << "Using Jet variables" << std::endl;
     ptName = "JetPt";
     etaName = "AbsJetEta";
   }
 
-  makePlot(canvas, "validateTauFakeRateKNN_JetPt.png", testTree, ptName, 10, 0., 100.);
-  makePlot(canvas, "validateTauFakeRateKNN_JetEta.png", testTree, etaName, 10, -2.5, +2.5);
-  makePlot(canvas, "validateTauFakeRateKNN_JetRadius.png", testTree, "jetWidth", 10, -0.01, 0.51);
+  makePlot(canvas, "validateTauFakeRateKNN_WplusJets_JetPt.png", testTree, ptName, 10, 0., 100.);
+  makePlot(canvas, "validateTauFakeRateKNN_WplusJets_JetEta.png", testTree, etaName, 10, -2.5, +2.5);
+  makePlot(canvas, "validateTauFakeRateKNN_WplusJets_JetRadius.png", testTree, "JetWidth", 10, -0.01, 0.51);
+  //makePlot(canvas, "validateTauFakeRateKNN_QCD_JetPt.png", testTree, ptName, 10, 0., 100.);
+  //makePlot(canvas, "validateTauFakeRateKNN_QCD_JetEta.png", testTree, etaName, 10, -2.5, +2.5);
+  //makePlot(canvas, "validateTauFakeRateKNN_QCD_JetRadius.png", testTree, "JetWidth", 10, -0.01, 0.51);
   
   delete file;
 

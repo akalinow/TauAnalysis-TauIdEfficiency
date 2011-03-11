@@ -53,9 +53,9 @@ pfTausHPS_recInfo = cms.PSet(
         ptSumPhotonsIsoCone = cms.string("isolationPFGammaCandsEtSum()"),
 
         # kinematic variables for PFJet associated to PFTau
-        jetPt = cms.string("pfTauTagInfoRef().pfjetRef().pt()"),
-        jetEta = cms.string("pfTauTagInfoRef().pfjetRef().eta()"),
-        jetPhi = cms.string("pfTauTagInfoRef().pfjetRef().phi()"),
+        jetPt = cms.string("pfJetRef().pt()"),
+        jetEta = cms.string("pfJetRef().eta()"),
+        jetPhi = cms.string("pfJetRef().phi()"),
 
 	# jet width
         jetWidth = cms.string("? (etaetaMoment() + phiphiMoment()) > 0. ? sqrt(etaetaMoment() + phiphiMoment()) : 0."),
@@ -81,15 +81,18 @@ pfTausHPS_recInfo = cms.PSet(
         ptIndex = cms.string("userFloat('pt_index')"),
         
         # tau id. discriminators
-        byLeadTrackFinding = cms.string("tauID('leadingTrackFinding')"),
+        bgDecayModeFinding = cms.string("tauID('decayModeFinding')"),
         byIsolationLoose = cms.string("tauID('byLooseIsolation')"),
         byIsolationMedium = cms.string("tauID('byMediumIsolation')"),
         byIsolationTight = cms.string("tauID('byTightIsolation')"),
         
         # discriminators against electrons/muons
-        againstElectron = cms.string("tauID('againstElectron')"),
+        againstElectronLoose = cms.string("tauID('againstElectronLoose')"),
+        againstElectronMedium = cms.string("tauID('againstElectronMedium')"),
+        againstElectronTight = cms.string("tauID('againstElectronTight')"),
         pfElectronMVA = cms.string("? leadPFCand().isNonnull() ? leadPFCand().mva_e_pi() : +1."),
-        againstMuon = cms.string("tauID('againstMuon')")                        
+        againstMuonLoose = cms.string("tauID('againstMuonLoose')"),
+        againstMuonTight = cms.string("tauID('againstMuonTight')")
     )
 )
 

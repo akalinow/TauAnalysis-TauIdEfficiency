@@ -76,10 +76,10 @@ _sample_list.extend([ qcddijet_mc, qcddijetPU156bx_mc, data_dijet_woPU, data_dij
 #_sample_list.append(qcddijet_mc)
 #_sample_list.append(data_dijet)
 _sample_list = [
-    zttPU156bx_mc,
-    zttPOWHEGz2_mc,
-    qcddijet_mc, qcddijetPU156bx_mc, data_dijet_woPU, data_dijet_wPU,
-    wjetsPU156bx_mc, data_wjets,
+    #zttPU156bx_mc,
+    #zttPOWHEGz2_mc,
+    #qcddijet_mc, qcddijetPU156bx_mc, data_dijet_woPU, data_dijet_wPU,
+    #wjetsPU156bx_mc, data_wjets,
     ppmux10PU156bx_mc, data_ppmux
 ]
 #--------------------------------------------------------------------------------

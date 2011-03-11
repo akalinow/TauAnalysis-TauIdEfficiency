@@ -53,9 +53,9 @@ pfTausFixedCone_recInfo = cms.PSet(
         ptSumPhotonsIsoCone = cms.string("isolationPFGammaCandsEtSum()"),
 
         # kinematic variables for PFJet associated to PFTau
-        jetPt = cms.string("pfTauTagInfoRef().pfjetRef().pt()"),
-        jetEta = cms.string("pfTauTagInfoRef().pfjetRef().eta()"),
-        jetPhi = cms.string("pfTauTagInfoRef().pfjetRef().phi()"),
+        jetPt = cms.string("pfJetRef().pt()"),
+        jetEta = cms.string("pfJetRef().eta()"),
+        jetPhi = cms.string("pfJetRef().phi()"),
 
         # jet width
 	jetWidth = cms.string("? (etaetaMoment() + phiphiMoment()) > 0. ? sqrt(etaetaMoment() + phiphiMoment()) : 0."),

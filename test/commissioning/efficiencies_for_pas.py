@@ -138,7 +138,8 @@ if __name__ == "__main__":
 
     # Get ZTT samples
     ##ztt = samples.ztautau_mc
-    ztt = samples.zttPU156bx_mc
+    ##ztt = samples.zttPU156bx_mc
+    ztt = samples.zttPOWHEGz2_mc 
 
     # Get the ntuple we produced
     ntuple_manager = ztt.build_ntuple_manager("tauIdEffNtuple")
@@ -312,8 +313,8 @@ if __name__ == "__main__":
     sequences_and_algos = [
         #( "shrinkingCone", standard_sequence ),
         #( "fixedCone", standard_sequence ),
-        #( "TaNC", tanc_sequence ),
-        ( "hps", hps_sequence ),
+        ( "TaNC", tanc_sequence ),
+        #( "hps", hps_sequence ),
         #( "calo", calo_sequence )
     ]
 
@@ -417,8 +418,9 @@ if __name__ == "__main__":
                                                    max(x_var_info['binning']))
 
                 # Update style
-                style.update_histo_style(
-                    my_eff, style.EFFICIENCY_STYLES[numerator_name])
+                # CV: temporarily disabled
+                #style.update_histo_style(
+                #    my_eff, style.EFFICIENCY_STYLES[numerator_name])
 
                 numerator_effs.append(my_eff)
 
@@ -462,8 +464,10 @@ if __name__ == "__main__":
     numerators = {}
     #numerators['fixedCone'] = ""
     numerators['shrinkingCone'] = 'OneOrThreeProng'
-    numerators['TaNC'] = 'byTaNCmedium'
-    numerators['hps'] = 'byHPSmedium'
+    #numerators['TaNC'] = 'byTaNCmedium'
+    numerators['TaNC'] = 'byTaNCfrHalfPercent'
+    #numerators['hps'] = 'byHPSmedium'
+    numerators['hps'] = 'byMediumIsolation'
     #numerators['calo'] = 'OneOrThreeProng_calo'
     #makeEfficiencyComparisonPlots(numerators)
 

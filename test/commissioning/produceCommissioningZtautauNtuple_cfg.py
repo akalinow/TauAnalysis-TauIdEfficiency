@@ -114,7 +114,7 @@ patPFTauCleanerPrototype = process.cleanPatTaus.clone(
     preselection = cms.string(''),
     checkOverlaps = cms.PSet(),
     finalCut = cms.string(
-        'pfTauTagInfoRef().pfjetRef().pt() > 5 & abs(pfTauTagInfoRef().pfjetRef().eta()) < 2.5'
+        'pfJetRef().pt() > 5 & abs(pfJetRef().eta()) < 2.5'
     )
 )
 

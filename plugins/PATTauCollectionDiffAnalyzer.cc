@@ -60,7 +60,7 @@ void PATTauCollectionDiffAnalyzer::beginJob()
 reco::Candidate::LorentzVector getJetP4(const pat::Tau& patTau)
 {
   if ( patTau.isPFTau() ) {
-    return patTau.pfTauTagInfoRef()->pfjetRef()->p4();
+    return patTau.pfJetRef()->p4();
   } else if ( patTau.isCaloTau() ) {
     return patTau.caloTauTagInfoRef()->jetRef()->p4();
   } else {
