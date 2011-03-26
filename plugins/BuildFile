@@ -1,5 +1,5 @@
 <export></export>
-<library name=TauAnalysisTauIDEfficiency_plugins file=*.cc>
+<library name=TauAnalysisTauIdEfficiency_plugins file=*.cc>
   <use name=FWCore/Framework>
   <use name=FWCore/MessageLogger>
   <use name=FWCore/PluginManager>
