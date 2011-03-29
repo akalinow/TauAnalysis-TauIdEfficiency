@@ -29,10 +29,10 @@ HLTInfoExtractor::operator()(const edm::Event& evt) const
 
   // find index of trigger path specified by "value" configuration parameter;
   // print error message and return -1 in case path not found in trigger menu
-  unsigned int triggerId = triggerNames.triggerIndex(value_);
+  int triggerId = triggerNames.triggerIndex(value_);
 
   double val = -1.;
-  if ( triggerId >= 0 && triggerId < triggerNames.size() ) {
+  if ( triggerId >= 0 && triggerId < (int)triggerNames.size() ) {
     if ( hltResults->accept(triggerId) ) {
       val = 1.0;
     } else {
@@ -46,8 +46,8 @@ HLTInfoExtractor::operator()(const edm::Event& evt) const
       std::cout << "Trigger paths defined in menu: " << std::endl;
       for ( edm::TriggerNames::Strings::const_iterator triggerName = triggerNames.triggerNames().begin();
 	    triggerName != triggerNames.triggerNames().end(); ++triggerName ) {
-	unsigned int triggerId = triggerNames.triggerIndex(*triggerName);
-	if ( triggerId >= 0 && triggerId < triggerNames.size() ) {
+	int triggerId = triggerNames.triggerIndex(*triggerName);
+	if ( triggerId >= 0 && triggerId < (int)triggerNames.size() ) {
 	  std::string triggerDecision = ( hltResults->accept(triggerId) ) ? "passed" : "failed";
 	  
 	  std::cout << " triggerName = " << (*triggerName) << " " << triggerDecision << std::endl;

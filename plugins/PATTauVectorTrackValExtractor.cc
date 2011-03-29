@@ -56,10 +56,10 @@ const reco::Track* PATTauVectorTrackValExtractor::getTrack_pfTau(const pat::Tau&
     if ( tau.leadPFChargedHadrCand().isNonnull() ) track = tau.leadPFChargedHadrCand()->trackRef().get();
   } else if ( collection_ == kSignalConeTracks ) {
     const reco::PFCandidateRefVector& tauSignalTracks = tau.signalPFChargedHadrCands();
-    if ( index_ >= 0 && index_ < tauSignalTracks.size() ) track = tauSignalTracks[index_]->trackRef().get();
+    if ( index_ < tauSignalTracks.size() ) track = tauSignalTracks[index_]->trackRef().get();
   } else if ( collection_ == kSignalConeTracks ) {
     const reco::PFCandidateRefVector& tauIsolationTracks = tau.isolationPFChargedHadrCands();
-    if ( index_ >= 0 && index_ < tauIsolationTracks.size() ) track = tauIsolationTracks[index_]->trackRef().get();
+    if ( index_ < tauIsolationTracks.size() ) track = tauIsolationTracks[index_]->trackRef().get();
   } 
 
   return track;
@@ -73,10 +73,10 @@ const reco::Track* PATTauVectorTrackValExtractor::getTrack_caloTau(const pat::Ta
     if ( tau.leadTrack().isNonnull() ) track = tau.leadTrack().get();
   } else if ( collection_ == kSignalConeTracks ) {
     const reco::TrackRefVector& tauSignalTracks = tau.signalTracks();
-    if ( index_ >= 0 && index_ < tauSignalTracks.size() ) track = tauSignalTracks[index_].get();
+    if ( index_ < tauSignalTracks.size() ) track = tauSignalTracks[index_].get();
   } else if ( collection_ == kSignalConeTracks ) {
     const reco::TrackRefVector& tauIsolationTracks = tau.isolationTracks();
-    if ( index_ >= 0 && index_ < tauIsolationTracks.size() ) track = tauIsolationTracks[index_].get();
+    if ( index_ < tauIsolationTracks.size() ) track = tauIsolationTracks[index_].get();
   } 
 
   return track;
