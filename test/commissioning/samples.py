@@ -7,7 +7,7 @@ samples.py
 
 Central defintion of data sources for commissioning.
 
-$Id: samples.py,v 1.41 2011/03/10 11:27:41 veelken Exp $
+$Id: samples.py,v 1.42 2011/04/06 10:34:36 veelken Exp $
 
 '''
 
@@ -16,25 +16,25 @@ $Id: samples.py,v 1.41 2011/03/10 11:27:41 veelken Exp $
 # ntuple manager.  Other samples (W+jets etc) can rename their tau collections
 # to match these.
 dijetSampleAliasMap = {
-    'patPFTausDijetTagAndProbeHPS':               'hps',
-    'patPFTausDijetTagAndProbeShrinkingCone':     'shrinking',
-    'patPFTausDijetTagAndProbeFixedCone':         'fixed',
-    'patPFTausDijetTagAndProbeHPSpTaNC':          'hpstanc',
-    'patCaloTausDijetTagAndProbe':                'calo'
+    'patPFTausDijetTagAndProbeHPS'               : 'hps',
+    'patPFTausDijetTagAndProbeShrinkingCone'     : 'shrinking',
+    'patPFTausDijetTagAndProbeFixedCone'         : 'fixed',
+    'patPFTausDijetTagAndProbeHPSpTaNC'          : 'hpstanc',
+    'patCaloTausDijetTagAndProbe'                : 'calo'
 }
 
 wJetsSampleAliasMap = {
-    'patPFTausLoosePFIsoEmbedded06HPS':           'hps',
-    'patPFTausLoosePFIsoEmbedded06HPSpTaNC':      'hpstanc',
-    'patPFTausLoosePFIsoEmbedded06ShrinkingCone': 'shrinking',
-    'patPFTausLoosePFIsoEmbedded06FixedCone':     'fixed',
-    'patCaloTausLoosePFIsoEmbedded06':            'calo'
+    'patPFTausLoosePFIsoEmbedded06HPS'           : 'hps',
+    'patPFTausLoosePFIsoEmbedded06HPSpTaNC'      : 'hpstanc',
+    'patPFTausLoosePFIsoEmbedded06ShrinkingCone' : 'shrinking',
+    'patPFTausLoosePFIsoEmbedded06FixedCone'     : 'fixed',
+    'patCaloTausLoosePFIsoEmbedded06'            : 'calo'
 }
 
 muEnrichedSampleAliasMap = wJetsSampleAliasMap
 
-#take_every = 1
-take_every = 100 # NOTE: to be used for debugging purposes only !!
+take_every = 1
+#take_every = 100 # NOTE: to be used for debugging purposes only !!
 
 # Locations of the luminosity maps
 _DATA_LUMI_MAP_FILE = os.path.join(
