@@ -13,6 +13,6 @@ genPileUpEventInfo_template = cms.PSet(
     src = cms.InputTag('addPileupInfo'),
 
     columns = cms.PSet(
-        genNumPileUp = cms.string("numPileUpInteractions"),
+        numPileUpInteractions = cms.string("numPileUpInteractions"),
     )
 )    
