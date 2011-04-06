@@ -1,15 +1,12 @@
 makeVertexMultiplicityPlots()
 {
-  Double_t binEdges[9] = { -0.5, 0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5 };
+  Double_t binEdges[22] = { -0.5,  0.5,  1.5,  2.5,  3.5,  4.5,  5.5,  6.5,  7.5,  8.5, 9.5, 
+			    10.5, 11.5, 12.5, 13.5, 14.5, 15.5, 16.5, 17.5, 18.5, 19.5, 20.5 };
 
-  TH1* histoData = new TH1F("histoData", "histoData", 8, binEdges);
-  TH1* histoMC   = new TH1F("histoMC",   "histoMC",   8, binEdges);
+  TH1* histoData = new TH1F("histoData", "histoData", 21, binEdges);
+  TH1* histoMC   = new TH1F("histoMC",   "histoMC",   21, binEdges);
 
-  TString cacheFilePathData = "/data1/friis/tau_fakerate_ntuples/user/v/veelken/TauIdCommissioning/WplusJets/v3_3/";
-
-/castor/cern.ch/user/v/veelken/TauIdCommissioning/WplusJets/v5_0/data_Mu_Run2011A_PromptReco
-mrw-r--r--   1 11480    zh                  3533398 Apr 03 18:26 tauIdEffEDNtuple_wPlusJetsEnriched_10_1_KrN.root
-
+  TString cacheFilePathData = "/data2/friis/tau_fakerate_ntuples/user/v/veelken/TauIdCommissioning/WplusJets/v5_0b/";
 
   TString prefix = "double_ntupleProducer_tauIdEffNtuple";
   TString suffix = "_prodCommissioningWplusJetsEnrichedNtuple.obj";
@@ -19,7 +16,7 @@ mrw-r--r--   1 11480    zh                  3533398 Apr 03 18:26 tauIdEffEDNtupl
   TString branchNumVerticesPtGt15 = TString(prefix).Append("#offlinePrimaryVertices#numVerticesPtGt15").Append(suffix);
   TString branchNumVerticesPtGt20 = TString(prefix).Append("#offlinePrimaryVertices#numVerticesPtGt20").Append(suffix);
   
-  TString branchGenPileUp = TString(prefix).Append("#addPileupInfo#genPtHat").Append(suffix);
+  TString branchGenPileUp = TString(prefix).Append("#addPileupInfo#numPileUpInteractions").Append(suffix);
 
   TChain* chainData = new TChain("Events");
   chainData->Add(TString(cacheFilePathData).Append("data_Mu_Run2011A_PromptReco/tauIdEffEDNtuple_wPlusJetsEnriched*"));
@@ -32,10 +29,10 @@ mrw-r--r--   1 11480    zh                  3533398 Apr 03 18:26 tauIdEffEDNtupl
 
   delete chainData;
 
-  TString cacheFilePathMC = "/data1/friis/tau_fakerate_ntuples/user/v/veelken/TauIdCommissioning/WplusJets/v3_3/";
+  TString cacheFilePathMC = "/data2/friis/tau_fakerate_ntuples/user/v/veelken/TauIdCommissioning/WplusJets/v5_0b/";
 
   TChain* chainMC = new TChain("Events");
-  chainMC->Add(TString(cacheFilePathMC).Append("mcWplusJetsPU156bx/tauIdEffEDNtuple_wPlusJetsEnriched*"));
+  chainMC->Add(TString(cacheFilePathMC).Append("WplusJets/tauIdEffEDNtuple_wPlusJetsEnriched*"));
 
   chainMC->Draw(TString(branchNumVerticesPtGt10).Append(">>+histoMC"));
 
@@ -78,7 +75,8 @@ mrw-r--r--   1 11480    zh                  3533398 Apr 03 18:26 tauIdEffEDNtupl
 
   histoMC->SetTitle("Num. Vertices #Sigma trackPt > 10 GeV");
   histoMC->SetStats(false);
-  histoMC->SetMaximum(1.);
+  //histoMC->SetMaximum(1.);
+  histoMC->SetMaximum(0.4);
   histoMC->SetXTitle("Num. Vertices");
   histoMC->SetYTitle("a.u.");
   histoMC->SetMarkerStyle(24);
@@ -95,8 +93,8 @@ mrw-r--r--   1 11480    zh                  3533398 Apr 03 18:26 tauIdEffEDNtupl
   legend.SetBorderSize(0);
   legend.SetFillColor(0);
 
-  legend.AddEntry(histoMC, "MC 156bxPU", "p");
-  legend.AddEntry(histoData, "Data", "p");
+  legend.AddEntry(histoMC, "Spring'11 MC", "p");
+  legend.AddEntry(histoData, "2011 Data", "p");
   legend.Draw();
 
   canvas->Update();
