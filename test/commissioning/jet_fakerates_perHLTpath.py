@@ -19,11 +19,11 @@ import samples_cache as samples
 
 # Define sample names
 samples_dijet_data = {}
-samples_dijet_data['HLT_Jet15U']  = samples.data_dijet_wPU
-samples_dijet_data['HLT_Jet30U']  = samples.data_dijet_wPU
-samples_dijet_data['HLT_Jet50U']  = samples.data_dijet_wPU
-samples_dijet_data['HLT_Jet70U']  = samples.data_dijet_wPU
-samples_dijet_data['HLT_Jet100U'] = samples.data_dijet_wPU
+samples_dijet_data['HLT_Jet30_v1']  = samples.data_dijet_wPU
+samples_dijet_data['HLT_Jet60_v1']  = samples.data_dijet_wPU
+samples_dijet_data['HLT_Jet80_v1']  = samples.data_dijet_wPU
+samples_dijet_data['HLT_Jet110_v1'] = samples.data_dijet_wPU
+samples_dijet_data['HLT_Jet150_v1'] = samples.data_dijet_wPU
 
 sample_dijet_mc                 = samples.qcddijetPU156bx_mc
 
@@ -40,28 +40,28 @@ maxNumEntries = 1000000000
 
 # Define marker styles
 custom_styles_dijet_data = {}
-custom_styles_dijet_data['HLT_Jet15U'] = copy.deepcopy(style.DATA_STYLE)
-custom_styles_dijet_data['HLT_Jet15U']['marker_color']  = colors.color_black.value()
-custom_styles_dijet_data['HLT_Jet15U']['line_color']    = colors.color_black.value()
-custom_styles_dijet_data['HLT_Jet15U']['marker_style']  = 20 # closed circle
-custom_styles_dijet_data['HLT_Jet30U'] = copy.deepcopy(style.DATA_STYLE)
-custom_styles_dijet_data['HLT_Jet30U']['marker_color']  = colors.color_violett.value()
-custom_styles_dijet_data['HLT_Jet30U']['line_color']    = colors.color_violett.value()
-custom_styles_dijet_data['HLT_Jet30U']['marker_style']  = 21 # closed square
-custom_styles_dijet_data['HLT_Jet50U'] = copy.deepcopy(style.DATA_STYLE)
-custom_styles_dijet_data['HLT_Jet50U']['marker_color']  = colors.color_green.value()
-custom_styles_dijet_data['HLT_Jet50U']['line_color']    = colors.color_green.value()
-custom_styles_dijet_data['HLT_Jet50U']['marker_style']  = 22 # closed upward-facing triangle
-custom_styles_dijet_data['HLT_Jet70U'] = copy.deepcopy(style.DATA_STYLE)
-custom_styles_dijet_data['HLT_Jet70U']['marker_color']  = colors.color_red.value()
-custom_styles_dijet_data['HLT_Jet70U']['line_color']    = colors.color_red.value()
-custom_styles_dijet_data['HLT_Jet70U']['marker_style']  = 23 # closed downward-facing triangle
-custom_styles_dijet_data['HLT_Jet100U'] = copy.deepcopy(style.DATA_STYLE)
-custom_styles_dijet_data['HLT_Jet100U']['marker_color'] = colors.color_darkBlue.value()
-custom_styles_dijet_data['HLT_Jet100U']['line_color']   = colors.color_darkBlue.value()
-custom_styles_dijet_data['HLT_Jet100U']['marker_style'] = 29 # closed star
+custom_styles_dijet_data['HLT_Jet30_v1'] = copy.deepcopy(style.DATA_STYLE)
+custom_styles_dijet_data['HLT_Jet30_v1']['marker_color']  = colors.color_black.value()
+custom_styles_dijet_data['HLT_Jet30_v1']['line_color']    = colors.color_black.value()
+custom_styles_dijet_data['HLT_Jet30_v1']['marker_style']  = 20 # closed circle
+custom_styles_dijet_data['HLT_Jet60_v1'] = copy.deepcopy(style.DATA_STYLE)
+custom_styles_dijet_data['HLT_Jet60_v1']['marker_color']  = colors.color_violett.value()
+custom_styles_dijet_data['HLT_Jet60_v1']['line_color']    = colors.color_violett.value()
+custom_styles_dijet_data['HLT_Jet60_v1']['marker_style']  = 21 # closed square
+custom_styles_dijet_data['HLT_Jet80_v1'] = copy.deepcopy(style.DATA_STYLE)
+custom_styles_dijet_data['HLT_Jet80_v1']['marker_color']  = colors.color_green.value()
+custom_styles_dijet_data['HLT_Jet80_v1']['line_color']    = colors.color_green.value()
+custom_styles_dijet_data['HLT_Jet80_v1']['marker_style']  = 22 # closed upward-facing triangle
+custom_styles_dijet_data['HLT_Jet110_v1'] = copy.deepcopy(style.DATA_STYLE)
+custom_styles_dijet_data['HLT_Jet110_v1']['marker_color']  = colors.color_red.value()
+custom_styles_dijet_data['HLT_Jet110_v1']['line_color']    = colors.color_red.value()
+custom_styles_dijet_data['HLT_Jet110_v1']['marker_style']  = 23 # closed downward-facing triangle
+custom_styles_dijet_data['HLT_Jet150_v1'] = copy.deepcopy(style.DATA_STYLE)
+custom_styles_dijet_data['HLT_Jet150_v1']['marker_color'] = colors.color_darkBlue.value()
+custom_styles_dijet_data['HLT_Jet150_v1']['line_color']   = colors.color_darkBlue.value()
+custom_styles_dijet_data['HLT_Jet150_v1']['marker_style'] = 29 # closed star
 
-dijet_dataHLTpaths = [ 'HLT_Jet15U', 'HLT_Jet30U', 'HLT_Jet50U', 'HLT_Jet70U', 'HLT_Jet100U' ]
+dijet_dataHLTpaths = [ 'HLT_Jet30_v1', 'HLT_Jet60_v1', 'HLT_Jet80_v1', 'HLT_Jet110_v1', 'HLT_Jet150_v1' ]
 
 custom_style_dijet_mc = copy.deepcopy(style.QCD_MC_STYLE_DOTS)
 custom_style_dijet_mc['marker_color']                  = colors.color_black.value()
@@ -295,7 +295,7 @@ def makeFakeratePlots(algorithm, numerator,
         )
         result_algorithm['%s_diff' % dijet_dataHLTpath] = diff_dijet
 
-    diff_dijet = result_algorithm['%s_diff' % 'HLT_Jet15U']
+    diff_dijet = result_algorithm['%s_diff' % 'HLT_Jet30_v1']
     diff_dijet['background'].GetYaxis().SetNdivisions(505)
     diff_dijet['background'].GetXaxis().SetTitleOffset(1.1)
     diff_dijet['background'].GetXaxis().SetTitleSize(0.08)
@@ -452,16 +452,16 @@ if __name__ == "__main__":
         denominator_dijet     = nTuples[algorithm].expr(denominator_phase_space) & denominator_jetId & denominator_e_mu_veto
         denominator_dijet_mc  = denominator_dijet & hlt.expr('$hltJet15Ubit > 0.5') & nTuples[algorithm].expr("$probeJet15U > 0.5")
         denominators_dijet_data = {}
-        denominators_dijet_data['HLT_Jet15U'] = \
-          denominator_dijet & hlt.expr('$hltJet15Ubit > 0.5') & nTuples[algorithm].expr("$probeJet15U > 0.5")
-        denominators_dijet_data['HLT_Jet30U'] = \
-          denominator_dijet & hlt.expr('$hltJet30Ubit > 0.5') & nTuples[algorithm].expr("$probeJet30U > 0.5")
-        denominators_dijet_data['HLT_Jet50U'] = \
-          denominator_dijet & hlt.expr('$hltJet50Ubit > 0.5') & nTuples[algorithm].expr("$probeJet50U > 0.5")
-        denominators_dijet_data['HLT_Jet70U'] = \
-          denominator_dijet & hlt.expr('$hltJet70Ubit > 0.5') & nTuples[algorithm].expr("$probeJet70U > 0.5")
-        denominators_dijet_data['HLT_Jet100U'] = \
-          denominator_dijet & hlt.expr('$hltJet100Ubit > 0.5') & nTuples[algorithm].expr("$probeJet100U > 0.5")
+        denominators_dijet_data['HLT_Jet30_v1'] = \
+          denominator_dijet & hlt.expr('$hltJet30v1bit > 0.5') & nTuples[algorithm].expr("$probeJet30v1 > 0.5")
+        denominators_dijet_data['HLT_Jet60_v1'] = \
+          denominator_dijet & hlt.expr('$hltJet60v1bit > 0.5') & nTuples[algorithm].expr("$probeJet60v1 > 0.5")
+        denominators_dijet_data['HLT_Jet80_v1'] = \
+          denominator_dijet & hlt.expr('$hltJet80v1bit > 0.5') & nTuples[algorithm].expr("$probeJet80v1 > 0.5")
+        denominators_dijet_data['HLT_Jet110_v1'] = \
+          denominator_dijet & hlt.expr('$hltJet110v1bit > 0.5') & nTuples[algorithm].expr("$probeJet110v1 > 0.5")
+        denominators_dijet_data['HLT_Jet150_v1'] = \
+          denominator_dijet & hlt.expr('$hltJet150v1bit > 0.5') & nTuples[algorithm].expr("$probeJet150v1 > 0.5")
 
         extra_labels_pt  = copy.deepcopy(extra_labels[algorithm_discriminator])
         extra_labels_pt.append(style.ETA_CUT_LABEL_UPPER_LEFT)

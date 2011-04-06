@@ -6,14 +6,8 @@ import TauAnalysis.TauIdEfficiency.tools.castor_mirror2 as mirror
 #--------------------------------------------------------------------------------
 
 # Import the samples into this namespace
-from samples import ztautau_mc, zttPU156bx_mc, zttPOWHEGz2_mc, \
-        qcddijet_mc, qcddijetPU156bx_mc, \
-        qcddijet_mc_noCuts, qcddijetPU156bx_mc_noCuts, \
-        ppmux10_mc, ppmux10PU156bx_mc, ppmux15_mc, ppmux15PU156bx_mc, \
-        ppmux10_mc_noCuts, ppmux10PU156bx_mc_noCuts, ppmux15_mc_noCuts, ppmux15PU156bx_mc_noCuts, \
-        wjets_mc, wjetsPU156bx_mc, \
-        wjets_mc_noCuts, wjetsPU156bx_mc_noCuts, \
-        data_dijet_woPU, data_dijet_wPU, data_ppmux, data_wjets
+from samples import ztautau_mc, qcddijet_mc, ppmux15_mc, wjets_mc, \
+        data_dijet, data_ppmux, data_wjets
 
 ##mirror.LOCAL_DIRECTORY = "/tmp/abdollah/tau_commissioning_abdollah" # on lxplus430
 mirror.LOCAL_DIRECTORY = "/data2/friis/tau_fakerate_ntuples"
@@ -47,40 +41,33 @@ _sample_list = []
 
 #--------------------------------------------------------------------------------
 # define QCD muon-enriched samples
-_sample_list.extend([ ppmux10_mc, ppmux10PU156bx_mc, ppmux15_mc, ppmux15PU156bx_mc, data_ppmux,
-                      ppmux10_mc_noCuts, ppmux10PU156bx_mc_noCuts, ppmux15_mc_noCuts, ppmux15PU156bx_mc_noCuts ])
+_sample_list.extend([ ppmux15_mc, data_ppmux ])
 #_sample_list.append(ppmux_mc)
-#_sample_list.append(ppmuxPU156bx_mc)
 #_sample_list.append(data_ppmux)
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
 # define W + jets samples
-_sample_list.extend([ wjets_mc, wjetsPU156bx_mc, data_wjets,
-                      wjets_mc_noCuts, wjetsPU156bx_mc_noCuts ])
+_sample_list.extend([ wjets_mc, data_wjets ])
 #_sample_list.append(wjets_mc)
-#_sample_list.append(wjetsPU156bx_mc)
 #_sample_list.append(data_wjets)
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
 # define Z --> tau+ tau- samples for tau id. efficiency plots
-_sample_list.extend([ ztautau_mc, zttPU156bx_mc, zttPOWHEGz2_mc ])
-#_sample_list.extend([ zttPU156bx_mc ])
+_sample_list.extend([ ztautau_mc ])
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
 # define QCD di-jet samples
-_sample_list.extend([ qcddijet_mc, qcddijetPU156bx_mc, data_dijet_woPU, data_dijet_wPU,
-                      qcddijet_mc_noCuts, qcddijetPU156bx_mc_noCuts ])
+_sample_list.extend([ qcddijet_mc, data_dijet ])
 #_sample_list.append(qcddijet_mc)
 #_sample_list.append(data_dijet)
 _sample_list = [
-    #zttPU156bx_mc,
-    #zttPOWHEGz2_mc,
-    #qcddijet_mc, qcddijetPU156bx_mc, data_dijet_woPU, data_dijet_wPU,
-    #wjetsPU156bx_mc, data_wjets,
-    ppmux10PU156bx_mc, data_ppmux
+    ztautau_mc,
+    qcddijet_mc, data_dijet,
+    wjets_mc, data_wjets,
+    ppmux15_mc, data_ppmux
 ]
 #--------------------------------------------------------------------------------
 

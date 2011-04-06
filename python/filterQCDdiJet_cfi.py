@@ -12,12 +12,12 @@ from TauAnalysis.RecoTools.recoVertexSelection_cff import *
 #
 # define HLT trigger path
 #
-hltJet15U = cms.EDFilter("EventSelPluginFilter",
+hltSingleJet = cms.EDFilter("EventSelPluginFilter",
     selector = cms.PSet(
-        pluginName = cms.string('hltJet15U'),             
+        pluginName = cms.string('hltSingleJet'),             
         pluginType = cms.string('TriggerResultEventSelector'),
         src = cms.InputTag('TriggerResults::HLT'),
-        triggerPaths = cms.vstring('HLT_Jet15U')
+        triggerPaths = cms.vstring('HLT_Jet30_v1', 'HLT_Jet60_v1', 'HLT_Jet80_v1', 'HLT_Jet110_v1', 'HLT_Jet150_v1')
     )
 )
 #--------------------------------------------------------------------------------
@@ -84,7 +84,7 @@ selectedPFTauPairs = cms.EDFilter("DiCandidatePairSelector",
 )
 
 pfTauSkimPath = cms.Path(    
-    #hltJet15U
+    #hltSingleJet
     selectedPFTaus + pfTauPairs + selectedPFTauPairs
    + dataQualityFilters
 )

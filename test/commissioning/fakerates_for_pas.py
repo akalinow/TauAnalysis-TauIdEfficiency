@@ -45,9 +45,9 @@ maxNumEntries = 1000000000 # draw all evevnts
 
 def makeFakeratePlots(algorithm, y_min = 1e-4, y_max = 9.9, extra_labels = []):
     
-    denominator_section = "$probe > 0.5 & $jetPt > 10.0 & abs($jetEta) < 2.5"
+    denominator_section = "$probeJet30v1 > 0.5 & $jetPt > 10.0 & abs($jetEta) < 2.5"
     
-    denominator = hlt.expr('$hltJet15Ubit > 0.5') & nTuples[algorithm].expr(denominator_section)
+    denominator = hlt.expr('$hltJet30v1bit > 0.5') & nTuples[algorithm].expr(denominator_section)
     
     for eff_info in numerators[algorithm]: 
         eff_info['expr'] = denominator & eff_info['expr']

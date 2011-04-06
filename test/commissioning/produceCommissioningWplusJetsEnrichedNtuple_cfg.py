@@ -17,12 +17,7 @@ process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
 #--------------------------------------------------------------------------------
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
-        #'/store/relval/CMSSW_3_6_1/RelValZTT/GEN-SIM-RECO/START36_V7-v1/0021/F405BC9A-525D-DF11-AB96-002618943811.root',
-        #'/store/relval/CMSSW_3_6_1/RelValZTT/GEN-SIM-RECO/START36_V7-v1/0020/EE3E8F74-365D-DF11-AE3D-002618FDA211.root'
-        ##'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/data/muTauSkim_1_1.root'
-        ##'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/mcMinBias/muTauSkim_1_1.root'
-        ##'rfio:/castor/cern.ch/user/v/veelken/CMSSW_3_6_x/skims/tauCommissioning/mcQCDpt15/muTauSkim_1_1.root'
-        'file:/data1/veelken/CMSSW_3_8_x/skims/test/mcWToMuNu_GEN_SIM_RECO_1_1_jcK.root'
+        'file:/data2/veelken/CMSSW_4_1_x/skims/ZtoMuTau/WplusJets_madgraph_aodsim_1_1_Pvd.root'                                
     ),
     skipEvents = cms.untracked.uint32(0)            
 )
@@ -36,10 +31,8 @@ process.maxEvents = cms.untracked.PSet(
 
 isMC = True # use for MC
 ##isMC = False # use for Data
-##HLTprocessName = "HLT" # use for non-reprocessed MC samples and Data
-##HLTprocessName = "REDIGI36X" # use for Spring'10 reprocessed MC
-##HLTprocessName = "REDIGI38XPU" # use for Fall'10 reprocessed MC with pile-up
-HLTprocessName = "REDIGI38X" # use for Fall'10 reprocessed MC without pile-up
+##HLTprocessName = "HLT" # use for 2011 Data
+HLTprocessName = "REDIGI311X" # use for Spring'11 reprocessed MC
 pfCandidateCollection = "particleFlow" # pile-up removal disabled
 ##pfCandidateCollection = "pfNoPileUp" # pile-up removal enabled
 applyEventSelection = True 
@@ -59,9 +52,9 @@ applyEventSelection = True
 #--------------------------------------------------------------------------------
 # define GlobalTag to be used for event reconstruction
 if isMC:
-    process.GlobalTag.globaltag = cms.string('START38_V14::All')
-else:    
-    process.GlobalTag.globaltag = cms.string('GR_R_38X_V15::All')
+    process.GlobalTag.globaltag = cms.string('START311_V2::All')
+else:
+    process.GlobalTag.globaltag = cms.string('GR_R_311_V2::All')
 #--------------------------------------------------------------------------------    
 
 #--------------------------------------------------------------------------------
@@ -206,9 +199,6 @@ process.ntupleProducer = cms.EDProducer("ObjValEDNtupleProducer",
         pfTausShrinkingCone_rec = process.pfTausShrinkingCone_recInfo.clone(
             src = cms.InputTag(retVal["pfTauCollectionShrinkingCone"])                       
         ),
-        pfTausShrinkingCone_recDecayMode = process.pfTausShrinkingCone_recDecayModeInfo.clone(
-            src = cms.InputTag(retVal["pfTauCollectionShrinkingCone"])
-        ),
         pfTausShrinkingCone_recJetId = process.pfTausShrinkingCone_recJetIdInfo.clone(
             src = cms.InputTag(retVal["pfTauCollectionShrinkingCone"])
         ),                                               
@@ -305,7 +295,6 @@ process.ntupleOutputModule = cms.OutputModule("PoolOutputModule",
         )                               
     ),
     process.wPlusJetsEnrichedEventSelection, # comment-out to disable filtering of events put in Tau Ntuple                         
-    verbose = cms.untracked.bool(False),
     fileName = cms.untracked.string("tauIdEffEDNtuple_wPlusJetsEnriched.root")      
 )
 #--------------------------------------------------------------------------------

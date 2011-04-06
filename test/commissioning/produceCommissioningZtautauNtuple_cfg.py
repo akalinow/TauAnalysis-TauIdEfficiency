@@ -66,9 +66,9 @@ pfCandidateCollection = "particleFlow" # pile-up removal disabled
 # define GlobalTag to be used for event reconstruction
 # (only relevant for HPS tau reconstruction algorithm)
 if isMC:
-    process.GlobalTag.globaltag = cms.string('START38_V14::All')
-else:   
-    process.GlobalTag.globaltag = cms.string('GR_R_38X_V15::All')
+    process.GlobalTag.globaltag = cms.string('START311_V2::All')
+else:
+    process.GlobalTag.globaltag = cms.string('GR_R_311_V2::All')
 #--------------------------------------------------------------------------------    
 
 #--------------------------------------------------------------------------------
@@ -76,6 +76,9 @@ else:
 # (in order to be able to produce Tau Ntuple directly from unskimmed Monte Carlo/datasets;
 #  HLT single jet trigger passed && either two CaloJets or two PFJets of Pt > 10 GeV within |eta| < 2.5)
 process.load('TauAnalysis.TauIdEfficiency.filterQCDdiJet_cfi')
+process.hltSingleJet.selector.triggerPaths = cms.vstring(
+    '*'
+)
 if isMC:
     process.dataQualityFilters.remove(process.hltPhysicsDeclared)
     process.dataQualityFilters.remove(process.dcsstatus)
@@ -195,9 +198,6 @@ process.ntupleProducer = cms.EDProducer("ObjValEDNtupleProducer",
         pfTausShrinkingCone_rec03 = process.tauTrackVariables_template.clone(
             src = cms.InputTag(retVal["pfTauCollectionShrinkingCone"])                       
         ),
-        pfTausShrinkingCone_rec04 = process.pfTausShrinkingCone_recDecayModeInfo.clone(
-            src = cms.InputTag(retVal["pfTauCollectionShrinkingCone"])
-        ),                                    
 
         # variables specific to PFTaus reconstructed by hadron + strips (HPS) algorithm                                           
         pfTausHPS_rec01 = process.pfTausHPS_recInfo.clone(
@@ -241,7 +241,7 @@ if addMCEmbeddingFlags:
 # in case running on reprocessed Monte Carlo samples
 #
 if HLTprocessName != "HLT":
-    process.hltJet15U.selector.src = cms.InputTag('TriggerResults::' + HLTprocessName)
+    process.hltSingleJet.selector.src = cms.InputTag('TriggerResults::' + HLTprocessName)
     process.patCaloTausTriggerEvent.processName = cms.string(HLTprocessName)
     process.patPFTausTriggerEventFixedCone.processName = cms.string(HLTprocessName)
     process.patPFTausTriggerEventShrinkingCone.processName = cms.string(HLTprocessName)
@@ -260,7 +260,6 @@ process.ntupleOutputModule = cms.OutputModule("PoolOutputModule",
         )                               
     ),
     process.qcdDiJetEventSelection, # comment-out to disable filtering of events put in Tau Ntuple                         
-    verbose = cms.untracked.bool(False),
     fileName = cms.untracked.string("tauIdEffEDNtuple_qcdDiJet.root")      
 )
 #--------------------------------------------------------------------------------

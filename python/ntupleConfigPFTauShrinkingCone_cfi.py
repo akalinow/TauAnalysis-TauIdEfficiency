@@ -72,18 +72,17 @@ pfTausShrinkingCone_recInfo = cms.PSet(
 
         # flags for tag/probe and Pt_index for distinguishing between
         # highest Pt, second highest Pt and third highest Pt jet
-        tagJet15U = cms.string("userFloat('tagJet15U')"),
-        probeJet15U = cms.string("userFloat('probeJet15U')"),
-        tagJet30U = cms.string("userFloat('tagJet30U')"),
-        probeJet30U = cms.string("userFloat('probeJet30U')"),
-        tagJet50U = cms.string("userFloat('tagJet50U')"),
-        probeJet50U = cms.string("userFloat('probeJet50U')"),
-        tagJet70U = cms.string("userFloat('tagJet70U')"),
-        probeJet70U = cms.string("userFloat('probeJet70U')"),
-        tagJet100U = cms.string("userFloat('tagJet100U')"),
-        probeJet100U = cms.string("userFloat('probeJet100U')"),
-        ptIndex = cms.string("userFloat('pt_index')"),
-
+        tagJet30v1 = cms.string("userFloat('tagJet30v1')"),
+        probeJet30v1 = cms.string("userFloat('probeJet30v1')"),
+        tagJet60v1 = cms.string("userFloat('tagJet60v1')"),
+        probeJet60v1 = cms.string("userFloat('probeJet60v1')"),
+        tagJet80v1 = cms.string("userFloat('tagJet80v1')"),
+        probeJet80v1 = cms.string("userFloat('probeJet80v1')"),
+        tagJet110v1 = cms.string("userFloat('tagJet110v1')"),
+        probeJet110v1 = cms.string("userFloat('probeJet110v1')"),
+        tagJet150v1 = cms.string("userFloat('tagJet150v1')"),
+        probeJet150v1 = cms.string("userFloat('probeJet150v1')"),
+        
         # tau id. discriminators based on leading track/PFChargedHadron                                                 
         byLeadTrackFinding = cms.string("tauID('leadingTrackFinding')"),
         byLeadTrackPtCut = cms.string("tauID('leadingTrackPtCut')"),
@@ -128,35 +127,6 @@ for tancInputInfo in produceTancMVAInputDiscriminators.discriminants:
         # single input
         setattr(pfTausShrinkingCone_recInfo.columns, name, cms.string(
                 "tauID('%s')" % name ))
-
-pfTausShrinkingCone_recDecayModeInfo = cms.PSet(
-    # Select multiplicy of object(s) to store
-    vector = cms.bool(True), # Store a value for all objects in this collection
-    #indices = cms.vuint_32([0, 1, 2]) # Store values for first, second, third objects
-    
-    # Extractor plugin
-    pluginType = cms.string("PATTauVectorDecayModeValExtractor"),
-    
-    # Collection to extract from
-    src = cms.InputTag("patPFTausDijetTagAndProbeShrinkingCone"),
-    srcPFTau = cms.InputTag("shrinkingConePFTauProducer"),
-    srcPFTauDecayMode = cms.InputTag("shrinkingConePFTauDecayModeProducer"),
-    
-    # Variables to compute for this source
-    columns = cms.PSet(
-        # kinematic variables of PFTau,
-        # taen from PFTauDecayMode object
-        pt = cms.string("pt"),
-        eta = cms.string("eta"),
-        phi = cms.string("phi"),
-        mass = cms.string("mass"),
-
-        ptDecayMode = cms.string("pt"),
-        etaDecayMode = cms.string("eta"),
-        phiDecayMode = cms.string("phi"),
-        massDecayMode = cms.string("mass")
-    )
-)   
 
 pfTausShrinkingCone_recJetIdInfo = cms.PSet(
     # Select multiplicy of object(s) to store

@@ -36,7 +36,7 @@ def configurePatTupleProductionTauIdEffMeasSpecific(process, patSequenceBuilder 
     )
 
     patTupleConfig = configurePatTupleProduction(process, patSequenceBuilder,
-                                                 patPFTauCleanerPrototype, patCaloTauCleanerPrototype, hltProcess, addGenInfo)
+                                                 patPFTauCleanerPrototype, patCaloTauCleanerPrototype, True, hltProcess, addGenInfo)
    
     process.producePatTupleTauIdEffMeasSpecific = cms.Sequence(
         process.patDefaultSequence
@@ -183,38 +183,38 @@ def configurePatTupleProductionTauIdEffMeasSpecific(process, patSequenceBuilder 
     # produce collections of Tau-Jets and of Muon + Tau-jet candidate pairs
     #--------------------------------------------------------------------------------
 
-    commonTauPreselectionCriteria = [
-        [ "LeadTrk",         'tauID("leadingTrackFinding") > 0.5'                       ],        
+    caloTauPreselectionCriteria = [
+        [ "LeadTrk",         'tauID("leadingTrackFinding") > 0.5'                       ],
+        [ "LeadTrkPt",       'tauID("leadingTrackPtCut") > 0.5'                         ],
+        [ "MuonVeto",        'tauID("againstMuon") > 0.5'                               ],
+        [ "ElectronVeto",    'tauID("againstElectron") > 0.5'                           ],
         [ "EcalCrackVeto",   'abs(eta) < 1.460 | abs(eta) > 1.558'                      ]
     ]
 
-    caloTauPreselectionCriteria = copy.deepcopy(commonTauPreselectionCriteria)
-    caloTauPreselectionCriteria.extend([
-        [ "TrkPt",           'tauID("leadingTrackPtCut") > 0.5'                         ],
+    pfTauConeIsoPreselectionCriteria = [
+        [ "LeadTrk",         'tauID("leadingTrackFinding") > 0.5'                       ],
+        [ "LeadTrkPt",       'tauID("leadingTrackPtCut") > 0.5'                         ],
         [ "MuonVeto",        'tauID("againstMuon") > 0.5'                               ],
-        [ "ElectronVeto",    'tauID("againstElectron") > 0.5'                           ]
-    ])
+        [ "ElectronVeto",    'leadPFCand().isNonnull() & leadPFCand().mva_e_pi() < 0.6' ],
+        [ "EcalCrackVeto",   'abs(eta) < 1.460 | abs(eta) > 1.558'                      ]
+    ]
 
-    pfTauConeIsoPreselectionCriteria = copy.deepcopy(commonTauPreselectionCriteria)
-    pfTauConeIsoPreselectionCriteria.extend([
-        [ "TrkPt",           'tauID("leadingTrackPtCut") > 0.5'                         ],
-        [ "MuonVeto",        'tauID("againstMuon") > 0.5'                               ],
-        [ "ElectronVeto",    'leadPFCand().isNonnull() & leadPFCand().mva_e_pi() < 0.6' ]
-    ])
-
-    pfTauHPSpreselectionCriteria = copy.deepcopy(commonTauPreselectionCriteria)
-    pfTauHPSpreselectionCriteria.extend([
-        [ "MuonVeto",        'tauID("againstMuonTight") > 0.5'                          ],
-        [ "ElectronVeto",    'tauID("againstElectronLoose") > 0.5'                      ]
-    ])
-
-    pfTauHPSpTaNCpreselectionCriteria = copy.deepcopy(commonTauPreselectionCriteria)
-    pfTauHPSpTaNCpreselectionCriteria.extend([
-        [ "TrkPt",           'tauID("leadingTrackPtCut") > 0.5'                         ],
+    pfTauHPSpreselectionCriteria = [
+        [ "DecayMode",       'tauID("decayModeFinding") > 0.5'                          ],
         [ "MuonVeto",        'tauID("againstMuonTight") > 0.5'                          ],
         [ "ElectronVeto",    'tauID("againstElectronLoose") > 0.5'                      ],
-        #[ "CaloMuonVeto",    'tauID("againstCaloMuon") > 0.5'                           ]
-    ])
+        [ "EcalCrackVeto",   'abs(eta) < 1.460 | abs(eta) > 1.558'                      ]
+    ]
+
+    pfTauHPSpTaNCpreselectionCriteria = [
+        [ "LeadTrk",         'tauID("leadingTrackFinding") > 0.5'                       ],
+        #[ "LeadTrkPt",       'tauID("leadingTrackPtCut") > 0.5'                         ],
+        [ "LeadPionPt",      'tauID("leadingPionPtCut") > 0.5'                          ],
+        [ "MuonVeto",        'tauID("againstMuonTight") > 0.5'                          ],
+        #[ "CaloMuonVeto",    'tauID("againstCaloMuon") > 0.5'                           ],
+        [ "ElectronVeto",    'tauID("againstElectronLoose") > 0.5'                      ],
+        [ "EcalCrackVeto",   'abs(eta) < 1.460 | abs(eta) > 1.558'                      ]
+    ]
     
     retVal_caloTau = \
         buildSequenceTauIdEffMeasSpecific(process,

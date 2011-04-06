@@ -215,7 +215,7 @@ if __name__ == "__main__":
     pfTau_ntuple = ntuple_manager.get_ntuple("patPFTausDijetTagAndProbeShrinkingCone")
 
     # Basic requirement HLT + Probe object
-    pfTau_base_selection = hlt_ntuple.expr('$hltJet15Ubit > 0.5') & pfTau_ntuple.expr('$probe > 0.5')
+    pfTau_base_selection = hlt_ntuple.expr('$hltJet30v1bit > 0.5') & pfTau_ntuple.expr('$probeJet30v1 > 0.5')
 
     # Make plots of jetPt, jetEta and jetPhi
     makeJetPlot(
@@ -256,7 +256,7 @@ if __name__ == "__main__":
     caloTau_ntuple = ntuple_manager.get_ntuple("patCaloTausDijetTagAndProbe")
 
     # Basic requirement HLT + Probe object
-    caloTau_base_selection = hlt_ntuple.expr('$hltJet15Ubit > 0.5') & caloTau_ntuple.expr('$probe > 0.5')
+    caloTau_base_selection = hlt_ntuple.expr('$hltJet30v1bit > 0.5') & caloTau_ntuple.expr('$probeJet30v1 > 0.5')
 
     # Make plots of jetPt, jetEta and jetPhi
     makeJetPlot(

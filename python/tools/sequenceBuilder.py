@@ -73,8 +73,20 @@ def buildTauSequence(
     # produce new collection of pat::Taus with trigger primitives embedded
     patTauTriggerMatch = triggerMatcherProtoType.clone(
         src = cms.InputTag(patTauProducerName),
-        filterLabels = cms.vstring('hlt1jet15U', 'hlt1jet30U', 'hlt1jet50U', 'hlt1jet70U', 'hlt1jet100U'),
-        pathNames    = cms.vstring('HLT_Jet15U', 'HLT_Jet30U', 'HLT_Jet50U', 'HLT_Jet70U', 'HLT_Jet100U')
+        filterLabels = cms.vstring(
+            'hltSingleJet30',
+            'hltSingleJet60Regional',
+            'hltSingleJet80Regional',
+            'hltSingleJet110Regional',
+            'hltSingleJet150Regional'
+        ),
+        pathNames    = cms.vstring(
+            'HLT_Jet30_v1',
+            'HLT_Jet60_v1',
+            'HLT_Jet80_v1',
+            'HLT_Jet110_v1',
+            'HLT_Jet150_v1'
+        )
     )
     patTauTriggerMatchName = collectionName[0]  + "TriggerMatched" + collectionName[1]
     setattr(process, patTauTriggerMatchName, patTauTriggerMatch)

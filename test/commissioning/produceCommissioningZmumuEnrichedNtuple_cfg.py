@@ -60,9 +60,9 @@ applyEventSelection = True
 #--------------------------------------------------------------------------------
 # define GlobalTag to be used for event reconstruction
 if isMC:
-    process.GlobalTag.globaltag = cms.string('START38_V14::All')
-else:    
-    process.GlobalTag.globaltag = cms.string('GR_R_38X_V15::All')
+    process.GlobalTag.globaltag = cms.string('START311_V2::All')
+else:
+    process.GlobalTag.globaltag = cms.string('GR_R_311_V2::All')
 #--------------------------------------------------------------------------------    
 
 #--------------------------------------------------------------------------------
@@ -200,9 +200,6 @@ process.ntupleProducer = cms.EDProducer("ObjValEDNtupleProducer",
         pfTausShrinkingCone_rec = process.pfTausShrinkingCone_recInfo.clone(
             src = cms.InputTag(retVal["pfTauCollectionShrinkingCone"])                       
         ),
-        pfTausShrinkingCone_recDecayMode = process.pfTausShrinkingCone_recDecayModeInfo.clone(
-            src = cms.InputTag(retVal["pfTauCollectionShrinkingCone"])
-        ),
         pfTausShrinkingCone_recJetId = process.pfTausShrinkingCone_recJetIdInfo.clone(
             src = cms.InputTag(retVal["pfTauCollectionShrinkingCone"])
         ),                                    
@@ -272,7 +269,6 @@ process.ntupleOutputModule = cms.OutputModule("PoolOutputModule",
         )                               
     ),
     process.zMuMuEnrichedEventSelection, # comment-out to disable filtering of events put in Tau Ntuple                         
-    verbose = cms.untracked.bool(False),
     fileName = cms.untracked.string("tauIdEffEDNtuple_zMuMuEnriched.root")      
 )
 #--------------------------------------------------------------------------------

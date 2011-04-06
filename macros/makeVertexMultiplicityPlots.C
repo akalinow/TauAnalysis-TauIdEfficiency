@@ -7,6 +7,10 @@ makeVertexMultiplicityPlots()
 
   TString cacheFilePathData = "/data1/friis/tau_fakerate_ntuples/user/v/veelken/TauIdCommissioning/WplusJets/v3_3/";
 
+/castor/cern.ch/user/v/veelken/TauIdCommissioning/WplusJets/v5_0/data_Mu_Run2011A_PromptReco
+mrw-r--r--   1 11480    zh                  3533398 Apr 03 18:26 tauIdEffEDNtuple_wPlusJetsEnriched_10_1_KrN.root
+
+
   TString prefix = "double_ntupleProducer_tauIdEffNtuple";
   TString suffix = "_prodCommissioningWplusJetsEnrichedNtuple.obj";
 
@@ -18,9 +22,7 @@ makeVertexMultiplicityPlots()
   TString branchGenPileUp = TString(prefix).Append("#addPileupInfo#genPtHat").Append(suffix);
 
   TChain* chainData = new TChain("Events");
-  chainData->Add(TString(cacheFilePathData).Append("runs132440_145761/tauIdEffEDNtuple_wPlusJetsEnriched*"));
-  chainData->Add(TString(cacheFilePathData).Append("runs145762_147116/tauIdEffEDNtuple_wPlusJetsEnriched*"));
-  chainData->Add(TString(cacheFilePathData).Append("runs147117_149442/tauIdEffEDNtuple_wPlusJetsEnriched*"));
+  chainData->Add(TString(cacheFilePathData).Append("data_Mu_Run2011A_PromptReco/tauIdEffEDNtuple_wPlusJetsEnriched*"));
 
   chainData->Draw(TString(branchNumVerticesPtGt10).Append(">>+histoData"));
 

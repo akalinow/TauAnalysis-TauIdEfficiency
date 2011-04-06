@@ -651,11 +651,11 @@ if __name__ == "__main__":
         denominator_jetId     = nTuples[algorithm].expr("$jetIdLoose > 0.5")
         denominator_e_mu_veto = nTuples[algorithm].expr("$pfElectronMVA < 0.6 & $againstMuon > 0.5")
         denominator_dijet     = nTuples[algorithm].expr(denominator_phase_space) & denominator_jetId & denominator_e_mu_veto \
-                               & hlt.expr('$hltJet15Ubit > 0.5') & nTuples[algorithm].expr("$probe > 0.5")
+                               & hlt.expr('$hltJet30v1bit > 0.5') & nTuples[algorithm].expr("$probeJet30v1 > 0.5")
         denominator_ppmux     = nTuples[algorithm].expr(denominator_phase_space) & denominator_jetId & denominator_e_mu_veto \
-                               & hlt.expr('$hltMu9bit > 0.5') 
+                               & hlt.expr('$hltMu15v2bit > 0.5') 
         denominator_wjets     = nTuples[algorithm].expr(denominator_phase_space) & denominator_jetId & denominator_e_mu_veto
-        ##                     & hlt.expr('$hltMu15v1bit > 0.5')
+        ##                     & hlt.expr('$hltMu15v2bit > 0.5')
 
         extra_labels_pt  = copy.deepcopy(extra_labels[algorithm_discriminator])
         extra_labels_pt.append(style.ETA_CUT_LABEL_UPPER_LEFT)

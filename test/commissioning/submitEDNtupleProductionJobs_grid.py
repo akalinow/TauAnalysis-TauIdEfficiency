@@ -10,12 +10,12 @@ print("<submitEDNtupleProductionJobs_grid>:")
 
 castorFilePath = "/castor/cern.ch/user/v/veelken/TauIdCommissioning/"
 #crabFilePath = "/afs/cern.ch/user/v/veelken/scratch0/CMSSW_3_8_7/src/TauAnalysis/TauIdEfficiency/test/commissioning/crab/"
-crabFilePath = "/data1/veelken/CMSSW_3_8_x/crab/TauIdEfficiency/"
+crabFilePath = "/data1/veelken/CMSSW_4_1_x/crab/TauIdEfficiency/"
 
 pfCandidateCollection = "particleFlow" # pile-up removal disabled
 #pfCandidateCollection = "pfNoPileUp"   # pile-up removal enabled
 
-version = "v4_4"
+version = "v5_0b"
 
 crab_template = """
 [CRAB]

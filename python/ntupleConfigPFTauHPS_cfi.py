@@ -68,17 +68,16 @@ pfTausHPS_recInfo = cms.PSet(
 
         # flags for tag/probe and Pt_index for distinguishing between
         # highest Pt, second highest Pt and third highest Pt jet
-        tagJet15U = cms.string("userFloat('tagJet15U')"),
-        probeJet15U = cms.string("userFloat('probeJet15U')"),
-        tagJet30U = cms.string("userFloat('tagJet30U')"),
-        probeJet30U = cms.string("userFloat('probeJet30U')"),
-        tagJet50U = cms.string("userFloat('tagJet50U')"),
-        probeJet50U = cms.string("userFloat('probeJet50U')"),
-        tagJet70U = cms.string("userFloat('tagJet70U')"),
-        probeJet70U = cms.string("userFloat('probeJet70U')"),
-        tagJet100U = cms.string("userFloat('tagJet100U')"),
-        probeJet100U = cms.string("userFloat('probeJet100U')"),
-        ptIndex = cms.string("userFloat('pt_index')"),
+        tagJet30v1 = cms.string("userFloat('tagJet30v1')"),
+        probeJet30v1 = cms.string("userFloat('probeJet30v1')"),
+        tagJet60v1 = cms.string("userFloat('tagJet60v1')"),
+        probeJet60v1 = cms.string("userFloat('probeJet60v1')"),
+        tagJet80v1 = cms.string("userFloat('tagJet80v1')"),
+        probeJet80v1 = cms.string("userFloat('probeJet80v1')"),
+        tagJet110v1 = cms.string("userFloat('tagJet110v1')"),
+        probeJet110v1 = cms.string("userFloat('probeJet110v1')"),
+        tagJet150v1 = cms.string("userFloat('tagJet150v1')"),
+        probeJet150v1 = cms.string("userFloat('probeJet150v1')"),
         
         # tau id. discriminators
         bgDecayModeFinding = cms.string("tauID('decayModeFinding')"),

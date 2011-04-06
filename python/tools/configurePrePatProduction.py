@@ -5,6 +5,9 @@ def configurePrePatProduction(process, pfCandidateCollection = "particleFlow",
 
     #--------------------------------------------------------------------------------
     # PFCandidate pile-up removal
+    # for CMSSW_4_2_0_pre8 and higher
+    #process.load("CommonTools.ParticleFlow.pfNoPileUp_cff")
+    # for CMSSW_3_8_x and CMSSW_4_1_x release series
     process.load("PhysicsTools.PFCandProducer.pfNoPileUp_cff")
     process.pfPileUp.Enable = cms.bool(True)
     process.prePatProductionSequence = cms.Sequence(process.pfNoPileUpSequence)
@@ -48,24 +51,29 @@ def configurePrePatProduction(process, pfCandidateCollection = "particleFlow",
     #--------------------------------------------------------------------------------
 
     #--------------------------------------------------------------------------------
+    # add collection of shrinking-cone PFTaus
+    # (not produced per default anymore)
+
+    process.load("RecoTauTag.Configuration.ShrinkingConePFTaus_cff")
+
+    process.prePatProductionSequence += process.produceAndDiscriminateShrinkingConePFTaus
+    process.prePatProductionSequence += process.produceShrinkingConeDiscriminationByTauNeuralClassifier
+    #--------------------------------------------------------------------------------
+
+    #--------------------------------------------------------------------------------
     # recreate collection of CaloTaus
     # with four-momenta determined by TCTau instead of (regular) CaloTau algorithm
     #
-    # NOTE: change leading track Pt threshold in order to see effect
-    #       of leading track finding and and leading track Pt cut
-    #       on tau identification efficiency and fake-rate
+    # NOTE:
+    #      (1) change leading track Pt threshold in order to see effect
+    #          of leading track finding and and leading track Pt cut
+    #          on tau identification efficiency and fake-rate
+    #      (2) Calo/TCTau sequence needs to be disabled when running on AOD
+    #         (because production of CaloTauTagInfo objects requires TrackExtra objects)
     #
-    process.load("RecoTauTag.Configuration.RecoTCTauTag_cff")
-
-    process.prePatProductionSequence += process.tautagging
-    #--------------------------------------------------------------------------------
-
-    #--------------------------------------------------------------------------------
-    # recreate collection of PFTauDecayMode objects,
-    # not stored on AOD/RECO
-    process.load("RecoTauTag.Configuration.ShrinkingConePFTaus_cfi")
-
-    process.prePatProductionSequence += process.shrinkingConePFTauDecayModeProducer
+    #process.load("RecoTauTag.Configuration.RecoTCTauTag_cff")
+    #
+    #process.prePatProductionSequence += process.tautagging
     #--------------------------------------------------------------------------------
 
     #--------------------------------------------------------------------------------
