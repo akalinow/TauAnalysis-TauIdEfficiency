@@ -50,7 +50,7 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
         process.tauGenJetMatch.matched = cms.InputTag("tauGenJets")
 
     #--------------------------------------------------------------------------------
-    # configure PAT trigger matching
+    # configure PAT trigger matching    
     switchOnTrigger(process, hltProcess = hltProcess, outputModule = '')
     process.patTrigger.addL1Algos = cms.bool(True)
 
