@@ -17,15 +17,8 @@ process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
 #--------------------------------------------------------------------------------
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
-        #'/store/relval/CMSSW_3_6_1/RelValZTT/GEN-SIM-RECO/START36_V7-v1/0021/F405BC9A-525D-DF11-AB96-002618943811.root',
-        #'/store/relval/CMSSW_3_6_1/RelValZTT/GEN-SIM-RECO/START36_V7-v1/0020/EE3E8F74-365D-DF11-AE3D-002618FDA211.root'
-        ##'file:/data1/veelken/CMSSW_3_6_x/skims/pseudoData_Ztautau.root'
-        ##'file:/data1/veelken/CMSSW_3_6_x/skims/Ztautau_1_1_sXK.root'
-        ##'file:/data1/veelken/CMSSW_3_8_x/skims/test/mcDYttPU156bx_GEN_SIM_RECO_1_1_1VV.root'
-        ##'file:/data1/veelken/CMSSW_3_8_x/skims/AHtoMuTau/selEvents_AHtoMuTau_HPSloose_friis_RECO.root'
-        ##'file:/data1/veelken/CMSSW_3_8_x/skims/test/skim_ZtautauPU156bx_chunk_1_8a2f.root'
-        ##'file:/data1/veelken/CMSSW_3_8_x/skims/test/skim_data_Mu_Run2010B_Nov4ReReco_chunk_8_7b59.root'
-        'file:/data1/veelken/CMSSW_3_8_x/skims/debug/debugTauIdEffMeasSample_data_all_2011Feb03bV2_RECO.root'
+        'file:/data2/veelken/CMSSW_4_1_x/skims/ZtoMuTau/DYtautau_spring11_powhegZ2_1_1_XvY.root'
+        #'file:/data2/veelken/CMSSW_4_1_x/skims/ZtoMuTau/data2/veelken/CMSSW_4_1_x/skims/ZtoMuTau/data2011A_tauPlusX_AOD_1_1_MV9.root'
     ),
     skipEvents = cms.untracked.uint32(0)            
 )
@@ -45,10 +38,8 @@ process.maxEvents = cms.untracked.PSet(
 
 ##isMC = True # use for MC
 isMC = False # use for Data
-HLTprocessName = "HLT" # use for non-reprocessed MC samples and Data
-##HLTprocessName = "REDIGI36X" # use for Spring'10 reprocessed MC
-##HLTprocessName = "REDIGI38XPU" # use for Fall'10 reprocessed MC with pile-up
-##HLTprocessName = "REDIGI38X" # use for Fall'10 reprocessed MC without pile-up
+##HLTprocessName = "HLT" # use for 2011 Data
+HLTprocessName = "REDIGI311X" # use for Spring'11 reprocessed MC
 pfCandidateCollection = "particleFlow" # pile-up removal disabled
 ##pfCandidateCollection = "pfNoPileUp" # pile-up removal enabled
 applyZrecoilCorrection = False
@@ -70,9 +61,9 @@ applyZrecoilCorrection = False
 # define GlobalTag to be used for event reconstruction
 # (only relevant for HPS tau reconstruction algorithm)
 if isMC:
-    process.GlobalTag.globaltag = cms.string('START38_V14::All')
-else:   
-    process.GlobalTag.globaltag = cms.string('GR_R_38X_V15::All')
+    process.GlobalTag.globaltag = cms.string('START311_V2::All')
+else:
+    process.GlobalTag.globaltag = cms.string('GR_R_311_V2::All')
 #--------------------------------------------------------------------------------    
 
 #--------------------------------------------------------------------------------
@@ -198,14 +189,6 @@ for algorithm in patTupleConfig["algorithms"]:
             indices = cms.vuint32([0])
         )
         setattr(process.ntupleProducer.sources, attr02Name, attr02)
-        if algorithm == "pfTauShrinkingCone":
-            attr02dmName = "tauIdEffMeas02dm_%s" % patTauCollection
-            attr02dm = process.pfTausShrinkingCone_recDecayModeInfo.clone(
-                src = cms.InputTag(patTauCollection),
-                vector = cms.bool(True),
-                indices = cms.vuint32([0])
-            )
-            setattr(process.ntupleProducer.sources, attr02dmName, attr02dm)
 
     for muTauPairCollection in patTupleConfig[algorithm]["muTauPairCollections"]:
         attr03Name = "tauIdEffMeas03_%s" % muTauPairCollection
@@ -239,7 +222,6 @@ process.ntupleOutputModule = cms.OutputModule("PoolOutputModule",
         )                               
     ),
     process.tauIdEffSampleEventSelection,
-    verbose = cms.untracked.bool(False),
     fileName = cms.untracked.string("tauIdEffMeasEDNtuple.root")      
 )
 #--------------------------------------------------------------------------------
