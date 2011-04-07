@@ -1,16 +1,16 @@
 # List of samples to run in the analysis
 SAMPLES_TO_RUN = [
-    #'data_Jet_Run2011A_PromptReco',
-    #'data_Mu_Run2011A_PromptReco',
-    #'Ztautau',
-    #'qcdDiJetPtHat15to30',
-    #'qcdDiJetPtHat30to50',
-    #'qcdDiJetPtHat50to80',
-    #'qcdDiJetPtHat80to120',
-    #'qcdDiJetPtHat120to170',
-    #'qcdDiJetPtHat170to300',
+    'data_Jet_Run2011A_PromptReco',
+    'data_Mu_Run2011A_PromptReco',
+    'Ztautau',
+    'qcdDiJetPtHat15to30',
+    'qcdDiJetPtHat30to50',
+    'qcdDiJetPtHat50to80',
+    'qcdDiJetPtHat80to120',
+    'qcdDiJetPtHat120to170',
+    'qcdDiJetPtHat170to300',
     'PPmuXptGt20Mu15',
-    #'WplusJets'
+    'WplusJets'
 ]
 
 JOBS_TO_RUN = [
@@ -76,7 +76,7 @@ RECO_SAMPLES = {
     },
     # Monte Carlo samples
     'Ztautau' : {
-        'datasetpath'   : "/DYToTauTau_M-10To20_CT10_TuneZ2_7TeV-powheg-pythia-tauola/Spring11-PU_S1_START311_V1G1-v2/AODSIM",
+        'datasetpath'   : "/DYToTauTau_M-20_CT10_TuneZ2_7TeV-powheg-pythia-tauola/Spring11-PU_S1_START311_V1G1-v2/AODSIM",
         'dbs_url'       : "http://cmsdbsprod.cern.ch/cms_dbs_prod_global/servlet/DBSServlet",
         'jobs'          : [ 'qcdDiJet' ],
         'type'          : 'MC',
