@@ -22,16 +22,10 @@ pfTausShrinkingCone_recInfo = cms.PSet(
     # Variables to compute for this source
     columns = cms.PSet(
         # kinematic variables for PFTau
-        # CV: pt, eta, phi and mass disabled;
-        #     take values from reco::PFTauDecayMode object instead
-        #pt = cms.string("pt()"),
-        #eta = cms.string("eta()"),
-        #phi = cms.string("phi()"),
-        #mass = cms.string("mass()"),
-        ptSignalCone = cms.string("pt()"),
-        etaSignalCone = cms.string("eta()"),
-        phiSignalCone = cms.string("phi()"),
-        massSignalCone = cms.string("mass()"),
+        pt = cms.string("pt()"),
+        eta = cms.string("eta()"),
+        phi = cms.string("phi()"),
+        mass = cms.string("mass()"),
 
         # charge of PFTau
         # (sum of charges of charged particles within signal cone)
