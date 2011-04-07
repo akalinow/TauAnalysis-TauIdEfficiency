@@ -12,19 +12,18 @@ channel = 'ZtoMuTau_tauIdEff'
 configFile = 'produceTauIdEffMeasNtuple_cfg.py'
 analysisFilePath = getAnalysisFilePath(channel)
 #jobId = getJobId(channel)
-jobId = '2011Feb03b'
+jobId = '2011Apr05'
 
-version = "V3"
+version = "V1"
 
 pfCandidateCollection = "particleFlow" # pile-up removal disabled
 #pfCandidateCollection = "pfNoPileUp"   # pile-up removal enabled
 
 samplesToAnalyze = [
     # modify in case you want to submit jobs for some of the samples only...
-    'Ztautau_powheg', 'Ztautau_powhegZ2',
 ]
 
-outputFilePath = "/castor/cern.ch/user/v/veelken/CMSSW_3_8_x/ntuples/TauIdEffMeas"
+outputFilePath = "/castor/cern.ch/user/v/veelken/CMSSW_4_1_x/ntuples/TauIdEffMeas"
 
 # Get all the skim files from the castor directory
 skimFilePath = getPickEventsPath(channel)
