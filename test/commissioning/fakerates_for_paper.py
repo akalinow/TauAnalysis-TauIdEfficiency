@@ -31,7 +31,7 @@ sample_wjets_data  = samples.data_wjets
 sample_wjets_mc    = samples.wjets_mc
 
 # Define integrated luminosity of analyzed dataset
-intLumiData = 51000 # nb^-1
+intLumiData = 5100 # nb^-1
 
 # Define denominator (phase-space) for which fake-rates are to be determined
 denominator_phase_space = "$jetPt > 20.0 & abs($jetEta) < 2.3"
@@ -39,7 +39,7 @@ denominator_phase_space = "$jetPt > 20.0 & abs($jetEta) < 2.3"
 # Define maximum number of Ntuple entries to process
 # (NOTE: use values different from 1000000000 for debugging purposes only !!)
 maxNumEntries = 1000000000
-#maxNumEntries = 10000
+#maxNumEntries = 100000
 
 # Define marker styles
 custom_style_dijet_data = copy.deepcopy(style.DATA_STYLE)
