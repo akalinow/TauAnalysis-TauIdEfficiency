@@ -18,11 +18,8 @@ process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
 #--------------------------------------------------------------------------------
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
-        #'/store/relval/CMSSW_3_6_1/RelValZTT/GEN-SIM-RECO/START36_V7-v1/0021/F405BC9A-525D-DF11-AB96-002618943811.root',
-        #'/store/relval/CMSSW_3_6_1/RelValZTT/GEN-SIM-RECO/START36_V7-v1/0020/EE3E8F74-365D-DF11-AE3D-002618FDA211.root'
-        ##'file:/data1/veelken/CMSSW_3_6_x/skims/pseudoData_Ztautau.root'
-        ##'file:/data1/veelken/CMSSW_3_6_x/skims/Ztautau_1_1_sXK.root'
-        'file:/data1/veelken/CMSSW_3_8_x/skims/test/mcDYttPU156bx_GEN_SIM_RECO_1_1_1VV.root'
+        'file:/data2/veelken/CMSSW_4_1_x/skims/ZtoMuTau/DYtautau_spring11_powhegZ2_1_1_XvY.root'
+        #'file:/data2/veelken/CMSSW_4_1_x/skims/ZtoMuTau/data2/veelken/CMSSW_4_1_x/skims/ZtoMuTau/data2011A_tauPlusX_AOD_1_1_MV9.root'
     ),
     skipEvents = cms.untracked.uint32(0)            
 )
@@ -44,10 +41,8 @@ isMC = True # use for MC
 ##isMC = False # use for Data
 addMCEmbeddingFlags = True # use for MC samples generated using MCEmbedding technique
 ##addMCEmbeddingFlags = False # use for MC not generated using MCEmbedding technique and for Data
-HLTprocessName = "HLT" # use for non-reprocessed MC samples and Data
-##HLTprocessName = "REDIGI36X" # use for Spring'10 reprocessed MC
-##HLTprocessName = "REDIGI38XPU" # use for Fall'10 reprocessed MC with pile-up
-##HLTprocessName = "REDIGI38X" # use for Fall'10 reprocessed MC without pile-up
+##HLTprocessName = "HLT" # use for 2011 Data
+HLTprocessName = "REDIGI311X" # use for Spring'11 reprocessed MC
 pfCandidateCollection = "particleFlow" # pile-up removal disabled
 ##pfCandidateCollection = "pfNoPileUp" # pile-up removal enabled
 #--------------------------------------------------------------------------------
@@ -109,7 +104,7 @@ patCaloTauCleanerPrototype = process.cleanPatTaus.clone(
     preselection = cms.string(''),
     checkOverlaps = cms.PSet(),
     finalCut = cms.string(
-        'caloTauTagInfoRef().jetRef().pt() > 5 & abs(caloTauTagInfoRef().jetRef().eta()) < 2.5'
+        'caloTauTagInfoRef().jetRef().pt() > 8.0 & abs(caloTauTagInfoRef().jetRef().eta()) < 2.5'
     )
 )
 
@@ -117,7 +112,7 @@ patPFTauCleanerPrototype = process.cleanPatTaus.clone(
     preselection = cms.string(''),
     checkOverlaps = cms.PSet(),
     finalCut = cms.string(
-        'pfJetRef().pt() > 5 & abs(pfJetRef().eta()) < 2.5'
+        'pfJetRef().pt() > 8.0 & abs(pfJetRef().eta()) < 2.5'
     )
 )
 

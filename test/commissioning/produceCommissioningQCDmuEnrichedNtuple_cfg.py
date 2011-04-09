@@ -118,13 +118,13 @@ patCaloTauCleanerPrototype = process.cleanPatTaus.clone(
         )
     ),        
     finalCut = cms.string(
-        'caloTauTagInfoRef().jetRef().pt() > 5 & abs(caloTauTagInfoRef().jetRef().eta()) < 2.5'
+        'caloTauTagInfoRef().jetRef().pt() > 8.0 & abs(caloTauTagInfoRef().jetRef().eta()) < 2.5'
     )
 )
 
 patPFTauCleanerPrototype = patCaloTauCleanerPrototype.clone(
     finalCut = cms.string(
-        'pfJetRef().pt() > 5 & abs(pfJetRef().eta()) < 2.5'
+        'pfJetRef().pt() > 8.0 & abs(pfJetRef().eta()) < 2.5'
     )
 )
 

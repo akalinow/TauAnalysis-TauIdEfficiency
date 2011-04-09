@@ -116,13 +116,13 @@ patCaloTauCleanerPrototype = process.cleanPatTaus.clone(
         )
     ),        
     finalCut = cms.string(
-        'caloTauTagInfoRef().jetRef().pt() > 5 & abs(caloTauTagInfoRef().jetRef().eta()) < 2.5'
+        'caloTauTagInfoRef().jetRef().pt() > 8.0 & abs(caloTauTagInfoRef().jetRef().eta()) < 2.5'
     )
 )
 
 patPFTauCleanerPrototype = patCaloTauCleanerPrototype.clone(
     finalCut = cms.string(
-        'pfJetRef().pt() > 5 & abs(pfJetRef().eta()) < 2.5'
+        'pfJetRef().pt() > 8.0 & abs(pfJetRef().eta()) < 2.5'
     )
 )
 
@@ -231,20 +231,6 @@ process.ntupleProducer = cms.EDProducer("ObjValEDNtupleProducer",
         # global event variables specific to W + jets selection
         caloMet_rec = process.caloMet_template,
         pfMet_rec = process.pfMet_template
-        #caloMetDiTau_rec = process.diTau_template.clone(
-        #    src = cms.InputTag("selectedMuonCaloTauPairs"),
-        #    columns = cms.PSet(
-        #        caloMt1MET = cms.string("mt1MET()"),
-        #        caloPt1MET = cms.string("pt1MET()")                                     
-        #    )
-        #),
-        #pfMetDiTau_rec = process.diTau_template.clone(
-        #    src = cms.InputTag("selectedMuonPFTauPairs"),
-        #    columns = cms.PSet(
-        #        pfMt1MET = cms.string("mt1MET()"),
-        #        pfPt1MET = cms.string("pt1MET()")                     
-        #    )
-        #)
     )
 )
 
