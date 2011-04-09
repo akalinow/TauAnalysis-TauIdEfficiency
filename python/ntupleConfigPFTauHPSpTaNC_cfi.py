@@ -99,7 +99,7 @@ pfTausHPSpTaNC_recInfo = cms.PSet(
         byTaNCtight = cms.string("tauID('byTaNCtight')"),        
 
         # HPS discriminators
-        bgDecayModeFinding = cms.string("tauID('decayModeFinding')"),
+        byDecayModeFinding = cms.string("tauID('decayModeFinding')"),
         byHPSvloose = cms.string("tauID('byHPSvloose')"),
         byHPSloose = cms.string("tauID('byHPSloose')"),
         byHPSmedium = cms.string("tauID('byHPSmedium')"),

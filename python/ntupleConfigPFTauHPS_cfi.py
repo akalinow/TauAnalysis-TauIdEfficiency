@@ -79,8 +79,8 @@ pfTausHPS_recInfo = cms.PSet(
         tagJet150v1 = cms.string("userFloat('tagJet150v1')"),
         probeJet150v1 = cms.string("userFloat('probeJet150v1')"),
         
-        # tau id. discriminators
-        bgDecayModeFinding = cms.string("tauID('decayModeFinding')"),
+        # tau id. discriminators        
+        byDecayModeFinding = cms.string("tauID('decayModeFinding')"),
         byIsolationLoose = cms.string("tauID('byLooseIsolation')"),
         byIsolationMedium = cms.string("tauID('byMediumIsolation')"),
         byIsolationTight = cms.string("tauID('byTightIsolation')"),
