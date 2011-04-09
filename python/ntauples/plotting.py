@@ -57,6 +57,29 @@ def draw(events, expression, selection = "", output_name = "", binning = (), opt
             
     return ROOT.gDirectory.Get(output_name)
 
+def makeHistInteger(numerator, denominator):
+    ''' Make numerator and denominator histograms integer
+        before computing the tau id. efficiency/fake-rate,
+        in order to work-around the problem
+        that the TGraphAsymmErrors(TH1*, TH1*) constructor does not work in ROOT 5.27/06b (default in CMSSW_4_1_3),
+        in case the histograms contain weighted entries.
+
+        The binContents of numerator and denominator histograms are scaled
+        to the "effective" number of (denominator) entries:
+          effNum = (sum(weights)/sqrt(sum(weights^2)))^2 = binContent/(binError^2)
+    '''
+    for iBin in range(denominator.GetNbinsX() + 1):
+        
+        scaleFactor = 0.
+        if denominator.GetBinError(iBin) > 0:
+            scaleFactor = denominator.GetBinContent(iBin)/ROOT.TMath.Power(denominator.GetBinError(iBin), 2.)
+            
+        numerator.SetBinContent(iBin, ROOT.TMath.Nint(scaleFactor*numerator.GetBinContent(iBin)))
+        numerator.SetBinError(iBin, ROOT.TMath.Sqrt(numerator.GetBinContent(iBin)));
+        
+        denominator.SetBinContent(iBin, ROOT.TMath.Nint(scaleFactor*denominator.GetBinContent(iBin)));
+        denominator.SetBinError(iBin, ROOT.TMath.Sqrt(denominator.GetBinContent(iBin)));
+
 def efficiency(events, expression, numerator = "", denominator = "", binning = (),
                output_name = "", maxNumEntries = 1000000000, **kwargs):
     ''' Compute the efficiency versus expression
@@ -74,12 +97,14 @@ def efficiency(events, expression, numerator = "", denominator = "", binning = (
         output_name = "eff_temp"        
     numerator_h   = draw(events, expression, numerator, "numerator_temp",
                          binning = binning, maxNumEntries = maxNumEntries, **kwargs)
+    print("--> numerator = %.0f" % numerator_h.Integral())
     denominator_h = draw(events, expression, denominator, "denominator_temp",
                          binning = binning, maxNumEntries = maxNumEntries, **kwargs)
+    print("--> denominator = %.0f" % denominator_h.Integral())
     #FIXME clean this up
     from math import sqrt
     nNum = float(numerator_h.Integral())
-    nDenom = denominator_h.Integral()
+    nDenom = float(denominator_h.Integral())
     if nDenom == 0:
         print("Error in <efficiency>: nDenom = 0 --> skipping !!")
         return 
@@ -101,6 +126,21 @@ def efficiency(events, expression, numerator = "", denominator = "", binning = (
     histogram_background.SetTitle("%s/%s" % (numerator, denominator))
     histogram_background.SetStats(False)
     # Compute efficiency
+    print("CV: enabling temporary work-around for problem with TGraphAsymmErrors(TH1*, TH1*)")
+    print("    in case of histograms containing weighted entries")
+    print "numerator_h:"
+    print "numBins = ", numerator_h.GetNbinsX()
+    for i in range(numerator_h.GetNbinsX() + 1):
+        print " bin i = ", i, ":", numerator_h.GetBinContent(i), " +/- ", numerator_h.GetBinError(i)
+    print "denominator_h:"
+    print "numBins = ", denominator_h.GetNbinsX()
+    for i in range(denominator_h.GetNbinsX() + 1):
+        print " bin i = ", i, ":", denominator_h.GetBinContent(i), " +/- ", denominator_h.GetBinError(i)
+    # CV: temporary workaround
+    #    - TGraphAsymmErrors(TH1*, TH1*) constructor does not work in ROOT 5.27/06b (default in CMSSW_4_1_3),
+    #      in case histograms contain weighted entries,
+    #      see posting in RootTalk mailing list http://root.cern.ch/phpBB3/viewtopic.php?f=3&t=12534
+    makeHistInteger(numerator_h, denominator_h)
     efficiency = ROOT.TGraphAsymmErrors(numerator_h, denominator_h)
     efficiency.SetName(output_name)
     return (histogram_background, efficiency)
