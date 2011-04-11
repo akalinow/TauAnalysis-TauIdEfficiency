@@ -23,12 +23,12 @@ import copy
 import samples_cache as samples
 
 # Define sample names
-sample_dijet_data  = samples.data_dijet
-sample_dijet_mc    = samples.qcddijet_mc
-sample_ppmux_data  = samples.data_ppmux
-sample_ppmux_mc    = samples.ppmux15_mc
-sample_wjets_data  = samples.data_wjets
-sample_wjets_mc    = samples.wjets_mc
+sample_dijet_data = samples.data_dijet
+sample_dijet_mc   = samples.qcddijet_mc
+sample_ppmux_data = samples.data_ppmux
+sample_ppmux_mc   = samples.ppmux15_mc
+sample_wjets_data = samples.data_wjets
+sample_wjets_mc   = samples.wjets_mc
 
 # Define integrated luminosity of analyzed dataset
 intLumiData = 5100 # nb^-1
@@ -465,7 +465,8 @@ if __name__ == "__main__":
         
     ##for algorithm_discriminator in [ 'TaNC_loose', 'TaNC_medium', 'TaNC_tight',
     ##                                 'hps_loose',  'hps_medium',  'hps_tight'  ]:
-    for algorithm_discriminator in [ 'TaNC_loose', 'hps_loose' ] :
+    ##for algorithm_discriminator in [ 'TaNC_loose', 'hps_loose' ] :
+    for algorithm_discriminator in [ 'hps_loose' ] :
 
         import sys
         if sys.argv[1:] != [] and (not algorithm in sys.argv[1:]):
@@ -480,8 +481,8 @@ if __name__ == "__main__":
         
         # Define the denominators
         denominator_jetId     = nTuples[algorithm].expr("$jetIdLoose > 0.5")
-        ##denominator_jetId     = nTuples[algorithm].expr("$jetPt > 20.0")
-        denominator_e_mu_veto = nTuples[algorithm].expr("$againstElectronLoose < 0.6 & $againstMuonTight > 0.5")
+        ##denominator_jetId     = nTuples[algorithm].expr("$jetPt > 0.0")
+        denominator_e_mu_veto = nTuples[algorithm].expr("$againstElectronLoose > 0.5 & $againstMuonLoose > 0.5 & $againstMuonTight > 0.5")
         denominator_dijet     = nTuples[algorithm].expr(denominator_phase_space) & denominator_jetId & denominator_e_mu_veto 
         ##                     & hlt.expr('$hltJet30v1bit > 0.5') & nTuples[algorithm].expr("$probeJet30v1 > 0.5")
         denominator_ppmux     = nTuples[algorithm].expr(denominator_phase_space) & denominator_jetId & denominator_e_mu_veto 
