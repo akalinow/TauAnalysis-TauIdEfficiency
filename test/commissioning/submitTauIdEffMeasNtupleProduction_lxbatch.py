@@ -2,7 +2,7 @@
 
 from TauAnalysis.Configuration.recoSampleDefinitionsZtoMuTau_7TeV_grid_cfi import recoSampleDefinitionsZtoMuTau_7TeV
 from TauAnalysis.Configuration.submitAnalysisToLXBatch import submitAnalysisToLXBatch
-from TauAnalysis.Configuration.userRegistry import getAnalysisFilePath, getJobId, getPickEventsPath, getHarvestingFilePath
+from TauAnalysis.Configuration.userRegistry import getAnalysisFilePath, getJobId, getBatchHarvestLocation, getHarvestingFilePath
 import TauAnalysis.Configuration.tools.castor as castor
 
 import os
@@ -12,7 +12,7 @@ channel = 'ZtoMuTau_tauIdEff'
 configFile = 'produceTauIdEffMeasNtuple_cfg.py'
 analysisFilePath = getAnalysisFilePath(channel)
 #jobId = getJobId(channel)
-jobId = '2011Apr05'
+jobId = '2011Apr09_HPSloose'
 
 version = "V1"
 
@@ -26,13 +26,15 @@ samplesToAnalyze = [
 outputFilePath = "/castor/cern.ch/user/v/veelken/CMSSW_4_1_x/ntuples/TauIdEffMeas"
 
 # Get all the skim files from the castor directory
-skimFilePath = getPickEventsPath(channel)
+skimFilePath = getBatchHarvestLocation(channel)
 skim_files = [ file_info['path'] for file_info in castor.nslsl(skimFilePath) ]
 
 # Function that maps a sample name to its skim file
 def input_mapper(channel, sample, jobId):
     for input_file in skim_files:
+        #print " unmatched file: %s" % input_file
         if input_file.find('skim_' + sample + '_chunk') != -1:
+            print "--> matched file: %s" % input_file
             yield input_file
 
 # Define what output ntuple file name a sample will have
