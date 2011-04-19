@@ -19,7 +19,7 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
                                 patCaloTauCleanerPrototype = None,
                                 addSVfitInfo = False,
                                 hltProcess = "HLT",
-                                addGenInfo = False):
+                                isMC = False):
 
     # check that patSequenceBuilder and patTauCleanerPrototype are defined and non-null
     if patSequenceBuilder is None:
@@ -42,7 +42,7 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
         process.allMuTauPairs.doSVreco = cms.bool(False)
         process.allMuTauPairsLooseMuonIsolation.doSVreco = cms.bool(False)
 
-    if not addGenInfo:
+    if not isMC:
         removeMCMatching(process, outputInProcess = False)
     else:
         # match pat::Taus to all genJets
@@ -130,7 +130,7 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
         patTauProducerPrototype = process.patCaloTauProducer,
         patTauCleanerPrototype = patCaloTauCleanerPrototype,
         triggerMatcherProtoType = process.patTauTriggerMatchHLTprotoType,
-        addGenInfo = addGenInfo
+        addGenInfo = isMC
     )
     process.caloTauSequence = retVal_caloTau["sequence"]
 
@@ -139,7 +139,8 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
         srcLeg2 = cms.InputTag(retVal_caloTau["collection"]),
         srcMET = cms.InputTag('patMETs'),
         srcGenParticles = cms.InputTag(''),
-        doSVreco = cms.bool(False)
+        doSVreco = cms.bool(False),
+        doPFMEtSign = cms.bool(False)
     )
     #--------------------------------------------------------------------------------
 
@@ -158,7 +159,7 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
         patTauProducerPrototype = process.patPFTauProducerFixedCone,
         patTauCleanerPrototype = patPFTauCleanerPrototype,
         triggerMatcherProtoType = process.patTauTriggerMatchHLTprotoType,
-        addGenInfo = addGenInfo
+        addGenInfo = isMC
     )
     process.pfTauSequenceFixedCone = retVal_pfTauFixedCone["sequence"]
 
@@ -190,7 +191,7 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
         patTauProducerPrototype = process.patPFTauProducerShrinkingCone,
         patTauCleanerPrototype = patPFTauCleanerPrototype,
         triggerMatcherProtoType = process.patTauTriggerMatchHLTprotoType,
-        addGenInfo = addGenInfo
+        addGenInfo = isMC
     )
     process.pfTauSequenceShrinkingCone = retVal_pfTauShrinkingCone["sequence"]
 
@@ -223,7 +224,7 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
         patTauProducerPrototype = process.patPFTauProducerHPS,
         patTauCleanerPrototype = patPFTauCleanerPrototype,
         triggerMatcherProtoType = process.patTauTriggerMatchHLTprotoType,
-        addGenInfo = addGenInfo
+        addGenInfo = isMC
     )
     process.pfTauSequenceHPS = retVal_pfTauHPS["sequence"]
 
@@ -252,7 +253,7 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
         patTauProducerPrototype = process.patPFTauProducerHPSpTaNC,
         patTauCleanerPrototype = patPFTauCleanerPrototype,
         triggerMatcherProtoType = process.patTauTriggerMatchHLTprotoType,
-        addGenInfo = addGenInfo
+        addGenInfo = isMC
     )
     process.pfTauSequenceHPSpTaNC = retVal_pfTauHPSpTaNC["sequence"]
 
@@ -271,14 +272,18 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
     #
     # NOTE: needed for evaluating jetId for Calo/TCTaus and PFTaus
     #
+    jec = [ 'L1Offset', 'L2Relative', 'L3Absolute' ]
+    if not isMC:
+        jec.extend([ 'L2L3Residual' ])
     addJetCollection(process, cms.InputTag('ak5PFJets'),
                      'AK5', 'PF',
                      doJTA            = False,
                      doBTagging       = False,
-                     jetCorrLabel     = ('AK5Calo', cms.vstring(['L2Relative', 'L3Absolute', 'L2L3Residual'])),
+                     jetCorrLabel     = ('AK5Calo', cms.vstring(jec)),
                      doType1MET       = False,
                      genJetCollection = cms.InputTag("ak5GenJets"),
                      doJetID          = True,
+                     jetIdLabel       = "ak5",
                      outputModule     = ''
     )
 
@@ -286,10 +291,11 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
                      'AK5', 'Calo',
                      doJTA            = False,
                      doBTagging       = False,
-                     jetCorrLabel     = ('AK5PF', cms.vstring(['L2Relative', 'L3Absolute', 'L2L3Residual'])),
+                     jetCorrLabel     = ('AK5PF', cms.vstring(jec)),
                      doType1MET       = False,
                      genJetCollection = cms.InputTag("ak5GenJets"),
                      doJetID          = True,
+                     jetIdLabel       = "ak5",
                      outputModule     = ''
     )
     #--------------------------------------------------------------------------------
