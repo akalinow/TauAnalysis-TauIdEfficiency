@@ -87,4 +87,12 @@ def configurePrePatProduction(process, pfCandidateCollection = "particleFlow",
         process.prePatProductionSequence += process.prePatProductionSequenceGen
     #--------------------------------------------------------------------------------
 
-   
+    #--------------------------------------------------------------------------------
+    # select collection of "good" primary event vertices with sum(trackPt) > 10 GeV,
+    # used for vertex multiplicity reweighting
+    process.load("TauAnalysis.RecoTools.recoVertexSelection_cff")
+    process.prePatProductionSequence += process.selectedPrimaryVertexQuality
+    process.prePatProductionSequence += process.selectedPrimaryVertexPosition
+    process.load("TauAnalysis.RecoTools.vertexMultiplicityReweight_cfi")
+    process.prePatProductionSequence += process.selectedPrimaryVerticesTrackPtSumGt10
+    #--------------------------------------------------------------------------------
