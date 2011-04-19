@@ -7,7 +7,11 @@
 #include "PhysicsTools/SelectorUtils/interface/strbitset.h"
 
 #include "DataFormats/Common/interface/View.h"
+#include "DataFormats/PatCandidates/interface/Tau.h"
+#include "DataFormats/PatCandidates/interface/Jet.h"
 #include "DataFormats/Math/interface/deltaR.h"
+
+#include "TauAnalysis/TauIdEfficiency/interface/tauIdEffAuxFunctions.h"
 
 #include <string>
 
@@ -42,24 +46,6 @@ template<typename T>
 PATTauVectorJetIdValExtractor<T>::~PATTauVectorJetIdValExtractor()
 {
   delete jetId_;
-}
-
-const pat::Jet* getJet_Tau(const pat::Tau& tau, const pat::JetCollection& patJets) 
-{
-  const pat::Jet* retVal = 0;
-
-  double dRmin = 1.e+3;
-  
-  for ( pat::JetCollection::const_iterator patJet = patJets.begin();
-	patJet != patJets.end(); ++patJet ) {
-    double dR = deltaR(patJet->p4(), tau.p4());
-    if ( dR < 0.5 && dR < dRmin ) {
-      retVal = &(*patJet);
-      dRmin = dR;
-    }
-  }
-
-  return retVal;
 }
 
 template<typename T>

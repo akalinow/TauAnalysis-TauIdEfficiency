@@ -122,9 +122,9 @@ ObjValEDNtupleProducer::ObjValEDNtupleProducer(const edm::ParameterSet& cfg)
   for ( std::map<std::string, int>::iterator imap = name_counter.begin();
 	imap != name_counter.end(); ++imap ) {
     if ( imap->second > 1 ) {
-      throw cms::Exception("DuplicateNtupleColumn") <<
-	"the ntuple variable: " << imap->first << " is declared " <<
-	imap->second << " times.  It can only be declared once!  Please fix.";
+      throw cms::Exception("DuplicateNtupleColumn") 
+	<< "the ntuple variable: " << imap->first << " is declared " << imap->second << " times." 
+	<< " It can only be declared once !! Please fix.";
     }
   }
   std::cout << "done." << std::endl;
@@ -182,10 +182,22 @@ void ObjValEDNtupleProducer::produce(edm::Event& evt, const edm::EventSetup& es)
     vdouble values = (*(*ntupleEntry)->objValExtractor_)(evt);
 
     if ( (*ntupleEntry)->indices_.size() == 0 ) {
-      std::auto_ptr<vdouble> toPut = std::auto_ptr<vdouble>(new vdouble((*(*ntupleEntry)->objValExtractor_)(evt)));
-      evt.put(toPut, (*ntupleEntry)->ntupleName_);
+      try { 
+	std::auto_ptr<vdouble> toPut = std::auto_ptr<vdouble>(new vdouble((*(*ntupleEntry)->objValExtractor_)(evt)));
+	evt.put(toPut, (*ntupleEntry)->ntupleName_);
+      } catch ( cms::Exception e ) { 
+	edm::LogError("ObjValEDNtupleProducer::produce")
+	  << " ObjValExtractor plugin name = " << (*ntupleEntry)->ntupleName_  << " caused exception --> rethrowing !!";
+	throw e;
+      }
     } else {
-      vdouble values = (*(*ntupleEntry)->objValExtractor_)(evt);
+      try { 
+	vdouble values = (*(*ntupleEntry)->objValExtractor_)(evt);
+      } catch ( cms::Exception e ) { 
+	edm::LogError("ObjValEDNtupleProducer::produce")
+	  << " ObjVectorValExtractor plugin name = " << (*ntupleEntry)->ntupleName_  << " caused exception --> rethrowing !!";
+	throw e;
+      }	
       //std::cout << " values = " << format_vdouble(values) << std::endl;
       std::auto_ptr<vdouble> toPut = std::auto_ptr<vdouble>(new vdouble());
       for ( vunsigned::const_iterator index = (*ntupleEntry)->indices_.begin(); 

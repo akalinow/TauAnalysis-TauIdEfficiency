@@ -6,7 +6,7 @@ process = cms.Process("prodCommissioningQDCmuEnrichedNtuple")
 # of electrons, muons and tau-jets with non-standard isolation cones
 process.load('Configuration/StandardSequences/Services_cff')
 process.load('FWCore/MessageService/MessageLogger_cfi')
-process.MessageLogger.cerr.FwkReport.reportEvery = 1
+process.MessageLogger.cerr.FwkReport.reportEvery = 100
 #process.MessageLogger.cerr.threshold = cms.untracked.string('INFO')
 #process.MessageLogger.suppressInfo = cms.untracked.vstring()
 process.MessageLogger.suppressWarning = cms.untracked.vstring("PATTriggerProducer",)
@@ -133,7 +133,7 @@ retVal = configurePatTupleProduction(
     patPFTauCleanerPrototype = patPFTauCleanerPrototype,
     patCaloTauCleanerPrototype = patCaloTauCleanerPrototype,
     hltProcess = HLTprocessName,
-    addGenInfo = isMC
+    isMC = isMC
 )
 #--------------------------------------------------------------------------------
 
@@ -165,11 +165,15 @@ process.ntupleProducer = cms.EDProducer("ObjValEDNtupleProducer",
         trigger = process.trigger_template,
 
         # variables specifying x,y,z coordinates of primary event vertices
-        vertex = process.vertex_template,
+        vertex = process.vertex_template,                                            
 
         # number of reconstructed primary event vertices
         # with sum(trackPt) exceeding different thresholds
         vertexMultiplicity = process.vertexMultiplicity_template,
+
+        # reweighting factors to be applied to Monte Carlo simulated events
+        # in order to match vertex multiplicity distribution in Data                                             
+        vertexMultReweight = process.vertexMultReweight_template,                                    
 
         # variables specific to Muons
         muons_rec = process.muons_recInfo,              
@@ -180,7 +184,10 @@ process.ntupleProducer = cms.EDProducer("ObjValEDNtupleProducer",
         ),
         caloTaus_recJetId = process.caloTaus_recJetIdInfo.clone(
             src = cms.InputTag(retVal["caloTauCollection"])                       
-        ),                                    
+        ),
+        caloTaus_recJetCorrMom = process.caloTaus_recJetCorrMomInfo.clone(
+            src = cms.InputTag(retVal["caloTauCollection"])                       
+        ),                                   
         muCaloTauPairs_rec = process.diTaus_recInfo.clone(
             src = cms.InputTag(retVal["muonCaloTauCollection"])                       
         ),                                             
@@ -191,7 +198,10 @@ process.ntupleProducer = cms.EDProducer("ObjValEDNtupleProducer",
         ),
         pfTausFixedCone_recJetId = process.pfTausFixedCone_recJetIdInfo.clone(
             src = cms.InputTag(retVal["pfTauCollectionFixedCone"])                       
-        ),                                      
+        ),
+        pfTausFixedCone_recJetCorrMom = process.pfTausFixedCone_recJetCorrMomInfo.clone(
+            src = cms.InputTag(retVal["pfTauCollectionFixedCone"])                       
+        ),                                    
         muPFTauPairsFixedCone_rec = process.diTaus_recInfo.clone(
             src = cms.InputTag(retVal["muonPFTauCollectionFixedCone"])                       
         ),                                           
@@ -202,7 +212,10 @@ process.ntupleProducer = cms.EDProducer("ObjValEDNtupleProducer",
         ),                                            
         pfTausShrinkingCone_recJetId = process.pfTausShrinkingCone_recJetIdInfo.clone(
             src = cms.InputTag(retVal["pfTauCollectionShrinkingCone"])
-        ),                                   
+        ),
+        pfTausShrinkingCone_recJetCorrMom = process.pfTausShrinkingCone_recJetCorrMomInfo.clone(
+            src = cms.InputTag(retVal["pfTauCollectionShrinkingCone"])
+        ),                                    
         muPFTauPairsShrinkingCone_rec = process.diTaus_recInfo.clone(
             src = cms.InputTag(retVal["muonPFTauCollectionShrinkingCone"])                       
         ),                                            
@@ -213,7 +226,10 @@ process.ntupleProducer = cms.EDProducer("ObjValEDNtupleProducer",
         ),
         pfTausHPS_recJetId = process.pfTausHPS_recJetIdInfo.clone(
             src = cms.InputTag(retVal["pfTauCollectionHPS"])
-        ),                                       
+        ),
+        pfTausHPS_recJetCorrMomInfo = process.pfTausHPS_recJetCorrMomInfo.clone(
+            src = cms.InputTag(retVal["pfTauCollectionHPS"])
+        ),                                        
         muPFTauPairsHPS_rec = process.diTaus_recInfo.clone(
             src = cms.InputTag(retVal["muonPFTauCollectionHPS"])                       
         ),                                            
@@ -224,7 +240,10 @@ process.ntupleProducer = cms.EDProducer("ObjValEDNtupleProducer",
         ),
         pfTausHPSpTaNC_recJetId = process.pfTausHPSpTaNC_recJetIdInfo.clone(
             src = cms.InputTag(retVal["pfTauCollectionHPSpTaNC"])
-        ),                                       
+        ),
+        pfTausHPSpTaNC_recJetCorrMom = process.pfTausHPSpTaNC_recJetCorrMomInfo.clone(
+            src = cms.InputTag(retVal["pfTauCollectionHPSpTaNC"])
+        ),                                    
         muPFTauPairsHPSpTaNC_rec = process.diTaus_recInfo.clone(
             src = cms.InputTag(retVal["muonPFTauCollectionHPSpTaNC"])                       
         )                                           

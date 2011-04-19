@@ -113,7 +113,29 @@ pfTausHPS_recJetIdInfo = cms.PSet(
         jetIdLoose = cms.string("loose"),
         jetIdTight = cms.string("tight")
     )
-)   
+)
+
+pfTausHPS_recJetCorrMomInfo = cms.PSet(
+    # Select multiplicy of object(s) to store
+    vector = cms.bool(True), # Store a value for all objects in this collection
+    #indices = cms.vuint_32([0, 1, 2]) # Store values for first, second, third objects
+    
+    # Extractor plugin
+    pluginType = cms.string("PATTauVectorJetCorrMomValExtractor"),
+    
+    # Collection to extract from
+    src = cms.InputTag("patPFTausDijetTagAndProbeHPS"),
+    srcJet = cms.InputTag("patJetsAK5PF"),
+    
+    # Variables to compute for this source
+    columns = cms.PSet(
+        # kinematic variables for PFJet associated to PFTau,
+        # with L2+L3 (MC) / L2+L3+Residual (Data) jet energy corrections applied
+        jetCorrPt = cms.string("pt()"),
+        jetCorrEta = cms.string("eta()"),
+        jetCorrPhi = cms.string("phi()")
+    )
+)
 
 pfTausHPS_genInfo = pfTausHPS_recInfo.clone(
     pluginType = cms.string("PATTauVectorGenJetValExtractor"),

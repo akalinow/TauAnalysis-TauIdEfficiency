@@ -110,7 +110,7 @@ retVal = configurePatTupleProduction(
     patPFTauCleanerPrototype = patPFTauCleanerPrototype,
     patCaloTauCleanerPrototype = patCaloTauCleanerPrototype,
     hltProcess = HLTprocessName,
-    addGenInfo = isMC
+    isMC = isMC
 )
 #--------------------------------------------------------------------------------
 
@@ -148,6 +148,10 @@ process.ntupleProducer = cms.EDProducer("ObjValEDNtupleProducer",
         # with sum(trackPt) exceeding different thresholds
         vertexMultiplicity = process.vertexMultiplicity_template,
 
+        # reweighting factors to be applied to Monte Carlo simulated events
+        # in order to match vertex multiplicity distribution in Data                                             
+        vertexMultReweight = process.vertexMultReweight_template,    
+
         # global variables describing the underlying event/
         # amount of hadronic activity
         jets = process.jets_template,
@@ -163,7 +167,10 @@ process.ntupleProducer = cms.EDProducer("ObjValEDNtupleProducer",
         ),
         caloTaus_rec03 = process.caloTaus_recJetIdInfo.clone(
             src = cms.InputTag(retVal["caloTauCollection"])
-        ),                                   
+        ),
+        caloTaus_rec04 = process.caloTaus_recJetCorrMomInfo.clone(
+            src = cms.InputTag(retVal["caloTauCollection"])
+        ),                                    
 
         # variables specific to fixed cone PFTaus
         pfTausFixedCone_rec01 = process.pfTausFixedCone_recInfo.clone(
@@ -176,6 +183,9 @@ process.ntupleProducer = cms.EDProducer("ObjValEDNtupleProducer",
             src = cms.InputTag(retVal["pfTauCollectionFixedCone"])
         ),
         pfTausFixedCone_rec04 = process.pfTausFixedCone_recJetIdInfo.clone(
+            src = cms.InputTag(retVal["pfTauCollectionFixedCone"])
+        ),
+        pfTausFixedCone_rec05 = process.pfTausFixedCone_recJetCorrMomInfo.clone(
             src = cms.InputTag(retVal["pfTauCollectionFixedCone"])
         ),                                    
 
@@ -191,6 +201,9 @@ process.ntupleProducer = cms.EDProducer("ObjValEDNtupleProducer",
         ),
         pfTausShrinkingCone_rec04 = process.pfTausShrinkingCone_recJetIdInfo.clone(
             src = cms.InputTag(retVal["pfTauCollectionShrinkingCone"])
+        ),
+        pfTausShrinkingCone_rec05 = process.pfTausShrinkingCone_recJetCorrMomInfo.clone(
+            src = cms.InputTag(retVal["pfTauCollectionShrinkingCone"])
         ),                                    
 
         # variables specific to PFTaus reconstructed by hadron + strips (HPS) algorithm
@@ -202,7 +215,10 @@ process.ntupleProducer = cms.EDProducer("ObjValEDNtupleProducer",
         ),
         pfTausHPS_rec03 = process.pfTausHPS_recJetIdInfo.clone(
             src = cms.InputTag(retVal["pfTauCollectionHPS"])
-        ),                                   
+        ),
+        pfTausHPS_rec04 = process.pfTausHPS_recJetCorrMomInfo.clone(
+            src = cms.InputTag(retVal["pfTauCollectionHPS"])
+        ),                                    
 
         # variables specific to PFTaus reconstructed by HPS + TaNC combined tau id. algorithm
         pfTausHPSpTaNC_rec01 = process.pfTausHPSpTaNC_recInfo.clone(
@@ -212,6 +228,9 @@ process.ntupleProducer = cms.EDProducer("ObjValEDNtupleProducer",
             src = cms.InputTag(retVal["pfTauCollectionHPSpTaNC"])
         ),
         pfTausHPSpTaNC_rec03 = process.pfTausHPSpTaNC_recJetIdInfo.clone(
+            src = cms.InputTag(retVal["pfTauCollectionHPSpTaNC"])
+        ),
+        pfTausHPSpTaNC_rec04 = process.pfTausHPSpTaNC_recJetCorrMomInfo.clone(
             src = cms.InputTag(retVal["pfTauCollectionHPSpTaNC"])
         )                                    
     )

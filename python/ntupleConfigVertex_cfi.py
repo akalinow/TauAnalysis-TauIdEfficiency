@@ -40,3 +40,19 @@ vertexMultiplicity_template = cms.PSet(
         numVerticesPtGt20 = cms.string("numVerticesPtGt20"),
     )
 )
+
+vertexMultReweight_template = cms.PSet(
+    # Select multiplicy of object(s) to store
+    vector = cms.bool(False), # Store a value for all objects in this collection
+    #indices = cms.vuint_32([0, 1, 2]) # Store values for first, second, third objects
+    
+    pluginType = cms.string("VertexMultiplicityReweightExtractor"),
+
+    src = cms.InputTag("selectedPrimaryVerticesTrackPtSumGt10"),
+    inputFileName = cms.FileInPath("TauAnalysis/RecoTools/data/vertexMultiplicityReweight.root"),
+    lutName = cms.string('histoReweight'),
+
+    columns = cms.PSet(
+        vtxMultReweight = cms.string("vtxMultReweight")
+    )
+)

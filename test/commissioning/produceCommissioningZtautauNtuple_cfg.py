@@ -121,7 +121,7 @@ retVal = configurePatTupleProduction(
     patPFTauCleanerPrototype = patPFTauCleanerPrototype,
     patCaloTauCleanerPrototype = patCaloTauCleanerPrototype,
     hltProcess = HLTprocessName,
-    addGenInfo = isMC
+    isMC = isMC
 )
 #--------------------------------------------------------------------------------
 
@@ -157,6 +157,10 @@ process.ntupleProducer = cms.EDProducer("ObjValEDNtupleProducer",
         # number of reconstructed primary event vertices
         # with sum(trackPt) exceeding different thresholds
         vertexMultiplicity = process.vertexMultiplicity_template,
+
+        # reweighting factors to be applied to Monte Carlo simulated events
+        # in order to match vertex multiplicity distribution in Data                                             
+        vertexMultReweight = process.vertexMultReweight_template, 
 
         # global variables describing the underlying event/
         # amount of hadronic activity                                            

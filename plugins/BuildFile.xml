@@ -24,5 +24,6 @@
   <use   name="TauAnalysis/Core"/>
   <use   name="TauAnalysis/DQMTools"/>
   <use   name="TauAnalysis/GenSimTools"/>
+  <use   name="TauAnalysis/TauIdEfficiency"/>
   <use   name="rootgraphics"/>
 </library>
