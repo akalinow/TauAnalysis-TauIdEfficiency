@@ -9,8 +9,8 @@ import TauAnalysis.TauIdEfficiency.tools.castor_mirror2 as mirror
 from samples import ztautau_mc, qcddijet_mc, ppmux15_mc, wjets_mc, \
         data_dijet, data_ppmux, data_wjets
 
-##mirror.LOCAL_DIRECTORY = "/tmp/abdollah/tau_commissioning_abdollah" # on lxplus430
-mirror.LOCAL_DIRECTORY = "/data2/friis/tau_fakerate_ntuples"
+mirror.LOCAL_DIRECTORY = "/tmp/abdollah/tau_fakerate_ntuples" # on lxplus430
+##mirror.LOCAL_DIRECTORY = "/data2/friis/tau_fakerate_ntuples"
 
 class SampleWrapper(object):
     " Wrapper class to automatically update a sample when it is accessed "
