@@ -9,12 +9,7 @@ from TauAnalysis.Skimming.goldenZmmSelectionVBTFnoMuonIsolation_cfi import *
 # from which to determine tau fake-rates
 #--------------------------------------------------------------------------------
 
-goodIsoMuons.chargedHadronIso.dRisoCone = cms.double(0.4)
-goodIsoMuons.neutralHadronIso.dRisoCone = cms.double(0.4)
-goodIsoMuons.photonIso.dRisoCone = cms.double(0.4)
-goodIsoMuons.sumPtMax = cms.double(0.15)
-
-#--------------------------------------------------------------------------------
+from TauAnalysis.RecoTools.patJetSelection_cff import *
 #
 # define loose CaloTau candidate/CaloJet selection
 #
@@ -25,38 +20,26 @@ selectedCaloTaus = cms.EDFilter("CaloTauSelector",
     filter = cms.bool(False)
 )
 
-muonCaloTauPairs = cms.EDProducer("DiCandidatePairProducer",
-    useLeadingTausOnly = cms.bool(False),
-    srcLeg1 = cms.InputTag('goodIsoMuons'),
-    srcLeg2 = cms.InputTag('selectedCaloTaus'),
-    dRmin12 = cms.double(0.),
-    srcMET = cms.InputTag('metJESCorAK5CaloJetMuons'),
-    recoMode = cms.string(""),
-    scaleFuncImprovedCollinearApprox = cms.string('1'),                                  
-    verbosity = cms.untracked.int32(0)                                       
+selectedPatJetsAntiOverlapWithLeptonsVeto = cms.EDFilter("PATJetAntiOverlapSelector",
+  srcNotToBeFiltered = cms.VInputTag( "goodIsoMuons") ,
+ dRmin = cms.double(0.7),
+ filter = cms.bool(False)
+ )
+
+produceDiMuonCaloTauPairs = cms.Sequence(
+    goldenZmumuSelectionSequence
+   * selectedCaloTaus * selectedPatJetsAntiOverlapWithLeptonsVeto
 )
 
-selectedMuonCaloTauPairs = cms.EDFilter("DiCandidatePairSelector",
-    src = cms.InputTag('muonCaloTauPairs'),
-    cut = cms.string("dR12 > 0.7"),
-    filter = cms.bool(False)                                     
-)
-
-produceMuonCaloTauPairs = cms.Sequence(
-    patMuons * goodMuons * goodIsoMuons
-   * selectedCaloTaus * muonCaloTauPairs * selectedMuonCaloTauPairs
-)
-
-selectedMuonCaloTauPairFilter = cms.EDFilter("CandViewCountFilter",
-    src = cms.InputTag('selectedMuonCaloTauPairs'),
+selectedDiMuonCaloTauPairFilter = cms.EDFilter("CandViewCountFilter",
+    src = cms.InputTag('selectedDiMuonCaloTauPairs'),
     minNumber = cms.uint32(1)
 )
 
-muonCaloTauSkimPath = cms.Path(
-    zmmHLTFilter
-   + pfNoPileUpSequence
-   + produceMuonCaloTauPairs
-   + selectedMuonCaloTauPairFilter
+dimuonCaloTauSkimPath = cms.Path(
+     pfNoPileUpSequence
+   + produceDiMuonCaloTauPairs
+   + selectedDiMuonCaloTauPairFilter
    + dataQualityFilters
 )
 #--------------------------------------------------------------------------------
@@ -72,37 +55,26 @@ selectedPFTaus = cms.EDFilter("PFTauSelector",
     filter = cms.bool(False)
 )
 
-muonPFTauPairs = cms.EDProducer("DiCandidatePairProducer",
-    useLeadingTausOnly = cms.bool(False),
-    srcLeg1 = cms.InputTag('goodIsoMuons'),
-    srcLeg2 = cms.InputTag('selectedPFTaus'),
-    dRmin12 = cms.double(0.),
-    srcMET = cms.InputTag('pfMet'),
-    recoMode = cms.string(""),
-    verbosity = cms.untracked.int32(0)                                       
+selectedPatJetsAntiOverlapWithLeptonsVeto = cms.EDFilter("PATJetAntiOverlapSelector",
+  srcNotToBeFiltered = cms.VInputTag( "goodIsoMuons") ,
+ dRmin = cms.double(0.7),
+ filter = cms.bool(False)
+ )
+
+produceDiMuonPFTauPairs = cms.Sequence(
+    goldenZmumuSelectionSequence
+   * selectedPFTaus * selectedPatJetsAntiOverlapWithLeptonsVeto
 )
 
-selectedMuonPFTauPairs = cms.EDFilter("DiCandidatePairSelector",
-    src = cms.InputTag('muonPFTauPairs'),
-    cut = cms.string("dR12 > 0.7"),
-    filter = cms.bool(False)                                     
-)
-
-produceMuonPFTauPairs = cms.Sequence(
-    patMuons * goodMuons * goodIsoMuons
-   * selectedPFTaus * muonPFTauPairs * selectedMuonPFTauPairs
-)
-
-selectedMuonPFTauPairFilter = cms.EDFilter("CandViewCountFilter",
-    src = cms.InputTag('selectedMuonPFTauPairs'),
+selectedDiMuonPFTauPairFilter = cms.EDFilter("CandViewCountFilter",
+    src = cms.InputTag('selectedDiMuonPFTauPairs'),
     minNumber = cms.uint32(1)
 )
 
-muonPFTauSkimPath = cms.Path(
-    zmmHLTFilter
-   + pfNoPileUpSequence
-   + produceMuonPFTauPairs
-   + selectedMuonPFTauPairFilter
+dimuonPFTauSkimPath = cms.Path(
+    pfNoPileUpSequence
+   + produceDiMuonPFTauPairs
+   + selectedDiMuonPFTauPairFilter
    + dataQualityFilters
 )
 #--------------------------------------------------------------------------------
@@ -110,8 +82,8 @@ muonPFTauSkimPath = cms.Path(
 zMuMuEnrichedEventSelection = cms.untracked.PSet(
     SelectEvents = cms.untracked.PSet(
         SelectEvents = cms.vstring(
-            'muonCaloTauSkimPath',
-            'muonPFTauSkimPath'
+            'dimuonCaloTauSkimPath',
+            'dimuonPFTauSkimPath'
         )
     )
 )
