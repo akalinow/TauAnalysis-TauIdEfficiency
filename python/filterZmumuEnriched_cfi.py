@@ -9,7 +9,15 @@ from TauAnalysis.Skimming.goldenZmmSelectionVBTFnoMuonIsolation_cfi import *
 # from which to determine tau fake-rates
 #--------------------------------------------------------------------------------
 
-from TauAnalysis.RecoTools.patJetSelection_cff import *
+zmmHLTFilter.HLTPaths = [ 'HLT_Mu15_v1', 'HLT_Mu15_v2', 'HLT_IsoMu15_v5', 'HLT_IsoMu17_v5', 'HLT_Mu24_v2',
+                          'HLT_DoubleMu6_v1', 'HLT_DoubleMu6_v2', 'HLT_DoubleMu7_v1', 'HLT_DoubleMu7_v2' ]
+
+goldenZmumuCandidateFilter = cms.EDFilter("CandViewCountFilter",
+    src = cms.InputTag('goldenZmumuCandidatesGe2IsoMuons'),
+    minNumber = cms.uint32(1)
+)
+
+#--------------------------------------------------------------------------------
 #
 # define loose CaloTau candidate/CaloJet selection
 #
@@ -20,26 +28,22 @@ selectedCaloTaus = cms.EDFilter("CaloTauSelector",
     filter = cms.bool(False)
 )
 
-selectedPatJetsAntiOverlapWithLeptonsVeto = cms.EDFilter("PATJetAntiOverlapSelector",
-  srcNotToBeFiltered = cms.VInputTag( "goodIsoMuons") ,
- dRmin = cms.double(0.7),
- filter = cms.bool(False)
- )
-
-produceDiMuonCaloTauPairs = cms.Sequence(
-    goldenZmumuSelectionSequence
-   * selectedCaloTaus * selectedPatJetsAntiOverlapWithLeptonsVeto
+selectedCaloTausAntiOverlapWithLeptonsVeto = cms.EDFilter("CaloTauAntiOverlapSelector",
+    src = cms.InputTag('selectedCaloTaus'),                                                      
+    srcNotToBeFiltered = cms.VInputTag('goodIsoMuons'),
+    dRmin = cms.double(0.7),
+    filter = cms.bool(False)
 )
 
-selectedDiMuonCaloTauPairFilter = cms.EDFilter("CandViewCountFilter",
-    src = cms.InputTag('selectedDiMuonCaloTauPairs'),
+selectedCaloTauAntiOverlapWithLeptonsFilter = cms.EDFilter("CandViewCountFilter",
+    src = cms.InputTag('selectedCaloTausAntiOverlapWithLeptonsVeto'),
     minNumber = cms.uint32(1)
 )
 
-dimuonCaloTauSkimPath = cms.Path(
+diMuonCaloTauSkimPath = cms.Path(
      pfNoPileUpSequence
-   + produceDiMuonCaloTauPairs
-   + selectedDiMuonCaloTauPairFilter
+   + goldenZmumuSelectionSequence + goldenZmumuCandidateFilter
+   + selectedCaloTaus + selectedCaloTausAntiOverlapWithLeptonsVeto + selectedCaloTauAntiOverlapWithLeptonsFilter
    + dataQualityFilters
 )
 #--------------------------------------------------------------------------------
@@ -55,26 +59,22 @@ selectedPFTaus = cms.EDFilter("PFTauSelector",
     filter = cms.bool(False)
 )
 
-selectedPatJetsAntiOverlapWithLeptonsVeto = cms.EDFilter("PATJetAntiOverlapSelector",
-  srcNotToBeFiltered = cms.VInputTag( "goodIsoMuons") ,
- dRmin = cms.double(0.7),
- filter = cms.bool(False)
- )
-
-produceDiMuonPFTauPairs = cms.Sequence(
-    goldenZmumuSelectionSequence
-   * selectedPFTaus * selectedPatJetsAntiOverlapWithLeptonsVeto
+selectedPFTausAntiOverlapWithLeptonsVeto = cms.EDFilter("PFTauAntiOverlapSelector",
+    src = cms.InputTag('selectedPFTaus'),                                                      
+    srcNotToBeFiltered = cms.VInputTag('goodIsoMuons'),
+    dRmin = cms.double(0.7),
+    filter = cms.bool(False)
 )
 
-selectedDiMuonPFTauPairFilter = cms.EDFilter("CandViewCountFilter",
-    src = cms.InputTag('selectedDiMuonPFTauPairs'),
+selectedPFTauAntiOverlapWithLeptonsFilter = cms.EDFilter("CandViewCountFilter",
+    src = cms.InputTag('selectedPFTausAntiOverlapWithLeptonsVeto'),
     minNumber = cms.uint32(1)
 )
 
-dimuonPFTauSkimPath = cms.Path(
+diMuonPFTauSkimPath = cms.Path(
     pfNoPileUpSequence
-   + produceDiMuonPFTauPairs
-   + selectedDiMuonPFTauPairFilter
+   + goldenZmumuSelectionSequence + goldenZmumuCandidateFilter
+   + selectedPFTaus + selectedPFTausAntiOverlapWithLeptonsVeto + selectedPFTauAntiOverlapWithLeptonsFilter
    + dataQualityFilters
 )
 #--------------------------------------------------------------------------------
@@ -82,8 +82,8 @@ dimuonPFTauSkimPath = cms.Path(
 zMuMuEnrichedEventSelection = cms.untracked.PSet(
     SelectEvents = cms.untracked.PSet(
         SelectEvents = cms.vstring(
-            'dimuonCaloTauSkimPath',
-            'dimuonPFTauSkimPath'
+            'diMuonCaloTauSkimPath',
+            'diMuonPFTauSkimPath'
         )
     )
 )

@@ -144,6 +144,7 @@ retVal = configurePatTupleProduction(
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigTrigger_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigVertex_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigMuon_cfi")
+process.load("TauAnalysis.TauIdEfficiency.ntupleConfigDiMuon_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigCaloTau_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigPFTauFixedCone_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigPFTauShrinkingCone_cfi")
@@ -178,6 +179,9 @@ process.ntupleProducer = cms.EDProducer("ObjValEDNtupleProducer",
         # variables specific to Muons
         muons_rec = process.muons_recInfo,              
 
+        # variables specific to Mu+ Mu- pairs
+        diMuons_rec = process.diMuons_recInfo,                                  
+ 
         # variables specific to CaloTaus                                            
         caloTaus_rec = process.caloTaus_recInfo.clone(
             src = cms.InputTag(retVal["caloTauCollection"])                       
@@ -286,8 +290,8 @@ process.ntupleOutputModule = cms.OutputModule("PoolOutputModule",
 
 process.p = cms.Path(
     process.prePatProductionSequence
+   + process.goldenZmumuSelectionSequence
    + process.patTupleProductionSequence
-   + process.produceMuonCaloTauPairs + process.produceMuonPFTauPairs
    #+ process.printEventContent
    + process.ntupleProducer
 )
@@ -302,8 +306,8 @@ process.o = cms.EndPath(process.ntupleOutputModule)
 if applyEventSelection:
     process.schedule = cms.Schedule(
         process.p,
-        process.muonCaloTauSkimPath,
-        process.muonPFTauSkimPath,
+        process.diMuonCaloTauSkimPath,
+        process.diMuonPFTauSkimPath,
         process.o
     )
 else:
