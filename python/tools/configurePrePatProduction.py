@@ -18,6 +18,14 @@ def configurePrePatProduction(process, pfCandidateCollection = "particleFlow",
     #--------------------------------------------------------------------------------
 
     #--------------------------------------------------------------------------------
+    # produce collections of kT PFJets for dR = 0.6 needed for rho (FastJet) pile-up corrections
+    process.load("RecoJets.Configuration.RecoPFJets_cff")
+    process.kt6PFJets.Rho_EtaMax = cms.double(2.5)
+    process.kt6PFJets.doRhoFastjet = True
+    process.prePatProductionSequence += process.kt6PFJets
+    #--------------------------------------------------------------------------------
+
+    #--------------------------------------------------------------------------------
     # recreate collection of PFTaus
     # with latest tags of RecoTauTag package used by TauAnalysis software
     #
@@ -93,6 +101,7 @@ def configurePrePatProduction(process, pfCandidateCollection = "particleFlow",
     process.load("TauAnalysis.RecoTools.recoVertexSelection_cff")
     process.prePatProductionSequence += process.selectedPrimaryVertexQuality
     process.prePatProductionSequence += process.selectedPrimaryVertexPosition
+    process.prePatProductionSequence += process.selectedPrimaryVertexHighestPtTrackSum
     process.load("TauAnalysis.RecoTools.vertexMultiplicityReweight_cfi")
     process.prePatProductionSequence += process.selectedPrimaryVerticesTrackPtSumGt10
     #--------------------------------------------------------------------------------
