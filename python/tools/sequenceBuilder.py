@@ -115,9 +115,21 @@ def buildTauSequence(
     setattr(process, patTauCleanerName, patTauCleaner)
     outputSequence += getattr(process, patTauCleanerName)
 
+    # require pat::Taus to originate from "the" orimary event vertex
+    # (NOTE: per defualt, "the" orimary event vertex is the vertex of maximal sum(trackPt))
+    patTauVertexMatcher = cms.EDFilter("PATTauDzSelector",
+        src = cms.InputTag(patTauCleanerName),                           
+        vertexSource = cms.InputTag('selectedPrimaryVertexHighestPtTrackSum'),
+        dzMax = cms.double(0.2), # [cm]                             
+        filter = cms.bool(False)                                               
+    )
+    patTauVertexMatcherName = collectionName[0] + "VertexMatched" + collectionName[1]
+    setattr(process, patTauVertexMatcherName, patTauVertexMatcher)
+    outputSequence += getattr(process, patTauVertexMatcherName)
+
     # embed loose PFIsolation sums into pat::Tau objects
     patTauLoosePFIsoEmbedder04 = cms.EDProducer("PATTauPFIsolationEmbedder",
-        src = cms.InputTag(patTauCleanerName),                                       
+        src = cms.InputTag(patTauVertexMatcherName),                                       
         userFloatName = cms.string('pfLooseIsoPt04'),
         pfCandidateSource = cms.InputTag('pfNoPileUp'),
         chargedHadronIso = cms.PSet(
