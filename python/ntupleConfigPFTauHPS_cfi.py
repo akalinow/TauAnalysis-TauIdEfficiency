@@ -81,6 +81,7 @@ pfTausHPS_recInfo = cms.PSet(
         
         # tau id. discriminators        
         byDecayModeFinding = cms.string("tauID('decayModeFinding')"),
+        byIsolationVLoose = cms.string("tauID('byVLooseIsolation')"),
         byIsolationLoose = cms.string("tauID('byLooseIsolation')"),
         byIsolationMedium = cms.string("tauID('byMediumIsolation')"),
         byIsolationTight = cms.string("tauID('byTightIsolation')"),
