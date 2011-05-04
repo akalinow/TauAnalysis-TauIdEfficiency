@@ -34,23 +34,25 @@ def draw(events, expression, selection = "", output_name = "", binning = (), opt
         # Check if this is the first event source
         if event_source_index == 0:
             # Determine how to build the histogram
+            #
+            # CV: always pre-build histogram before calling TTree::Draw,
+            #     to make sure that TH1::Sumw2 gets called and binErrors are computed correctly.
+            #
             if not binning:
-                # If no binning information is provided
-                event_source.Draw(expression_str + ">>" + output_name, 
-                                  selection_with_weight, options, maxNumEntries)
-            elif len(binning) == 3: 
-                # Fixed bins
-                event_source.Draw(expression_str + ">>" + output_name + "(" + 
-                                  ','.join(str(x) for x in binning) + ")",
-                                  selection_with_weight, options, maxNumEntries)
-            else: 
-                # Variable bin sizes, must pre-build histo
+                raise ValueError("Undefined binning Parameter --> Please update your code !!")
+            histogram = None
+            if len(binning) == 3:
+                # Fixed bin width
+                histogram = ROOT.TH1F(output_name, output_name,
+                                      binning[0], binning[1], binning[2])
+            else:
+                # Variable bin widhts
                 histogram = ROOT.TH1F(output_name, output_name, 
-                                      len(binning)-1, array.array('d', binning))
-                histogram.Sumw2()
-                # Append to histogram
-                event_source.Draw(expression_str + ">>+" + output_name, 
-                                  selection_with_weight, options, maxNumEntries)
+                                      len(binning) - 1, array.array('d', binning))
+            histogram.Sumw2()
+            # Fill histogram
+            event_source.Draw(expression_str + ">>+" + output_name, 
+                              selection_with_weight, options, maxNumEntries)
         else:
             # Otherwise we are appending to an existing histogram
             event_source.Draw(expression_str + ">>+" + output_name, 
