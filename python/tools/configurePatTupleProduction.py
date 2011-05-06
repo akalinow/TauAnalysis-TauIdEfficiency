@@ -40,7 +40,9 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
     # per default, do **not** run SVfit algorithm
     if not addSVfitInfo:
         process.allMuTauPairs.doSVreco = cms.bool(False)
+        process.allMuTauPairs.doPFMEtSign = cms.bool(False)
         process.allMuTauPairsLooseMuonIsolation.doSVreco = cms.bool(False)
+        process.allMuTauPairsLooseMuonIsolation.doPFMEtSign = cms.bool(False)
 
     if not isMC:
         removeMCMatching(process, outputInProcess = False)
