@@ -299,7 +299,8 @@ def buildSequenceTauIdEffMeasSpecific(process,
         srcLeg1 = cms.InputTag(composeModuleName([patMuonCollectionName, "cumulative"])),
         srcLeg2 = cms.InputTag(composeModuleName([selTauCollectionName,  "cumulative"])),
         srcMET = cms.InputTag(patMEtCollectionName),
-        doSVreco = cms.bool(runSVfit)
+        doSVreco = cms.bool(runSVfit),
+        doPFMEtSign = cms.bool(runSVfit)
     )
     if addGenInfo:
         setattr(allMuTauPairsModule, "srcGenParticles", cms.InputTag('genParticles'))
