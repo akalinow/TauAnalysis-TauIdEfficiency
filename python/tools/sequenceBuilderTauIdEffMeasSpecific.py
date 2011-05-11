@@ -304,6 +304,8 @@ def buildSequenceTauIdEffMeasSpecific(process,
     )
     if addGenInfo:
         setattr(allMuTauPairsModule, "srcGenParticles", cms.InputTag('genParticles'))
+    else:
+        setattr(allMuTauPairsModule, "srcGenParticles", cms.InputTag(''))
     setattr(process, allMuTauPairsModuleName, allMuTauPairsModule)
     sequence += allMuTauPairsModule
     muTauPairProdConfigurator = objProdConfigurator(
