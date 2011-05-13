@@ -13,7 +13,9 @@ hltMu = cms.EDFilter("EventSelPluginFilter",
         pluginName = cms.string('hltMu'),             
         pluginType = cms.string('TriggerResultEventSelector'),
         src = cms.InputTag('TriggerResults::HLT'),
-        triggerPaths = cms.vstring('HLT_Mu15_v1', 'HLT_Mu15_v2', 'HLT_IsoMu15_v5', 'HLT_IsoMu17_v5', 'HLT_Mu24_v2')
+        triggerPaths = cms.vstring(
+            'HLT_IsoMu12_v1', 'HLT_Mu15_v1', 'HLT_Mu15_v2', 'HLT_IsoMu15_v5', 'HLT_IsoMu17_v5', 'HLT_IsoMu17_v6', 'HLT_Mu24_v2'
+        )
     )
 )
 
