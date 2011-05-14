@@ -26,13 +26,14 @@ GenPileUpEventInfoExtractor::operator()(const edm::Event& evt) const
 {
   //std::cout << "<GenPileUpEventInfoExtractor::operator()>:" << std::endl;
 
-  edm::Handle<PileupSummaryInfo> genPileUpInfo;
+  typedef std::vector<PileupSummaryInfo> PileupSummaryInfoCollection;
+  edm::Handle<PileupSummaryInfoCollection> genPileUpInfo;
   evt.getByLabel(src_, genPileUpInfo);
 
   double val = -1.;
-  if ( genPileUpInfo.isValid() ) {
-    //std::cout << " numPileUpInteractions = " << genPileUpInfo->getPU_NumInteractions() << std::endl;
-    val = genPileUpInfo->getPU_NumInteractions();
+  if ( genPileUpInfo.isValid() && genPileUpInfo->size() >= 1 ) {
+    val = genPileUpInfo->front().getPU_NumInteractions();
+    //std::cout << " numPileUpInteractions = " << val << std::endl;
   }
   
   return val;
