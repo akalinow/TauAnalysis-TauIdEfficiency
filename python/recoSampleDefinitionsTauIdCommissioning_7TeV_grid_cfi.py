@@ -65,8 +65,8 @@ RECO_SAMPLES = {
     'data_Jet_Run2011A_PromptReco_v1' : {
         'datasetpath'   : '/Jet/Run2011A-PromptReco-v1/AOD',
         'dbs_url'       : "http://cmsdbsprod.cern.ch/cms_dbs_prod_global/servlet/DBSServlet",
-        'lumi_mask'     : "/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions11/7TeV/Prompt/Cert_160404-163369_7TeV_PromptReco_Collisions11_JSON.txt",
-        'runselection'  : "160404-161216",
+        'lumi_mask'     : "/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions11/7TeV/Prompt/Cert_160404-163869_7TeV_PromptReco_Collisions11_JSON.txt",
+        'runselection'  : "160329-161312",
         'lumis_per_job' : "25",
         'jobs'          : [ 'qcdDiJet' ],
         'type'          : 'Data',
@@ -76,8 +76,8 @@ RECO_SAMPLES = {
     'data_Mu_Run2011A_PromptReco_v1' : {
         'datasetpath'   : '/SingleMu/Run2011A-PromptReco-v1/AOD',
         'dbs_url'       : "http://cmsdbsprod.cern.ch/cms_dbs_prod_global/servlet/DBSServlet",
-        'lumi_mask'     : "/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions11/7TeV/Prompt/Cert_160404-163369_7TeV_PromptReco_Collisions11_JSON.txt",
-        'runselection'  : "160404-161216",
+        'lumi_mask'     : "/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions11/7TeV/Prompt/Cert_160404-163869_7TeV_PromptReco_Collisions11_JSON.txt",
+        'runselection'  : "160329-161312",
         'lumis_per_job' : "50",
         'jobs'          : [ 'qcdMuEnriched', 'WplusJets', 'Zmumu' ],
         'type'          : 'Data',
@@ -86,8 +86,8 @@ RECO_SAMPLES = {
     'data_Mu_Run2011A_PromptReco_v2' : {
         'datasetpath'   : '/SingleMu/Run2011A-PromptReco-v2/AOD',
         'dbs_url'       : "http://cmsdbsprod.cern.ch/cms_dbs_prod_global/servlet/DBSServlet",
-        'lumi_mask'     : "/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions11/7TeV/Prompt/Cert_160404-163369_7TeV_PromptReco_Collisions11_JSON.txt",
-        'runselection'  : "162718-163796",
+        'lumi_mask'     : "/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions11/7TeV/Prompt/Cert_160404-163869_7TeV_PromptReco_Collisions11_JSON.txt",
+        'runselection'  : "162718-163869",
         'lumis_per_job' : "50",
         'jobs'          : [ 'qcdMuEnriched', 'WplusJets', 'Zmumu' ],
         'type'          : 'Data',
