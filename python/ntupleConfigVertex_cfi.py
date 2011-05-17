@@ -1,5 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 
+from TauAnalysis.RecoTools.vertexMultiplicityReweight_cfi import *
+
 #--------------------------------------------------------------------------------
 # define variables for x,y,z coordinates of reconstructed primary event vertices
 #
@@ -48,9 +50,10 @@ vertexMultReweight_template = cms.PSet(
     
     pluginType = cms.string("VertexMultiplicityReweightExtractor"),
 
-    src = cms.InputTag("selectedPrimaryVerticesTrackPtSumGt10"),
-    inputFileName = cms.FileInPath("TauAnalysis/RecoTools/data/vertexMultiplicityReweight.root"),
-    lutName = cms.string('histoReweight'),
+    src = vertexMultiplicityReweight.src,
+    inputFileName = vertexMultiplicityReweight.inputFileName,
+    lutName = vertexMultiplicityReweight.lutName,
+    type = vertexMultiplicityReweight.type,
 
     columns = cms.PSet(
         vtxMultReweight = cms.string("vtxMultReweight")
