@@ -15,13 +15,13 @@ crabFilePath = "/data1/veelken/CMSSW_4_1_x/crab/TauIdEfficiency/"
 pfCandidateCollection = "particleFlow" # pile-up removal disabled
 #pfCandidateCollection = "pfNoPileUp"   # pile-up removal enabled
 
-version = "v5_0b"
+version = "v5_3"
 
 crab_template = """
 [CRAB]
 
 jobtype = cmssw
-scheduler = glidein
+scheduler = glite
 use_server = 1
 
 [CMSSW]
