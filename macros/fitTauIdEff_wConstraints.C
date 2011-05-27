@@ -180,7 +180,7 @@ std::map<std::string, std::map<std::string, std::string> > makeBranchNameDict(
     branchNames["tauDiscrHPSmedium"] = getBranchName("doubles", branchNameTau, "byHPSmedium", branchName_suffix);
     branchNames["tauDiscrHPStight"] = getBranchName("doubles", branchNameTau, "byHPStight", branchName_suffix);
     
-    branchNames["diTauCharge"] = getBranchName("double", branchNameDiTau, "charge", branchName_suffix);
+    branchNames["diTauCharge"] = getBranchName("double", branchNameDiTau, "chargeTauLeadTrack", branchName_suffix);
     branchNames["diTauMt"] = getBranchName("double", branchNameDiTau, "Mt", branchName_suffix);
     branchNames["diTauPzeta"] = getBranchName("double", branchNameDiTau, "pZeta", branchName_suffix);
     branchNames["diTauPzetaVis"] = getBranchName("double", branchNameDiTau, "pZetaVis", branchName_suffix);

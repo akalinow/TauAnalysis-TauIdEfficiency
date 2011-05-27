@@ -216,8 +216,8 @@ def configurePatTupleProductionTauIdEffMeasSpecific(process, patSequenceBuilder 
         [ "EcalCrackVeto",   'abs(eta) < 1.460 | abs(eta) > 1.558'                      ]
     ]
 
-    # CV: SVFit algorithm cannot run on CaloTaus (2011/04/11),
-    #     so keep 'runSVfit = False' disabled always
+    # CV: do not run SVFit and PFMetSignificance algorithms,
+    #     as they use a significant amount of time (2011/05/27)
     retVal_caloTau = \
         buildSequenceTauIdEffMeasSpecific(process,
                                           'selectedPatMuonsForTauIdEffTrkIP',
@@ -232,7 +232,7 @@ def configurePatTupleProductionTauIdEffMeasSpecific(process, patSequenceBuilder 
                                           [ "PFTau", "FixedCone" ], patTupleConfig["pfTauCollectionFixedCone"],
                                           'patPFMETs',
                                           pfTauConeIsoPreselectionCriteria,
-                                          applyZrecoilCorrection = applyZrecoilCorrection, runSVfit = runSVfit)
+                                          applyZrecoilCorrection = applyZrecoilCorrection, runSVfit = False)
     process.producePatTupleTauIdEffMeasSpecific += retVal_pfTauFixedCone["sequence"]
     retVal_pfTauShrinkingCone = \
         buildSequenceTauIdEffMeasSpecific(process,
@@ -240,7 +240,7 @@ def configurePatTupleProductionTauIdEffMeasSpecific(process, patSequenceBuilder 
                                           [ "PFTau", "ShrinkingCone" ], patTupleConfig["pfTauCollectionShrinkingCone"],
                                           'patPFMETs',
                                           pfTauConeIsoPreselectionCriteria,
-                                          applyZrecoilCorrection = applyZrecoilCorrection, runSVfit = runSVfit)
+                                          applyZrecoilCorrection = applyZrecoilCorrection, runSVfit = False)
     process.producePatTupleTauIdEffMeasSpecific += retVal_pfTauShrinkingCone["sequence"]
     retVal_pfTauHPS = \
         buildSequenceTauIdEffMeasSpecific(process,
@@ -248,7 +248,7 @@ def configurePatTupleProductionTauIdEffMeasSpecific(process, patSequenceBuilder 
                                           [ "PFTau", "HPS" ], patTupleConfig["pfTauCollectionHPS"],
                                           'patPFMETs',
                                           pfTauHPSpreselectionCriteria,
-                                          applyZrecoilCorrection = applyZrecoilCorrection, runSVfit = runSVfit)
+                                          applyZrecoilCorrection = applyZrecoilCorrection, runSVfit = False)
     process.producePatTupleTauIdEffMeasSpecific += retVal_pfTauHPS["sequence"]
     retVal_pfTauHPSpTaNC = \
         buildSequenceTauIdEffMeasSpecific(process,
@@ -256,7 +256,7 @@ def configurePatTupleProductionTauIdEffMeasSpecific(process, patSequenceBuilder 
                                           [ "PFTau", "HPSpTaNC" ], patTupleConfig["pfTauCollectionHPSpTaNC"],
                                           'patPFMETs',
                                           pfTauHPSpTaNCpreselectionCriteria,
-                                          applyZrecoilCorrection = applyZrecoilCorrection, runSVfit = runSVfit)
+                                          applyZrecoilCorrection = applyZrecoilCorrection, runSVfit = False)
     process.producePatTupleTauIdEffMeasSpecific += retVal_pfTauHPSpTaNC["sequence"]
 
     retVal = {}

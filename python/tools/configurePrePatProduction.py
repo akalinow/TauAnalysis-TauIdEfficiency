@@ -51,21 +51,14 @@ def configurePrePatProduction(process, pfCandidateCollection = "particleFlow",
     #process.prePatProductionSequence += process.hpsTancTausDiscriminationAgainstCaloMuon
     #--------------------------------------------------------------------------------
 
-    #--------------------------------------------------------------------------------
-    # add collection of fixed-cone PFTaus
-    # (not produced per default anymore)
 
+    #--------------------------------------------------------------------------------
+    # add collection of fixed-cone and shrinking-cone PFTaus
+    # (not produced per default anymore)
+    process.load("RecoTauTag.Configuration.RecoPFTauTag_cff")
     process.prePatProductionSequence += process.recoTauClassicFixedConeSequence
-    #--------------------------------------------------------------------------------
-
-    #--------------------------------------------------------------------------------
-    # add collection of shrinking-cone PFTaus
-    # (not produced per default anymore)
-
-    process.load("RecoTauTag.Configuration.ShrinkingConePFTaus_cff")
-
-    process.prePatProductionSequence += process.produceAndDiscriminateShrinkingConePFTaus
-    process.prePatProductionSequence += process.produceShrinkingConeDiscriminationByTauNeuralClassifier
+    process.prePatProductionSequence += process.recoTauClassicShrinkingConeSequence
+    process.prePatProductionSequence += process.recoTauClassicShrinkingConeMVASequence
     #--------------------------------------------------------------------------------
 
     #--------------------------------------------------------------------------------

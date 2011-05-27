@@ -17,8 +17,9 @@ process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
 #--------------------------------------------------------------------------------
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
-        'file:/data2/veelken/CMSSW_4_1_x/skims/ZtoMuTau/DYtautau_spring11_powhegZ2_1_1_XvY.root'
+        #'file:/data2/veelken/CMSSW_4_1_x/skims/ZtoMuTau/DYtautau_spring11_powhegZ2_1_1_XvY.root'
         #'file:/data2/veelken/CMSSW_4_1_x/skims/ZtoMuTau/data2/veelken/CMSSW_4_1_x/skims/ZtoMuTau/data2011A_tauPlusX_AOD_1_1_MV9.root'
+        'file:/data2/veelken/CMSSW_4_1_x/skims/ZtoMuTau/PPmuXptGt20Mu15_aodsim_1_1_K9X.root'                       
     ),
     skipEvents = cms.untracked.uint32(0)            
 )

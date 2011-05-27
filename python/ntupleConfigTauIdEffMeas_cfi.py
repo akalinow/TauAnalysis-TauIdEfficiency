@@ -46,6 +46,7 @@ tauIdEffMeas_template03 = cms.PSet(
 
     # Variables to compute for this source
     columns = cms.PSet(
+        chargeTauLeadTrack = cms.string(""),
         charge = cms.string(""),
 
 	Mt = cms.string("mt1MET()"),  
@@ -58,14 +59,16 @@ tauIdEffMeas_template03 = cms.PSet(
 )
 
 tauIdEffMeas_template03pfTau = copy.deepcopy(tauIdEffMeas_template03)
-tauIdEffMeas_template03pfTau.columns.charge = \
+tauIdEffMeas_template03pfTau.columns.chargeTauLeadTrack = \
   cms.string("? leg2.leadPFChargedHadrCand().isNonnull() ? (leg1.charge() + leg2.leadPFChargedHadrCand.charge()) : -1000.")
-tauIdEffMeas_template03pfTau.columns.SVfitMass1 = cms.string("svFitSolution('psKine_MEt').mass()")
-tauIdEffMeas_template03pfTau.columns.SVfitMass2 = cms.string("svFitSolution('psKine_MEt_ptBalance').mass()")
+tauIdEffMeas_template03pfTau.columns.charge = \
+  cms.string("leg1.charge() + leg2.charge()")
 
 tauIdEffMeas_template03caloTau = copy.deepcopy(tauIdEffMeas_template03)
-tauIdEffMeas_template03caloTau.columns.charge = \
+tauIdEffMeas_template03caloTau.columns.chargeTauLeadTrack = \
   cms.string("? leg2.leadTrack().isNonnull() ? (leg1.charge() + leg2.leadTrack().charge()) : -1000.")
+tauIdEffMeas_template03caloTau.columns.charge = \
+  cms.string("leg1.charge() + leg2.charge()")
 
 tauIdEffMeas_template04 = cms.PSet(
     # Select multiplicy of object(s) to store
