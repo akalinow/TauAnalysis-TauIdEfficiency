@@ -18,8 +18,8 @@ process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
         #'file:/data2/veelken/CMSSW_4_1_x/skims/ZtoMuTau/DYtautau_spring11_powhegZ2_1_1_XvY.root'
-        #'file:/data2/veelken/CMSSW_4_1_x/skims/ZtoMuTau/data2/veelken/CMSSW_4_1_x/skims/ZtoMuTau/data2011A_tauPlusX_AOD_1_1_MV9.root'
-        'file:/data2/veelken/CMSSW_4_1_x/skims/ZtoMuTau/PPmuXptGt20Mu15_aodsim_1_1_K9X.root'                       
+        'file:/data2/veelken/CMSSW_4_1_x/skims/ZtoMuTau/data2011A_tauPlusX_AOD_1_1_MV9.root'
+        #'file:/data2/veelken/CMSSW_4_1_x/skims/ZtoMuTau/PPmuXptGt20Mu15_aodsim_1_1_K9X.root'                       
     ),
     skipEvents = cms.untracked.uint32(0)            
 )
@@ -31,10 +31,10 @@ process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(1000)
 )
 
-isMC = True # use for MC
-##isMC = False # use for Data
-##HLTprocessName = "HLT" # use for 2011 Data
-HLTprocessName = "REDIGI311X" # use for Spring'11 reprocessed MC
+##isMC = True # use for MC
+isMC = False # use for Data
+HLTprocessName = "HLT" # use for 2011 Data
+##HLTprocessName = "REDIGI311X" # use for Spring'11 reprocessed MC
 pfCandidateCollection = "particleFlow" # pile-up removal disabled
 ##pfCandidateCollection = "pfNoPileUp" # pile-up removal enabled
 applyEventSelection = True 
@@ -171,11 +171,7 @@ process.ntupleProducer = cms.EDProducer("ObjValEDNtupleProducer",
         # number of reconstructed primary event vertices
         # with sum(trackPt) exceeding different thresholds
         vertexMultiplicity = process.vertexMultiplicity_template,
-
-        # reweighting factors to be applied to Monte Carlo simulated events
-        # in order to match vertex multiplicity distribution in Data                                             
-        vertexMultReweight = process.vertexMultReweight_template,                                    
-
+      
         # variables specific to Muons
         muons_rec = process.muons_recInfo,              
 
@@ -267,7 +263,10 @@ if isMC:
     setattr(process.ntupleProducer.sources, "tauGenJets", process.tauGenJets_genInfo)
     setattr(process.ntupleProducer.sources, "genJets", process.genJets_genInfo)
     setattr(process.ntupleProducer.sources, "genPhaseSpaceEventInfo", process.genPhaseSpaceEventInfo_template)
-    setattr(process.ntupleProducer.sources, "genPileUpEventInfo", process.genPileUpEventInfo_template)    
+    setattr(process.ntupleProducer.sources, "genPileUpEventInfo", process.genPileUpEventInfo_template)
+    # add reweighting factors to be applied to Monte Carlo simulated events
+    # in order to match vertex multiplicity distribution in Data                                             
+    setattr(process.ntupleProducer.sources, "vertexMultReweight", process.vertexMultReweight_template)
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------

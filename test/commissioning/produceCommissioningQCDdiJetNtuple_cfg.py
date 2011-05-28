@@ -148,10 +148,6 @@ process.ntupleProducer = cms.EDProducer("ObjValEDNtupleProducer",
         # with sum(trackPt) exceeding different thresholds
         vertexMultiplicity = process.vertexMultiplicity_template,
 
-        # reweighting factors to be applied to Monte Carlo simulated events
-        # in order to match vertex multiplicity distribution in Data                                             
-        vertexMultReweight = process.vertexMultReweight_template,    
-
         # global variables describing the underlying event/
         # amount of hadronic activity
         jets = process.jets_template,
@@ -252,6 +248,9 @@ if isMC:
     setattr(process.ntupleProducer.sources, "genJets", process.genJets_genInfo)
     setattr(process.ntupleProducer.sources, "genPhaseSpaceEventInfo", process.genPhaseSpaceEventInfo_template)
     setattr(process.ntupleProducer.sources, "genPileUpEventInfo", process.genPileUpEventInfo_template)
+    # add reweighting factors to be applied to Monte Carlo simulated events
+    # in order to match vertex multiplicity distribution in Data                                             
+    setattr(process.ntupleProducer.sources, "vertexMultReweight", process.vertexMultReweight_template)    
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
