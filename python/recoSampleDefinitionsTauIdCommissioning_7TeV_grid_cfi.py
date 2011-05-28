@@ -16,8 +16,8 @@ SAMPLES_TO_RUN = [
 ]
 
 JOBS_TO_RUN = [
-    #'qcdDiJet',
-    #'qcdMuEnriched',
+    'qcdDiJet',
+    'qcdMuEnriched',
     'WplusJets',
     'Zmumu'
 ]
@@ -51,7 +51,7 @@ JOB_OPTIONS = {
     },
     'Zmumu' : {
         'applyEventSelection' : True,
-        'submitTypes'         : [ 'MC' ]
+        'submitTypes'         : [ 'MC', 'Data' ]
     }
 }
 
@@ -78,7 +78,7 @@ RECO_SAMPLES = {
         'dbs_url'       : "http://cmsdbsprod.cern.ch/cms_dbs_prod_global/servlet/DBSServlet",
         'lumi_mask'     : "/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions11/7TeV/Prompt/Cert_160404-163869_7TeV_PromptReco_Collisions11_JSON.txt",
         'runselection'  : "160329-161312",
-        'lumis_per_job' : "50",
+        'lumis_per_job' : "25",
         'jobs'          : [ 'qcdMuEnriched', 'WplusJets', 'Zmumu' ],
         'type'          : 'Data',
         'hlt'           : 'HLT'
@@ -88,7 +88,7 @@ RECO_SAMPLES = {
         'dbs_url'       : "http://cmsdbsprod.cern.ch/cms_dbs_prod_global/servlet/DBSServlet",
         'lumi_mask'     : "/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions11/7TeV/Prompt/Cert_160404-163869_7TeV_PromptReco_Collisions11_JSON.txt",
         'runselection'  : "162718-163869",
-        'lumis_per_job' : "50",
+        'lumis_per_job' : "25",
         'jobs'          : [ 'qcdMuEnriched', 'WplusJets', 'Zmumu' ],
         'type'          : 'Data',
         'hlt'           : 'HLT'
