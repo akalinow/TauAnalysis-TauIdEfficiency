@@ -161,7 +161,7 @@ def makeFakeratePlots(algorithm, numerator,
     #print("<makeFakeratePlots>:")
 
     result_algorithm = {}
-    
+
     #----------------------------------------------------------------------------
     # Make "regular" fake-rate plots
     #----------------------------------------------------------------------------
@@ -244,10 +244,10 @@ def makeFakeratePlots(algorithm, numerator,
     #----------------------------------------------------------------------------
     # Make fake-rate plots with normalized differences added below plots
     #----------------------------------------------------------------------------
-    
+
     canvas_diff = ROOT.TCanvas("canvas_diff", "canvas_diff", 500, 625)
     canvas_diff.cd()
-    
+
     topPad_diff = ROOT.TPad("topPad_diff", "topPad_diff", 0.00, 0.35, 1.00, 1.00)
     topPad_diff.SetFillColor(10)
     topPad_diff.SetLogy(True)
@@ -263,7 +263,7 @@ def makeFakeratePlots(algorithm, numerator,
     eff_dijet['background'].GetYaxis().SetNdivisions(505)
     eff_dijet['background'].GetYaxis().SetTickLength(0.04)
     eff_dijet['background'].GetYaxis().SetTitleOffset(1.2)
-    eff_dijet['background'].GetYaxis().SetTitleSize(0.05) 
+    eff_dijet['background'].GetYaxis().SetTitleSize(0.05)
     eff_dijet['background'].GetYaxis().SetLabelSize(0.05)
     eff_dijet['background'].Draw()
 
@@ -278,7 +278,7 @@ def makeFakeratePlots(algorithm, numerator,
     # Clear grid lines in area used for labels and legend
     #white_patch.Draw()
     #eff_dijet['background'].Draw('axissame')
-    
+
     # Draw legend
     legend.SetX1NDC(legend.GetX1NDC() + 0.050)
     legend.SetX2NDC(legend.GetX2NDC() + 0.050)
@@ -289,12 +289,12 @@ def makeFakeratePlots(algorithm, numerator,
     # Draw CMS preliminary, luminosity and center-of-mass energy labels
     custom_CMS_PRELIMINARY_UPPER_LEFT.Draw()
     custom_LUMI_LABEL_UPPER_LEFT.Draw()
-    
+
     for extra_label_diff in extra_labels_diff:
         extra_label_diff.Draw()
 
     canvas_diff.cd()
-    
+
     bottomPad_diff = ROOT.TPad("bottomPad_diff", "bottomPad_diff", 0.00, 0.00, 1.00, 0.35)
     bottomPad_diff.SetFillColor(10)
     bottomPad_diff.SetLogy(False)
@@ -316,7 +316,7 @@ def makeFakeratePlots(algorithm, numerator,
         y_min = -0.34, y_max = +0.34, logy = False
     )
     result_algorithm['dijet_DataToMC_diff'] = diff_dijet
-    
+
     diff_ppmux = plotter_ppmux.plot_eff_deviations(
         eff_ppmux,
         sample_ppmux_mc.name,
@@ -326,7 +326,7 @@ def makeFakeratePlots(algorithm, numerator,
         y_min = -0.34, y_max = +0.34, logy = False
     )
     result_algorithm['ppmux_DataToMC_diff'] = diff_ppmux
-    
+
     diff_wjets = plotter_wjets.plot_eff_deviations(
         eff_wjets,
         sample_wjets_mc.name,
@@ -361,25 +361,41 @@ def makeFakeratePlots(algorithm, numerator,
     canvas_diff.SaveAs(outputFileName[:outputFileName.find(".")] + "_%s_diff.root" % algorithm)
 
     return result_algorithm
-       
+
 if __name__ == "__main__":
 
+    # Figure out how to get the information about the pileup information.  This
+    # has to be determiend from one of the MC samples.
+
+    ntuple_mananger_wPUinfo = sample_dijet_mc.build_ntuple_manager(
+        "tauIdEffNtuple")
+
+    # Define the expression which re-weights events for PU.
+    puinfo_ntuple = ntuple_mananger_wPUinfo.get_ntuple("addPileupInfo")
+    pu_reweight_expr = puinfo_ntuple.expr('$vtxMultReweight')
+    # Uncomment following line to DISABLE reweighting
+    # pu_reweight_expr = "1.0"
+
     # define PlotManagers for QCD multi-jet, QCD muon enriched and W + jets samples
+    # For the MC samples, reweight according to PU vertices
     plotter_dijet = PlotManager()
-    plotter_dijet.add_sample(sample_dijet_data, "QCDj Data",                        **custom_style_dijet_data)
-    plotter_dijet.add_sample(sample_dijet_mc,   "QCDj Simulation",                  **custom_style_dijet_mc)
+    plotter_dijet.add_sample(sample_dijet_data, "QCDj Data", **custom_style_dijet_data)
+    plotter_dijet.add_sample(sample_dijet_mc, "QCDj Simulation",
+                             weight_expr = pu_reweight_expr, **custom_style_dijet_mc)
     plotter_dijet.set_integrated_lumi(intLumiData)
-    
+
     plotter_ppmux = PlotManager()
-    plotter_ppmux.add_sample(sample_ppmux_data, "QCD#mu Data",                      **custom_style_ppmux_data)
-    plotter_ppmux.add_sample(sample_ppmux_mc,   "QCD#mu Simulation",                **custom_style_ppmux_mc)
+    plotter_ppmux.add_sample(sample_ppmux_data, "QCD#mu Data", **custom_style_ppmux_data)
+    plotter_ppmux.add_sample(sample_ppmux_mc, "QCD#mu Simulation",
+                             weight_expr = pu_reweight_expr, **custom_style_ppmux_mc)
     plotter_ppmux.set_integrated_lumi(intLumiData)
-        
+
     plotter_wjets = PlotManager()
-    plotter_wjets.add_sample(sample_wjets_data, "W #rightarrow #mu #nu Data",       **custom_style_wjets_data)
-    plotter_wjets.add_sample(sample_wjets_mc,   "W #rightarrow #mu #nu Simulation", **custom_style_wjets_mc)
+    plotter_wjets.add_sample(sample_wjets_data, "W #rightarrow #mu #nu Data", **custom_style_wjets_data)
+    plotter_wjets.add_sample(sample_wjets_mc, "W #rightarrow #mu #nu Simulation",
+                             weight_expr = pu_reweight_expr, **custom_style_wjets_mc)
     plotter_wjets.set_integrated_lumi(intLumiData)
-    
+
     # Build the ntuple manager
     ntuple_manager = sample_wjets_data.build_ntuple_manager("tauIdEffNtuple")
 
@@ -390,7 +406,7 @@ if __name__ == "__main__":
         "hps"           : ntuple_manager.get_ntuple("hps"),
         "calo"          : ntuple_manager.get_ntuple("calo")
     }
-    
+
     hlt = ntuple_manager.get_ntuple("patTriggerEvent")
 
     # Define binning options
@@ -403,7 +419,7 @@ if __name__ == "__main__":
                  + " & $byEcalIsolation > 0.5 & ($numChargedParticlesSignalCone == 1 || $numChargedParticlesSignalCone == 3)"
     caloString  = "$byLeadTrackFinding > 0.5 & $byLeadTrackPtCut > 0.5 & $byIsolation > 0.5 " \
                  + " & $etSumIsolationECAL < 5 & ($numSignalTracks ==1 || $numSignalTracks ==3)"
-    
+
     numerators = {
         "shrinkingCone" : {
             'expr'       : nTuples["shrinkingCone"].expr(pfString),
@@ -462,7 +478,7 @@ if __name__ == "__main__":
     extra_labels['hps_medium']    = [ algo_label_hps_medium  ]
     extra_labels['hps_tight']     = [ algo_label_hps_tight   ]
     extra_labels['calo']          = [ algo_label_calo        ]
-        
+
     ##for algorithm_discriminator in [ 'TaNC_loose', 'TaNC_medium', 'TaNC_tight',
     ##                                 'hps_loose',  'hps_medium',  'hps_tight'  ]:
     ##for algorithm_discriminator in [ 'TaNC_loose', 'hps_loose' ] :
@@ -478,15 +494,15 @@ if __name__ == "__main__":
             algorithm     = algorithm_discriminator[:algorithm_discriminator.find("_")]
             discriminator = algorithm_discriminator[algorithm_discriminator.find("_") + 1:]
         print("algorithm = %s, discriminator = %s" % (algorithm, discriminator))
-        
+
         # Define the denominators
         denominator_jetId     = nTuples[algorithm].expr("$jetIdLoose > 0.5")
         ##denominator_jetId     = nTuples[algorithm].expr("$jetPt > 0.0")
         denominator_e_mu_veto = nTuples[algorithm].expr("$againstElectronLoose > 0.5 & $againstMuonLoose > 0.5 & $againstMuonTight > 0.5")
-        denominator_dijet     = nTuples[algorithm].expr(denominator_phase_space) & denominator_jetId & denominator_e_mu_veto 
+        denominator_dijet     = nTuples[algorithm].expr(denominator_phase_space) & denominator_jetId & denominator_e_mu_veto
         ##                     & hlt.expr('$hltJet30v1bit > 0.5') & nTuples[algorithm].expr("$probeJet30v1 > 0.5")
-        denominator_ppmux     = nTuples[algorithm].expr(denominator_phase_space) & denominator_jetId & denominator_e_mu_veto 
-        ##                     & hlt.expr('$hltMu15v2bit > 0.5') 
+        denominator_ppmux     = nTuples[algorithm].expr(denominator_phase_space) & denominator_jetId & denominator_e_mu_veto
+        ##                     & hlt.expr('$hltMu15v2bit > 0.5')
         denominator_wjets     = nTuples[algorithm].expr(denominator_phase_space) & denominator_jetId & denominator_e_mu_veto
         ##                     & hlt.expr('$hltMu15v2bit > 0.5')
 
@@ -494,11 +510,11 @@ if __name__ == "__main__":
         extra_labels_pt.append(style.ETA_CUT_LABEL_UPPER_LEFT)
         extra_labels_diff_pt  = copy.deepcopy(extra_labels[algorithm_discriminator])
         extra_labels_diff_pt.append(custom_ETA_CUT_LABEL_UPPER_LEFT)
-        
+
         makeFakeratePlots(algorithm_discriminator, numerators[algorithm_discriminator]['expr'],
-                          denominator_dijet, plotter_dijet, 
-                          denominator_ppmux, plotter_ppmux, 
-                          denominator_wjets, plotter_wjets, 
+                          denominator_dijet, plotter_dijet,
+                          denominator_ppmux, plotter_ppmux,
+                          denominator_wjets, plotter_wjets,
                           nTuples[algorithm].expr('$jetPt'), binning_pt,
                           'Jet P_{T} [GeV/c]', 6.5e-4, 0.59, extra_labels_pt, extra_labels_diff_pt,
                           maxNumEntries,
@@ -508,10 +524,10 @@ if __name__ == "__main__":
         extra_labels_eta.append(style.PT_CUT_LABEL_UPPER_LEFT)
         extra_labels_diff_eta = copy.deepcopy(extra_labels[algorithm_discriminator])
         extra_labels_diff_eta.append(custom_PT_CUT_LABEL_UPPER_LEFT)
-        
+
         ##makeFakeratePlots(algorithm_discriminator, numerator[algorithm]['expr'],
-        ##                  denominator_dijet, plotter_dijet, 
-        ##                  denominator_ppmux, plotter_ppmux, 
+        ##                  denominator_dijet, plotter_dijet,
+        ##                  denominator_ppmux, plotter_ppmux,
         ##                  denominator_wjets, plotter_wjets,
         ##                  nTuples[algorithm].expr('$jetEta'), binning_eta,
         ##                  'Jet #eta', 6.5e-4, 0.59, extra_labels_eta, extra_labels_diff_eta,
@@ -522,10 +538,10 @@ if __name__ == "__main__":
         extra_labels_phi.append(style.PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT)
         extra_labels_diff_phi = copy.deepcopy(extra_labels[algorithm_discriminator])
         extra_labels_diff_phi.append(custom_PT_ETA_CUT_TWO_LINE_LABEL_UPPER_LEFT)
-        
+
         ##makeFakeratePlots(algorithm_discriminator, numerator[algorithm]['expr'],
-        ##                  denominator_dijet, plotter_dijet, 
-        ##                  denominator_ppmux, plotter_ppmux, 
+        ##                  denominator_dijet, plotter_dijet,
+        ##                  denominator_ppmux, plotter_ppmux,
         ##                  denominator_wjets, plotter_wjets,
         ##                  nTuples[algorithm].expr('$jetPhi'), binning_phi,
         ##                  'Jet #phi', 6.5e-4, 0.59, extra_labels_phi, extra_labels_diff_phi,

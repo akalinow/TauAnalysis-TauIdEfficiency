@@ -11,7 +11,7 @@ import copy
 import helpers
 
 class LegendMaker(object):
-    ''' Accumulate objects and produces TLegends of them 
+    ''' Accumulate objects and produces TLegends of them
 
     Add each time using [add_object].  Once all objects
     have been added a TLegend can be retrieved via
@@ -44,28 +44,32 @@ class PlotManager(object):
         self.sample_order = []
         self.int_lumi = None
 
-    def add_sample(self, sample_mananger, nice_name, **style_options):
+    def add_sample(self, sample_mananger, nice_name, weight_expr = None,
+                   **style_options):
         ''' Add a sample to the plot manager
 
         Add a sample (MC_QCD, Data, etc) to the PlotManager. The style options
         to use for plots of this sample can be sepecified using [style_options]
         keyword arguments.  The [sample_manager] input should be an instance
         of the NtupleSampleCollection class.
-        
+
+        Optionally, a weight expression can be specified (such as a vertex
+        reweight factor).
+
         The available style options are:
-            draw_option 
-            marker_color 
-            marker_size 
-            marker_style 
+            draw_option
+            marker_color
+            marker_size
+            marker_style
             fill_color
             fill_style
             line_width
             line_color
-            x_axis_title 
-            y_axis_title 
+            x_axis_title
+            y_axis_title
 
         '''
-        
+
         if sample_mananger.name in self.samples:
             raise KeyError, "attempt to add a sample to the plot manager that already exits"
         # Create a new dictionary
@@ -73,6 +77,7 @@ class PlotManager(object):
         sample_dict['sample'] = sample_mananger
         sample_dict['int_lumi'] = sample_mananger.effective_luminosity()
         sample_dict['nice_name'] = nice_name
+        sample_dict['weight_expr'] =  weight_expr
         self.sample_order.append(sample_mananger.name)
 
         # Get any desired style overrides for this sample
@@ -86,13 +91,15 @@ class PlotManager(object):
 
     def set_integrated_lumi(self, target_int_lumi):
         """ Set the desired integrated luminsotity for all samples
-        
-        In the case target_int_lumi is None, no reweighting will be 
+
+        In the case target_int_lumi is None, no reweighting will be
         applied.
         """
         self.int_lumi = target_int_lumi
 
-    def distribution(self, expression, selection, binning = (), maxNumEntries = 1000000000, normalize = None, verbose = True, **options):
+    def distribution(self, expression, selection, binning = (),
+                     maxNumEntries = 1000000000, normalize = None,
+                     verbose = True, **options):
         " Compare a distribution from the different samples "
         if verbose: print "Plotting", str(expression), str(selection)
         # Get a unique name for the ROOT name
@@ -116,9 +123,10 @@ class PlotManager(object):
             my_plot = plot.draw(
                 # events for this sample
                 list(sample_info['sample'].events_and_weights(self.int_lumi)),
-                expression, selection, 
+                expression, selection,
                 output_name = "%s%s" % (sample_name,unique_name),
                 binning = binning,
+                weight_expr = sample_info['weight_expr'],
                 maxNumEntries = maxNumEntries
             )
             if my_plot == None:
@@ -142,17 +150,17 @@ class PlotManager(object):
             #if we want to normalize to this distribution it will be by its integral
             if sample_name == normalize:
                 normalize = plot_dict['integral']
-            # Add this histogram to the stack (will be plotted using 
+            # Add this histogram to the stack (will be plotted using
             # nostack option)
             result_dict['result'].Add(my_plot, sample_info['style']['draw_option'])
             # Add an entry in the legend
-            result_dict['legend'].add_object(my_plot, sample_info['nice_name'], 
+            result_dict['legend'].add_object(my_plot, sample_info['nice_name'],
                                              sample_info['style']['draw_option'])
         #take care of normalization
         if not normalize == None:
             for my_plot_name, my_plot in all_plots.iteritems():
                 my_plot.Scale( float(normalize) / my_plot.Integral())
-            
+
         # Now draw the total stack to current pad
         result_dict['result'].Draw("nostack")
         # If the upper limit for y is not set, make a nice guess
@@ -174,8 +182,9 @@ class PlotManager(object):
         return result_dict
 
     def efficiency(self, expression, numerator, denominator,
-                   binning = (), maxNumEntries = 1000000000, verbose = True, x_error_bars = True, **options):
-        ''' Compare efficiencies for different samples 
+                   binning = (), maxNumEntries = 1000000000,
+                   verbose = True, x_error_bars = True, **options):
+        ''' Compare efficiencies for different samples
 
         Compute the efficiency of the [numerator] selection with respect
         to the [denominator] selection, parameterized by [expression]. The efficiencies
@@ -189,7 +198,7 @@ class PlotManager(object):
         #print " binning = ", binning
         #print " maxNumEntries = ", maxNumEntries
         #print " options = ", options
-        
+
         # Get a unique name
         unique_name = helpers.make_unique_name(expression, numerator, denominator)
         # store the background histogram
@@ -218,6 +227,7 @@ class PlotManager(object):
                 list(sample_info['sample'].events_and_weights(None)),
                 expression, numerator, denominator, binning = binning,
                 output_name = "%s%s"%(sample_name, unique_name),
+                weight_expr = sample_info['weight_expr'],
                 maxNumEntries = maxNumEntries)
 
             # If this is the first histogram drawn, add the background
@@ -249,13 +259,16 @@ class PlotManager(object):
             style.update_canvas_style(ROOT.gPad, canvas_style))
         return result_dict
 
-    def multi_efficiency(self, expression, denominator, numerators, binning = (), maxNumEntries = 1000000000,
-                         style_map = { "mc_qcddijet": style.MC_STYLES, "qcdDiJet_data":style.DATA_STYLES },
+    def multi_efficiency(self, expression, denominator, numerators,
+                         binning = (), maxNumEntries = 1000000000,
+                         style_map = {
+                             "mc_qcddijet": style.MC_STYLES,
+                             "qcdDiJet_data":style.DATA_STYLES },
                          **options):
 
         #print("<PlotManager::multi_efficiency>:")
         #print " options = ", options
-        
+
         if len(numerators) < 1:
             raise ValueError, "you have to pass at least one numerator (got '%s')!"%numerators
         if len(binning) < 3:
@@ -265,7 +278,7 @@ class PlotManager(object):
         output['legend'] = my_legend
         output['numerators'] = {}
         output['keep'] = []
-        
+
         cumulative_numerator = None
         for numerator_info in numerators:
             if cumulative_numerator is None:
@@ -281,11 +294,13 @@ class PlotManager(object):
             for sample_name in self.samples:
                 style_to_use = style_map[sample_name][numerator_info["style_name"]]
                 self.update_style(sample_name, **style_to_use)
-            
+
             # Build the single efficiency
             print "Building fake rates for", numerator_name
-            single_eff = self.efficiency(expression, cumulative_numerator,
-                                         denominator, binning = binning, maxNumEntries = maxNumEntries, **options)
+            single_eff = self.efficiency(
+                expression, cumulative_numerator,
+                denominator, binning = binning,
+                maxNumEntries = maxNumEntries, **options)
 
             # No GC please
             output['keep'].append(single_eff)
@@ -304,7 +319,7 @@ class PlotManager(object):
                 output['numerators'][numerator_name][sample_name] = efficiency
                 my_legend.add_object(
                     efficiency, " ".join(
-                        [numerator_info['nice_name'], 
+                        [numerator_info['nice_name'],
                          self.samples[sample_name]['nice_name']]), "p")
 
         # Now draw everything
@@ -314,7 +329,7 @@ class PlotManager(object):
             for sample_name, efficiency in numerator_info.iteritems():
                 print "Drawing", numerator, sample_name, efficiency
                 efficiency.Draw("e1p,same")
-                
+
         # Update the canvas
         canvas_style = copy.deepcopy(style.DEFAULT_STYLE)
         canvas_style.update(options)
@@ -337,11 +352,11 @@ class PlotManager(object):
         style.update_histo_style(background, options)
         background.SetStats(False)
         background.Draw()
-        
+
         output['background'] = background
         output['samples'] = {}
         output['legend'] = LegendMaker()
-        
+
         base_histo = plot_result['samples'][base_sample]['plot']
         for probe_name in probe_samples:
             print "Comparing", probe_name
@@ -367,7 +382,7 @@ class PlotManager(object):
 
                     difference_histo.SetBinContent(bin, diff)
                     difference_histo.SetBinError(bin, err)
-                    
+
             style.update_histo_style(difference_histo, self.samples[probe_name]['style'])
             output['legend'].add_object(
                 difference_histo, self.samples[probe_name]['nice_name'], 'p')
@@ -394,7 +409,7 @@ class PlotManager(object):
         output['background'] = background
         output['samples'] = {}
         output['legend'] = LegendMaker()
-        
+
         base_graph = plot_result['samples'][base_sample]
         for probe_name in probe_samples:
             print "Comparing", probe_name
@@ -433,24 +448,13 @@ class PlotManager(object):
 
                     yErrUp   = (probe_y/base_y)*math.sqrt(probe_yErrUp_norm**2 + base_yErrDown_norm**2)
                     yErrDown = (probe_y/base_y)*math.sqrt(probe_yErrDown_norm**2 + base_yErrUp_norm**2)
-                    
+
                     difference_graph.SetPoint(point, base_x, diff)
                     difference_graph.SetPointError(point, base_xErrDown, base_xErrUp, yErrDown, yErrUp)
-                                        
+
             ##style.update_graph_style(difference_graph, self.samples[probe_name]['style'])
             ##output['legend'].add_object(
             ##    difference_graph, self.samples[probe_name]['nice_name'], 'p')
             ##difference_graph.Draw("p")
 
         return output
-
-
-
-
-
-
-
-
-
-
-

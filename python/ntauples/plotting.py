@@ -7,13 +7,15 @@ Functions to produce plots using TauNtuples
 Author: Evan K. Friis, UC Davis
 '''
 
-def draw(events, expression, selection = "", output_name = "", binning = (), options = "goff", maxNumEntries = 1000000000):
+def draw(events, expression, selection = "", output_name = "",
+         binning = (), options = "goff", weight_expr = None,
+         maxNumEntries = 1000000000):
     ''' Plot a histogram of [expression] given [events].
 
     If [events] is given as list of tuples of type (TTree, weight), the output
     histogram will be the weighted combination of the events in each tree.
-    
-    Can optionally pass an event selection.  Output histogram is stored in 
+
+    Can optionally pass an event selection.  Output histogram is stored in
     output_name.  Specific binning is optional, and of the form (nBins, x_low, x_high).
     The options are passed to TTree::Draw.
     '''
@@ -30,6 +32,8 @@ def draw(events, expression, selection = "", output_name = "", binning = (), opt
         # Build the draw string
         expression_str = str(expression.value)
         selection_with_weight = str(selection*weight)
+        if weight_expr is not None:
+            selection_with_weight = "(%s)*(%s)" % (str(weight_expr), selection_with_weight)
 
         # Check if this is the first event source
         if event_source_index == 0:
@@ -47,17 +51,17 @@ def draw(events, expression, selection = "", output_name = "", binning = (), opt
                                       binning[0], binning[1], binning[2])
             else:
                 # Variable bin widhts
-                histogram = ROOT.TH1F(output_name, output_name, 
+                histogram = ROOT.TH1F(output_name, output_name,
                                       len(binning) - 1, array.array('d', binning))
             histogram.Sumw2()
             # Fill histogram
-            event_source.Draw(expression_str + ">>+" + output_name, 
+            event_source.Draw(expression_str + ">>+" + output_name,
                               selection_with_weight, options, maxNumEntries)
         else:
             # Otherwise we are appending to an existing histogram
-            event_source.Draw(expression_str + ">>+" + output_name, 
+            event_source.Draw(expression_str + ">>+" + output_name,
                               selection_with_weight, options, maxNumEntries)
-            
+
     return ROOT.gDirectory.Get(output_name)
 
 def getEfficiencyGraph(numerator, denominator):
@@ -76,23 +80,23 @@ def getEfficiencyGraph(numerator, denominator):
 
     numerator_cloned = numerator.Clone()
     denominator_cloned = denominator.Clone()
-    
+
     for iBin in range(denominator_cloned.GetNbinsX() + 1):
-        
+
         scaleFactor = 0.
         if denominator.GetBinError(iBin) > 0:
             scaleFactor = denominator.GetBinContent(iBin)/ROOT.TMath.Power(denominator.GetBinError(iBin), 2.)
-            
+
         numerator_cloned.SetBinContent(iBin, ROOT.TMath.Nint(scaleFactor*numerator.GetBinContent(iBin)))
         numerator_cloned.SetBinError(iBin, ROOT.TMath.Sqrt(numerator_cloned.GetBinContent(iBin)));
-        
+
         denominator_cloned.SetBinContent(iBin, ROOT.TMath.Nint(scaleFactor*denominator.GetBinContent(iBin)));
         denominator_cloned.SetBinError(iBin, ROOT.TMath.Sqrt(denominator_cloned.GetBinContent(iBin)));
 
     return ROOT.TGraphAsymmErrors(numerator_cloned, denominator_cloned)
 
 def efficiency(events, expression, numerator = "", denominator = "", binning = (),
-               output_name = "", maxNumEntries = 1000000000, **kwargs):
+               output_name = "", maxNumEntries = 1000000000, weight_expr = None, **kwargs):
     ''' Compute the efficiency versus expression
 
     Returns a tuple containing a background TH1F (used to draw the axis)
@@ -102,15 +106,21 @@ def efficiency(events, expression, numerator = "", denominator = "", binning = (
     '''
 
     #print("<efficiency>:")
-    #print " kwargs = ", kwargs 
-    
+    #print " kwargs = ", kwargs
+
     if not output_name:
-        output_name = "eff_temp"        
+        output_name = "eff_temp"
     numerator_h   = draw(events, expression, numerator, "numerator_temp",
-                         binning = binning, maxNumEntries = maxNumEntries, **kwargs)
+                         binning = binning,
+                         weight_expr = weight_expr,
+                         maxNumEntries = maxNumEntries, **kwargs)
+
     print("--> numerator = %.0f" % numerator_h.Integral())
     denominator_h = draw(events, expression, denominator, "denominator_temp",
-                         binning = binning, maxNumEntries = maxNumEntries, **kwargs)
+                         binning = binning,
+                         weight_expr = weight_expr,
+                         maxNumEntries = maxNumEntries, **kwargs)
+
     print("--> denominator = %.0f" % denominator_h.Integral())
     #FIXME clean this up
     from math import sqrt
@@ -118,15 +128,15 @@ def efficiency(events, expression, numerator = "", denominator = "", binning = (
     nDenom = float(denominator_h.Integral())
     if nDenom == 0:
         print("Error in <efficiency>: nDenom = 0 --> skipping !!")
-        return 
+        return
     elif nNum > nDenom:
         print("Error in <efficiency>: nNum = %e exceeds nDenom = %e --> skipping !!" % (nNum, nDenom))
-        return 
+        return
     err = 1/nDenom*sqrt(nNum*(1-nNum/nDenom) )
     efficiencyLogHack("%e / %e = %e +- %e\n" % (nNum, nDenom, nNum/nDenom, err))
     efficiencyLogHack("", timestamp=True)
     #end cleanup
-    
+
     #print numerator_h, denominator_h
     # Build a blank histogram w/ correct x & y axes to draw the efficiency on
     histogram_background = numerator_h.Clone("%s_bkg" % output_name)

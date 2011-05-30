@@ -13,7 +13,7 @@ vertex_template = cms.PSet(
     # Select multiplicy of object(s) to store
     vector = cms.bool(True), # Store a value for all objects in this collection
     #indices = cms.vuint_32([0, 1, 2]) # Store values for first, second, third objects
-    
+
     pluginType = cms.string("VertexVectorValExtractor"),
 
     src = cms.InputTag("offlinePrimaryVertices"),
@@ -30,7 +30,7 @@ vertexMultiplicity_template = cms.PSet(
     # Select multiplicy of object(s) to store
     vector = cms.bool(False), # Store a value for all objects in this collection
     #indices = cms.vuint_32([0, 1, 2]) # Store values for first, second, third objects
-    
+
     pluginType = cms.string("VertexValExtractor"),
 
     src = cms.InputTag("offlinePrimaryVertices"),
@@ -47,13 +47,13 @@ vertexMultReweight_template = cms.PSet(
     # Select multiplicy of object(s) to store
     vector = cms.bool(False), # Store a value for all objects in this collection
     #indices = cms.vuint_32([0, 1, 2]) # Store values for first, second, third objects
-    
+
     pluginType = cms.string("VertexMultiplicityReweightExtractor"),
 
     src = vertexMultiplicityReweight.src,
     inputFileName = vertexMultiplicityReweight.inputFileName,
     lutName = vertexMultiplicityReweight.lutName,
-    type = vertexMultiplicityReweight.type,
+    #type = vertexMultiplicityReweight.type,
 
     columns = cms.PSet(
         vtxMultReweight = cms.string("vtxMultReweight")
