@@ -302,6 +302,12 @@ def buildSequenceTauIdEffMeasSpecific(process,
         doSVreco = cms.bool(runSVfit),
         doPFMEtSign = cms.bool(runSVfit)
     )
+    if not runSVfit:
+        if hasattr(allMuTauPairsModule, "nSVfit"):
+            delattr(allMuTauPairsModule, "nSVfit")
+        if hasattr(allMuTauPairsModule, "pfMEtSign"):
+            delattr(allMuTauPairsModule, "pfMEtSign")
+    
     if addGenInfo:
         setattr(allMuTauPairsModule, "srcGenParticles", cms.InputTag('genParticles'))
     else:

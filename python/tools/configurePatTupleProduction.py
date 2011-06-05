@@ -54,7 +54,17 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
     #--------------------------------------------------------------------------------
     # configure PAT trigger matching    
     switchOnTrigger(process, hltProcess = hltProcess, outputModule = '')
-    process.patTrigger.addL1Algos = cms.bool(True)
+    #process.patTrigger.addL1Algos = cms.bool(True)
+    # CV: disable L1Algos for now, to prevent error messages
+    #
+    #     %MSG-e L1GlobalTriggerObjectMapRecord:  PATTriggerProducer:patTrigger
+    #
+    #       ERROR: The requested algorithm name = L1_DoubleEG1
+    #       does not exists in the trigger menu.
+    #       Returning zero pointer for getObjectMap
+    #
+    #     to be printed for every event (06/05/2011)
+    process.patTrigger.addL1Algos = cms.bool(False)
 
     process.patTauTriggerMatchHLTprotoType = cms.EDProducer("PATTriggerMatcherDRLessByR",
         src                   = cms.InputTag("cleanLayer1Taus"),
@@ -144,6 +154,10 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
         doSVreco = cms.bool(False),
         doPFMEtSign = cms.bool(False)
     )
+    if hasattr(process.patMuonCaloTauPairs, "nSVfit"):
+        delattr(process.patMuonCaloTauPairs, "nSVfit")
+    if hasattr(process.patMuonCaloTauPairs, "pfMEtSign"):
+        delattr(process.patMuonCaloTauPairs, "pfMEtSign")
     #--------------------------------------------------------------------------------
 
     #--------------------------------------------------------------------------------
@@ -172,6 +186,10 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
         srcGenParticles = cms.InputTag(''),
         doSVreco = cms.bool(False)
     )
+    if hasattr(process.patMuonPFTauPairsFixedCone, "nSVfit"):
+        delattr(process.patMuonPFTauPairsFixedCone, "nSVfit")
+    if hasattr(process.patMuonPFTauPairsFixedCone, "pfMEtSign"):
+        delattr(process.patMuonPFTauPairsFixedCone, "pfMEtSign")
     #--------------------------------------------------------------------------------
 
     #--------------------------------------------------------------------------------
@@ -204,6 +222,10 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
         srcGenParticles = cms.InputTag(''),
         doSVreco = cms.bool(False)
     )
+    if hasattr(process.patMuonPFTauPairsShrinkingCone, "nSVfit"):
+        delattr(process.patMuonPFTauPairsShrinkingCone, "nSVfit")
+    if hasattr(process.patMuonPFTauPairsShrinkingCone, "pfMEtSign"):
+        delattr(process.patMuonPFTauPairsShrinkingCone, "pfMEtSign")
     #--------------------------------------------------------------------------------
 
     #--------------------------------------------------------------------------------
@@ -237,6 +259,10 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
         srcGenParticles = cms.InputTag(''),
         doSVreco = cms.bool(False)
     )
+    if hasattr(process.patMuonPFTauPairsHPS, "nSVfit"):
+        delattr(process.patMuonPFTauPairsHPS, "nSVfit")
+    if hasattr(process.patMuonPFTauPairsHPS, "pfMEtSign"):
+        delattr(process.patMuonPFTauPairsHPS, "pfMEtSign")
     #--------------------------------------------------------------------------------
 
     #--------------------------------------------------------------------------------
@@ -266,6 +292,10 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
         srcGenParticles = cms.InputTag(''),
         doSVreco = cms.bool(False)
     )
+    if hasattr(process.patMuonPFTauPairsHPSpTaNC, "nSVfit"):
+        delattr(process.patMuonPFTauPairsHPSpTaNC, "nSVfit")
+    if hasattr(process.patMuonPFTauPairsHPSpTaNC, "pfMEtSign"):
+        delattr(process.patMuonPFTauPairsHPSpTaNC, "pfMEtSign")
     #--------------------------------------------------------------------------------
 
     #--------------------------------------------------------------------------------
