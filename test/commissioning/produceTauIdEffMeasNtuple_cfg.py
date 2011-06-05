@@ -7,6 +7,7 @@ process = cms.Process("prodTauIdEffMeasNtuple")
 process.load('Configuration/StandardSequences/Services_cff')
 process.load('FWCore/MessageService/MessageLogger_cfi')
 process.MessageLogger.cerr.FwkReport.reportEvery = 100
+#process.MessageLogger.cerr.FwkReport.reportEvery = 1
 #process.MessageLogger.cerr.threshold = cms.untracked.string('INFO')
 #process.MessageLogger.suppressInfo = cms.untracked.vstring()
 process.MessageLogger.suppressWarning = cms.untracked.vstring("PATTriggerProducer",)
@@ -17,8 +18,9 @@ process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
 #--------------------------------------------------------------------------------
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
-        'file:/data2/veelken/CMSSW_4_1_x/skims/ZtoMuTau/DYtautau_spring11_powhegZ2_1_1_XvY.root'
-        #'file:/data2/veelken/CMSSW_4_1_x/skims/ZtoMuTau/data2/veelken/CMSSW_4_1_x/skims/ZtoMuTau/data2011A_tauPlusX_AOD_1_1_MV9.root'
+        #'file:/data2/veelken/CMSSW_4_1_x/skims/ZtoMuTau/DYtautau_spring11_powhegZ2_1_1_XvY.root'
+        #'file:/data2/veelken/CMSSW_4_1_x/skims/ZtoMuTau/data2011A_tauPlusX_AOD_1_1_MV9.root'
+        'file:/data1/veelken/tmp/skim_WplusJets_madgraph_chunk_3_76f3.root'
     ),
     skipEvents = cms.untracked.uint32(0)            
 )
@@ -33,11 +35,11 @@ process.printGenParticleList = cms.EDAnalyzer("ParticleListDrawer",
 )
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(1000)
+    input = cms.untracked.int32(-1)
 )
 
-##isMC = True # use for MC
-isMC = False # use for Data
+isMC = True # use for MC
+##isMC = False # use for Data
 ##HLTprocessName = "HLT" # use for 2011 Data
 HLTprocessName = "REDIGI311X" # use for Spring'11 reprocessed MC
 pfCandidateCollection = "particleFlow" # pile-up removal disabled
