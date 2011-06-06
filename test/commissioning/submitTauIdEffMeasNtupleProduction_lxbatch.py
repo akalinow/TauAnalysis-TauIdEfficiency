@@ -93,6 +93,7 @@ for sampleToAnalyze in samplesToAnalyze:
                               inputFileMap = input_mapper,
                               outputFileMap = output_mapper,
                               outputDirectory = outputFilePath,
+                              queue = '1nw',
                               processName = 'lxbatch',
                               saveFinalEvents = False)
 
