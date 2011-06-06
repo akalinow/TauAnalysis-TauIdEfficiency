@@ -6,8 +6,7 @@ process = cms.Process("prodTauIdEffMeasNtuple")
 # of electrons, muons and tau-jets with non-standard isolation cones
 process.load('Configuration/StandardSequences/Services_cff')
 process.load('FWCore/MessageService/MessageLogger_cfi')
-process.MessageLogger.cerr.FwkReport.reportEvery = 100
-#process.MessageLogger.cerr.FwkReport.reportEvery = 1
+process.MessageLogger.cerr.FwkReport.reportEvery = 10000
 #process.MessageLogger.cerr.threshold = cms.untracked.string('INFO')
 #process.MessageLogger.suppressInfo = cms.untracked.vstring()
 process.MessageLogger.suppressWarning = cms.untracked.vstring("PATTriggerProducer",)
@@ -17,13 +16,11 @@ process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
 
 #--------------------------------------------------------------------------------
 process.source = cms.Source("PoolSource",
-    fileNames = cms.untracked.vstring(
-        #'file:/data2/veelken/CMSSW_4_1_x/skims/ZtoMuTau/DYtautau_spring11_powhegZ2_1_1_XvY.root'
-        #'file:/data2/veelken/CMSSW_4_1_x/skims/ZtoMuTau/data2011A_tauPlusX_AOD_1_1_MV9.root'
-        'file:/data1/veelken/tmp/skim_WplusJets_madgraph_chunk_3_76f3.root'
-    ),
-    skipEvents = cms.untracked.uint32(0)            
-)
+                            fileNames = cms.untracked.vstring(
+                                'rfio:/castor/cern.ch/user/m/mverzett/tagprobe/skims/TauIdEffMeas_Harvested_May20/skim_PPmuXptGt20Mu15_chunk_0_91c4.root'                     
+                                ),
+                            skipEvents = cms.untracked.uint32(0)            
+                            )
 
 # print event content 
 process.printEventContent = cms.EDAnalyzer("EventContentAnalyzer")
@@ -65,7 +62,7 @@ applyZrecoilCorrection = False
 if isMC:
     process.GlobalTag.globaltag = cms.string('START311_V2::All')
 else:
-    process.GlobalTag.globaltag = cms.string('GR_R_311_V2::All')
+    process.GlobalTag.globaltag = cms.string('GR_P_V14::All')
 #--------------------------------------------------------------------------------    
 
 #--------------------------------------------------------------------------------
@@ -213,19 +210,49 @@ if isMC:
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
+#                                   Put the correct jet energy correction
+#------------------------------------------------------------------------------------------------------------------------
+process.load('CondCore.DBCommon.CondDBSetup_cfi')
+process.jec = cms.ESSource("PoolDBESSource",
+                           process.CondDBSetup,
+                           ## DBParameters = cms.PSet(
+                           ##     messageLevel = cms.untracked.int32(0)
+                           ##     ),
+                           ## timetype = cms.string('runnumber'),
+                           toGet = cms.VPSet(
+                               cms.PSet(record = cms.string("JetCorrectionsRecord"),
+                                        tag = cms.string("JetCorrectorParametersCollection_Jec10V3_AK5Calo"),#JetCorrectorParametersCollection_Jec11_V1_AK5Calo
+                                        label=cms.untracked.string("AK5Calo")),
+                               cms.PSet(record = cms.string("JetCorrectionsRecord"),
+                                        tag = cms.string("JetCorrectorParametersCollection_Jec10V3_AK5PF"),
+                                        label=cms.untracked.string("AK5PF")),                                   
+                               cms.PSet(record = cms.string("JetCorrectionsRecord"),
+                                        tag = cms.string("JetCorrectorParametersCollection_Jec10V3_AK5PFchs"),
+                                        label=cms.untracked.string("AK5PF"))
+                               ),
+                           ## here you add as many jet types as you need (AK5Calo, AK5JPT, AK7PF, AK7Calo, KT4PF, KT4Calo, KT6PF, KT6Calo)
+                           connect = cms.string('sqlite_fip:TauAnalysis/Configuration/data/Jec10V3.db')
+                           #connect = cms.string("frontier://FrontierPrep/CMS_COND_PHYSICSTOOLS")
+                           )
+process.es_prefer_jec = cms.ESPrefer('PoolDBESSource','jec')
+#-------------------------------------------------------------------------------------------------------------------------
+
+
+#--------------------------------------------------------------------------------
 #
 # Save ntuple
 #
 process.ntupleOutputModule = cms.OutputModule("PoolOutputModule",
-    cms.PSet(
-        outputCommands = cms.untracked.vstring(
-            "drop *",
-            "keep *_*ntupleProducer*_*_*"
-        )                               
-    ),
-    process.tauIdEffSampleEventSelection,
-    fileName = cms.untracked.string("tauIdEffMeasEDNtuple.root")      
-)
+                                              cms.PSet(
+                                                  outputCommands = cms.untracked.vstring(
+                                                      "drop *",
+                                                      "keep *_*ntupleProducer*_*_*",
+                                                      "keep edmMergeableCounter_*_*_*"
+                                                      )                               
+                                                  ),
+                                              process.tauIdEffSampleEventSelection,
+                                              fileName = cms.untracked.string("/nfs/data4/verzetti/tagprobe/testNtuples/testNtupleQCD.root")      
+                                              )
 #--------------------------------------------------------------------------------
 
 process.p = cms.Path(
@@ -243,6 +270,16 @@ process.options = cms.untracked.PSet(
 
 process.o = cms.EndPath(process.ntupleOutputModule)
 
+#--------------------------------------------------------------------------------
+#                   Modify the content of the extractors
+#--------------------------------------------------------------------------------
+import TauAnalysis.Configuration.pathModifiers as pathModifiers
+pathModifiers.ExtractorAddColumn(process.ntupleProducer.sources,'PATTauVectorValExtractor', 'productionVertexZ',cms.string("vertex().z()"),True)
+pathModifiers.ExtractorAddColumn(process.ntupleProducer.sources,'PATMuTauPairValExtractor', 'tauVertexZ',cms.string("leg2().vertex().z()"),True)
+pathModifiers.ExtractorAddColumn(process.ntupleProducer.sources,'PATMuTauPairValExtractor', 'muVertexZ',cms.string("leg1().vertex().z()"),True)
+
+#--------------------------------------------------------------------------------
+
 # define order in which different paths are run
 process.schedule = cms.Schedule(
     process.p,
@@ -256,4 +293,5 @@ process.schedule = cms.Schedule(
 
 # print-out all python configuration parameter information
 #print process.dumpPython()
-
+processDumpFile = open('OldNtupleDump.py' , 'w')
+print >> processDumpFile, process.dumpPython()
