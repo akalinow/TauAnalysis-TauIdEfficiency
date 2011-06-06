@@ -6,7 +6,7 @@ process = cms.Process("prodTauIdEffMeasNtuple")
 # of electrons, muons and tau-jets with non-standard isolation cones
 process.load('Configuration/StandardSequences/Services_cff')
 process.load('FWCore/MessageService/MessageLogger_cfi')
-process.MessageLogger.cerr.FwkReport.reportEvery = 1
+process.MessageLogger.cerr.FwkReport.reportEvery = 10000
 #process.MessageLogger.cerr.threshold = cms.untracked.string('INFO')
 #process.MessageLogger.suppressInfo = cms.untracked.vstring()
 process.MessageLogger.suppressWarning = cms.untracked.vstring("PATTriggerProducer",)
@@ -197,7 +197,7 @@ process.schedule = cms.Schedule(
 )
 
 # print-out all python configuration parameter information
-processDumpFile = open('PattupleDump.py' , 'w')
-print >> processDumpFile, process.dumpPython()
+#processDumpFile = open('PattupleDump.py' , 'w')
+#print >> processDumpFile, process.dumpPython()
 
 
