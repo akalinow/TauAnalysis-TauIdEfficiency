@@ -1,0 +1,16 @@
+<environment>
+  <bin name="HistoFitter.exe"  file="HistoFitter.cc">
+    <use   name="root"/>
+    <use   name="boost"/>
+    <use   name="rootcintex"/>
+    <use   name="FWCore/FWLite"/>
+    <use   name="DataFormats/FWLite"/>
+    <use   name="DataFormats/Luminosity"/>
+    <use   name="FWCore/PythonParameterSet"/>
+    <use   name="CommonTools/Utils"/>
+    <use   name="PhysicsTools/FWLite"/>
+    <use   name="PhysicsTools/Utilities"/>
+    <use   name="PhysicsTools/SelectorUtils"/>
+    <use   name="roofit"/>
+  </bin>
+</environment>
