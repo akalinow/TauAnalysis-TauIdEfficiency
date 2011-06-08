@@ -33,8 +33,6 @@ diTauHt =cms.PSet(
     minh = cms.double(20.),
     maxh = cms.double(200.)
     )
-diTauSVfitMass1 = diTauHt.clone( xAxisTitle = cms.string("M^{#tau#tau} [GeV]"), expr = cms.string("svFitSolution(\'psKine_MEt\').mass()"), name = cms.string("diTauSVfitMass1")  )
-diTauSVfitMass2 = diTauSVfitMass1.clone( expr = cms.string("svFitSolution(\'psKine_MEt_ptBalance\').mass()"), name = cms.string("diTauSVfitMass2") )
 
 muonPt = cms.PSet(
     xAxisTitle = cms.string("P_{T}^{#mu}"),

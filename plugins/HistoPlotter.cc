@@ -13,7 +13,7 @@
 //
 // Original Author:  Mauro Verzetti,15 R-035,+41227678587,
 //         Created:  Tue May 17 10:06:53 CEST 2011
-// $Id$
+// $Id: HistoPlotter.cc,v 1.1 2011/06/06 09:00:23 mverzett Exp $
 //
 //
 
@@ -120,8 +120,8 @@ private:
 //
 HistoPlotter::HistoPlotter(const edm::ParameterSet& iConfig):
   outFileName_(iConfig.getParameter<string>("outputFile").c_str()),
-  channel_(iConfig.getParameter<string>("channel").c_str()),
   evtCounter_(iConfig.getParameter<InputTag>("evtCounter")),
+  channel_(iConfig.getParameter<string>("channel").c_str()),
   sysUncertainties_(iConfig.getParameter<vstring>("sysUncertainties")),
   regions_(iConfig.getParameter<vstring>("regions")),
   tauids_(iConfig.getParameter<vpset>("tauids")),
@@ -276,7 +276,7 @@ string HistoPlotter::AssignRegion(const CompositePtrCandidateT1T2MEt<pat::Muon,p
   bool DiTauCharge_SS =  (tau->leadTrack().isNonnull()) ? (abs(muon->charge() + tau->leadTrack()->charge()) > 1.5) : false;
   if(!DiTauCharge_OS && !DiTauCharge_SS) return "Undefined"; //may happen that no charge is defined for tau
   bool DiTauKine_Sig = muTauPair.mt1MET() < 40. && (muTauPair.pZeta() - 1.5*muTauPair.pZetaVis()) > -20;
-  bool DiTauKine_Bgr  = !DiTauKine_Sig;
+  //bool DiTauKine_Bgr  = !DiTauKine_Sig;
 
   string retstring("");
   //Region definition
