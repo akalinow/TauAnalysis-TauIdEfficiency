@@ -162,7 +162,7 @@ map<string, TH1*> sumHistograms( vstring channelNames,map<string, TH1*> allDistr
 }
 
 void DrawHistograms(TDirectory* dir, map<string,map<string, TH1* > > channelByChannelTemplateDistro, map<string, TH1* > toFitDistro,
-		    string toFitChannelName, const string& region, const string& tauId, string& varname, const string& sysShift)
+		    string toFitChannelName, const string& region, const string& tauId, string& varname, string& sysShift)
 {
   /*------------------------------------------------------------------------------------------------------------------------------------------
     Takes the key and plots the (fake) data points over a stacked histogram with all the components separated, writes it in the directory given
@@ -228,11 +228,9 @@ void fitUsingRooFit(TDirectory* tauDir,
 		    map<string,map<string, TH1* > > & channelByChannelTemplateDistro,
 		    map<string, double> & numEventsAll,
 		    map<string, double>& fittedEvents,
-		    const vector<string>& processes,
 		    const string& tauId, const ParameterSet& fitVariable,
 		    const vpset& regionsPset,
 		    const ParameterSet & fitParameters,
-		    bool fitTauIdEffC2,
 		    double& effValue, double& effError,
 		    const string& sysShift,
 		    bool isClosureTest = false) 
@@ -656,28 +654,19 @@ void fitUsingRooFit(TDirectory* tauDir,
     const string & regionName = region->getParameter<string>("name");
     TDirectory *regionDir = varDir->mkdir(regionName.c_str());
 
-    /*DrawHistograms(TDirectory* dir, 
-      map<string,map<string, TH1* > > channelByChannelTemplateDistro, 
-      map<string, TH1* > toFitDistro,
-      //		    string toFitChannelName,
- const string& region
-, const string& tauId
-, string& varname
-, const string& sysShift)*/
-    DrawHistograms(regionDir, 
-		   channelByChannelTemplateDistroNormFit,
-		   distributionsData,
-		   dataChannelName,
-		   regionName,
-		   tauId,
-		   varname,
-		   sysShift);
+    DrawHistograms(regionDir,                             //TDirectory* dir
+ 		   channelByChannelTemplateDistroNormFit, //map<string,map<string, TH1* > > channelByChannelTemplateDistro
+		   distributionsData,                     //map<string, TH1* > toFitDistro
+		   dataChannelName,                       //string toFitChannelName
+		   regionName,                            // const string& region
+		   tauId,                                 //const string& tauId
+		   varname,                               // string& varname
+		   sysShift);                             //const string& sysShift
   }
 
   for( map<string,map<string, TH1* > >::const_iterator histomap = channelByChannelTemplateDistroNormFit.begin(); histomap != channelByChannelTemplateDistroNormFit.end(); histomap++)
     for(map<string, TH1* >::const_iterator histo = histomap->second.begin(); histo != histomap->second.end(); histo++)
       delete histo->second;
-      
 }
 
 int main(int argc, char* argv[]) 
@@ -783,7 +772,15 @@ int main(int argc, char* argv[])
 	TDirectory* varDir = sysDir->mkdir(varname.c_str());
 	for ( vstring::const_iterator region = regions_.begin(); region != regions_.end(); ++region ) {
 	  TDirectory* regionDir = varDir->mkdir(region->c_str());
-	  DrawHistograms(regionDir, channelByChannelTemplateDistro, toFitDistro, toFitChannelName, *region, *tauId, *fitVariable, *sysShift);
+	  string shift = *sysShift;
+	  DrawHistograms(regionDir,
+			 channelByChannelTemplateDistro,
+			 toFitDistro,
+			 toFitChannelName,
+			 *region,
+			 *tauId,
+			 varname,
+			 shift);
 	}//region Loop
      }//var loop
    }//sys loop
@@ -849,15 +846,46 @@ int main(int argc, char* argv[])
  TFile* fitFile= new TFile(outFile_.c_str(),"recreate");
  for(vstring::const_iterator sysShift=sysShifts_.begin(); sysShift!=sysShifts_.end(); sysShift++){
    TDirectory* sysShiftDir = fitFile->mkdir(sysShift->c_str());
-   for ( vector<string>::const_iterator tauId = tauIds.begin(); tauId != tauIds.end(); ++tauId ) {
+   for ( vector<string>::const_iterator tauId = tauids_.begin(); tauId != tauids_.end(); ++tauId ) {
      TDirectory* tauDir = sysShiftDir->mkdir(tauId->c_str());
-     for ( vpset::const_iterator fitVariable = fitVariables.begin(); fitVariable != fitVariables.end(); ++fitVariable ) {
+     for ( vpset::const_iterator fitVariable = fitVariables_.begin(); fitVariable != fitVariables_.end(); ++fitVariable ) {
        double effValue = 0.;
        double effError = 1.;
-       fitUsingRooFit(tauDir,toFitDistro, channelByChannelTemplateDistro, numEventsAll, fittedEvents,
-		      *tauId, *fitVariable, regionsPset_, fitSettings_,
-		      effValue, effError,		       
-		      *sysShift, runClosureTest); //bkmrk
+       const string shift = *sysShift;
+
+
+
+       /*fitUsingRooFit(TDirectory* tauDir,
+		    map<string, TH1*> & distributionsData,
+		    string & dataChannelName,
+		    map<string,map<string, TH1* > > & channelByChannelTemplateDistro,
+		    map<string, double> & numEventsAll,
+		    map<string, double>& fittedEvents,
+		    const string& tauId, 
+		    const ParameterSet& fitVariable,
+		    const vpset& regionsPset,
+		    const ParameterSet & fitParameters,
+		    bool fitTauIdEffC2,
+		    double& effValue,
+		    double& effError,
+		    const string& sysShift,
+		    bool isClosureTest = false) */
+
+
+       fitUsingRooFit(tauDir,                         // TDirectory* tauDir,
+		      toFitDistro,                    //  map<string, TH1*> & distributionsData,
+		      toFitChannelName,               // string & dataChannelName,
+		      channelByChannelTemplateDistro, // map<string,map<string, TH1* > > & channelByChannelTemplateDistro,
+		      numEventsAll,                   // map<string, double> & numEventsAll,
+		      fittedEvents,                   // map<string, double>& fittedEvents,
+		      *tauId,                         // const string& tauId, 
+		      *fitVariable,                   // const ParameterSet& fitVariable,
+		      regionsPset_,                   //  const vpset& regionsPset,
+		      fitSettings_,                   // const ParameterSet & fitParameters,
+		      effValue,                       // bool fitTauIdEffC2,
+		      effError,		              //
+		      shift,                          //
+		      runClosureTest_);               //        bkmrk
 
      }//var
    }//tauid
@@ -867,7 +895,7 @@ int main(int argc, char* argv[])
    delete histo->second;
 
  for(map<string, TFile*>::iterator file = inputFiles.begin(); file != inputFiles.end(); file++){
-   file->second->Close()
+   file->second->Close();
    delete file->second;
  }
  fitFile->Close();
@@ -952,7 +980,7 @@ int main(int argc, char* argv[])
    const string& infile = data.getParameter<string>("inputFile");
    nameData = const_cast<string&>(data.getParameter<string>("name"));
    channels.push_back(nameData);
-   dataEvtTot = const_cast<double&>(data.getParameter<double>("totalEvents") );
+   dataEvtTot = const_cast<double&>(data.getParameter<double>("totalEvents") ); 
    dataPlotFile = new TFile(infile.c_str());
    if(dataPlotFile != 0)
      distributionsData = loadHistograms(  dataPlotFile,name, regions_,  tauids_, fitVariables_, sysShifts_);
