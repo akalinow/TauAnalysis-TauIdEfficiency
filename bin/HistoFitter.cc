@@ -162,7 +162,7 @@ map<string, TH1*> sumHistograms( vstring channelNames,map<string, TH1*> allDistr
 }
 
 void DrawHistograms(TDirectory* dir, map<string,map<string, TH1* > > channelByChannelTemplateDistro, map<string, TH1* > toFitDistro,
-		    string toFitChannelName, const string& region, const string& tauId, string& varname, string& sysShift)
+		    const string& toFitChannelName, const string& region, const string& tauId, const string& varname, const string& sysShift)
 {
   /*------------------------------------------------------------------------------------------------------------------------------------------
     Takes the key and plots the (fake) data points over a stacked histogram with all the components separated, writes it in the directory given

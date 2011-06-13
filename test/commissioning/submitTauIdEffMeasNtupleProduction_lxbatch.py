@@ -12,7 +12,7 @@ channel = 'ZtoMuTau_tauIdEff'
 configFile = 'produceTauIdEffMeasNtuple_cfg.py'
 analysisFilePath = getAnalysisFilePath(channel)
 #jobId = getJobId(channel)
-jobId = '2011Jun05'
+jobId = '2011Jun10'
 
 version = "V1"
 
