@@ -1534,61 +1534,61 @@ void fitUsingRooFit(std::map<std::string, std::map<std::string, TH1*> >& distrib
 		 normFactorABCD, "ABCD", getKey(fitVariable, tauId),
 		 std::string("All Events: ").append(fitVariable).append(" (scaled by normalization det. by fit)"),
 		 xAxisTitles ? (*xAxisTitles)[fitVariable] : "",
-		 std::string("controlPlotsTauIdEff_ABCD_").append(fitVariable).append("_fitted.root"), sysShift);
+		 std::string("controlPlotsTauIdEff_ABCD_").append(fitVariable).append("_fitted.png"), sysShift);
   drawHistograms(distributionsData, templatesAll,  
 		 normFactorABCD, "ABCD", getKey("diTauMt", tauId),
 		 "All Events: M_{T} (scaled by normalization det. by fit)", xAxisTitles ? (*xAxisTitles)["diTauMt"] : "",
-		 "controlPlotsTauIdEff_ABCD_Mt_fitted.root", sysShift);
+		 "controlPlotsTauIdEff_ABCD_Mt_fitted.png", sysShift);
   drawHistograms(distributionsData, templatesAll,  
 		 normFactorA, "A", getKey("diTauMt", tauId),
 		 "Region A: M_{T} (scaled by normalization det. by fit)", xAxisTitles ? (*xAxisTitles)["diTauMt"] : "",
-		 "controlPlotsTauIdEff_A_Mt_fitted.root", sysShift);
+		 "controlPlotsTauIdEff_A_Mt_fitted.png", sysShift);
   drawHistograms(distributionsData, templatesAll,  
 		 normFactorB, "B", getKey("diTauMt", tauId),
 		 "Region B: M_{T} (scaled by normalization det. by fit)", xAxisTitles ? (*xAxisTitles)["diTauMt"] : "",
-		 "controlPlotsTauIdEff_B_Mt_fitted.root", sysShift);
+		 "controlPlotsTauIdEff_B_Mt_fitted.png", sysShift);
   drawHistograms(distributionsData, templatesAll,  
 		 normFactorC1, "C1", getKey(fitVariable, tauId),		 
 		 std::string("Region C1: ").append(fitVariable).append(" (scaled by normalization det. by fit)"), 
 		 xAxisTitles ? (*xAxisTitles)[fitVariable] : "",
-		 std::string("controlPlotsTauIdEff_C1_").append(fitVariable).append("_fitted.root"), sysShift,
+		 std::string("controlPlotsTauIdEff_C1_").append(fitVariable).append("_fitted.png"), sysShift,
 		 true);
   drawHistograms(distributionsData, templatesAll,  
 		 normFactorC1p, "C1p", getKey(fitVariable, tauId, "passed"),
 		 std::string("Region C1p: ").append(fitVariable).append(", ").append(tauId).append(" (scaled by normalization det. by fit)"),
 		 xAxisTitles ? (*xAxisTitles)[fitVariable] : "",
-		 std::string("controlPlotsTauIdEff_C1p_").append(fitVariable).append("_").append(tauId).append("_fitted.root"), sysShift,
+		 std::string("controlPlotsTauIdEff_C1p_").append(fitVariable).append("_").append(tauId).append("_fitted.png"), sysShift,
 		 true);
   drawHistograms(distributionsData, templatesAll,  
 		 normFactorC1f, "C1f", getKey(fitVariable, tauId, "failed"),
 		 std::string("Region C1f: ").append(fitVariable).append(", ").append(tauId).append(" (scaled by normalization det. by fit)"),
 		 xAxisTitles ? (*xAxisTitles)[fitVariable] : "",
-		 std::string("controlPlotsTauIdEff_C1f_").append(fitVariable).append("_").append(tauId).append("_fitted.root"), sysShift,
+		 std::string("controlPlotsTauIdEff_C1f_").append(fitVariable).append("_").append(tauId).append("_fitted.png"), sysShift,
 		 true);
   if ( fitTauIdEffC2 ) {
     drawHistograms(distributionsData, templatesAll,  
 		   normFactorC2p, "C2p", getKey("diTauMt", tauId, "passed"),
 		   std::string("Region C2p: ").append(fitVariable).append(", ").append(tauId).append(" (scaled by normalization det. by fit)"),
 		   xAxisTitles ? (*xAxisTitles)["diTauMt"] : "",
-		   std::string("controlPlotsTauIdEff_C2p_").append(fitVariable).append("_").append(tauId).append("_fitted.root"), sysShift,
+		   std::string("controlPlotsTauIdEff_C2p_").append(fitVariable).append("_").append(tauId).append("_fitted.png"), sysShift,
 		   true);
     drawHistograms(distributionsData, templatesAll,  
 		   normFactorC2f, "C2f", getKey("diTauMt", tauId, "failed"),
 		   std::string("Region C2f: ").append(fitVariable).append(", ").append(tauId).append(" (scaled by normalization det. by fit)"),
 		   xAxisTitles ? (*xAxisTitles)["diTauMt"] : "",
-		   std::string("controlPlotsTauIdEff_C2f_").append(fitVariable).append("_").append(tauId).append("_fitted.root"), sysShift,
+		   std::string("controlPlotsTauIdEff_C2f_").append(fitVariable).append("_").append(tauId).append("_fitted.png"), sysShift,
 		   true);
   } else {
     drawHistograms(distributionsData, templatesAll,  
 		   normFactorC2, "C2", getKey("diTauMt", tauId),
 		   "Region C2: M_{T} (scaled by normalization det. by fit)", xAxisTitles ? (*xAxisTitles)["diTauMt"] : "",
-		   "controlPlotsTauIdEff_C2_Mt_fitted.root", sysShift,
+		   "controlPlotsTauIdEff_C2_Mt_fitted.png", sysShift,
 		   true);
   }
   drawHistograms(distributionsData, templatesAll,  
 		 normFactorD, "D", getKey("diTauMt", tauId),
 		 "Region D: M_{T} (scaled by normalization det. by fit)", xAxisTitles ? (*xAxisTitles)["diTauMt"] : "",
-		 "controlPlotsTauIdEff_D_Mt_fitted.root", sysShift);
+		 "controlPlotsTauIdEff_D_Mt_fitted.png", sysShift);
 }
 
 void addFileNames(TChain* chain, const std::string& inputFilePath, const std::string& sampleName, const std::string& jobId)
@@ -1846,8 +1846,8 @@ void fitTauIdEff_wConstraints()
   //const std::string branchName_suffix = "local";
   const std::string branchName_suffix = "lxbatch";
 
-  //bool runClosureTest = false;
-  bool runClosureTest = true;
+  bool runClosureTest = false;
+  //bool runClosureTest = true;
 
   bool runQuickTest = false;
   //bool runQuickTest = true;
