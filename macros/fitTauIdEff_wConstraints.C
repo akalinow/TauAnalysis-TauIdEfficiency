@@ -38,8 +38,6 @@
 #include <string>
 #include <vector>
 
-bool gFakeQCD = true;
-
 std::string getBranchName(const std::string& branchName_prefix,
                           const std::string& branchName_object, const std::string& branchName_observable,
 			  const std::string& branchName_suffix)
@@ -579,7 +577,7 @@ void drawHistograms(TH1* histogramZtautau, double normZtautau,
   if ( sysShift != "CENTRAL_VALUE" ) outputFilePath.append(sysShift).append("/");
   gSystem->mkdir(outputFilePath.data(), true);
   canvas->Print(outputFilePath.append(outputFileName).data());
-  canvas->Print(outputFilePath.append(outputFileName).append(".png").data());
+
 //--- draw histograms for all background processes summed plus Ztautau signal 
   TH1* templateSMbgSum = (TH1*)templateDYmumuSum->Clone();
   templateSMbgSum->Add(templateQCD);
@@ -798,19 +796,7 @@ RooFormulaVar* makeRooFormulaVar(const std::string& process, const std::string& 
   std::string fittedFractionName = std::string(norm->GetName()).append("_").append(region).append("_fittedFraction");
   RooConstVar* fittedFraction = new RooConstVar(fittedFractionName.data(), fittedFractionName.data(), fittedFractionValue);
 
-  std::string formula = "";  //bkmrk
-
-
-  /*void addToFormula(std::string& formula, const std::string& expression, TObjArray& arguments, RooAbsReal* p)
-  if ( expression != "" ) {
-    if ( formula != "" ) formula.append(" * ");
-
-    if      ( expression == "regular"  ) formula.append(p->GetName());
-    else if ( expression == "inverted" ) formula.append("(1 - ").append(p->GetName()).append(")");
-    else assert(0);
-    
-    arguments.Add(p);
-    }*/
+  std::string formula = "";
 
   TObjArray arguments; 
   addToFormula(formula, exprDiTauCharge, arguments, pDiTauCharge_OS_SS);
@@ -949,7 +935,7 @@ std::map<std::string, std::map<std::string, TH1*> > makeDistributionsAllRegions(
   TTree* tree, const std::vector<std::string>& regions,
   const std::vector<std::string>& tauIds, const std::vector<std::string>& fitVariables,
   std::map<std::string, std::map<std::string, std::string> >& branchNames, 
-  bool applyPUreweight,
+  bool applyPUreweighting,
   const std::string& sysShift = "CENTRAL_VALUE",
   std::map<std::string, bool>* saveRunLumiSectionEventNumbers = NULL)
 {
@@ -1206,16 +1192,14 @@ void fitUsingRooFit(std::map<std::string, std::map<std::string, TH1*> >& distrib
     TH1* templateD     = templatesAll[*process]["D"][getKey("diTauMt", tauId)];
     RooHistPdf* pdfD   = makeRooHistPdf(templateD, fitVarABC2D);
 
-    if(gFakeQCD && *process == "QCD"){
-      pdfsA.Add(pdfA);
-      pdfsB.Add(pdfB);
-      pdfsC2p.Add(pdfC2p);
-      pdfsC2f.Add(pdfC2f);
-      pdfsC2.Add(pdfC2);
-      pdfsD.Add(pdfD);
-    }
+    pdfsA.Add(pdfA);
+    pdfsB.Add(pdfB);
     pdfsC1p.Add(pdfC1p);
     pdfsC1f.Add(pdfC1f);
+    pdfsC2p.Add(pdfC2p);
+    pdfsC2f.Add(pdfC2f);
+    pdfsC2.Add(pdfC2);
+    pdfsD.Add(pdfD);
 
     normA[*process]   = makeRooFormulaVar(*process, "A", normABCD[*process], fittedFractionA, //bkmrk
 					  pDiTauCharge_OS_SS[*process], pDiTauKine_Sig_Bgr[*process], pMuonIso_tight_loose[*process], pTauId_passed_failed[*process]);
@@ -1236,16 +1220,14 @@ void fitUsingRooFit(std::map<std::string, std::map<std::string, TH1*> >& distrib
     normD[*process]   = makeRooFormulaVar(*process, "D", normABCD[*process], fittedFractionD,
 					  pDiTauCharge_OS_SS[*process], pDiTauKine_Sig_Bgr[*process], pMuonIso_tight_loose[*process], pTauId_passed_failed[*process]);
 
-    if(gFakeQCD && *process == "QCD"){
-      fitParametersA.Add(normA[*process]);
-      fitParametersB.Add(normB[*process]);
-      fitParametersC2p.Add(normC2p[*process]);
-      fitParametersC2f.Add(normC2f[*process]);
-      fitParametersC2.Add(normC2[*process]);
-      fitParametersD.Add(normD[*process]);
-    }
+    fitParametersA.Add(normA[*process]);
+    fitParametersB.Add(normB[*process]);
     fitParametersC1p.Add(normC1p[*process]);
     fitParametersC1f.Add(normC1f[*process]);
+    fitParametersC2p.Add(normC2p[*process]);
+    fitParametersC2f.Add(normC2f[*process]);
+    fitParametersC2.Add(normC2[*process]);
+    fitParametersD.Add(normD[*process]);
   }
 
   RooAddPdf* pdfSumA   = new RooAddPdf("pdfSumA",   "pdfSumB",   RooArgList(pdfsA),   RooArgList(fitParametersA));
@@ -1348,7 +1330,7 @@ void fitUsingRooFit(std::map<std::string, std::map<std::string, TH1*> >& distrib
   //fitConstraintsC1.Add(makeFitConstraint(normABCD["DYmumuM10to20"],      
   //					   normABCD["DYmumuM10to20"]->getVal(),         1.0*normABCD["DYmumuM10to20"]->getVal()));  
   //fitConstraintsC1.Add(makeFitConstraint(normABCD["QCD"],        
-  //					 normABCD["QCD"]->getVal(),                   1.0*normABCD["QCD"]->getVal()));
+  //					   normABCD["QCD"]->getVal(),                   1.0*normABCD["QCD"]->getVal()));
   fitConstraintsC1.Add(makeFitConstraint(normABCD["WplusJets"],  
 					 normABCD["WplusJets"]->getVal(),             1.0*normABCD["WplusJets"]->getVal()));
   fitConstraintsC1.Add(makeFitConstraint(normABCD["TTplusJets"], 
@@ -1384,10 +1366,9 @@ void fitUsingRooFit(std::map<std::string, std::map<std::string, TH1*> >& distrib
   fitOptionsABC2D.Add(new RooCmdArg(RooFit::Extended()));
   //fitOptionsABC2D.Add(new RooCmdArg(RooFit::ExternalConstraints(RooArgSet(fitConstraintsABC2D))));
   
-/*
-  fitOptionsC1.Add(new RooCmdArg(RooFit::Save(true)));
-  RooFitResult*	fitResult = pdfSimultaneousFitC1->fitTo(*dataC1, fitOptionsC1);
- */
+  //fitOptionsC1.Add(new RooCmdArg(RooFit::Save(true)));
+  //RooFitResult* fitResult = pdfSimultaneousFitC1->fitTo(*dataC1, fitOptionsC1);
+
   RooAbsReal* nllABC2D = pdfSimultaneousFitABC2D->createNLL(*dataABC2D, fitOptionsABC2D); 
   RooAbsReal* nllC1 = pdfSimultaneousFitC1->createNLL(*dataC1, fitOptionsC1); 
   RooAddition nll("nll", "nll", RooArgSet(*nllABC2D, *nllC1)); 
@@ -1536,17 +1517,6 @@ void fitUsingRooFit(std::map<std::string, std::map<std::string, TH1*> >& distrib
     normFactorD[*process]    = getNormInRegion(normABCD, 
 					       pDiTauCharge_OS_SS, pMuonIso_tight_loose, pDiTauKine_Sig_Bgr, pTauId_passed_failed, 
 					       *process, "D");
-    
-    if( gFakeQCD && *process == "QCD"){
-      normFactorABCD[*process] = 0;
-      normFactorA[*process] = 0;  
-      normFactorB[*process] = 0;  
-      normFactorC[*process] = 0; 
-      normFactorC2[*process] = 0; 
-      normFactorC2p[*process] = 0;
-      normFactorC2f[*process] = 0;
-      normFactorD[*process] = 0;   
-    }
 
     std::cout << "--> A = " << normFactorA[*process]
 	      << " (MC exp. = " << numEventsA << ")" << std::endl;
@@ -1581,61 +1551,61 @@ void fitUsingRooFit(std::map<std::string, std::map<std::string, TH1*> >& distrib
 		 normFactorABCD, "ABCD", getKey(fitVariable, tauId),
 		 std::string("All Events: ").append(fitVariable).append(" (scaled by normalization det. by fit)"),
 		 xAxisTitles ? (*xAxisTitles)[fitVariable] : "",
-		 std::string("controlPlotsTauIdEff_ABCD_").append(fitVariable).append("_fitted.root"), sysShift);
+		 std::string("controlPlotsTauIdEff_ABCD_").append(fitVariable).append("_fitted.png"), sysShift);
   drawHistograms(distributionsData, templatesAll,  
 		 normFactorABCD, "ABCD", getKey("diTauMt", tauId),
 		 "All Events: M_{T} (scaled by normalization det. by fit)", xAxisTitles ? (*xAxisTitles)["diTauMt"] : "",
-		 "controlPlotsTauIdEff_ABCD_Mt_fitted.root", sysShift);
+		 "controlPlotsTauIdEff_ABCD_Mt_fitted.png", sysShift);
   drawHistograms(distributionsData, templatesAll,  
 		 normFactorA, "A", getKey("diTauMt", tauId),
 		 "Region A: M_{T} (scaled by normalization det. by fit)", xAxisTitles ? (*xAxisTitles)["diTauMt"] : "",
-		 "controlPlotsTauIdEff_A_Mt_fitted.root", sysShift);
+		 "controlPlotsTauIdEff_A_Mt_fitted.png", sysShift);
   drawHistograms(distributionsData, templatesAll,  
 		 normFactorB, "B", getKey("diTauMt", tauId),
 		 "Region B: M_{T} (scaled by normalization det. by fit)", xAxisTitles ? (*xAxisTitles)["diTauMt"] : "",
-		 "controlPlotsTauIdEff_B_Mt_fitted.root", sysShift);
+		 "controlPlotsTauIdEff_B_Mt_fitted.png", sysShift);
   drawHistograms(distributionsData, templatesAll,  
 		 normFactorC1, "C1", getKey(fitVariable, tauId),		 
 		 std::string("Region C1: ").append(fitVariable).append(" (scaled by normalization det. by fit)"), 
 		 xAxisTitles ? (*xAxisTitles)[fitVariable] : "",
-		 std::string("controlPlotsTauIdEff_C1_").append(fitVariable).append("_fitted.root"), sysShift,
+		 std::string("controlPlotsTauIdEff_C1_").append(fitVariable).append("_fitted.png"), sysShift,
 		 true);
   drawHistograms(distributionsData, templatesAll,  
 		 normFactorC1p, "C1p", getKey(fitVariable, tauId, "passed"),
 		 std::string("Region C1p: ").append(fitVariable).append(", ").append(tauId).append(" (scaled by normalization det. by fit)"),
 		 xAxisTitles ? (*xAxisTitles)[fitVariable] : "",
-		 std::string("controlPlotsTauIdEff_C1p_").append(fitVariable).append("_").append(tauId).append("_fitted.root"), sysShift,
+		 std::string("controlPlotsTauIdEff_C1p_").append(fitVariable).append("_").append(tauId).append("_fitted.png"), sysShift,
 		 true);
   drawHistograms(distributionsData, templatesAll,  
 		 normFactorC1f, "C1f", getKey(fitVariable, tauId, "failed"),
 		 std::string("Region C1f: ").append(fitVariable).append(", ").append(tauId).append(" (scaled by normalization det. by fit)"),
 		 xAxisTitles ? (*xAxisTitles)[fitVariable] : "",
-		 std::string("controlPlotsTauIdEff_C1f_").append(fitVariable).append("_").append(tauId).append("_fitted.root"), sysShift,
+		 std::string("controlPlotsTauIdEff_C1f_").append(fitVariable).append("_").append(tauId).append("_fitted.png"), sysShift,
 		 true);
   if ( fitTauIdEffC2 ) {
     drawHistograms(distributionsData, templatesAll,  
 		   normFactorC2p, "C2p", getKey("diTauMt", tauId, "passed"),
 		   std::string("Region C2p: ").append(fitVariable).append(", ").append(tauId).append(" (scaled by normalization det. by fit)"),
 		   xAxisTitles ? (*xAxisTitles)["diTauMt"] : "",
-		   std::string("controlPlotsTauIdEff_C2p_").append(fitVariable).append("_").append(tauId).append("_fitted.root"), sysShift,
+		   std::string("controlPlotsTauIdEff_C2p_").append(fitVariable).append("_").append(tauId).append("_fitted.png"), sysShift,
 		   true);
     drawHistograms(distributionsData, templatesAll,  
 		   normFactorC2f, "C2f", getKey("diTauMt", tauId, "failed"),
 		   std::string("Region C2f: ").append(fitVariable).append(", ").append(tauId).append(" (scaled by normalization det. by fit)"),
 		   xAxisTitles ? (*xAxisTitles)["diTauMt"] : "",
-		   std::string("controlPlotsTauIdEff_C2f_").append(fitVariable).append("_").append(tauId).append("_fitted.root"), sysShift,
+		   std::string("controlPlotsTauIdEff_C2f_").append(fitVariable).append("_").append(tauId).append("_fitted.png"), sysShift,
 		   true);
   } else {
     drawHistograms(distributionsData, templatesAll,  
 		   normFactorC2, "C2", getKey("diTauMt", tauId),
 		   "Region C2: M_{T} (scaled by normalization det. by fit)", xAxisTitles ? (*xAxisTitles)["diTauMt"] : "",
-		   "controlPlotsTauIdEff_C2_Mt_fitted.root", sysShift,
+		   "controlPlotsTauIdEff_C2_Mt_fitted.png", sysShift,
 		   true);
   }
   drawHistograms(distributionsData, templatesAll,  
 		 normFactorD, "D", getKey("diTauMt", tauId),
 		 "Region D: M_{T} (scaled by normalization det. by fit)", xAxisTitles ? (*xAxisTitles)["diTauMt"] : "",
-		 "controlPlotsTauIdEff_D_Mt_fitted.root", sysShift);
+		 "controlPlotsTauIdEff_D_Mt_fitted.png", sysShift);
 }
 
 void addFileNames(TChain* chain, const std::string& inputFilePath, const std::string& sampleName, const std::string& jobId)
@@ -1718,7 +1688,7 @@ std::map<std::string, std::map<std::string, TH1*> > loadHistograms(
 	    assert(0);
 	  }
 
-	  histogram->Rebin(2);
+	  //histogram->Rebin(2);
 
 	  std::string key = getKey(*observable, *tauId, *tauIdValue);	
 	  if ( histogram != 0 ) retVal[*region][key] = histogram;
@@ -1893,8 +1863,8 @@ void fitTauIdEff_wConstraints()
   //const std::string branchName_suffix = "local";
   const std::string branchName_suffix = "lxbatch";
 
-  bool runClosureTest = false;
-  //bool runClosureTest = true;
+  //bool runClosureTest = false;
+  bool runClosureTest = true;
 
   bool runQuickTest = false;
   //bool runQuickTest = true;
@@ -1902,7 +1872,8 @@ void fitTauIdEff_wConstraints()
   //bool fitTauIdEffC2 = false;
   bool fitTauIdEffC2 = true;
 
-  const std::string histogramFileName = "fitTauIdEff_wConstraints_2011June10.root";
+  //const std::string histogramFileName = "fitTauIdEff_wConstraints_2011June10.root";
+  const std::string histogramFileName = "fitTauIdEff_wConstraints_2011June06_goodLumiscale.root";
 
   //bool loadHistogramsFromFile = false;
   bool loadHistogramsFromFile = true;
@@ -1954,8 +1925,7 @@ void fitTauIdEff_wConstraints()
   saveRunLumiSectionEventNumbers["C2f"] = false;
   saveRunLumiSectionEventNumbers["D"] = false;
 
-  //  double corrFactorData = (322./452.)*+91.)/(452.+92.);
-  double dataIntLumi = 191;//(5071585.436 + 26222997.902 ) * 1e-6; 
+  double dataIntLumi = 191;
 
   //std::string sampleZtautau = "ZtautauPU156bx";
   //double weightFactorZtautau = dataIntLumi*1666/2568490;       // Z --> l+ l- xSection (FEWZ @ NNLO) / numEvents (POWHEG sample)
@@ -1963,28 +1933,19 @@ void fitTauIdEff_wConstraints()
                                                                  // second number: correction for event looses during Ntuple production
   std::string sampleZtautau = "Ztautau_powheg";
   double weightFactorZtautau = dataIntLumi*1666/1995369;
-  double corrFactorZtautau = 1;//1.995369e6 / 1.99537e+06 ;
-  //std::string sampleDYmumuM2to10 = "DYmumuM2to10_pythia";
-  //double weightFactorDYmumuM2to10 = dataIntLumi*1.282*72990/1091900;         
-  //double corrFactorDYmumuM2to10 = 1.000*1.000;
-  //std::string sampleDYmumuM10to20 = "DYmumuM10to20_pythia";
-  //double weightFactorDYmumuM10to20 = dataIntLumi*1.282*2659/2184640;      
-  //double corrFactorDYmumuM10to20 = 1.000*1.000;
+  double corrFactorZtautau = 1.995369e+06 / 1.99537e+06;
   std::string sampleZmumu = "Zmumu_powheg";
   double weightFactorZmumu = dataIntLumi*1666/1998931;         // Z --> l+ l- xSection (FEWZ @ NNLO) / numEvents (POWHEG sample)
-  double corrFactorZmumu = 1.984154e6 / 1.97413e+06;
+  double corrFactorZmumu = 1.984154e+06 / 1.97413e+06;
   std::string sampleQCD = "PPmuXptGt20Mu15";
-  double weightFactorQCD = dataIntLumi*(0.2966*2.855e-4*1e9)/29434562; // xSection (LO) / numEvents (PYTHIA PPmuXptGt20Mu15 sample)
-  double corrFactorQCD = 29434562/2.71458e+07;
-  //std::string sampleQCD = "PPmuXptGt20Mu10";
-  //double weightFactorQCD = dataIntLumi*0.2966*1.e+9*1.18e-3/8063288; // xSection (LO) / numEvents (PYTHIA PPmuXptGt20Mu10 sample)
-  //double corrFactorQCD = 1.000*1.000; 
+  double weightFactorQCD = dataIntLumi*(0.2966*1.e+09*2.855e-4) / 29434562; // xSection (LO) / numEvents (PYTHIA PPmuXptGt20Mu15 sample)
+  double corrFactorQCD = 29434562 / 2.71458e+07;
   std::string sampleWplusJets = "WplusJets_madgraph";
   double weightFactorWplusJets = dataIntLumi*31314/15168266;   // W --> l nu xSection (FEWZ @ NNLO) / numEvents (MadGraph sample)
-  double corrFactorWplusJets = 1.5110974e7 / 1.18019e+07;
+  double corrFactorWplusJets = 1.5110974e+07 / 1.18019e+07;
   std::string sampleTTplusJets = "TTplusJets_madgraph";
   double weightFactorTTplusJets = dataIntLumi*157.5/1164640;   // inclusive TTbar xSection (MCFM @ NLO) / numEvents (MadGraph sample)
-  double corrFactorTTplusJets = 1.164208e6 / 1.16421e+06;
+  double corrFactorTTplusJets = 1.164208e+06 / 1.16421e+06;
 
   std::vector<std::string> tauIds;
   //tauIds.push_back(std::string("tauDiscrTaNCfrOnePercent"));  // "old" TaNC algorithm
@@ -1997,8 +1958,8 @@ void fitTauIdEff_wConstraints()
   //tauIds.push_back(std::string("tauDiscrIsolationMedium"));   
   //tauIds.push_back(std::string("tauDiscrIsolationTight"));
   tauIds.push_back(std::string("tauDiscrHPSloose"));  // "new" HPS implemented in HPS+TaNC combined algorithm
-  tauIds.push_back(std::string("tauDiscrHPSmedium"));
-  tauIds.push_back(std::string("tauDiscrHPStight"));
+  //tauIds.push_back(std::string("tauDiscrHPSmedium"));
+  //tauIds.push_back(std::string("tauDiscrHPStight"));
 
   std::vector<std::string> fitVariables;
   //fitVariables.push_back("diTauHt");
@@ -2224,20 +2185,18 @@ void fitTauIdEff_wConstraints()
 //    for Mt, fitVariable distributions in different regions
     for ( std::map<std::string, std::map<std::string, TH1*> >::const_iterator region = distributionsData.begin();
 	  region != distributionsData.end(); ++region ) {
-      double qcd_factor = ((region->first).find("C1") != string::npos) ? -1 : 0;
       for ( std::map<std::string, TH1*>::const_iterator key = region->second.begin();
 	    key != region->second.end(); ++key ) {
 	drawHistograms(templatesZtautau[region->first][key->first], -1.,
 		       templatesZmumu[region->first][key->first], -1.,
-		       //templatesDYmumuM2to10[region->first][key->first], -1.,
-		       //templatesDYmumuM10to20[region->first][key->first], -1.,
-		       templatesQCD[region->first][key->first], qcd_factor,
+		       templatesQCD[region->first][key->first], -1.,
 		       templatesWplusJets[region->first][key->first], -1.,
 		       templatesTTplusJets[region->first][key->first], -1.,
 		       distributionsData[region->first][key->first],
 		       std::string("Region ").append(region->first).append(": ").append(key->first).append(" (scaled by cross-section)"),
 		       xAxisTitles[key->first],
-		       std::string("controlPlotsTauIdEff_").append(region->first).append("_").append(key->first).append("_nofit.root"), *sysShift);
+		       std::string("controlPlotsTauIdEff_").append(region->first).append("_").append(key->first).append("_nofit.png"), 
+		       *sysShift);
       }
     }
 
