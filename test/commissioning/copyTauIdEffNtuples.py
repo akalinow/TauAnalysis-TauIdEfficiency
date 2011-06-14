@@ -7,18 +7,19 @@ import subprocess
 import shlex
 
 # Get all the skim files from the castor directory
-sourceFilePath = "/castor/cern.ch/user/v/veelken/CMSSW_3_8_x/ntuples/TauIdEffMeas/"
+sourceFilePath = "/castor/cern.ch/user/v/veelken/CMSSW_4_1_x/ntuples/TauIdEffMeas/"
 source_files = [ file_info['path'] for file_info in castor.nslsl(sourceFilePath) ]
+#print "source_files:"
+#print source_files
 
 #targetFilePath = "/tmp/veelken/"
-targetFilePath = "/data1/veelken/CMSSW_3_8_x/ntuples/TauIdEffMeas/2011Feb03b"
+targetFilePath = "/data2/veelken/CMSSW_4_1_x/ntuples/TauIdEffMeas/2011Jun10/"
 
-jobId = "2011Feb03b"
-version = "V3"
+jobId = "2011Jun10"
+version = "V1"
 
 samplesToCopy = [
     # modify in case you want to submit jobs for some of the samples only...
-    'Ztautau_powheg', 'Ztautau_powhegZ2',
 ]
 
 files_to_copy = []
@@ -42,4 +43,4 @@ for source_file in source_files:
     print("copying %s --> %s" % (source_file, target_file))
     files_to_copy.append(source_file)
 
-castor_mirror.mirror_files(castor_mirror.needs_local_copy(files_to_copy, targetFilePath), targetFilePath, 50)
+castor_mirror.mirror_files(castor_mirror.needs_local_copy(files_to_copy, [ targetFilePath ]), [ targetFilePath ], 50)

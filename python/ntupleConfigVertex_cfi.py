@@ -53,7 +53,7 @@ vertexMultReweight_template = cms.PSet(
     src = vertexMultiplicityReweight.src,
     inputFileName = vertexMultiplicityReweight.inputFileName,
     lutName = vertexMultiplicityReweight.lutName,
-    #type = vertexMultiplicityReweight.type,
+    type = vertexMultiplicityReweight.type,
 
     columns = cms.PSet(
         vtxMultReweight = cms.string("vtxMultReweight")

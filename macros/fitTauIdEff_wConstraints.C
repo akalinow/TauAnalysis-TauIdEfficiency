@@ -153,6 +153,8 @@ std::map<std::string, std::map<std::string, std::string> > makeBranchNameDict(
     branchNames["ls"] = getBranchName("double", "", "ls", branchName_suffix);
     branchNames["run"] = getBranchName("double", "", "run", branchName_suffix);
     
+    branchNames["genPUreweight"] = getBranchName("double", "addPileupInfo", "vtxMultReweight", branchName_suffix);
+
     branchNames["muonPt"] = getBranchName("double", branchNameMuon, "pt", branchName_suffix);
     branchNames["muonEta"] = getBranchName("double", branchNameMuon, "eta", branchName_suffix);
     branchNames["muonLooseIsoPtSum04"] = getBranchName("double", branchNameMuon, "ptSumLooseIsolation04", branchName_suffix);
@@ -279,7 +281,9 @@ std::map<std::string, TH1*> makeHistograms(
   TTree* tree, const std::string& treeSelection, 
   const std::string& tauId, const std::vector<std::string>& tauIdValues,
   const std::vector<std::string>& observables,
-  std::map<std::string, std::string>& branchNames, const std::string& sysShift = "CENTRAL_VALUE",
+  std::map<std::string, std::string>& branchNames, 
+  bool applyPUreweighting,
+  const std::string& sysShift = "CENTRAL_VALUE",
   bool saveRunLumiSectionEventNumbers = false)
 {
 //--------------------------------------------------------------------------------
@@ -306,8 +310,12 @@ std::map<std::string, TH1*> makeHistograms(
 
 //--- add kinematic cuts common to all regions
 //   (cuts that might as well have been applied during (ED)Ntuple production)
-    std::string extTreeSelection = treeSelection;
-    if ( extTreeSelection != "" ) extTreeSelection.append(" && "); //bkmrk
+    std::string extTreeSelection;
+    if ( applyPUreweighting ) extTreeSelection.append("(");
+    if ( treeSelection != "" ) {
+      extTreeSelection.append(treeSelection);
+      extTreeSelection.append(" && "); 
+    }
     extTreeSelection.append(branchNames["muonPt"]).append(" > 20.");
     extTreeSelection.append(" && ").append(branchNames["tauPt"]).append(" > 20.");
     extTreeSelection.append(" && ").append(branchNames["tauJetPt"]).append(" > 20.");
@@ -319,6 +327,7 @@ std::map<std::string, TH1*> makeHistograms(
     extTreeSelection.append(" && ").append(branchNames["diTauVisMassFromJet"]).append(" < 200.");
     extTreeSelection.append(" && ").append(branchNames["diTauMt"]).append(" < 80.");
     extTreeSelection.append(" && ").append("TMath::Abs( " + branchNames["muVertexZ"] + " - " + branchNames["tauVertexZ"] + " )").append(" < 0.2");
+    if ( applyPUreweighting ) extTreeSelection.append(")").append("*").append(branchNames["genPUreweight"]);
 
 //--- add tau id. passed/failed selection
     if      ( (*tauIdValue) == "passed" ) extTreeSelection.append(" && ").append(branchNames[tauId]).append(" > 0.5");
@@ -386,7 +395,7 @@ std::map<std::string, TH1*> makeHistograms(
       }
       
       TH1* histogram = new TH1F(histogramName.data(), histogramName.data(), numBins, min, max);
-      
+
       std::string drawCommand = std::string(branchNames[*observable]).append(">>+").append(histogramName); 
       tree->Draw(drawCommand.data(), extTreeSelection.data());
       
@@ -874,6 +883,7 @@ std::map<std::string, TH1*> makeDistributionsInRegion(
   TTree* tree, 
   const std::string& tauId, const std::vector<std::string>& fitVariables,
   std::map<std::string, std::string>& branchNames, 
+  bool applyPUreweighting,
   const std::string& sysShift = "CENTRAL_VALUE",
   bool saveRunLumiSectionEventNumbers = false)
 {
@@ -929,7 +939,8 @@ std::map<std::string, TH1*> makeDistributionsInRegion(
   return makeHistograms(process, region, weight,
 			tree, treeSelection,
 			tauId, tauIdValues, observables,
-			branchNames, sysShift,
+			branchNames, applyPUreweighting,
+			sysShift,
 			saveRunLumiSectionEventNumbers);
 }
 
@@ -937,7 +948,9 @@ std::map<std::string, std::map<std::string, TH1*> > makeDistributionsAllRegions(
   const std::string& process, double weight,
   TTree* tree, const std::vector<std::string>& regions,
   const std::vector<std::string>& tauIds, const std::vector<std::string>& fitVariables,
-  std::map<std::string, std::map<std::string, std::string> >& branchNames, const std::string& sysShift = "CENTRAL_VALUE",
+  std::map<std::string, std::map<std::string, std::string> >& branchNames, 
+  bool applyPUreweight,
+  const std::string& sysShift = "CENTRAL_VALUE",
   std::map<std::string, bool>* saveRunLumiSectionEventNumbers = NULL)
 {
 //-------------------------------------------------------------------------------
@@ -968,7 +981,8 @@ std::map<std::string, std::map<std::string, TH1*> > makeDistributionsAllRegions(
       std::map<std::string, TH1*> retVal_region = makeDistributionsInRegion(process, *region, weight,
 									    tree, 
 									    *tauId, fitVariables,
-									    branchNames[*tauId], sysShift,
+									    branchNames[*tauId], applyPUreweighting,
+									    sysShift,
 									    saveRunLumiSectionEventNumbers_region);
 
       for ( std::map<std::string, TH1*>::iterator distribution = retVal_region.begin();
@@ -1872,9 +1886,9 @@ void fitTauIdEff_wConstraints()
   TBenchmark clock;
   clock.Start("fitTauIdEff_wConstraints");
 
-  std::string inputFilePath = "/nfs/data4/verzetti/tagprobe/NTuples/NTuplesJun06/";
+   std::string inputFilePath = "/data2/veelken/CMSSW_4_1_x/ntuples/TauIdEffMeas/2011Jun10/";
   
-  const std::string jobId = "2011Jun06V1";
+  const std::string jobId = "2011Jun10V1";
 
   //const std::string branchName_suffix = "local";
   const std::string branchName_suffix = "lxbatch";
@@ -1888,9 +1902,7 @@ void fitTauIdEff_wConstraints()
   //bool fitTauIdEffC2 = false;
   bool fitTauIdEffC2 = true;
 
-  //const std::string histogramFileName = "fitTauIdEff_wConstraints_data_2011Feb21v2.root";
-  //const std::string histogramFileName = "fitTauIdEff_wConstraints_2011Mar01.root"; // PYTHIA D6T
-  const std::string histogramFileName = "fitTauIdEff_wConstraints_2011June06.root"; // POWHEG Z2
+  const std::string histogramFileName = "fitTauIdEff_wConstraints_2011June10.root";
 
   //bool loadHistogramsFromFile = false;
   bool loadHistogramsFromFile = true;
@@ -1898,12 +1910,14 @@ void fitTauIdEff_wConstraints()
   bool saveHistogramsToFile = (!loadHistogramsFromFile);
   bool applyZrecoilCorrection = false;
 
+  bool applyPUreweightingMC = true;
+
   std::vector<std::string> sysUncertainties;
   sysUncertainties.push_back(std::string("SysTauJetEnUp"));
   sysUncertainties.push_back(std::string("SysTauJetEnDown"));
   sysUncertainties.push_back(std::string("SysJetEnUp"));
   sysUncertainties.push_back(std::string("SysJetEnDown"));
-  //  sysUncertainties.push_back(std::string("SysZllRecoilCorrectionUp"));
+  //sysUncertainties.push_back(std::string("SysZllRecoilCorrectionUp"));
   //sysUncertainties.push_back(std::string("SysZllRecoilCorrectionDown"));
   bool runSysUncertainties = false;
   //bool runSysUncertainties = true;
@@ -1941,8 +1955,8 @@ void fitTauIdEff_wConstraints()
   saveRunLumiSectionEventNumbers["D"] = false;
 
   //  double corrFactorData = (322./452.)*+91.)/(452.+92.);
-  double wrongLumi = (5071585.436 + 26222997.902 ) * 1e-6; 
   double dataIntLumi = 191;//(5071585.436 + 26222997.902 ) * 1e-6; 
+
   //std::string sampleZtautau = "ZtautauPU156bx";
   //double weightFactorZtautau = dataIntLumi*1666/2568490;       // Z --> l+ l- xSection (FEWZ @ NNLO) / numEvents (POWHEG sample)
   //double corrFactorZtautau = 1.000*1.000;                      // first  number: correction for event looses during skimming
@@ -1973,9 +1987,9 @@ void fitTauIdEff_wConstraints()
   double corrFactorTTplusJets = 1.164208e6 / 1.16421e+06;
 
   std::vector<std::string> tauIds;
-  tauIds.push_back(std::string("tauDiscrTaNCfrOnePercent"));  // "old" TaNC algorithm
-  tauIds.push_back(std::string("tauDiscrTaNCfrHalfPercent"));
-  tauIds.push_back(std::string("tauDiscrTaNCfrQuarterPercent"));
+  //tauIds.push_back(std::string("tauDiscrTaNCfrOnePercent"));  // "old" TaNC algorithm
+  //tauIds.push_back(std::string("tauDiscrTaNCfrHalfPercent"));
+  //tauIds.push_back(std::string("tauDiscrTaNCfrQuarterPercent"));
   //tauIds.push_back(std::string("tauDiscrTaNCloose")); // "new" TaNC implemented in HPS+TaNC combined algorithm
   //tauIds.push_back(std::string("tauDiscrTaNCmedium"));
   //tauIds.push_back(std::string("tauDiscrTaNCtight"));
@@ -2055,8 +2069,10 @@ void fitTauIdEff_wConstraints()
       chainData->Add(chainData_2011RunA);
       chainData->Add(chainData_2011RunB);
       printFileInfo(chainData, "chainData");
-      distributionsData = makeDistributionsAllRegions("Data", 1.0, chainData, regions,
-						      tauIds, fitVariables, branchNamesData, *sysShift, &saveRunLumiSectionEventNumbers);
+      distributionsData = 
+	makeDistributionsAllRegions("Data", 1.0, chainData, regions,
+				    tauIds, fitVariables, branchNamesData, false, *sysShift, 
+				    &saveRunLumiSectionEventNumbers);
       delete chainData;
       delete chainData_2011RunA;
       delete chainData_2011RunB;
@@ -2070,36 +2086,11 @@ void fitTauIdEff_wConstraints()
       if ( !runQuickTest ) addFileNames(chainZtautau, inputFilePath, sampleZtautau, jobId);
       else                 chainZtautau->Add("/nfs/data4/verzetti/tagprobe/testNtuples/testNtupleZtauTauPowheg.root");
       printFileInfo(chainZtautau, "chainZtautau");
-      templatesZtautau = makeDistributionsAllRegions("Ztautau", weightFactorZtautau*corrFactorZtautau, chainZtautau, regions, 
-						     tauIds, fitVariables, branchNamesMC, *sysShift);
+      templatesZtautau = 
+	makeDistributionsAllRegions("Ztautau", weightFactorZtautau*corrFactorZtautau, chainZtautau, regions, 
+				    tauIds, fitVariables, branchNamesMC, applyPUreweightingMC, *sysShift);
       delete chainZtautau;
     }
-
-    //std::map<std::string, std::map<std::string, TH1*> > templatesDYmumuM2to10; // key = (region, observable)
-    //if ( loadHistogramsFromFile ) { 
-    //  templatesDYmumuM2to10 = loadHistograms(histogramInputFile, "DYmumuM2to10", regions, tauIds, fitVariables, *sysShift);
-    //} else {
-    //  TChain* chainDYmumuM2to10 = new TChain("Events");
-    //  if ( !runQuickTest ) addFileNames(chainDYmumuM2to10, inputFilePath, sampleDYmumuM2to10, jobId);
-    //  else                 chainDYmumuM2to10->Add(std::string(inputFilePath).append("tauIdEffMeasEDNtuple_DYmumuM2to10_pythia_2011Feb03bV3_0_8ab2.root").data());
-    //  printFileInfo(chainDYmumuM2to10, "chainDYmumuM2to10");
-    //  templatesDYmumuM2to10 = makeDistributionsAllRegions("DYmumuM2to10", weightFactorDYmumuM2to10*corrFactorDYmumuM2to10, chainDYmumuM2to10, regions, 
-    //							    tauIds, fitVariables, branchNamesMC, *sysShift);
-    //  delete chainDYmumuM2to10;
-    //}
-
-    //std::map<std::string, std::map<std::string, TH1*> > templatesDYmumuM10to20; // key = (region, observable)
-    //if ( loadHistogramsFromFile ) { 
-    //  templatesDYmumuM10to20 = loadHistograms(histogramInputFile, "DYmumuM10to20", regions, tauIds, fitVariables, *sysShift);
-    //} else {
-    //  TChain* chainDYmumuM10to20 = new TChain("Events");
-    //  if ( !runQuickTest ) addFileNames(chainDYmumuM10to20, inputFilePath, sampleDYmumuM10to20, jobId);
-    //  else                 chainDYmumuM10to20->Add(std::string(inputFilePath).append("tauIdEffMeasEDNtuple_DYmumuM10to20_pythia_2011Feb03bV3_0_2636.root").data());
-    //  printFileInfo(chainDYmumuM10to20, "chainDYmumuM10to20");
-    //  templatesDYmumuM10to20 = makeDistributionsAllRegions("DYmumuM10to20", weightFactorDYmumuM10to20*corrFactorDYmumuM10to20, chainDYmumuM10to20, regions, 
-    //							     tauIds, fitVariables, branchNamesMC, *sysShift);
-    //  delete chainDYmumuM10to20;
-    //}
 
     std::map<std::string, std::map<std::string, TH1*> > templatesZmumu; // key = (region, observable)
     if ( loadHistogramsFromFile ) { 
@@ -2109,11 +2100,11 @@ void fitTauIdEff_wConstraints()
       if ( !runQuickTest ) addFileNames(chainZmumu, inputFilePath, sampleZmumu, jobId);
       else                 chainZmumu->Add("/nfs/data4/verzetti/tagprobe/testNtuples/testNtupleZmumu.root");
       printFileInfo(chainZmumu, "chainZmumu");
-      templatesZmumu = makeDistributionsAllRegions("Zmumu", weightFactorZmumu*corrFactorZmumu, chainZmumu, regions, 
-						   tauIds, fitVariables, branchNamesMC, *sysShift);
+      templatesZmumu = 
+	makeDistributionsAllRegions("Zmumu", weightFactorZmumu*corrFactorZmumu, chainZmumu, regions, 
+				    tauIds, fitVariables, branchNamesMC, applyPUreweightingMC, *sysShift);
       delete chainZmumu;
     }
-
     
     std::map<std::string, std::map<std::string, TH1*> > templatesQCD; // key = (region, observable)
     if ( loadHistogramsFromFile ) { 
@@ -2123,10 +2114,11 @@ void fitTauIdEff_wConstraints()
       if ( !runQuickTest ) addFileNames(chainQCD, inputFilePath, sampleQCD, jobId);
       else                 chainQCD->Add("/nfs/data4/verzetti/tagprobe/testNtuples/testNtupleQCD.root");
       printFileInfo(chainQCD, "chainQCD");
-      templatesQCD = makeDistributionsAllRegions("QCD", weightFactorQCD*corrFactorQCD, chainQCD, regions, 
-						 tauIds, fitVariables, branchNamesMCwoZrecoilCorr, *sysShift);
+      templatesQCD = 
+	makeDistributionsAllRegions("QCD", weightFactorQCD*corrFactorQCD, chainQCD, regions, 
+				    tauIds, fitVariables, branchNamesMCwoZrecoilCorr, applyPUreweightingMC, *sysShift);
       delete chainQCD;
-      }
+    }
 
     std::map<std::string, std::map<std::string, TH1*> > templatesWplusJets; // key = (region, observable)
     if ( loadHistogramsFromFile ) { 
@@ -2136,8 +2128,9 @@ void fitTauIdEff_wConstraints()
       if ( !runQuickTest ) addFileNames(chainWplusJets, inputFilePath, sampleWplusJets, jobId);
       else                 chainWplusJets->Add("/nfs/data4/verzetti/tagprobe/testNtuples/testNtupleWPlusJets.root");
       printFileInfo(chainWplusJets, "chainWplusJets");
-      templatesWplusJets = makeDistributionsAllRegions("WplusJets", weightFactorWplusJets*corrFactorWplusJets, chainWplusJets, regions, 
-						       tauIds, fitVariables, branchNamesMCwoZrecoilCorr, *sysShift);
+      templatesWplusJets = 
+	makeDistributionsAllRegions("WplusJets", weightFactorWplusJets*corrFactorWplusJets, chainWplusJets, regions, 
+				    tauIds, fitVariables, branchNamesMCwoZrecoilCorr, applyPUreweightingMC, *sysShift);
       delete chainWplusJets;
     }
 
@@ -2149,30 +2142,21 @@ void fitTauIdEff_wConstraints()
       if ( !runQuickTest ) addFileNames(chainTTplusJets, inputFilePath, sampleTTplusJets, jobId);
       else                 chainTTplusJets->Add("/nfs/data4/verzetti/tagprobe/testNtuples/testNtupleTTJets.root");
       printFileInfo(chainTTplusJets, "chainTTplusJets");
-      templatesTTplusJets = makeDistributionsAllRegions("TTplusJets", weightFactorTTplusJets*corrFactorTTplusJets, chainTTplusJets, regions, 
-							tauIds, fitVariables, branchNamesMCwoZrecoilCorr, *sysShift);
+      templatesTTplusJets = 
+	makeDistributionsAllRegions("TTplusJets", weightFactorTTplusJets*corrFactorTTplusJets, chainTTplusJets, regions, 
+				    tauIds, fitVariables, branchNamesMCwoZrecoilCorr, applyPUreweightingMC, *sysShift);
       delete chainTTplusJets;
     }
 
     std::map<std::string, std::map<std::string, std::map<std::string, TH1*> > > templatesAll; // key = (process, region, observable)
-    templatesAll["Ztautau"]       = templatesZtautau;
-    //templatesAll["DYmumuM2to10"]  = templatesDYmumuM2to10;
-    //templatesAll["DYmumuM10to20"] = templatesDYmumuM10to20;
-    templatesAll["Zmumu"]         = templatesZmumu;
-    templatesAll["QCD"]           = templatesQCD;
-    templatesAll["WplusJets"]     = templatesWplusJets;
-    templatesAll["TTplusJets"]    = templatesTTplusJets;
-
-    for(std::map<std::string, std::map<std::string, std::map<std::string, TH1*> > >::const_iterator map0Entry = templatesAll.begin(); map0Entry != templatesAll.end(); map0Entry++)
-      for(std::map<std::string, std::map<std::string, TH1*> >::const_iterator map1Entry = map0Entry->second.begin(); map1Entry != map0Entry->second.end(); map1Entry++)
-	for(std::map<std::string, TH1*>::const_iterator map2Entry = map1Entry->second.begin(); map2Entry != map1Entry->second.end(); map2Entry++)
-	  map2Entry->second->Scale(dataIntLumi/wrongLumi);
-      
+    templatesAll["Ztautau"]    = templatesZtautau;
+    templatesAll["Zmumu"]      = templatesZmumu;
+    templatesAll["QCD"]        = templatesQCD;
+    templatesAll["WplusJets"]  = templatesWplusJets;
+    templatesAll["TTplusJets"] = templatesTTplusJets;
 
     std::vector<std::string> processes;
     processes.push_back(std::string("Ztautau"));
-    //processes.push_back(std::string("DYmumuM2to10"));
-    //processes.push_back(std::string("DYmumuM10to20"));
     processes.push_back(std::string("Zmumu"));
     processes.push_back(std::string("QCD"));
     processes.push_back(std::string("WplusJets"));
@@ -2203,8 +2187,9 @@ void fitTauIdEff_wConstraints()
       distributionsData = templatesAll["sum"];
     }
 
-    /*/--- obtain template for QCD background from data,
-    //    from SS && Mt < 40 GeV && (Pzeta - 1.5 PzetaVis) > -20 GeV sideband
+/*
+//--- obtain template for QCD background from data,
+//    from SS && Mt < 40 GeV && (Pzeta - 1.5 PzetaVis) > -20 GeV sideband
     for ( std::vector<std::string>::const_iterator tauId = tauIds.begin();
 	  tauId != tauIds.end(); ++tauId ) {
       for ( std::vector<std::string>::const_iterator fitVariable = fitVariables.begin();
@@ -2232,7 +2217,8 @@ void fitTauIdEff_wConstraints()
       }
     }
 
-    templatesAll["QCD"] = templatesQCD;*/
+    templatesAll["QCD"] = templatesQCD;
+*/
   
 //--- make control plots for sum(MC) scaled by cross-sections versus Data 
 //    for Mt, fitVariable distributions in different regions
