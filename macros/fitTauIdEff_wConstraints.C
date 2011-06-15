@@ -307,7 +307,9 @@ std::map<std::string, TH1*> makeHistograms(
 //--- add kinematic cuts common to all regions
 //   (cuts that might as well have been applied during (ED)Ntuple production)
     std::string extTreeSelection;
+
     if ( applyPUreweighting ) extTreeSelection.append("(");
+
     if ( treeSelection != "" ) {
       extTreeSelection.append(treeSelection);
       extTreeSelection.append(" && ");
@@ -324,7 +326,6 @@ std::map<std::string, TH1*> makeHistograms(
     extTreeSelection.append(" && ").append(branchNames["diTauMt"]).append(" < 80.");
     extTreeSelection.append(" && ").append("TMath::Abs( " + branchNames["muVertexZ"] 
                                                        + " - " + branchNames["tauVertexZ"] + " )").append(" < 0.2");
-    if ( applyPUreweighting ) extTreeSelection.append(")").append("*").append(branchNames["genPUreweight"]);
 
 //--- add tau id. passed/failed selection
     if      ( (*tauIdValue) == "passed" ) extTreeSelection.append(" && ").append(branchNames[tauId]).append(" > 0.5");
@@ -332,6 +333,8 @@ std::map<std::string, TH1*> makeHistograms(
     else if ( (*tauIdValue) == "all"    ) {}
     else assert(0);
     
+    if ( applyPUreweighting ) extTreeSelection.append(")").append("*").append(branchNames["genPUreweight"]);
+
     std::cout << " treeSelection = " << extTreeSelection << std::endl;
 
     for ( std::vector<std::string>::const_iterator observable = observables.begin();
