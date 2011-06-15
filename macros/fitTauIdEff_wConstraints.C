@@ -371,7 +371,7 @@ std::map<std::string, TH1*> makeHistograms(
 	numBins = 15;
 	min =  -0.5;
 	max = +14.5;
-      } else if ( (*observable) == "tauNumParticles"       ) {
+      } else if ( (*observable) == "tauNumParticles" ) {
 	numBins = 25;
 	min =  -0.5;
 	max = +24.5;
@@ -549,7 +549,7 @@ void drawHistograms(TH1* histogramZtautau, double normZtautau,
   legend.Draw();
 
   TPaveText cmsPreliminaryLabel(0.140, 0.860, 0.46, 0.900, "NDC");
-  cmsPreliminaryLabel.AddText("CMS Preliminary 2010");
+  cmsPreliminaryLabel.AddText("CMS Preliminary 2011");
   cmsPreliminaryLabel.SetTextAlign(13);
   cmsPreliminaryLabel.SetTextSize(0.045);
   cmsPreliminaryLabel.SetFillStyle(0);
@@ -557,7 +557,7 @@ void drawHistograms(TH1* histogramZtautau, double normZtautau,
   cmsPreliminaryLabel.Draw();
 
   TPaveText cmsLuminosityLabel(0.145, 0.8075, 0.460, 0.8475, "NDC");
-  cmsLuminosityLabel.AddText("#sqrt{s} = 7 TeV, L = 36 pb^{-1}");
+  cmsLuminosityLabel.AddText("#sqrt{s} = 7 TeV, L = 191 pb^{-1}");
   cmsLuminosityLabel.SetTextAlign(13);
   cmsLuminosityLabel.SetTextSize(0.045);
   cmsLuminosityLabel.SetFillStyle(0);
@@ -1810,7 +1810,7 @@ void scaleBins(std::map<std::string, std::map<std::string, TH1*> >& histograms, 
 		      leftEdge  >= rightEdge_mergedBin ) {
 	    ++iBin_rebinned;
 	    binEdges_rebinned[iBin_rebinned - 1] = leftEdge;
-	  } else if ( leftEdge  == leftEdge_mergedBin ) {
+	  } else if ( leftEdge  == leftEdge_mergedBin  ) {
 	    ++iBin_rebinned;
 	    binEdges_rebinned[iBin_rebinned - 1] = leftEdge;
 	  } 
@@ -1848,9 +1848,9 @@ void fitTauIdEff_wConstraints()
   TBenchmark clock;
   clock.Start("fitTauIdEff_wConstraints");
 
-  std::string inputFilePath = "/nfs/data4/verzetti/tagprobe/NTuples/NTuplesJun06_v2_pureweight/"; // for Mauro
-  //std::string inputFilePath = 
-  //  "/data2/veelken/CMSSW_4_1_x/ntuples/TauIdEffMeas/2011Jun10/user/m/mverzett/tagprobe/Jun06Skim/edntuples_v3/"; // for Christian
+  //std::string inputFilePath = "/nfs/data4/verzetti/tagprobe/NTuples/NTuplesJun06_v2_pureweight/"; // for Mauro
+  std::string inputFilePath = 
+    "/data2/veelken/CMSSW_4_1_x/ntuples/TauIdEffMeas/2011Jun10/user/m/mverzett/tagprobe/Jun06Skim/edntuples_v3/"; // for Christian
   const std::string jobId = "2011Jun06V2";
 
   //const std::string branchName_suffix = "local";
@@ -1859,8 +1859,8 @@ void fitTauIdEff_wConstraints()
   bool runClosureTest = false;
   //bool runClosureTest = true;
 
-  bool runQuickTest = false;
-  //bool runQuickTest = true;
+  //bool runQuickTest = false;
+  bool runQuickTest = true;
 
   //bool fitTauIdEffC2 = false;
   bool fitTauIdEffC2 = true;
@@ -2009,7 +2009,7 @@ void fitTauIdEff_wConstraints()
       if ( !runQuickTest ) { addFileNames(chainData_2011RunA, inputFilePath, "data_Mu_Run2010A_Nov4ReReco", jobId);
   	                     addFileNames(chainData_2011RunB, inputFilePath, "data_Mu_Run2010B_Nov4ReReco", jobId); } 
       else                 { chainData_2011RunA->Add(std::string(inputFilePath).append("tauIdEffMeasEDNtuple_data_SingleMu_Run2011A_PromptReco_v1_2011Jun06V2_0_cab9.root").data());
-	                     chainData_2011RunB->Add(std::string(inputFilePath).append("tauIdEffMeasEDNtuple_data_SingleMu_Run2011A_PromptReco_v2_2011Jun06V2_0_7893.root").data());
+	                     chainData_2011RunB->Add(std::string(inputFilePath).append("tauIdEffMeasEDNtuple_data_SingleMu_Run2011A_PromptReco_v2_2011Jun06V2_0_7893.root").data()); }
       printFileInfo(chainData_2011RunA, "chainData_2011RunA");
       printFileInfo(chainData_2011RunB, "chainData_2011RunB");
       TChain* chainData = new TChain("Events");
