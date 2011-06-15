@@ -191,7 +191,8 @@ std::map<std::string, std::map<std::string, std::string> > makeBranchNameDict(
     branchNames["diTauSVfitMass2"] = getBranchName("double", branchNameDiTau, "SVfitMass2", branchName_suffix);
     branchNames["diTauVisMass"] = getBranchName("double", branchNameDiTau, "visMass", branchName_suffix);
     branchNames["diTauVisMassFromJet"] = getBranchName("double", branchNameDiTau, "visMassFromJet", branchName_suffix);    
-
+    branchNames["muVertexZ"] = getBranchName("double", branchNameDiTau, "muVertexZ", branchName_suffix);
+    branchNames["tauVertexZ"] = getBranchName("double", branchNameDiTau, "tauVertexZ", branchName_suffix);
     retVal[*tauId] = branchNames;
   }
 
@@ -332,7 +333,7 @@ std::map<std::string, TH1*> makeHistograms(
     else if ( (*tauIdValue) == "failed" ) extTreeSelection.append(" && ").append(branchNames[tauId]).append(" < 0.5");
     else if ( (*tauIdValue) == "all"    ) {}
     else assert(0);
-    
+
     if ( applyPUreweighting ) extTreeSelection.append(")").append("*").append(branchNames["genPUreweight"]);
 
     std::cout << " treeSelection = " << extTreeSelection << std::endl;
@@ -447,7 +448,7 @@ void applyStyleOption(TH1* histogram, const std::string& histogramTitle,
 
   histogram->SetStats(false);
 
-  //histogram->SetTitle(histogramTitle.data());
+  histogram->SetTitle(histogramTitle.data());
   histogram->SetTitle("");
     
   histogram->GetXaxis()->SetTitle(xAxisTitle.data());
@@ -1858,12 +1859,13 @@ void fitTauIdEff_wConstraints()
   TBenchmark clock;
   clock.Start("fitTauIdEff_wConstraints");
 
-  std::string inputFilePath = "/data2/veelken/CMSSW_4_1_x/ntuples/TauIdEffMeas/2011Jun10/";
-  
-  const std::string jobId = "2011Jun10V1";
-
+  std::string inputFilePath = "/nfs/data4/verzetti/tagprobe/NTuples/NTuplesJun06_v2_pureweight/";
+  const std::string jobId = "2011Jun06V2";
   //const std::string branchName_suffix = "local";
   const std::string branchName_suffix = "lxbatch";
+
+  std::string inputFilePathData = "/nfs/data4/verzetti/tagprobe/NTuples/NTuplesJun06/";
+  const std::string jobIdData = "2011Jun06V1";
 
   bool runClosureTest = false;
   //bool runClosureTest = true;
@@ -1875,10 +1877,10 @@ void fitTauIdEff_wConstraints()
   bool fitTauIdEffC2 = true;
 
   //const std::string histogramFileName = "fitTauIdEff_wConstraints_2011June10.root";
-  const std::string histogramFileName = "fitTauIdEff_wConstraints_2011June06_goodLumiscale.root";
+  const std::string histogramFileName = "fitTauIdEff_wConstraints_2011June06_pureweight.root";
 
-  //bool loadHistogramsFromFile = false;
-  bool loadHistogramsFromFile = true;
+  bool loadHistogramsFromFile = false;
+  //bool loadHistogramsFromFile = true;
 
   bool saveHistogramsToFile = (!loadHistogramsFromFile);
 
@@ -2014,8 +2016,8 @@ void fitTauIdEff_wConstraints()
     } else {
       TChain* chainData_2011RunA = new TChain("Events");
       TChain* chainData_2011RunB = new TChain("Events");
-      if ( !runQuickTest ) { addFileNames(chainData_2011RunA, inputFilePath, "data_Mu_Run2010A_Nov4ReReco", jobId);
-  	                     addFileNames(chainData_2011RunB, inputFilePath, "data_Mu_Run2010B_Nov4ReReco", jobId); } 
+      if ( !runQuickTest ) { addFileNames(chainData_2011RunA, inputFilePathData, "data_Mu_Run2010A_Nov4ReReco", jobIdData);
+  	                     addFileNames(chainData_2011RunB, inputFilePathData, "data_Mu_Run2010B_Nov4ReReco", jobIdData); } 
       else                 { chainData_2011RunA->Add(std::string(inputFilePath).append("tauIdEffMeasEDNtuple_data_Mu_Run2010A_Nov4ReReco_2011Feb03bV3_0_8d77.root").data());
 	                     chainData_2011RunB->Add(std::string(inputFilePath).append("tauIdEffMeasEDNtuple_data_Mu_Run2010B_Nov4ReReco_2011Feb03bV3_0_5508.root").data()); }
       printFileInfo(chainData_2011RunA, "chainData_2011RunA");
