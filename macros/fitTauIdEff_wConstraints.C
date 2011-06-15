@@ -82,8 +82,7 @@ std::string replace(std::string& str, const std::string& oldpart, const std::str
 
 std::map<std::string, std::map<std::string, std::string> > makeBranchNameDict(
   const std::vector<std::string>& tauIds,
-  const std::string& sysShift, const std::string& branchName_suffix,
-  bool applyZrecoilCorrections)
+  const std::string& sysShift, const std::string& branchName_suffix)
 {
 //--------------------------------------------------------------------------------
 // Make alias --> branchName mapping 
@@ -127,8 +126,6 @@ std::map<std::string, std::map<std::string, std::string> > makeBranchNameDict(
       assert(0);
     }
     
-    if ( applyZrecoilCorrections ) branchNameDiTau = replace(branchNameDiTau, "Cumulative", "ZllRecoilCorrectedCumulative");
-    
     if (        sysShift == "CENTRAL_VALUE"              ) {
       // nothing to be done yet.
     } else if ( sysShift == "SysTauJetEnUp"              ||
@@ -137,10 +134,6 @@ std::map<std::string, std::map<std::string, std::string> > makeBranchNameDict(
       branchNameDiTau = replace(branchNameDiTau, "Cumulative", std::string(sysShift).append("Cumulative"));
     } else if ( sysShift == "SysJetEnUp"                 ||
 		sysShift == "SysJetEnDown"               ) {
-      branchNameTau   = replace(branchNameTau,   "Cumulative", std::string(sysShift).append("Cumulative"));
-      branchNameDiTau = replace(branchNameDiTau, "Cumulative", std::string(sysShift).append("Cumulative"));
-    } else if ( sysShift == "SysZllRecoilCorrectionUp"   ||
-		sysShift == "SysZllRecoilCorrectionDown" ) {
       branchNameTau   = replace(branchNameTau,   "Cumulative", std::string(sysShift).append("Cumulative"));
       branchNameDiTau = replace(branchNameDiTau, "Cumulative", std::string(sysShift).append("Cumulative"));
     } else assert(0);
@@ -187,8 +180,6 @@ std::map<std::string, std::map<std::string, std::string> > makeBranchNameDict(
     branchNames["diTauPzeta"] = getBranchName("double", branchNameDiTau, "pZeta", branchName_suffix);
     branchNames["diTauPzetaVis"] = getBranchName("double", branchNameDiTau, "pZetaVis", branchName_suffix);
     branchNames["diTauHt"] = getBranchName("double", branchNameDiTau, "Ht", branchName_suffix);
-    branchNames["diTauSVfitMass1"] = getBranchName("double", branchNameDiTau, "SVfitMass1", branchName_suffix);
-    branchNames["diTauSVfitMass2"] = getBranchName("double", branchNameDiTau, "SVfitMass2", branchName_suffix);
     branchNames["diTauVisMass"] = getBranchName("double", branchNameDiTau, "visMass", branchName_suffix);
     branchNames["diTauVisMassFromJet"] = getBranchName("double", branchNameDiTau, "visMassFromJet", branchName_suffix);    
     branchNames["muVertexZ"] = getBranchName("double", branchNameDiTau, "muVertexZ", branchName_suffix);
@@ -357,9 +348,7 @@ std::map<std::string, TH1*> makeHistograms(
 	numBins = 36; // CV: use 5 GeV binning, in order to rebin plots to 10 and 15 GeV bin-width
 	min = 20.;
 	max = 200.;
-      } else if ( (*observable) == "diTauHt"         || 
-		  (*observable) == "diTauSVfitMass1" || 
-		  (*observable) == "diTauSVfitMass2" ) {
+      } else if ( (*observable) == "diTauHt" ) {
 	numBins = 36; // CV: use 5 GeV binning, in order to rebin plots to 10 and 15 GeV bin-width
 	min = 20.;
 	max = 200.;
@@ -1859,13 +1848,13 @@ void fitTauIdEff_wConstraints()
   TBenchmark clock;
   clock.Start("fitTauIdEff_wConstraints");
 
-  std::string inputFilePath = "/nfs/data4/verzetti/tagprobe/NTuples/NTuplesJun06_v2_pureweight/";
+  std::string inputFilePath = "/nfs/data4/verzetti/tagprobe/NTuples/NTuplesJun06_v2_pureweight/"; // for Mauro
+  //std::string inputFilePath = 
+  //  "/data2/veelken/CMSSW_4_1_x/ntuples/TauIdEffMeas/2011Jun10/user/m/mverzett/tagprobe/Jun06Skim/edntuples_v3/"; // for Christian
   const std::string jobId = "2011Jun06V2";
+
   //const std::string branchName_suffix = "local";
   const std::string branchName_suffix = "lxbatch";
-
-  std::string inputFilePathData = "/nfs/data4/verzetti/tagprobe/NTuples/NTuplesJun06/";
-  const std::string jobIdData = "2011Jun06V1";
 
   bool runClosureTest = false;
   //bool runClosureTest = true;
@@ -1877,13 +1866,14 @@ void fitTauIdEff_wConstraints()
   bool fitTauIdEffC2 = true;
 
   //const std::string histogramFileName = "fitTauIdEff_wConstraints_2011June10.root";
-  const std::string histogramFileName = "fitTauIdEff_wConstraints_2011June06_pureweight.root";
+  const std::string histogramFileName = "fitTauIdEff_wConstraints_2011June06_PUreweighted.root";
 
   bool loadHistogramsFromFile = false;
   //bool loadHistogramsFromFile = true;
 
   bool saveHistogramsToFile = (!loadHistogramsFromFile);
 
+  //bool applyPUreweightingMC = false;
   bool applyPUreweightingMC = true;
 
   std::vector<std::string> sysUncertainties;
@@ -1993,9 +1983,9 @@ void fitTauIdEff_wConstraints()
 //--- initialize alias --> branchName mapping
     typedef std::map<std::string, std::string> branchNameDictEntry;
     std::map<std::string, branchNameDictEntry> branchNamesData           
-      = makeBranchNameDict(tauIds, "CENTRAL_VALUE", branchName_suffix, false);
+      = makeBranchNameDict(tauIds, "CENTRAL_VALUE", branchName_suffix);
     std::map<std::string, branchNameDictEntry> branchNamesMC
-      = makeBranchNameDict(tauIds, *sysShift,       branchName_suffix, false);
+      = makeBranchNameDict(tauIds, *sysShift,       branchName_suffix);
    
 //--- define x-axis titles
     std::map<std::string, std::string> xAxisTitles;
@@ -2016,10 +2006,10 @@ void fitTauIdEff_wConstraints()
     } else {
       TChain* chainData_2011RunA = new TChain("Events");
       TChain* chainData_2011RunB = new TChain("Events");
-      if ( !runQuickTest ) { addFileNames(chainData_2011RunA, inputFilePathData, "data_Mu_Run2010A_Nov4ReReco", jobIdData);
-  	                     addFileNames(chainData_2011RunB, inputFilePathData, "data_Mu_Run2010B_Nov4ReReco", jobIdData); } 
-      else                 { chainData_2011RunA->Add(std::string(inputFilePath).append("tauIdEffMeasEDNtuple_data_Mu_Run2010A_Nov4ReReco_2011Feb03bV3_0_8d77.root").data());
-	                     chainData_2011RunB->Add(std::string(inputFilePath).append("tauIdEffMeasEDNtuple_data_Mu_Run2010B_Nov4ReReco_2011Feb03bV3_0_5508.root").data()); }
+      if ( !runQuickTest ) { addFileNames(chainData_2011RunA, inputFilePath, "data_Mu_Run2010A_Nov4ReReco", jobId);
+  	                     addFileNames(chainData_2011RunB, inputFilePath, "data_Mu_Run2010B_Nov4ReReco", jobId); } 
+      else                 { chainData_2011RunA->Add(std::string(inputFilePath).append("tauIdEffMeasEDNtuple_data_SingleMu_Run2011A_PromptReco_v1_2011Jun06V2_0_cab9.root").data());
+	                     chainData_2011RunB->Add(std::string(inputFilePath).append("tauIdEffMeasEDNtuple_data_SingleMu_Run2011A_PromptReco_v2_2011Jun06V2_0_7893.root").data());
       printFileInfo(chainData_2011RunA, "chainData_2011RunA");
       printFileInfo(chainData_2011RunB, "chainData_2011RunB");
       TChain* chainData = new TChain("Events");
@@ -2040,7 +2030,7 @@ void fitTauIdEff_wConstraints()
     } else {
       TChain* chainZtautau = new TChain("Events");
       if ( !runQuickTest ) addFileNames(chainZtautau, inputFilePath, sampleZtautau, jobId);
-      else                 chainZtautau->Add(std::string(inputFilePath).append("tauIdEffMeasEDNtuple_ZtautauPU156bx_2011Feb03bV3_0_53ca.root").data());
+      else                 chainZtautau->Add(std::string(inputFilePath).append("tauIdEffMeasEDNtuple_Ztautau_powheg_2011Jun06V2_0_ba35.root").data());
       printFileInfo(chainZtautau, "chainZtautau");
       templatesZtautau = 
 	makeDistributionsAllRegions("Ztautau", weightFactorZtautau*corrFactorZtautau, chainZtautau, regions, 
@@ -2054,7 +2044,7 @@ void fitTauIdEff_wConstraints()
     } else {
       TChain* chainZmumu = new TChain("Events");
       if ( !runQuickTest ) addFileNames(chainZmumu, inputFilePath, sampleZmumu, jobId);
-      else                 chainZmumu->Add(std::string(inputFilePath).append("tauIdEffMeasEDNtuple_Zmumu_pythia_2011Feb03bV3_0_2f1a.root").data());
+      else                 chainZmumu->Add(std::string(inputFilePath).append("tauIdEffMeasEDNtuple_Zmumu_powheg_2011Jun06V2_0_f76a.root").data());
       printFileInfo(chainZmumu, "chainZmumu");
       templatesZmumu = 
 	makeDistributionsAllRegions("Zmumu", weightFactorZmumu*corrFactorZmumu, chainZmumu, regions, 
@@ -2068,7 +2058,7 @@ void fitTauIdEff_wConstraints()
     } else {
       TChain* chainQCD = new TChain("Events");
       if ( !runQuickTest ) addFileNames(chainQCD, inputFilePath, sampleQCD, jobId);
-      else                 chainQCD->Add(std::string(inputFilePath).append("tauIdEffMeasEDNtuple_PPmuXptGt20Mu15_2011Feb03bV3_0_35f8.root").data());
+      else                 chainQCD->Add(std::string(inputFilePath).append("tauIdEffMeasEDNtuple_PPmuXptGt20Mu15_2011Jun06V2_0_ed96.root").data());
       printFileInfo(chainQCD, "chainQCD");
       templatesQCD = 
 	makeDistributionsAllRegions("QCD", weightFactorQCD*corrFactorQCD, chainQCD, regions, 
@@ -2082,7 +2072,7 @@ void fitTauIdEff_wConstraints()
     } else {
       TChain* chainWplusJets = new TChain("Events");
       if ( !runQuickTest ) addFileNames(chainWplusJets, inputFilePath, sampleWplusJets, jobId);
-      else                 chainWplusJets->Add(std::string(inputFilePath).append("tauIdEffMeasEDNtuple_WplusJets_madgraph_2011Feb03bV3_0_e872.root").data());
+      else                 chainWplusJets->Add(std::string(inputFilePath).append("tauIdEffMeasEDNtuple_WplusJets_madgraph_2011Jun06V2_0_1127.root").data());
       printFileInfo(chainWplusJets, "chainWplusJets");
       templatesWplusJets = 
 	makeDistributionsAllRegions("WplusJets", weightFactorWplusJets*corrFactorWplusJets, chainWplusJets, regions, 
@@ -2096,7 +2086,7 @@ void fitTauIdEff_wConstraints()
     } else {
       TChain* chainTTplusJets = new TChain("Events");
       if ( !runQuickTest ) addFileNames(chainTTplusJets, inputFilePath, sampleTTplusJets, jobId);
-      else                 chainTTplusJets->Add(std::string(inputFilePath).append("tauIdEffMeasEDNtuple_TTplusJets_madgraph_2011Feb03bV3_0_0f74.root").data());
+      else                 chainTTplusJets->Add(std::string(inputFilePath).append("tauIdEffMeasEDNtuple_TTplusJets_madgraph_2011Jun06V2_0_5a68.root").data());
       printFileInfo(chainTTplusJets, "chainTTplusJets");
       templatesTTplusJets = 
 	makeDistributionsAllRegions("TTplusJets", weightFactorTTplusJets*corrFactorTTplusJets, chainTTplusJets, regions, 
