@@ -47,8 +47,10 @@ def buildTauSequence(
 
         patTauGenJetMatch = process.tauGenJetMatch.clone(
             src = patTauProducer.tauSource,
+            checkCharge = cms.bool(False),
             maxDeltaR = cms.double(0.5),
-            maxDPtRel = cms.double(999.9)
+            maxDPtRel = cms.double(999.9),
+            resolveByMatchQuality = cms.bool(True)
         )
         patTauGenJetMatchName = collectionName[0] + "GenJetMatch" + collectionName[1]
         setattr(process, patTauGenJetMatchName, patTauGenJetMatch)
