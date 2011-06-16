@@ -14,9 +14,13 @@
 </bin>
 
 <bin   file="makeTauIdEffPlots.cc" name="makeTauIdEffPlots">
-  <use   name="roofit"/>
   <use   name="root"/>
   <use   name="rootgraphics"/>
+  <use   name="rootrflx"/>
+  <use   name="DataFormats/FWLite"/>
+  <use   name="DataFormats/StdDictionaries"/>
+  <use   name="DataFormats/WrappedStdDictionaries"/>
+  <use   name="roofit"/>
 </bin>
 <bin   file="fitTauIdEff_wConstraints.cc" name="fitTauIdEff_wConstraints">
   <use   name="roofit"/>

@@ -41,7 +41,8 @@ std::string getBranchName(const std::string& branchName_prefix,
   branchName.append("_").append(ntupleName);
   branchName.append("#").append(branchName_object);
   branchName.append("#").append(branchName_observable);
-  branchName.append("_").append(branchName_suffix).append(".obj");
+  branchName.append("_").append(branchName_suffix);
+  branchName.append(".obj");
 
   return branchName;
 }
@@ -229,6 +230,8 @@ std::map<std::string, TH1*> makeHistograms(
   //std::cout << "<makeHistograms>:" << std::endl;
   //std::cout << " process = " << process << std::endl;
   //std::cout << " region = " << region << std::endl;
+  //std::cout << " treeSelection = " << treeSelection << std::endl;
+  //std::cout << " applyPUreweighting = " << applyPUreweighting << std::endl;
 
   std::map<std::string, TH1*> retVal;
 
@@ -254,18 +257,17 @@ std::map<std::string, TH1*> makeHistograms(
       extTreeSelection.append(treeSelection);
       extTreeSelection.append(" && ");
     }
-    extTreeSelection.append(branchNames["muonPt"]).append(" > 20.");
-    extTreeSelection.append(" && ").append(branchNames["tauPt"]).append(" > 20.");
-    extTreeSelection.append(" && ").append(branchNames["tauJetPt"]).append(" > 20.");
+    extTreeSelection.append(branchNames["muonPt"]).append(" > 20");
+    extTreeSelection.append(" && ").append(branchNames["tauPt"]).append(" > 20");
+    extTreeSelection.append(" && ").append(branchNames["tauJetPt"]).append(" > 20");
     extTreeSelection.append(" && abs(").append(branchNames["tauEta"]).append(") < 2.3");
     extTreeSelection.append(" && abs(").append(branchNames["tauJetEta"]).append(") < 2.3");
     extTreeSelection.append(" && ").append(branchNames["tauLooseIsoPtSum06"]).append(" < 2.5");
     extTreeSelection.append(" && ").append(branchNames["numMuonsStandAlone"]).append(" < 1.5");
-    extTreeSelection.append(" && ").append(branchNames["diTauVisMassFromJet"]).append(" > 20.");
-    extTreeSelection.append(" && ").append(branchNames["diTauVisMassFromJet"]).append(" < 200.");
-    extTreeSelection.append(" && ").append(branchNames["diTauMt"]).append(" < 80.");
-    extTreeSelection.append(" && ").append("TMath::Abs( " + branchNames["muVertexZ"] 
-                                                       + " - " + branchNames["tauVertexZ"] + " )").append(" < 0.2");
+    extTreeSelection.append(" && ").append(branchNames["diTauVisMassFromJet"]).append(" > 20");
+    extTreeSelection.append(" && ").append(branchNames["diTauVisMassFromJet"]).append(" < 200");
+    extTreeSelection.append(" && ").append(branchNames["diTauMt"]).append(" < 80");
+    extTreeSelection.append(" && ").append("abs(" + branchNames["muVertexZ"] + "-" + branchNames["tauVertexZ"] + ")").append(" < 0.2");
 
 //--- add tau id. passed/failed selection
     if      ( (*tauIdValue) == "passed" ) extTreeSelection.append(" && ").append(branchNames[tauId]).append(" > 0.5");
@@ -333,10 +335,10 @@ std::map<std::string, TH1*> makeHistograms(
       }
       
       TH1* histogram = new TH1F(histogramName.data(), histogramName.data(), numBins, min, max);
-      
-      std::string drawCommand = std::string(branchNames[*observable]).append(">>+").append(histogramName); 
+
+      std::string drawCommand = std::string(branchNames[*observable]).append(">>").append(histogramName); 
       tree->Draw(drawCommand.data(), extTreeSelection.data());
-      
+
       if ( !histogram->GetSumw2N() ) histogram->Sumw2();
       histogram->Scale(weight);
 
@@ -543,6 +545,9 @@ int main(int argc, const char* argv[])
 {
   std::cout << "<makeTauIdEffPlots>:" << std::endl;
 
+  // CV: TTree::Draw causes segmentation violation in case no TCanvas exists ?!
+  TCanvas* canvas = new TCanvas("canvas", "canvas", 800, 600);
+
   gROOT->SetBatch(true);
 
 //--- keep track of time it took the macro to execute
@@ -557,8 +562,8 @@ int main(int argc, const char* argv[])
   //const std::string branchName_suffix = "local";
   const std::string branchName_suffix = "lxbatch";
 
-  bool runQuickTest = false;
-  //bool runQuickTest = true;
+  //bool runQuickTest = false;
+  bool runQuickTest = true;
 
   //const std::string histogramFileName = "fitTauIdEff_wConstraints_2011June10.root";
   const std::string histogramFileName = "fitTauIdEff_wConstraints_2011June06_PUreweighted.root";
@@ -776,6 +781,8 @@ int main(int argc, const char* argv[])
     }
     delete histogramOutputFile;
   }
+
+  delete canvas;
 
 //--print time that it took macro to run
   std::cout << "finished executing makeTauIdEffPlots macro:" << std::endl;

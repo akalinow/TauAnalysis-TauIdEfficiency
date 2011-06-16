@@ -101,7 +101,7 @@ void fitUsingRooFit(std::map<std::string, std::map<std::string, TH1*> >& distrib
   assert(fitMinC1p == fitMinC1f && fitMaxC1p == fitMaxC1f);
   RooRealVar* fitVarC1 = new RooRealVar("fitVarC1", "fitVarC1", fitMinC1p, fitMaxC1p);
 
-  double numEventsDataC1 = distributionsData["C1"][getKey("diTauMt", tauId)]->Integral();
+  double numEventsDataC1 = distributionsData["C1"][getKey(fitVariable, tauId)]->Integral();
   std::cout << "numEventsDataC1 = " << numEventsDataC1 << std::endl;
 
   std::map<std::string, RooRealVar*> pTauId_passed_failed;        // key = process
@@ -122,8 +122,8 @@ void fitUsingRooFit(std::map<std::string, std::map<std::string, TH1*> >& distrib
 	process != processes.end(); ++process ) {
     std::cout << "process = " << (*process) << ":" << std::endl;
 
-    double numEventsC1        = numEventsAll[*process]["C1"][getKey("diTauMt", tauId)];
-    double fittedFractionC1   = fittedFractions[*process]["C1"][getKey("diTauMt", tauId)];
+    double numEventsC1        = numEventsAll[*process]["C1"][getKey(fitVariable, tauId)];
+    double fittedFractionC1   = fittedFractions[*process]["C1"][getKey(fitVariable, tauId)];
     double fittedEventsC1     = fittedFractionC1*numEventsC1;
     double numEventsC1p       = numEventsAll[*process]["C1p"][getKey(fitVariable, tauId, "passed")];
     double fittedFractionC1p  = fittedFractions[*process]["C1p"][getKey(fitVariable, tauId, "passed")];
