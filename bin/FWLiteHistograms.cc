@@ -1,4 +1,3 @@
-#include "TProfile.h"
 #include <memory>
 #include <string>
 #include <vector>
@@ -10,7 +9,8 @@
 #include <TROOT.h>
 #include <TFile.h>
 #include <TSystem.h>
-
+/////////////////////Added By Raman///////////////////////////////////
+#include "/cmshome/khurana/ForFWLite/CMSSW_4_1_4/src/PhysicsTools/FWLite/bin/Book_Fill_histograms.cc"
 #include <TH1I.h>
 #include "DataFormats/PatCandidates/interface/Tau.h"
 #include "DataFormats/TauReco/interface/PFTau.h"
@@ -18,13 +18,15 @@
 #include "DataFormats/TauReco/interface/PFTauDiscriminator.h"
 #include "PhysicsTools/JetMCUtils/interface/JetMCTag.h"
 #include "DataFormats/Math/interface/deltaPhi.h"
+////////////////////Added upto this comment//////////////////////////
 
 
 #include "DataFormats/FWLite/interface/Event.h"
 #include "DataFormats/Common/interface/Handle.h"
 #include "FWCore/FWLite/interface/AutoLibraryLoader.h"
 
-
+//#include "DataFormats/MuonReco/interface/Muon.h"
+//#include "DataFormats/PatCandidates/interface/Muon.h"
 #include "PhysicsTools/FWLite/interface/TFileService.h"
 #include "PhysicsTools/FWLite/interface/CommandLineParser.h"
 
@@ -52,11 +54,11 @@ int main(int argc, char* argv[])
   ///////////////////////////////////////////////////////////////////////////
   /////////////Function to Book histograms//////////////////////////////////
   //////////////////////////////////////////////////////////////////////////
-  //  Book_Fill_histograms *a = new Book_Fill_histograms();      
-  //a->bookHistograms();
+  Book_Fill_histograms *a = new Book_Fill_histograms();      
+  a->bookHistograms();
   optutl::CommandLineParser parser ("Analyze FWLite Histograms");
   // set defaults
-  parser.integerValue ("maxEvents"  ) = -1;
+  parser.integerValue ("maxEvents"  ) = 100000;
   parser.integerValue ("outputEvery") =   1;
   parser.stringValue  ("outputFile" ) = "analyzeFWLiteHistograms.root";
   
@@ -71,6 +73,9 @@ int main(int argc, char* argv[])
   fwlite::TFileService fs = fwlite::TFileService(outputFile_.c_str());
   TFileDirectory dir = fs.mkdir("analyzeBasicPat");
   
+  //  TH1F* tauPhi_ = dir.make<TH1F>("tauPhi" , "phi" ,   100,  -5.,   5.);  
+  TH1F* tauMass_= dir.make<TH1F>("tauMass", "mass",    10,  0.0,  10.);
+
   TH1F *tauPt_;
   tauPt_ = dir.make<TH1F>("tauPt" , "pt"  ,   900,   0., 300.);
   
@@ -102,20 +107,38 @@ int main(int argc, char* argv[])
   recotaudecaymode_  = dir.make<TH1F>("recotaudecaymode"  , "recotaudecaymode"  ,   15,   0.0 , 15.0);
   
   TH2F* reco_vs_gen_decay_mode_;
-  reco_vs_gen_decay_mode_ =  dir.make<TH2F>("reco_vs_gen_taudecaymode"  , "reco_vs_gen_taudecaymode;decay mode_{generated};decay mode_{reconstructed}"  ,   15,   0.0 , 15.0 ,   15,   0.0 , 15.0);
+  reco_vs_gen_decay_mode_ =  dir.make<TH2F>("reco_vs_gen_taudecaymode"  , "reco_vs_gen_taudecaymode;decay mode_{reconstructed};decay mode_{generated}"  ,   15,   0.0 , 15.0 ,   15,   0.0 , 15.0);
   
   TH1I* isoparticleID_;
   isoparticleID_  = dir.make<TH1I>("isoparticleID"  , "isoparticleID"  ,   10,   -0.5, 9.5);
-
+  //for(int ii=0; ii<15;ii++)
+  //{
+  //  char tmphistname[100];
+  //  sprintf(tmphistname,"_%d",ii+1);
+  //  std::string histname(tmphistname);
+  //isoparticleID_[ii]  = dir.make<TH1I>(("isoparticleID"+histname).c_str()  , "isoparticleID"  ,   10,   -0.5, 9.5);
+  //}
   
   TH1F* PFJetPt_;
   PFJetPt_  = dir.make<TH1F>("PFJetPt"  , "PFJetPt"  ,   900,   0.0, 300.0);
+  
+  TH1F* PFJetPx_;
+  PFJetPx_  = dir.make<TH1F>("PFJetPx" , "PFJetPx"  ,   300,   -150.0, 150.0);
+    
+  TH1F*PFJetPy_;
+  PFJetPy_ = dir.make<TH1F>("PFJetPy"  , "PFJetPy"  ,   300,   -150.0, 150.0);
+  
+  TH1F* PFJetPz_;
+  PFJetPz_  = dir.make<TH1F>("PFJetPz" , "PFJetPz"  ,   300,   -150.0, 150.0);
   
   TH1F* PFJetPhi_;
   PFJetPhi_ = dir.make<TH1F>("PFJetPhi"  , "PFJetPhi"  ,   100,   -5.0, 5.0);
   
   TH1F* PFJetEta_;
   PFJetEta_  = dir.make<TH1F>("PFJetEta"  , "PFJetEta"  ,   100,   -3.0, 3.0);
+  
+  TH1F* PFJetEnergy_;
+  PFJetEnergy_  = dir.make<TH1F>("PFJetEnergy"  , "PFJetEnergy"  ,   500,   0.0, 500.0);
   
   TH1F* PtRes_;
   PtRes_  = dir.make<TH1F>("PtRes" , "PtRes"  ,   100,   0.0, 5.0);
@@ -189,7 +212,7 @@ int main(int argc, char* argv[])
       char tmphistname[100];
       sprintf(tmphistname,"_%d_to_%d",ibin,ibin+1);
       std::string histname(tmphistname);
-      reco_vs_gen_decay_mode_in_bin_[ibin]  = dir.make<TH2F>(("reco_vs_gen_decay_mode_in_bin_"+histname).c_str()  , "reco_vs_gen_decay_mode;decaymode_{gen};decaymode_{reco}" , 15, 0.0, 15.0,15,0,15);
+      reco_vs_gen_decay_mode_in_bin_[ibin]  = dir.make<TH2F>(("reco_vs_gen_decay_mode_in_bin_"+histname).c_str()  , "reco_vs_gen_decay_mode;decaymode_{reco};decaymode_{gen}" , 15, 0.0, 15.0,15,0,15);
     }
   
   TH2F* SumPFN_vs_SumPFG_[15];
@@ -206,38 +229,22 @@ int main(int argc, char* argv[])
 					    
   TH1F* PTRESPFJET_;
   PTRESPFJET_  = dir.make<TH1F>("PTRESPFJET" , "PTRESPFJET"  ,   100,   0.0, 5.0);
-  
-  TProfile*  PtRatio_vs_ParticleID_ ;
-  PtRatio_vs_ParticleID_ = dir.make<TProfile>("SumPtRatio_vs_ParticleID_inbins_" , "ParticleId vs Pt_{Particle}/Pt_{GenTauJet};ParticleId;SumPt_{Particle in iso}/Pt_{GenTauJet}" ,10,0.0,10, 0.0, 10.0);
-    
-    TProfile* PtRatio_vs_ParticleID_inbins_[10];
-  for(int ibin=0; ibin <10; ibin++)
-    {
-      char tmphistname[100];
-      sprintf(tmphistname,"_%d_to_%d",ibin,ibin+1);
-      std::string histname(tmphistname);
-      PtRatio_vs_ParticleID_inbins_[ibin] = dir.make<TProfile>(("SumPtRatio_vs_ParticleID_inbins_"+histname).c_str()  , "ParticleId vs Pt_{Particle}/Pt_{GenTauJet};ParticleId;SumPt_{Particle in iso}/Pt_{GenTauJet}" ,10,0.0,10, 0.0, 10.0);
-    }
-  
-  TH2F* RecoGammaSum_vs_GenGammaSum_[10];
-  for(int ibin=0; ibin <10; ibin++)
-    {
-      char tmphistname[100];
-      sprintf(tmphistname,"_%d_to_%d",ibin,ibin+1);
-      std::string histname(tmphistname);
-      RecoGammaSum_vs_GenGammaSum_[ibin]  = dir.make<TH2F>(("RecoGammaSum_vs_GenGammaSum_"+histname).c_str()  , "SumPt_{gamma reco} vs SumPt_{gamma gen};SumPt_{gamma reco};SumPt_{gamma gen}" , 2000, 0.0, 75.0,2000, 0, 75);
-    }  
 
+  TH1F* checkbugptres_;
+  checkbugptres_  = dir.make<TH1F>("checkbugptres", "checkbugptres"  ,   900,   0.0, 300.0);
 
-  TH2F* RecoGammaSum_tot_vs_GenGammaSum_[10];
-  for(int ibin=0; ibin <10; ibin++)
-    {
-      char tmphistname[100];
-      sprintf(tmphistname,"_%d_to_%d",ibin,ibin+1);
-      std::string histname(tmphistname);
-      RecoGammaSum_tot_vs_GenGammaSum_[ibin]  = dir.make<TH2F>(("RecoGammaSum_tot_vs_GenGammaSum_"+histname).c_str()  , "SumPt_{gamma reco} vs SumPt_{gamma gen};SumPt_{gamma reco};SumPt_{gamma gen}" , 2000, 0.0, 75.0,2000, 0, 75);
-    }  
-  
+  TH1F* checkgentaupt_;
+  checkgentaupt_  = dir.make<TH1F>("checkgentaupt", "checkgentaupt"  ,   900,   0.0, 300.0);
+				   
+  TH1F* checkpattaupt_;
+  checkpattaupt_  = dir.make<TH1F>("checkpattaupt", "checkpattaupt"  ,   900,   0.0, 300.0);
+
+  TH1F* nPi0_;
+  nPi0_  = dir.make<TH1F>("nPi0", "nPi0"  ,   100,   0.0, 5.0);
+
+  TH1F* dPhipi0_;
+  dPhipi0_  = dir.make<TH1F>("dPhipi0", "dPhipi0"  ,   100,   -3.5 , 3.5);
+				   
   // loop the events
   int ievt=0;  
   for(unsigned int iFile=0; iFile<inputFiles_.size(); ++iFile){
@@ -274,6 +281,8 @@ int main(int argc, char* argv[])
       int gendecaymodeInt =-999;
       float PtRes;
       int recotaudecaymode;
+      int nPi0;
+      float pi0Phi[10];
       float PFJetPt ;
       for(ev.toBegin(); !ev.atEnd(); ++ev, ++ievt){
 	edm::EventBase const & event = ev;
@@ -291,9 +300,17 @@ int main(int argc, char* argv[])
 	//////////////////////////Clean Pat Taus//////////////////////
 	//////////////////////////////////////////////////////////////
 	edm::Handle<std::vector<pat::Tau> >  tauHandle;
-	event.getByLabel(std::string("cleanPatTaus"),tauHandle);
+	event.getByLabel(std::string("selectedPatTaus"),tauHandle);
 	itau =0;
-	
+	/*
+	  tauPt =-999;
+	genTauPt =-999;
+	gendecaymodeInt =-999;
+	PFJetPt = -999;
+	PtRes = -999;
+	recotaudecaymode =-999;
+	*/
+	//std::string gendecaymodestring;
 	for(std::vector<pat::Tau>::const_iterator tauItr=tauHandle->begin(); tauItr!=tauHandle->end(); ++tauItr)
 	  {
 	    tauPt =-999;
@@ -302,24 +319,20 @@ int main(int argc, char* argv[])
 	    PFJetPt = -999;
 	    PtRes = -999;
 	    recotaudecaymode =-999;
-	    //Studying only those taus which have 20.0GeV  < Pt < 40GeV , there should be matched gen Jet and PFJet corresponding to the HPS Tau under study.
-	    if((tauItr->pt() > 20.0 && tauItr->pt() < 40.0)) {    
-	      if(tauItr->genJet() )     {
-		if ( tauItr->pfJetRef().isNonnull() ) {
-		  std::string genTauDecayMode = JetMCTagUtils::genTauDecayMode(*tauItr->genJet());
-		  //check that tau decay mode should be hadronic //
-		  if (  (genTauDecayMode == "oneProng0Pi0"   ||
-			 genTauDecayMode == "oneProng1Pi0"   ||
-			 genTauDecayMode == "oneProng2Pi0"   ||
-			 genTauDecayMode == "threeProng0Pi0" ||
-			 genTauDecayMode == "threeProng1Pi0" ))
-		    {
-		      //cout<<" gen tau jet pt in fwlite ="<<tauItr->genJet()->pt()<<endl;
+	    if(tauItr->genJet() )
+	      {
+		std::string genTauDecayMode = JetMCTagUtils::genTauDecayMode(*tauItr->genJet());
+		if (  (genTauDecayMode == "oneProng0Pi0"   ||
+		       genTauDecayMode == "oneProng1Pi0"   ||
+		       genTauDecayMode == "oneProng2Pi0"   ||
+		       genTauDecayMode == "threeProng0Pi0" ||
+		       genTauDecayMode == "threeProng1Pi0" ))
+		  {
+		    //cout<<" gen tau jet pt in fwlite ="<<tauItr->genJet()->pt()<<endl;
 		    genTauPt = tauItr->genJet()->pt();
 		    genTauPt_->Fill(tauItr->genJet()->pt()) ;
 		    genTauEta_->Fill(tauItr->genJet()->eta());
 		    genTauPhi_->Fill(tauItr->genJet()->phi());
-		    // store gen tau decay mode in terms of integer, enum can be used (may be enum is easier to use)
 		    if(genTauDecayMode=="oneProng0Pi0")
 		      gendecaymodeInt=0;
 		    if(genTauDecayMode=="oneProng1Pi0")
@@ -331,191 +344,202 @@ int main(int argc, char* argv[])
 		    if(genTauDecayMode=="threeProng1Pi0")
 		      gendecaymodeInt=11;
 		    gentaudecaymode_->Fill(gendecaymodeInt);
-		    //if gen jet constituents are available then loop over them
 		    if( (tauItr->genJet()->getGenConstituents()).size() !=0 )
 		      {
 			std::vector <const GenParticle*>  genParticleList = tauItr->genJet()->getGenConstituents();
+			int ipion =0;
+			int iphoton = 0;
+			int ipi0 = 0;
 			PionSumPt=0.0;
 			PhotonSumPt=0.0;
-			//loop over gen jet constituents
 			for (int iList = 0; iList <int(genParticleList.size()); iList++)
 			  {
-			    //look for charged hadrons, check if there is sme mistake in pdgId, summing Pt of all charged hadrons.
 			    if(abs(genParticleList[iList]->pdgId()) == 211 || abs(genParticleList[iList]->pdgId()) == 321)
-			      PionSumPt+= genParticleList[iList]->pt();
+			      {
+				PionSumPt+= genParticleList[iList]->pt();
+			      }
 			    
-			    //look for photons coming from pi0, summing Pt of all Photons
 			    if(abs(genParticleList[iList]->pdgId()) == 22)
-			      PhotonSumPt+=genParticleList[iList]->pt();
+			      {
+				PhotonSumPt+=genParticleList[iList]->pt();
+			      }
 			    
+			    if(abs(genParticleList[iList]->pdgId()) == 111  )
+			      {
+				pi0Phi[ipi0]=genParticleList[iList]->phi();
+				ipi0++;
+			      }
+			    nPi0 = ipi0;
+			    nPi0_->Fill(nPi0);
+			    if(nPi0 >=2)
+			      {
+				dPhipi0_->Fill(deltaPhi(pi0Phi[0],pi0Phi[1]));
+			      }
 			  }//for (int iList = 0; iList <int(genParticleList.size()); iList++)...{
-			
-			//fill Pt Sum of charged hadron &  Pt Sum of Photons coming from pi0
 			PionSumPt_->Fill(PionSumPt);  
 			PhotonSumPt_->Fill(PhotonSumPt);
 		      }//if( (tauItr->genJet()->getGenConstituents()).size() !=0 )...{
-		    
-		    //////////////////////////////////////////////////////
-		    ///////////////PFCandidates in signal region//////////
-		    /////////////////////////////////////////////////////
-		    tmpPFCPtSum = 0.0;
-		    tmpPFGPtSum = 0.0;
-		    tmpPFNPtSum  = 0.0;
-		    
-		    // charged candidates in signal region
-		    const reco::PFCandidateRefVector &chargedref = tauItr->signalPFChargedHadrCands() ;
-		    for(int i=0; i<(int)chargedref.size(); i++)
-		      tmpPFCPtSum = tmpPFCPtSum + chargedref[i]->pt();
-		    PFCPtSum_->Fill(tmpPFCPtSum);
-		    
-		    //Gamma chandidates in Signal region
-		    const reco::PFCandidateRefVector &gammaref = tauItr->signalPFGammaCands();
-		    for(int i=0; i<(int)gammaref.size(); i++)
-		      tmpPFGPtSum = tmpPFGPtSum + gammaref[i]->pt();
-		    PFGPtSum_->Fill(tmpPFGPtSum);
-		    
-		    //Neutral hadrons in signal region, ideally it should be ZERO, and has been checked that it is zero.
-		    const reco::PFCandidateRefVector &neutralref = tauItr->signalPFNeutrHadrCands();
-		    for(int i=0; i<(int)neutralref.size(); i++)
-		      tmpPFNPtSum = tmpPFNPtSum + neutralref[i]->pt();
-		    PFNPtSum_->Fill(tmpPFNPtSum);
-		    
-		    //Sum of Gamma and Charged hadrons in Signal Region
-		    PFCandidateSumPt_->Fill(tmpPFGPtSum+tmpPFCPtSum);
-		    //Ratio of (Sum of Gamma and Charged hadrons in Signal Region) and GenTauJetPt , Ideally it should be
-		    //equal to PtRes of Reco Jet, and it has been checked. 
-		    PFCandidateSumPt_div_genJetPt_->Fill((tmpPFGPtSum+tmpPFCPtSum)/genTauPt);
-		    
-		    ///////////////////////////////////////////////////////////////
-		    /////////////PFCandidates in isolation region//////////////////
-		    ///////////////////////////////////////////////////////////////
-		    tmpPFCisoPtSum = 0.0;
-		    tmpPFGisoPtSum = 0.0;
-		    tmpPFNisoPtSum = 0.0;
-		    
-		    //Charged hadrons in Isolation Region
-		    const reco::PFCandidateRefVector &chargedisoref = tauItr->isolationPFChargedHadrCands() ;
-		    for(int i=0; i<(int)chargedisoref.size(); i++)
-		      tmpPFCisoPtSum = tmpPFCisoPtSum + chargedisoref[i]->pt() ;
-		    PFCisoPtSum = tmpPFCisoPtSum;
-		    PFCisoPtSum_->Fill(tmpPFCisoPtSum);
-		    
-		    //Charged hadrons in Isolation Region
-		    const reco::PFCandidateRefVector &gammaisoref = tauItr->isolationPFGammaCands();
-		    for(int i=0; i<(int)gammaisoref.size(); i++)
-		      tmpPFGisoPtSum = tmpPFGisoPtSum + gammaisoref[i]->pt() ;
-		    PFGisoPtSum = tmpPFGisoPtSum;
-		    PFGisoPtSum_->Fill(tmpPFGisoPtSum);
-		    
-		    //Charged hadrons in Isolation Region
-		    const reco::PFCandidateRefVector &neutralisoref = tauItr->isolationPFNeutrHadrCands();
-		    for(int i=0; i<(int)neutralisoref.size(); i++)
-		      tmpPFNisoPtSum = tmpPFNisoPtSum + neutralisoref[i]->pt() ; 
-		    PFNisoPtSum = tmpPFNisoPtSum;
-		    PFNisoPtSum_->Fill(tmpPFNisoPtSum);
-		    
-		    //Sum of (Charged hadrons, Neutral hadrons, Photons) in Isolation Region
-		    PFCandidateisoSumPt_->Fill(tmpPFNisoPtSum + tmpPFGisoPtSum + tmpPFCisoPtSum);
-		    //Ratio of ( Sum of (Charged hadrons, Neutral hadrons, Photons) in Isolation Region ) and GenTauJetPt
-		    PFCandidateisoSumPtDivGenTauPt_->Fill((tmpPFNisoPtSum + tmpPFGisoPtSum + tmpPFCisoPtSum)/genTauPt);
-		    
-		    /////////////////////////////////////////////////////////////////// 
-		    ///////////////Particle Flow Jets////////////////////////////////// 
-		    /////////////////////////////////////////////////////////////////// 
+		  }//genTauDecayMode == "threeProng1Pi0" ))...{
+		//////////////////////////////////////////////////////
+		///////////////gen level info finished///////////////
+		////////////////////////////////////////////////////
+		const reco::PFCandidateRefVector &chargedref = tauItr->signalPFChargedHadrCands() ;
+		tmpPFCPtSum = 0.0;
+		for(int i=0; i<(int)chargedref.size(); i++)
+		  {
+		    tmpPFCPtSum = tmpPFCPtSum + chargedref[i]->pt();
+		  }
+		PFCPtSum_->Fill(tmpPFCPtSum);
+		tmpPFGPtSum = 0.0;
+		const reco::PFCandidateRefVector &gammaref = tauItr->signalPFGammaCands();
+		for(int i=0; i<(int)gammaref.size(); i++)
+		  {
+		    tmpPFGPtSum = tmpPFGPtSum + gammaref[i]->pt();
+		  }
+		tmpPFNPtSum  = 0.0;
+		const reco::PFCandidateRefVector &neutralref = tauItr->signalPFNeutrHadrCands();
+		for(int i=0; i<(int)neutralref.size(); i++)
+		  {
+		    tmpPFNPtSum = tmpPFNPtSum + neutralref[i]->pt();
+		  }
+		PFNPtSum_->Fill(tmpPFNPtSum);
+		//////////////////////////////////////////////////////////////////////
+		//////////Sum of PF Candidates in Sognal Region///////////////////////
+		//////////////////////////////////////////////////////////////////////
+		PFCandidateSumPt_->Fill(tmpPFGPtSum+tmpPFCPtSum);
+		PFCandidateSumPt_div_genJetPt_->Fill((tmpPFGPtSum+tmpPFCPtSum)/genTauPt);
+		
+		/////////////////////////////////////////////////////////////////////////////////
+		/////////////Isolation Candidates////////////////////////////////////////////////
+		////////////////////////////////////////////////////////////////////////////////
+		const reco::PFCandidateRefVector &chargedisoref = tauItr->isolationPFChargedHadrCands() ;
+		tmpPFCisoPtSum = 0.0;
+		for(int i=0; i<(int)chargedisoref.size(); i++)
+		  {
+		    tmpPFCisoPtSum = tmpPFCisoPtSum + chargedisoref[i]->pt() ;
+		  }
+		PFCisoPtSum = tmpPFCisoPtSum;
+		PFCisoPtSum_->Fill(tmpPFCisoPtSum);
+		const reco::PFCandidateRefVector &gammaisoref = tauItr->isolationPFGammaCands();
+		tmpPFGisoPtSum = 0.0;
+		for(int i=0; i<(int)gammaisoref.size(); i++)
+		  {
+		    tmpPFGisoPtSum = tmpPFGisoPtSum + gammaisoref[i]->pt() ;
+		  }
+		PFGisoPtSum = tmpPFGisoPtSum;
+		PFGisoPtSum_->Fill(tmpPFGisoPtSum);
+		const reco::PFCandidateRefVector &neutralisoref = tauItr->isolationPFNeutrHadrCands();
+		tmpPFNisoPtSum = 0.0;
+		for(int i=0; i<(int)neutralisoref.size(); i++)
+		  {
+		    tmpPFNisoPtSum = tmpPFNisoPtSum + neutralisoref[i]->pt() ; 
+		  }
+		PFNisoPtSum = tmpPFNisoPtSum;
+		PFNisoPtSum_->Fill(tmpPFNisoPtSum);
+		////////////////////////////////////////////////////////////////////
+		//////////////////////Sum of iso candidates////////////////////////
+		///////////////////////////////////////////////////////////////////
+		PFCandidateisoSumPt_->Fill(tmpPFNisoPtSum + tmpPFGisoPtSum + tmpPFCisoPtSum);
+		PFCandidateisoSumPtDivGenTauPt_->Fill((tmpPFNisoPtSum + tmpPFGisoPtSum + tmpPFCisoPtSum)/genTauPt);
+		const PFCandidateRefVector &pfcandidateisoref = tauItr->isolationPFCands();
+		int size = pfcandidateisoref.size();
+		for (int i = 0; i<size ; i++)
+		  {
+		    isoparticleID_->Fill(pfcandidateisoref[i]->particleId());
+		  }
+				
+		/////////////////////////////////////////////////////////////////// 
+		///////////////Particle Flow Jets////////////////////////////////// 
+		/////////////////////////////////////////////////////////////////// 
+		
+		if ( tauItr->pfJetRef().isNonnull() )
+		  {
 		    PFJetPt=tauItr->pfJetRef()->pt();
+		    
+		    //cout<<"pt of ref jet in fwlite ="<<tauItr->pfJetRef()->pt()<<endl;
 		    PFJetPt_->Fill(tauItr->pfJetRef()->pt());
+		    PFJetPx_->Fill(tauItr->pfJetRef()->px());
+		    PFJetPy_->Fill(tauItr->pfJetRef()->py());
+		    PFJetPz_->Fill(tauItr->pfJetRef()->pz());
 		    PFJetPhi_->Fill(tauItr->pfJetRef()->phi());
 		    PFJetEta_->Fill(tauItr->pfJetRef()->eta());
-		    
-		    /////////////////////////////////////////////////////////////////// 
-		    ///////////////////////Pat Tau Jet///////////////////////////////// 
-		    /////////////////////////////////////////////////////////////////// 
-		    tauPt = tauItr->pt();
-		    tauPt_->Fill(tauItr->pt());
-		    tauEta_->Fill(tauItr->eta());
-		    tauPhi_->Fill(tauItr->phi());
-		    recotaudecaymode = tauItr->decayMode();
-		    recotaudecaymode_->Fill(tauItr->decayMode());
-		    reco_vs_gen_decay_mode_->Fill(gendecaymodeInt , recotaudecaymode);
-		    
-		    // fill PtRes when gen decay mode and reco decay mode are same
-		    if(recotaudecaymode == gendecaymodeInt)
-		      matched_PtRes_->Fill(tauPt/genTauPt);
-		    // fill PtRes for all selected taus which are matched to gen tau Jet in eta, phi
-		    PtRes = tauPt/genTauPt;
-		    PtRes_->Fill(tauPt/genTauPt);
-		    
-		    //fill PtRes according to gen tau decay mode
-		    if(gendecaymodeInt==0)
-		      PTResOneProng0Pi0_->Fill(PtRes);
-		    if(gendecaymodeInt==1)
-		      PTResOneProng1Pi0_->Fill(PtRes);
-		    if(gendecaymodeInt==2)
-		      PTResOneProng2Pi0_->Fill(PtRes);
-		    if(gendecaymodeInt==10)
-		      PTResThreeProng0Pi0_->Fill(PtRes);
-		    if(gendecaymodeInt==11)
-		      PTResThreeProng1Pi0_->Fill(PtRes);
-		    
-		    // These three histo are for checking bugs, keeping them alive in code for some time. 
-		    OneMinusPtRes_->Fill(1.0-(tauPt/genTauPt));
-		    GenMinusPatPt_->Fill(abs(genTauPt - tauPt));
-		    SigPlusIso_div_genJetPt_->Fill((tmpPFNisoPtSum + tmpPFGisoPtSum + tmpPFCisoPtSum+tmpPFGPtSum+tmpPFCPtSum)/genTauPt);
-		    
-		    //requiring this, if condition is not satisfied then default value is -999 will be filled in histo. 
-		    //check if this is required or not .. ?
-		    if (PFJetPt !=-999 && genTauPt !=-999 && tauPt != -999)
-		      {
-			PTRESPFJET_->Fill(PFJetPt/genTauPt);
-			float binsize = 0.1;
-			for(int i=0; i<10;i++)
+		    PFJetEnergy_->Fill(tauItr->pfJetRef()->energy());
+		  }
+		
+		
+		if( tauItr->tauID("decayModeFinding")            &&
+		    tauItr->tauID("byLooseIsolation")            &&
+		    tauItr->tauID("againstElectronTight")        &&
+		    tauItr->tauID("againstMuonTight")            &&  
+		    abs(tauItr->eta()) < 2.3                     
+		    )
+		  {
+		    if((tauItr->pt() > 20.0 && tauItr->pt() < 40.0)     ) 
+		      {    
+			tauPt = tauItr->pt();
+			tauPt_->Fill(tauItr->pt());
+			tauEta_->Fill(tauItr->eta());
+			tauPhi_->Fill(tauItr->phi());
+			recotaudecaymode = tauItr->decayMode();
+			recotaudecaymode_->Fill(tauItr->decayMode());
+			reco_vs_gen_decay_mode_->Fill(recotaudecaymode,gendecaymodeInt);
+			if(recotaudecaymode == gendecaymodeInt)
 			  {
-			    if( PtRes >= i*binsize  &&  PtRes < (i+1)*binsize )
-			      {
-				PTResPFJet_[i]->Fill((PFJetPt/genTauPt));
-				float delta = abs(tauPt-genTauPt);
-				//sum of PF Gamma vs Sum of PF Neutral hadron sum with proper normalisation
-				//this variable may be not needed later on.
-				SumPFN_vs_SumPFG_[i]->Fill((PFNisoPtSum)/delta,(PFGisoPtSum)/delta);
-				//fill (reco tau decay mode) vs (gen tau decay mode) in bins of PtRes
-				reco_vs_gen_decay_mode_in_bin_[i]->Fill(gendecaymodeInt , recotaudecaymode);
-				RecoGammaSum_vs_GenGammaSum_[i]->Fill(PhotonSumPt,tmpPFGPtSum);
-				RecoGammaSum_tot_vs_GenGammaSum_[i]->Fill(PhotonSumPt, ( tmpPFGPtSum + tmpPFGisoPtSum ) );
-			      }
+			    matched_PtRes_->Fill(tauPt/genTauPt);
+			  }
+			PtRes = tauPt/genTauPt;
+			PtRes_->Fill(tauPt/genTauPt);
+			
+			if(gendecaymodeInt==0)
+			  PTResOneProng0Pi0_->Fill(PtRes);
+			if(gendecaymodeInt==1)
+			  PTResOneProng1Pi0_->Fill(PtRes);
+			if(gendecaymodeInt==2)
+			  PTResOneProng2Pi0_->Fill(PtRes);
+			if(gendecaymodeInt==10)
+			  PTResThreeProng0Pi0_->Fill(PtRes);
+			if(gendecaymodeInt==11)
+			  PTResThreeProng1Pi0_->Fill(PtRes);
+			
+			OneMinusPtRes_->Fill(1.0-(tauPt/genTauPt));
+			GenMinusPatPt_->Fill(abs(genTauPt - tauPt));
+			SigPlusIso_div_genJetPt_->Fill((tmpPFNisoPtSum + tmpPFGisoPtSum + tmpPFCisoPtSum+tmpPFGPtSum+tmpPFCPtSum)/genTauPt);
+			
+		      }//tauItr->tauID("againstMuonTight")  )...{			    
+		  }//if((tauItr->pt() > 20.0 && tauItr->pt() < 40.0))...{
+		
+		/*		    if ( tauItr->pfJetRef().isNonnull() )
+		  {
+		  PFJetPt=tauItr->pfJetRef()->pt();
+		  //cout<<"pt of ref jet in fwlite ="<<tauItr->pfJetRef()->pt()<<endl;
+		  PFJetPt_->Fill(tauItr->pfJetRef()->pt());
+		  PFJetPx_->Fill(tauItr->pfJetRef()->px());
+		  PFJetPy_->Fill(tauItr->pfJetRef()->py());
+		  PFJetPz_->Fill(tauItr->pfJetRef()->pz());
+		  PFJetPhi_->Fill(tauItr->pfJetRef()->phi());
+		  PFJetEta_->Fill(tauItr->pfJetRef()->eta());
+		  PFJetEnergy_->Fill(tauItr->pfJetRef()->energy());
+		  }
+		*/
+		if (PFJetPt !=-999 && genTauPt !=-999)
+		  {
+		    checkbugptres_->Fill(PFJetPt);
+		    checkgentaupt_->Fill(genTauPt);
+		    checkpattaupt_->Fill(tauPt);
+		    PTRESPFJET_->Fill(PFJetPt/genTauPt);
+		    float binsize = 0.1;
+		    for(int i=0; i<10;i++)
+		      {
+			if( PtRes >= i*binsize  &&  PtRes < (i+1)*binsize )
+			  {
+			    PTResPFJet_[i]->Fill((PFJetPt/genTauPt));
+			    float delta = abs(tauPt-genTauPt);
+			    SumPFN_vs_SumPFG_[i]->Fill((PFNisoPtSum)/delta,(PFGisoPtSum)/delta);
+			    reco_vs_gen_decay_mode_in_bin_[i]->Fill(recotaudecaymode,gendecaymodeInt);
 			  }
 		      }
-		    
-		    //requiring this, if condition is not satisfied then default value is -999 will be filled in histo. 
-		    //check if this is required or not .. ?
-		    //this if statement is for filling PtRatio_vs_ParticleID in bins of PtRes.
-		    if (PFJetPt !=-999 && genTauPt !=-999 && tauPt != -999)
-		      {
-			float binsize = 0.1;
-			const PFCandidateRefVector &pfcandidateisoref = tauItr->isolationPFCands();
-			std::vector<double> sumPFCandidatePt(8);
-			for (int i = 0; i<int(pfcandidateisoref.size()) ; i++)
-			  sumPFCandidatePt[pfcandidateisoref[i]->particleId()] += pfcandidateisoref[i]->pt();
-			for ( unsigned i = 0; i < 8; ++i )
-			  {
-			    PtRatio_vs_ParticleID_->Fill(i , sumPFCandidatePt[i]/genTauPt);
-			    for(int j=0; j<10;j++)
-			      {
-				if( PtRes >= j*binsize  &&  PtRes < (j+1)*binsize )
-				  {
-				    PtRatio_vs_ParticleID_inbins_[j]->Fill(i , sumPFCandidatePt[i]/ genTauPt);
-				  }
-			      }
-			  }
-		      }//if (PFJetPt !=-999 && genTauPt !=-999 && tauPt != -999)
-
-		    
-
-
-		    
-		    }//genTauDecayMode == "threeProng1Pi0" ))...{
-		}//if ( tauItr->pfJetRef().isNonnull() ) {
-	      }//if(tauItr->genJet() )...{	
-	    }//if((tauItr->pt() > 20.0 && tauItr->pt() < 40.0))...{
+		  }
+	      }//if(tauItr->genJet() )...{
 	  }//for(std::vector<pat::Tau>::const_iterator tauItr=tauHandle->begin(); tauItr!=tauHandle->end(); ++tauItr)...{
 	
 	//	Book_Fill_histograms object1;
