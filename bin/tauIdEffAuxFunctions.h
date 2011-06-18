@@ -376,7 +376,7 @@ void addToFormula(std::string& formula, const std::string& expression, TObjArray
   //std::cout << "<addToFormula>:" << std::endl;
 
   if ( expression != "" ) {
-    if ( formula != "" ) formula.append(" * ");
+    if ( formula != "" ) formula.append("*");
 
     if      ( expression == "regular"  ) formula.append(p->GetName());
     else if ( expression == "inverted" ) formula.append("(1 - ").append(p->GetName()).append(")");
@@ -457,13 +457,15 @@ RooGaussian* makeFitConstraint(RooAbsReal* p, double value, double error)
 }
 
 void loadHistograms(
-  std::map<std::string, std::map<std::string, TH1*> > histogramMap,
+  std::map<std::string, std::map<std::string, TH1*> >& histogramMap,
   TFile* inputFile, const std::string& process, const std::vector<std::string>& regions,
   const std::vector<std::string>& tauIds, const std::vector<std::string>& fitVariables, const std::string& sysShift)
 {
 //--------------------------------------------------------------------------------
 // Load template histograms/distributions observed in data from ROOT file
 //--------------------------------------------------------------------------------
+
+  //std::cout << "<loadHistograms>:" << std::endl;
 
   for ( std::vector<std::string>::const_iterator region = regions.begin();
 	region != regions.end(); ++region ) {
@@ -489,9 +491,14 @@ void loadHistograms(
 	    assert(0);
 	  }
 
-	  histogram->Rebin(2);
+	  //std::cout << " histogram = " << histogram << std::endl;
+	  //std::cout << " name      = " << histogram->GetName() << std::endl;
+	  //std::cout << " integral  = " << histogram->Integral() << std::endl;
+	  
+	  //histogram->Rebin(2);
 
 	  std::string key = getKey(*observable, *tauId, *tauIdValue, sysShift);	
+	  //std::cout << "--> key = " << key << std::endl;
 	  if ( histogram != 0 ) histogramMap[*region][key] = histogram;
 	}
       }
@@ -523,10 +530,12 @@ void compSysHistograms(std::map<std::string, std::map<std::string, std::map<std:
       TH1* sysHistogramDown = 0;
       for ( std::map<std::string, TH1*>::iterator keyUp = region->second.begin();
 	    keyUp != region->second.end(); ++keyUp ) {
-	if ( keyUp->first.find(sysUncertainty.sysNameUp_) ) {
+	if ( keyUp->first.find(sysUncertainty.sysNameUp_) != std::string::npos ) {
+	  //std::cout << "keyUp = " << keyUp->first << std::endl;
 	  TH1* sysHistogramUp = keyUp->second;
 	  std::string keyDown = TString(keyUp->first).ReplaceAll(sysUncertainty.sysNameUp_.data(), 
 								 sysUncertainty.sysNameDown_.data()).Data();	  
+	  //std::cout << "keyDown = " << keyDown << std::endl;
 	  TH1* sysHistogramDown = region->second[keyDown];
 	  assert(sysHistogramDown);
 
@@ -550,6 +559,7 @@ void compSysHistograms(std::map<std::string, std::map<std::string, std::map<std:
 
 	  std::string keyDiff = TString(keyUp->first).ReplaceAll(sysUncertainty.sysNameUp_.data(), 
 								 sysUncertainty.sysNameDiff_.data()).Data();
+	  //std::cout << "keyDiff = " << keyDiff << std::endl;
 	  region->second[keyDiff] = sysHistogramDiff;
 	}
       }	    
@@ -704,6 +714,8 @@ std::map<std::string, std::map<std::string, std::map<std::string, double> > > co
       for ( std::map<std::string, TH1*>::const_iterator key = region->second.begin();
 	    key != region->second.end(); ++key ) {
 	retVal[*process][region->first][key->first] = getIntegral(templatesAll[*process][region->first][key->first], true, true);
+	std::cout << "numEvents[" << (*process) << "][" << region->first << "][" << key->first << "] = "
+		  << retVal[*process][region->first][key->first] << std::endl;
 	retVal["sum"][region->first][key->first] += retVal[*process][region->first][key->first];
       }
     }

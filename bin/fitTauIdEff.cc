@@ -38,8 +38,8 @@ RooFormulaVar* makeRooFormulaVar(const std::string& process, const std::string& 
 				 RooAbsReal* norm, double fittedFractionValue,
 				 RooAbsReal* pTauId_passed_failed)
 {
-  std::cout << "<makeRooFormulaVar>:" << std::endl;
-  std::cout << " building RooFormulaVar expression for process = " << process << ", region = " << region << "." << std::endl;
+  //std::cout << "<makeRooFormulaVar>:" << std::endl;
+  //std::cout << " building RooFormulaVar expression for process = " << process << ", region = " << region << "." << std::endl;
 
   RooFormulaVar* retVal = 0;
 
@@ -55,9 +55,9 @@ RooFormulaVar* makeRooFormulaVar(const std::string& process, const std::string& 
   TObjArray arguments; 
   addToFormula(formula, exprTauId,       arguments, pTauId_passed_failed);
   addToFormula(formula, "regular",       arguments, norm);
-  //addToFormula(formula, "regular",       arguments, fittedFraction);
+  addToFormula(formula, "regular",       arguments, fittedFraction);
 
-  std::cout << " formula = " << formula << std::endl;
+  //std::cout << " formula = " << formula << std::endl;
   //std::cout << " arguments:" << std::endl;
   //for ( int i = 0; i < arguments.GetEntries(); ++i ) {
   //  std::cout << "  " << dynamic_cast<TNamed*>(arguments.At(i))->GetName() << ":" 
@@ -102,7 +102,7 @@ void fitUsingRooFit(std::map<std::string, std::map<std::string, TH1*> >& distrib
   RooRealVar* fitVarC1 = new RooRealVar("fitVarC1", "fitVarC1", fitMinC1p, fitMaxC1p);
 
   double numEventsDataC1 = distributionsData["C1"][getKey(fitVariable, tauId)]->Integral();
-  if ( makeControlPlots ) std::cout << "numEventsDataC1 = " << numEventsDataC1 << std::endl;
+  //std::cout << "numEventsDataC1 = " << numEventsDataC1 << std::endl;
 
   std::map<std::string, RooRealVar*> pTauId_passed_failed;        // key = process
 
@@ -120,7 +120,7 @@ void fitUsingRooFit(std::map<std::string, std::map<std::string, TH1*> >& distrib
 
    for ( std::vector<std::string>::const_iterator process = processes.begin();
 	process != processes.end(); ++process ) {
-     //std::cout << "process = " << (*process) << ":" << std::endl;
+     std::cout << "process = " << (*process) << ":" << std::endl;
 
     double numEventsC1        = numEventsAll[*process]["C1"][getKey(fitVariable, tauId)];
     double fittedFractionC1   = fittedFractions[*process]["C1"][getKey(fitVariable, tauId)];
@@ -135,6 +135,7 @@ void fitUsingRooFit(std::map<std::string, std::map<std::string, TH1*> >& distrib
 
     std::string nameTauId_passed_failed = std::string("pTauId_passed_failed").append("_").append(*process);
     double pTauId_passed_failed0        = fittedEventsC1p/fittedEventsC1;
+    //std::cout << " pTauId_passed_failed0 = " << pTauId_passed_failed0 << std::endl;
     pTauId_passed_failed[*process]      = new RooRealVar(nameTauId_passed_failed.data(),
 							 nameTauId_passed_failed.data(), pTauId_passed_failed0, 0., 1.);
 
@@ -146,7 +147,8 @@ void fitUsingRooFit(std::map<std::string, std::map<std::string, TH1*> >& distrib
     //std::cout << "--> MC-to-Data scale-factor = " << scaleFactorMCtoData << std::endl;
 
     std::string nameNormC1 = std::string("normC1").append("_").append(*process);
-    double normC1initial         = scaleFactorMCtoData*numEventsC1;
+    double normC1initial   = scaleFactorMCtoData*numEventsC1;
+    //std::cout << " normC1initial = " << normC1initial << std::endl;
     normC1[*process]       = new RooRealVar(nameNormC1.data(), nameNormC1.data(), normC1initial, 0., numEventsDataC1);
 
     TH1* templateC1p   = templatesAll[*process]["C1p"][getKey(fitVariable, tauId, "passed")];
@@ -171,8 +173,10 @@ void fitUsingRooFit(std::map<std::string, std::map<std::string, TH1*> >& distrib
   RooCategory* fitCategoriesC1 = new RooCategory("categoriesC1", "categoriesC1");
   fitCategoriesC1->defineType("C1p");
   fitCategoriesC1->defineType("C1f");
+  fitCategoriesC1->printMultiline(std::cout, 10);
 
   RooSimultaneous* pdfSimultaneousFitC1 = new RooSimultaneous("pdfSimultaneousFitC1", "pdfSimultaneousFitC1", *fitCategoriesC1);
+  pdfSimultaneousFitC1->printCompactTree();
   pdfSimultaneousFitC1->addPdf(*pdfSumC1p, "C1p");
   pdfSimultaneousFitC1->addPdf(*pdfSumC1f, "C1f");
  
@@ -206,9 +210,11 @@ void fitUsingRooFit(std::map<std::string, std::map<std::string, TH1*> >& distrib
   RooLinkedList fitOptionsC1;
   fitOptionsC1.Add(new RooCmdArg(RooFit::Extended()));
   //fitOptionsC1.Add(new RooCmdArg(RooFit::ExternalConstraints(RooArgSet(fitConstraintsC1))));
+  fitOptionsC1.Add(new RooCmdArg(RooFit::PrintEvalErrors(1)));
+  //fitOptionsC1.Add(new RooCmdArg(RooFit::PrintEvalErrors(-1)));
   fitOptionsC1.Add(new RooCmdArg(RooFit::Save(true)));
 
-  //pdfSimultaneousFitC1->printCompactTree();
+  pdfSimultaneousFitC1->printCompactTree();
 
   RooFitResult*	fitResult = pdfSimultaneousFitC1->fitTo(*dataC1, fitOptionsC1);
    
@@ -330,8 +336,8 @@ int main(int argc, const char* argv[])
   sysUncertainties.push_back(sysUncertaintyEntry("SysTauJetEnUp", "SysTauJetEnDown", "SysTauJetEnDiff"));
   //sysUncertainties.push_back(sysUncertaintyEntry("SysJetEnUp", "SysJetEnDown", "SysJetEnDiff"));
 
-  //bool runSysUncertainties = false;
-  bool runSysUncertainties = true;
+  bool runSysUncertainties = false;
+  //bool runSysUncertainties = true;
 
   unsigned numPseudoExperiments = 10000;  
 
@@ -437,7 +443,7 @@ int main(int argc, const char* argv[])
     
     distributionsData = templatesAll["sum"];
   }
-
+ 
 /*
 //--- obtain template for QCD background from data,
 //    from SS && Mt < 40 GeV && (Pzeta - 1.5 PzetaVis) > -20 GeV sideband
@@ -500,7 +506,7 @@ int main(int argc, const char* argv[])
 		       std::string("controlPlotsTauIdEff_").append(region->first).append("_").append(key->first).append(".png"));
     }
   }
-
+  
   std::map<std::string, std::map<std::string, std::map<std::string, double> > > numEventsAll = // key = (process/"sum", region, observable)
     compNumEvents(templatesAll, processes, distributionsData);
   std::map<std::string, std::map<std::string, std::map<std::string, double> > > fittedFractions = // key = (process, region, observable)
