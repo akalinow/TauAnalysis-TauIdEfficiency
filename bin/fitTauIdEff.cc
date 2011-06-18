@@ -651,7 +651,7 @@ int main(int argc, const char* argv[])
   std::cout << " #tauIdDiscr.  = " << tauIds.size() << std::endl;
   std::cout << " #fitVariables = " << fitVariables.size() << std::endl;
   std::cout << " #sysShifts    = " << sysShifts.size() 
-	    << "(numPseudoExperiments = " << numPseudoExperiments << ")" << std::endl;
+	    << " (numPseudoExperiments = " << numPseudoExperiments << ")" << std::endl;
   clock.Show("fitTauIdEff");
 }
   

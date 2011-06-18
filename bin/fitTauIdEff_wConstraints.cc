@@ -1150,6 +1150,7 @@ int main(int argc, const char* argv[])
   std::cout << "finished executing fitTauIdEff_wConstraints macro:" << std::endl;
   std::cout << " #tauIdDiscr.  = " << tauIds.size() << std::endl;
   std::cout << " #fitVariables = " << fitVariables.size() << std::endl;
-  std::cout << " #sysShifts    = " << sysShifts.size() << std::endl;
+  std::cout << " #sysShifts    = " << sysShifts.size() 
+	    << " (numPseudoExperiments = " << numPseudoExperiments << ")" << std::endl;
   clock.Show("fitTauIdEff_wConstraints");
 }
