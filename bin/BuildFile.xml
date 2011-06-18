@@ -20,15 +20,21 @@
   <use   name="DataFormats/FWLite"/>
   <use   name="DataFormats/StdDictionaries"/>
   <use   name="DataFormats/WrappedStdDictionaries"/>
+  <use   name="TauAnalysis/DQMTools"/>
+  <use   name="TauAnalysis/FittingTools"/>
   <use   name="roofit"/>
 </bin>
 <bin   file="fitTauIdEff_wConstraints.cc" name="fitTauIdEff_wConstraints">
   <use   name="roofit"/>
   <use   name="root"/>
   <use   name="rootgraphics"/>
+  <use   name="TauAnalysis/DQMTools"/>
+  <use   name="TauAnalysis/FittingTools"/>
 </bin>
 <bin   file="fitTauIdEff.cc" name="fitTauIdEff">
   <use   name="roofit"/>
   <use   name="root"/>
   <use   name="rootgraphics"/>
+  <use   name="TauAnalysis/DQMTools"/>
+  <use   name="TauAnalysis/FittingTools"/>
 </bin>

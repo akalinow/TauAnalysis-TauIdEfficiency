@@ -562,8 +562,8 @@ int main(int argc, const char* argv[])
   //const std::string branchName_suffix = "local";
   const std::string branchName_suffix = "lxbatch";
 
-  //bool runQuickTest = false;
-  bool runQuickTest = true;
+  bool runQuickTest = false;
+  //bool runQuickTest = true;
 
   //const std::string histogramFileName = "fitTauIdEff_wConstraints_2011June10.root";
   const std::string histogramFileName = "fitTauIdEff_wConstraints_2011June06_PUreweighted.root";
@@ -574,10 +574,10 @@ int main(int argc, const char* argv[])
   std::vector<std::string> sysUncertainties;
   sysUncertainties.push_back(std::string("SysTauJetEnUp"));
   sysUncertainties.push_back(std::string("SysTauJetEnDown"));
-  sysUncertainties.push_back(std::string("SysJetEnUp"));
-  sysUncertainties.push_back(std::string("SysJetEnDown"));
-  bool runSysUncertainties = false;
-  //bool runSysUncertainties = true;
+  //sysUncertainties.push_back(std::string("SysJetEnUp"));
+  //sysUncertainties.push_back(std::string("SysJetEnDown"));
+  //bool runSysUncertainties = false;
+  bool runSysUncertainties = true;
 
   std::vector<std::string> regions;
   regions.push_back(std::string("ABCD"));
@@ -689,24 +689,24 @@ int main(int argc, const char* argv[])
     xAxisTitles["diTauVisMassFromJet"] = xAxisTitles["diTauVisMass"];
 
     std::map<std::string, std::map<std::string, TH1*> > distributionsData; // key = (region, observable)
-    TChain* chainData_2011RunA = new TChain("Events");
-    TChain* chainData_2011RunB = new TChain("Events");
-    if ( !runQuickTest ) { addFileNames(chainData_2011RunA, inputFilePath, "data_SingleMu_2011RunA_Prompt", jobId);
-                           addFileNames(chainData_2011RunB, inputFilePath, "data_SingleMu_2011RunB_Prompt", jobId); } 
-    else                 { chainData_2011RunA->Add(std::string(inputFilePath).append("tauIdEffMeasEDNtuple_data_SingleMu_Run2011A_PromptReco_v1_2011Jun06V2_0_cab9.root").data());
-                           chainData_2011RunB->Add(std::string(inputFilePath).append("tauIdEffMeasEDNtuple_data_SingleMu_Run2011A_PromptReco_v2_2011Jun06V2_0_7893.root").data()); }
-    printFileInfo(chainData_2011RunA, "chainData_2011RunA");
-    printFileInfo(chainData_2011RunB, "chainData_2011RunB");
+    TChain* chainData_2011RunA_v1 = new TChain("Events");
+    TChain* chainData_2011RunA_v2 = new TChain("Events");
+    if ( !runQuickTest ) { addFileNames(chainData_2011RunA_v1, inputFilePath, "data_SingleMu_Run2011A_PromptReco_v1", jobId);
+                           addFileNames(chainData_2011RunA_v2, inputFilePath, "data_SingleMu_Run2011A_PromptReco_v2", jobId); } 
+    else                 { chainData_2011RunA_v1->Add(std::string(inputFilePath).append("tauIdEffMeasEDNtuple_data_SingleMu_Run2011A_PromptReco_v1_2011Jun06V2_0_cab9.root").data());
+                           chainData_2011RunA_v2->Add(std::string(inputFilePath).append("tauIdEffMeasEDNtuple_data_SingleMu_Run2011A_PromptReco_v2_2011Jun06V2_0_7893.root").data()); }
+    printFileInfo(chainData_2011RunA_v1, "chainData_2011RunA_v1");
+    printFileInfo(chainData_2011RunA_v2, "chainData_2011RunA_v2");
     TChain* chainData = new TChain("Events");
-    chainData->Add(chainData_2011RunA);
-    chainData->Add(chainData_2011RunB);
+    chainData->Add(chainData_2011RunA_v1);
+    chainData->Add(chainData_2011RunA_v2);
     printFileInfo(chainData, "chainData");
     distributionsData = 
       makeDistributionsAllRegions("Data", 1.0, chainData, regions,
 				  tauIds, fitVariables, branchNamesData, false, *sysShift, &saveRunLumiSectionEventNumbers);
     delete chainData;
-    delete chainData_2011RunA;
-    delete chainData_2011RunB;
+    delete chainData_2011RunA_v1;
+    delete chainData_2011RunA_v2;
 
     std::map<std::string, std::map<std::string, TH1*> > templatesZtautau; // key = (region, observable)
     TChain* chainZtautau = new TChain("Events");

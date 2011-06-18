@@ -1,6 +1,8 @@
 #ifndef TauAnalysis_GenSimTools_tauIdEffAuxFunctions_h
 #define TauAnalysis_GenSimTools_tauIdEffAuxFunctions_h
 
+#include "TauAnalysis/DQMTools/interface/histogramAuxFunctions.h"
+
 #include "RooAddPdf.h"
 #include "RooCategory.h"
 #include "RooCmdArg.h"
@@ -40,13 +42,25 @@
 #include <string>
 #include <vector>
 
-std::string getKey(const std::string& observable, const std::string& tauId, const std::string tauIdValue = "all")
+bool isSystematicShift(const std::string& key)
+{
+  if ( TString(key.data()).CountChar('_') >= 3 ) return true;
+  else return false;
+}
+
+std::string getKey(const std::string& observable, const std::string& tauId, const std::string tauIdValue = "all",
+		   const std::string sysShift = "CENTRAL_VALUE")
 {
   //std::cout << "<getKey>:" << std::endl;
-
+  
   std::string key = std::string(observable).append("_").append(tauId).append("_").append(tauIdValue);
+  if ( sysShift != "CENTRAL_VALUE" ) key.append("_").append(sysShift);
   return key;
 }
+
+//
+//-------------------------------------------------------------------------------
+//
 
 double getIntegral(const TH1* histogram, bool inclUnderflowBin, bool inclOverflowBin)
 {
@@ -96,6 +110,10 @@ TH1* normalize(const TH1* histogram, double norm = 1.)
   return retVal;
 }
 
+//
+//-------------------------------------------------------------------------------
+//
+
 void applyStyleOption(TH1* histogram, const std::string& histogramTitle,
 		      const std::string& xAxisTitle, const std::string& yAxisTitle = "Number of Events")
 {
@@ -124,7 +142,7 @@ void drawHistograms(TH1* histogramZtautau, double normZtautau,
 		    TH1* histogramTTplusJets, double normTTplusJets,
 		    TH1* histogramData,
 		    const std::string& histogramTitle, const std::string& xAxisTitle, 
-		    const std::string& outputFileName, const std::string& sysShift = "CENTRAL_VALUE",
+		    const std::string& outputFileName, 
 		    bool runStatTest = false)
 {
 //--------------------------------------------------------------------------------
@@ -223,7 +241,6 @@ void drawHistograms(TH1* histogramZtautau, double normZtautau,
 
   canvas->Update();
   std::string outputFilePath = std::string("./plots/");
-  if ( sysShift != "CENTRAL_VALUE" ) outputFilePath.append(sysShift).append("/");
   gSystem->mkdir(outputFilePath.data(), true);
   canvas->Print(outputFilePath.append(outputFileName).data());
 
@@ -262,7 +279,6 @@ void drawHistograms(TH1* histogramZtautau, double normZtautau,
 
   canvas->Update();
   std::string outputFilePath2 = std::string("./plots/");
-  if ( sysShift != "CENTRAL_VALUE" ) outputFilePath2.append(sysShift).append("/");
   gSystem->mkdir(outputFilePath2.data(), true);
   TString outputFileName2 = outputFileName;
   outputFileName2.ReplaceAll(".", "_smBgSum.");
@@ -296,7 +312,6 @@ void drawHistograms(TH1* histogramZtautau, double normZtautau,
 
   canvas->Update();
   std::string outputFilePath3 = std::string("./plots/");
-  if ( sysShift != "CENTRAL_VALUE" ) outputFilePath3.append(sysShift).append("/");
   gSystem->mkdir(outputFilePath3.data(), true);
   TString outputFileName3 = outputFileName;
   outputFileName3.ReplaceAll(".", "_smSum.");
@@ -329,7 +344,7 @@ void drawHistograms(std::map<std::string, std::map<std::string, TH1*> >& distrib
 		    std::map<std::string, double> normFactors,                                           
 		    const std::string& region, const std::string& observable_key,
 		    const std::string& histogramTitle, const std::string& xAxisTitle, 
-		    const std::string& outputFileName, const std::string& sysShift = "CENTRAL_VALUE",
+		    const std::string& outputFileName,
 		    bool runStatTest = false)
 {
   //std::cout << "<drawHistograms (wrapper)>:" << std::endl;
@@ -341,9 +356,13 @@ void drawHistograms(std::map<std::string, std::map<std::string, TH1*> >& distrib
 		 templatesAll["TTplusJets"][region][observable_key], normFactors["TTplusJets"],
 		 distributionsData[region][observable_key],
 		 histogramTitle, xAxisTitle,
-		 outputFileName, sysShift,
+		 outputFileName,
 		 runStatTest);
 }
+
+//
+//-------------------------------------------------------------------------------
+//
 
 void addToFormula(std::string& formula, const std::string& expression, TObjArray& arguments, RooAbsReal* p)
 {
@@ -437,15 +456,14 @@ RooGaussian* makeFitConstraint(RooAbsReal* p, double value, double error)
   return constraint;
 }
 
-std::map<std::string, std::map<std::string, TH1*> > loadHistograms(
+void loadHistograms(
+  std::map<std::string, std::map<std::string, TH1*> > histogramMap,
   TFile* inputFile, const std::string& process, const std::vector<std::string>& regions,
   const std::vector<std::string>& tauIds, const std::vector<std::string>& fitVariables, const std::string& sysShift)
 {
 //--------------------------------------------------------------------------------
 // Load template histograms/distributions observed in data from ROOT file
 //--------------------------------------------------------------------------------
-
-  std::map<std::string, std::map<std::string, TH1*> > retVal;
 
   for ( std::vector<std::string>::const_iterator region = regions.begin();
 	region != regions.end(); ++region ) {
@@ -473,15 +491,71 @@ std::map<std::string, std::map<std::string, TH1*> > loadHistograms(
 
 	  histogram->Rebin(2);
 
-	  std::string key = getKey(*observable, *tauId, *tauIdValue);	
-	  if ( histogram != 0 ) retVal[*region][key] = histogram;
+	  std::string key = getKey(*observable, *tauId, *tauIdValue, sysShift);	
+	  if ( histogram != 0 ) histogramMap[*region][key] = histogram;
 	}
       }
     }
   }
-
-  return retVal;
 }
+
+struct sysUncertaintyEntry
+{
+  sysUncertaintyEntry(const std::string& sysNameUp, const std::string& sysNameDown, const std::string& sysNameDiff)
+    : sysNameUp_(sysNameUp),
+      sysNameDown_(sysNameDown),
+      sysNameDiff_(sysNameDiff)
+  {}
+  ~sysUncertaintyEntry() {}
+  std::string sysNameUp_;
+  std::string sysNameDown_;
+  std::string sysNameDiff_;
+};
+
+void compSysHistograms(std::map<std::string, std::map<std::string, std::map<std::string, TH1*> > >& templatesAll,
+		       const sysUncertaintyEntry& sysUncertainty)
+{
+  for ( std::map<std::string, std::map<std::string, std::map<std::string, TH1*> > >::iterator process = templatesAll.begin();
+	process != templatesAll.end(); ++process ) {
+    for ( std::map<std::string, std::map<std::string, TH1*> >::iterator region = process->second.begin();
+	  region != process->second.end(); ++region ) {
+      TH1* sysHistogramUp   = 0;
+      TH1* sysHistogramDown = 0;
+      for ( std::map<std::string, TH1*>::iterator keyUp = region->second.begin();
+	    keyUp != region->second.end(); ++keyUp ) {
+	if ( keyUp->first.find(sysUncertainty.sysNameUp_) ) {
+	  TH1* sysHistogramUp = keyUp->second;
+	  std::string keyDown = TString(keyUp->first).ReplaceAll(sysUncertainty.sysNameUp_.data(), 
+								 sysUncertainty.sysNameDown_.data()).Data();	  
+	  TH1* sysHistogramDown = region->second[keyDown];
+	  assert(sysHistogramDown);
+
+	  assert(isCompatibleBinning(sysHistogramUp, sysHistogramDown));
+  
+	  if ( !sysHistogramUp->GetSumw2N()   ) sysHistogramUp->Sumw2();
+	  if ( !sysHistogramDown->GetSumw2N() ) sysHistogramDown->Sumw2();
+
+	  TH1* sysHistogramDiff = (TH1*)sysHistogramUp->Clone();
+
+	  unsigned numBins = sysHistogramUp->GetNbinsX();
+	  for ( unsigned iBin = 0; iBin <= (numBins + 1); ++iBin ) {
+	    double binContentDiff = 0.5*(sysHistogramUp->GetBinContent(iBin) - sysHistogramDown->GetBinContent(iBin));
+	    sysHistogramDiff->SetBinContent(iBin, binContentDiff);
+	    
+	    double binErrorUp   = sysHistogramUp->GetBinError(iBin);
+	    double binErrorDown = sysHistogramDown->GetBinError(iBin);
+	    double binErrorDiff = TMath::Sqrt(binErrorUp*binErrorUp + binErrorDown*binErrorDown);
+	    sysHistogramDiff->SetBinError(iBin, binErrorDiff);
+	  }
+
+	  std::string keyDiff = TString(keyUp->first).ReplaceAll(sysUncertainty.sysNameUp_.data(), 
+								 sysUncertainty.sysNameDiff_.data()).Data();
+	  region->second[keyDiff] = sysHistogramDiff;
+	}
+      }	    
+    }
+  }
+} 
 
 void sumHistograms(std::map<std::string, std::map<std::string, std::map<std::string, TH1*> > >& templatesAll,
 		   const std::vector<std::string>& processesToSum, const std::string& processNameSum,
@@ -611,6 +685,90 @@ void scaleBins(std::map<std::string, std::map<std::string, TH1*> >& histograms, 
       }
     }
   }
+}
+
+//
+//-------------------------------------------------------------------------------
+//
+
+std::map<std::string, std::map<std::string, std::map<std::string, double> > > compNumEvents(
+  std::map<std::string, std::map<std::string, std::map<std::string, TH1*> > >& templatesAll,
+  const std::vector<std::string>& processes, const std::map<std::string, std::map<std::string, TH1*> >& distributionsData)
+{
+  std::map<std::string, std::map<std::string, std::map<std::string, double> > > retVal; // key = (process/"sum", region, observable)
+
+  for ( std::vector<std::string>::const_iterator process = processes.begin();
+	process != processes.end(); ++process ) {
+    for ( std::map<std::string, std::map<std::string, TH1*> >::const_iterator region = distributionsData.begin();
+	  region != distributionsData.end(); ++region ) {
+      for ( std::map<std::string, TH1*>::const_iterator key = region->second.begin();
+	    key != region->second.end(); ++key ) {
+	retVal[*process][region->first][key->first] = getIntegral(templatesAll[*process][region->first][key->first], true, true);
+	retVal["sum"][region->first][key->first] += retVal[*process][region->first][key->first];
+      }
+    }
+  }
+
+  return retVal;
+}
+
+std::map<std::string, std::map<std::string, std::map<std::string, double> > > compFittedFractions(
+  std::map<std::string, std::map<std::string, std::map<std::string, TH1*> > >& templatesAll,
+  std::map<std::string, std::map<std::string, std::map<std::string, double> > >& numEventsAll,
+  const std::vector<std::string>& processes, const std::map<std::string, std::map<std::string, TH1*> >& distributionsData)
+{
+  std::map<std::string, std::map<std::string, std::map<std::string, double> > > retVal; // key = (process, region, observable)
+  
+  for ( std::vector<std::string>::const_iterator process = processes.begin();
+	process != processes.end(); ++process ) {
+    for ( std::map<std::string, std::map<std::string, TH1*> >::const_iterator region = distributionsData.begin();
+	  region != distributionsData.end(); ++region ) {
+      for ( std::map<std::string, TH1*>::const_iterator key = region->second.begin();
+	    key != region->second.end(); ++key ) {
+	retVal[*process][region->first][key->first] = 
+	  getIntegral(templatesAll[*process][region->first][key->first], false, false)/numEventsAll[*process][region->first][key->first];
+	//std::cout << "fittedFraction[" << (*process) << "][" << region->first << "][" << key->first << "] = "
+	//	    << retVal[*process][region->first][key->first] << std::endl;
+      }
+    }
+  }
+
+  return retVal;
+}
+
+//
+//-------------------------------------------------------------------------------
+//
+
+void savePseudoExperimentHistograms(const std::map<std::string, std::map<std::string, TH1*> >& histograms, 
+				    const std::string& xAxisLabel, const std::string& outputFileNameSuffix)
+{
+  TCanvas* canvas = new TCanvas("canvas", "canvas", 800, 640);
+  canvas->SetFillColor(10);
+  canvas->SetBorderSize(2);
+
+  canvas->SetLeftMargin(0.12);
+  canvas->SetBottomMargin(0.12);
+
+  for ( std::map<std::string, std::map<std::string, TH1*> >::const_iterator tauId = histograms.begin();
+	tauId != histograms.end(); ++tauId ) {
+    for ( std::map<std::string, TH1*>::const_iterator fitVariable = tauId->second.begin();
+	  fitVariable != tauId->second.end(); ++fitVariable ) {
+      TH1* histogram = fitVariable->second;
+
+      TH1* histogram_normalized = normalize(histogram);
+      
+      applyStyleOption(histogram_normalized, histogram->GetTitle(), xAxisLabel, "a.u");
+
+      canvas->Update();
+      std::string outputFileName = std::string(histogram->GetName()).append(outputFileNameSuffix);
+      std::string outputFilePath = std::string("./plots/");
+      gSystem->mkdir(outputFilePath.data(), true);
+      canvas->Print(outputFilePath.append(outputFileName).data());
+    }
+  }
+
+  delete canvas;
 }
 
 #endif
