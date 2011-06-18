@@ -501,12 +501,12 @@ int main(int argc, const char* argv[])
     }
   }
 
-  std::cout << "running fit for central values..." << std::endl;
-
   std::map<std::string, std::map<std::string, std::map<std::string, double> > > numEventsAll = // key = (process/"sum", region, observable)
     compNumEvents(templatesAll, processes, distributionsData);
   std::map<std::string, std::map<std::string, std::map<std::string, double> > > fittedFractions = // key = (process, region, observable)
     compFittedFractions(templatesAll, numEventsAll, processes, distributionsData);
+
+  std::cout << "running fit for central values..." << std::endl;
   
   std::map<std::string, std::map<std::string, double> > effValues;           // key = (tauId, fitVariable)
   std::map<std::string, std::map<std::string, double> > effErrors;           // key = (tauId, fitVariable)
