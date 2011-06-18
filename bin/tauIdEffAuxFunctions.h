@@ -495,7 +495,10 @@ void loadHistograms(
 	  //std::cout << " name      = " << histogram->GetName() << std::endl;
 	  //std::cout << " integral  = " << histogram->Integral() << std::endl;
 	  
-	  //histogram->Rebin(2);
+	  int numBins = histogram->GetNbinsX();
+	  if      ( (numBins % 3) == 0                  ) histogram->Rebin(3);
+	  else if ( (numBins % 4) == 0 && numBins >= 36 ) histogram->Rebin(4);
+	  else                                            histogram->Rebin(2);
 
 	  std::string key = getKey(*observable, *tauId, *tauIdValue, sysShift);	
 	  //std::cout << "--> key = " << key << std::endl;
@@ -720,6 +723,8 @@ std::map<std::string, std::map<std::string, std::map<std::string, double> > > co
       }
     }
   }
+
+  std::cout << std::endl;
 
   return retVal;
 }

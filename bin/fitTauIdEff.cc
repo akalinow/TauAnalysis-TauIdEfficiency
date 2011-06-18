@@ -173,16 +173,16 @@ void fitUsingRooFit(std::map<std::string, std::map<std::string, TH1*> >& distrib
   RooCategory* fitCategoriesC1 = new RooCategory("categoriesC1", "categoriesC1");
   fitCategoriesC1->defineType("C1p");
   fitCategoriesC1->defineType("C1f");
-  fitCategoriesC1->printMultiline(std::cout, 10);
 
   RooSimultaneous* pdfSimultaneousFitC1 = new RooSimultaneous("pdfSimultaneousFitC1", "pdfSimultaneousFitC1", *fitCategoriesC1);
-  pdfSimultaneousFitC1->printCompactTree();
   pdfSimultaneousFitC1->addPdf(*pdfSumC1p, "C1p");
   pdfSimultaneousFitC1->addPdf(*pdfSumC1f, "C1f");
  
   std::map<std::string, TH1*> histogramDataMapC1;
   histogramDataMapC1["C1p"] = distributionsData["C1p"][getKey(fitVariable, tauId, "passed")];
+  //std::cout << "C1p: numBins = " << histogramDataMapC1["C1p"]->GetNbinsX() << std::endl;
   histogramDataMapC1["C1f"] = distributionsData["C1f"][getKey(fitVariable, tauId, "failed")];
+  //std::cout << "C1f: numBins = " << histogramDataMapC1["C1f"]->GetNbinsX() << std::endl;
 
   RooDataHist* dataC1 = new RooDataHist("dataC1", "dataC1", *fitVarC1, *fitCategoriesC1, histogramDataMapC1);
 
@@ -210,11 +210,11 @@ void fitUsingRooFit(std::map<std::string, std::map<std::string, TH1*> >& distrib
   RooLinkedList fitOptionsC1;
   fitOptionsC1.Add(new RooCmdArg(RooFit::Extended()));
   //fitOptionsC1.Add(new RooCmdArg(RooFit::ExternalConstraints(RooArgSet(fitConstraintsC1))));
-  fitOptionsC1.Add(new RooCmdArg(RooFit::PrintEvalErrors(1)));
-  //fitOptionsC1.Add(new RooCmdArg(RooFit::PrintEvalErrors(-1)));
+  //fitOptionsC1.Add(new RooCmdArg(RooFit::PrintEvalErrors(10)));
+  fitOptionsC1.Add(new RooCmdArg(RooFit::PrintEvalErrors(-1)));
   fitOptionsC1.Add(new RooCmdArg(RooFit::Save(true)));
 
-  pdfSimultaneousFitC1->printCompactTree();
+  //pdfSimultaneousFitC1->printCompactTree();
 
   RooFitResult*	fitResult = pdfSimultaneousFitC1->fitTo(*dataC1, fitOptionsC1);
    

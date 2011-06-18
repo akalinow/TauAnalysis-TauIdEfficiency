@@ -78,8 +78,8 @@ RooFormulaVar* makeRooFormulaVar(const std::string& process, const std::string& 
 //
 //-------------------------------------------------------------------------------
 
-  std::cout << "<makeRooFormulaVar>:" << std::endl;
-  std::cout << " building RooFormulaVar expression for process = " << process << ", region = " << region << "." << std::endl;
+  //std::cout << "<makeRooFormulaVar>:" << std::endl;
+  //std::cout << " building RooFormulaVar expression for process = " << process << ", region = " << region << "." << std::endl;
 
   RooFormulaVar* retVal = 0;
 
@@ -123,7 +123,7 @@ RooFormulaVar* makeRooFormulaVar(const std::string& process, const std::string& 
   addToFormula(formula, "regular",       arguments, norm);
   addToFormula(formula, "regular",       arguments, fittedFraction);
 
-  std::cout << " formula = " << formula << std::endl;
+  //std::cout << " formula = " << formula << std::endl;
   //std::cout << " arguments:" << std::endl;
   //for ( int i = 0; i < arguments.GetEntries(); ++i ) {
   //  std::cout << "  " << dynamic_cast<TNamed*>(arguments.At(i))->GetName() << ":" 
@@ -472,6 +472,11 @@ void fitUsingRooFit(std::map<std::string, std::map<std::string, TH1*> >& distrib
   RooLinkedList fitOptionsC1;
   fitOptionsC1.Add(new RooCmdArg(RooFit::Extended()));
   fitOptionsC1.Add(new RooCmdArg(RooFit::ExternalConstraints(RooArgSet(fitConstraintsC1))));
+  //fitOptionsC1.Add(new RooCmdArg(RooFit::PrintEvalErrors(10)));
+  fitOptionsC1.Add(new RooCmdArg(RooFit::PrintEvalErrors(-1)));
+  fitOptionsC1.Add(new RooCmdArg(RooFit::Save(true)));
+
+  //pdfSimultaneousFitC1->printCompactTree();
 
   TObjArray fitConstraintsABC2D;
   //fitConstraintsABC2D.Add(makeFitConstraint(pDiTauCharge_OS_SS["QCD"],         
@@ -490,6 +495,10 @@ void fitUsingRooFit(std::map<std::string, std::map<std::string, TH1*> >& distrib
   RooLinkedList fitOptionsABC2D;
   fitOptionsABC2D.Add(new RooCmdArg(RooFit::Extended()));
   //fitOptionsABC2D.Add(new RooCmdArg(RooFit::ExternalConstraints(RooArgSet(fitConstraintsABC2D))));
+  //fitOptionsABC2D.Add(new RooCmdArg(RooFit::PrintEvalErrors(10)));
+  fitOptionsABC2D.Add(new RooCmdArg(RooFit::PrintEvalErrors(-1)));
+
+  //pdfSimultaneousFitABC2D->printCompactTree();
   
 /*
   fitOptionsC1.Add(new RooCmdArg(RooFit::Save(true)));
