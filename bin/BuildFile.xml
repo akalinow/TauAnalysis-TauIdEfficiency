@@ -1,40 +1,18 @@
-<bin name="HistoFitter.exe"  file="HistoFitter.cc">
-  <use   name="root"/>
-  <use   name="boost"/>
-  <use   name="rootcintex"/>
-  <use   name="FWCore/FWLite"/>
-  <use   name="DataFormats/FWLite"/>
-  <use   name="DataFormats/Luminosity"/>
-  <use   name="FWCore/PythonParameterSet"/>
-  <use   name="CommonTools/Utils"/>
-  <use   name="PhysicsTools/FWLite"/>
-  <use   name="PhysicsTools/Utilities"/>
-  <use   name="PhysicsTools/SelectorUtils"/>
-  <use   name="roofit"/>
-</bin>
-
-<bin   file="makeTauIdEffPlots.cc" name="makeTauIdEffPlots">
-  <use   name="root"/>
-  <use   name="rootgraphics"/>
-  <use   name="rootrflx"/>
-  <use   name="DataFormats/FWLite"/>
-  <use   name="DataFormats/StdDictionaries"/>
-  <use   name="DataFormats/WrappedStdDictionaries"/>
-  <use   name="TauAnalysis/DQMTools"/>
-  <use   name="TauAnalysis/FittingTools"/>
-  <use   name="roofit"/>
-</bin>
-<bin   file="fitTauIdEff_wConstraints.cc" name="fitTauIdEff_wConstraints">
-  <use   name="roofit"/>
-  <use   name="root"/>
-  <use   name="rootgraphics"/>
-  <use   name="TauAnalysis/DQMTools"/>
-  <use   name="TauAnalysis/FittingTools"/>
-</bin>
-<bin   file="fitTauIdEff.cc" name="fitTauIdEff">
-  <use   name="roofit"/>
-  <use   name="root"/>
-  <use   name="rootgraphics"/>
-  <use   name="TauAnalysis/DQMTools"/>
-  <use   name="TauAnalysis/FittingTools"/>
-</bin>
+<use   name="root"/>
+<use   name="boost"/>
+<use   name="boost_program_options"/>
+<use   name="rootcintex"/>
+<use   name="FWCore/FWLite"/>
+<use   name="DataFormats/FWLite"/>
+<use   name="DataFormats/Luminosity"/>
+<use   name="FWCore/PythonParameterSet"/>
+<use   name="CommonTools/Utils"/>
+<use   name="PhysicsTools/FWLite"/>
+<use   name="PhysicsTools/Utilities"/>
+<use   name="PhysicsTools/SelectorUtils"/>
+<use   name="PhysicsTools/JetMCUtils"/>
+<use   name="roofit"/>
+<environment>
+  <bin name="HistoFitter.exe"  file="HistoFitter.cc"></bin>
+  <bin name="SystematicsMacro.exe"  file="SystematicsMacro.cc"></bin>
+</environment>
