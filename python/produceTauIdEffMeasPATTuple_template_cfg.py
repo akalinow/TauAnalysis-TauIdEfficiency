@@ -128,6 +128,19 @@ process.jec = cms.ESSource("PoolDBESSource",
 process.es_prefer_jec = cms.ESPrefer('PoolDBESSource','jec')
 #-------------------------------------------------------------------------------------------------------------------------
 
+#-------------------------------------------------------------------------------------------------------------------------
+#                   Pileup reweight (from old NTuple)
+#-------------------------------------------------------------------------------------------------------------------------
+process.load("TauAnalysis.TauIdEfficiency.ntupleConfigVertex_cfi")
+process.ntupleProducer = cms.EDProducer("ObjValEDNtupleProducer",
+                                        ntupleName = cms.string("tauIdEffNtuple"),
+                                        sources = cms.PSet(                                            
+                                            )
+                                        )
+# in order to match vertex multiplicity distribution in Data                                             
+setattr(process.ntupleProducer.sources, "vertexMultReweight", process.vertexMultReweight_template)
+#-------------------------------------------------------------------------------------------------------------------------
+
 #--------------------------------------------------------------------------------
 #
 # Save ntuple
@@ -138,12 +151,20 @@ process.ntupleOutputModule = cms.OutputModule("PoolOutputModule",
                                                       'drop *',
                                                       'keep edmMergeableCounter_*_*_*',
                                                       'keep *TriggerEvent_*_*_*',
-                                                      'keep patMuons_selected*Cumulative_*_*',
+                                                      'keep patMuons_selectedPatMuonsForTauIdEffTrkIPcumulative_*_*',
                                                       'keep *_patMuonsStandAlone_*_*',
-                                                      'keep patTaus_selected*Cumulative_*_*',
-                                                      'keep *CompositePtrCandidateT1T2MEt*_selected*Cumulative_*_*',
-                                                      'keep *_selectedPatMuonsForTauIdEffTrkIPcumulative*_*_*',
-                                                      'keep *Vertex*_*_*_*'
+                                                      'keep patTaus_selectedPatPFTausShrinkingConePFRelIsoCumulative_*_*',
+                                                      'keep patTaus_selectedPatPFTausHPSpTaNCPFRelIsoCumulative_*_*',
+                                                      'keep patTaus_selectedPatPFTausHPSPFRelIsoCumulative_*_*',
+                                                      'keep patTaus_selectedPatPFTausHPSpTaNCPFRelIsoCumulative_*_*',
+                                                      'keep *CompositePtrCandidateT1T2MEt*_selectedMuPFTauShrinkingConePairsForTauIdEffCumulative_*_*',
+                                                      'keep *CompositePtrCandidateT1T2MEt*_selectedMuPFTauHPSpTaNCpairsForTauIdEffCumulative_*_*',
+                                                      'keep *CompositePtrCandidateT1T2MEt*_selectedMuPFTauHPSpairsForTauIdEffCumulative_*_*',
+                                                      'keep *CompositePtrCandidateT1T2MEt*_selectedMuPFTauHPSpTaNCpairsForTauIdEffCumulative_*_*',
+                                                      'keep *Vertex*_*_*_*',
+                                                      'keep *_ak5PFJets_*_*',
+                                                      'keep *_ak5CaloJets_*_*',
+                                                      'keep *PFCandidate*_*_*_*'
                                                       )               
                                                   ),
                                               process.tauIdEffSampleEventSelection,
@@ -152,13 +173,14 @@ process.ntupleOutputModule = cms.OutputModule("PoolOutputModule",
 if isMC:
     process.ntupleOutputModule.outputCommands.extend(
       cms.untracked.vstring(
-        'keep *GenJet*_*_*_*',
-        'keep *recoGenMET_*_*_*',
-        'keep *_genParticles_*_*',
-        'keep *_generator_*_*',
-        'keep *_*GenJets_*_*',
-        'keep *_addPileupInfo_*_*'
-        )
+            "keep *_*_*vtxMultReweight*_*",
+            'keep *GenJet*_*_*_*',
+            'keep *recoGenMET_*_*_*',
+            'keep *_genParticles_*_*',
+            'keep *_generator_*_*',
+            'keep *_*GenJets_*_*',
+            'keep *_addPileupInfo_*_*'
+            )
     )
 #--------------------------------------------------------------------------------
 
@@ -168,7 +190,7 @@ process.p = cms.Path(
    + process.producePatTupleTauIdEffMeasSpecific
    #+ process.printEventContent
    #+ process.printGenParticleList
-#   + process.ntupleProducer
+   + process.ntupleProducer
 )
 
 process.options = cms.untracked.PSet(
