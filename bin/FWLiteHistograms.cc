@@ -10,7 +10,6 @@
 #include <TROOT.h>
 #include <TFile.h>
 #include <TSystem.h>
-
 #include <TH1I.h>
 #include "DataFormats/PatCandidates/interface/Tau.h"
 #include "DataFormats/TauReco/interface/PFTau.h"
@@ -18,23 +17,16 @@
 #include "DataFormats/TauReco/interface/PFTauDiscriminator.h"
 #include "PhysicsTools/JetMCUtils/interface/JetMCTag.h"
 #include "DataFormats/Math/interface/deltaPhi.h"
-
-
 #include "DataFormats/FWLite/interface/Event.h"
 #include "DataFormats/Common/interface/Handle.h"
 #include "FWCore/FWLite/interface/AutoLibraryLoader.h"
-
-
 #include "PhysicsTools/FWLite/interface/TFileService.h"
 #include "PhysicsTools/FWLite/interface/CommandLineParser.h"
-
-
 int main(int argc, char* argv[]) 
 {
   // define what muon you are using; this is necessary as FWLite is not 
   // capable of reading edm::Views
   //  using reco::Muon;
-
   // ----------------------------------------------------------------------
   // First Part: 
   //
@@ -42,34 +34,28 @@ int main(int argc, char* argv[])
   //  * book the histograms of interest 
   //  * open the input file
   // ----------------------------------------------------------------------
-
   // load framework libraries
   gSystem->Load( "libFWCoreFWLite" );
   AutoLibraryLoader::enable();
-
   // initialize command line parser
-  
   ///////////////////////////////////////////////////////////////////////////
   /////////////Function to Book histograms//////////////////////////////////
   //////////////////////////////////////////////////////////////////////////
-  //  Book_Fill_histograms *a = new Book_Fill_histograms();      
-  //a->bookHistograms();
   optutl::CommandLineParser parser ("Analyze FWLite Histograms");
   // set defaults
   parser.integerValue ("maxEvents"  ) = -1;
   parser.integerValue ("outputEvery") =   1;
   parser.stringValue  ("outputFile" ) = "analyzeFWLiteHistograms.root";
-  
   // parse arguments
   parser.parseArguments (argc, argv);
   int maxEvents_ = parser.integerValue("maxEvents");
   unsigned int outputEvery_ = parser.integerValue("outputEvery");
   std::string outputFile_ = parser.stringValue("outputFile");
   std::vector<std::string> inputFiles_ = parser.stringVector("inputFiles");
-  
   // book a set of histograms
   fwlite::TFileService fs = fwlite::TFileService(outputFile_.c_str());
   TFileDirectory dir = fs.mkdir("analyzeBasicPat");
+  
   
   TH1F *tauPt_;
   tauPt_ = dir.make<TH1F>("tauPt" , "pt"  ,   900,   0., 300.);
@@ -107,7 +93,6 @@ int main(int argc, char* argv[])
   TH1I* isoparticleID_;
   isoparticleID_  = dir.make<TH1I>("isoparticleID"  , "isoparticleID"  ,   10,   -0.5, 9.5);
 
-  
   TH1F* PFJetPt_;
   PFJetPt_  = dir.make<TH1F>("PFJetPt"  , "PFJetPt"  ,   900,   0.0, 300.0);
   
@@ -119,6 +104,9 @@ int main(int argc, char* argv[])
   
   TH1F* PtRes_;
   PtRes_  = dir.make<TH1F>("PtRes" , "PtRes"  ,   100,   0.0, 5.0);
+
+  TH1F* PtResNew_;
+  PtResNew_  = dir.make<TH1F>("PtResNew" , "PtResNew"  ,   100,   0.0, 5.0);
   
   TH1F* PTResOneProng0Pi0_;
   PTResOneProng0Pi0_  = dir.make<TH1F>("PTResOneProng0Pi0" , "PTResOneProng0Pi0"  ,   100,   0.0, 5.0);
@@ -228,7 +216,6 @@ int main(int argc, char* argv[])
       RecoGammaSum_vs_GenGammaSum_[ibin]  = dir.make<TH2F>(("RecoGammaSum_vs_GenGammaSum_"+histname).c_str()  , "SumPt_{gamma reco} vs SumPt_{gamma gen};SumPt_{gamma reco};SumPt_{gamma gen}" , 2000, 0.0, 75.0,2000, 0, 75);
     }  
 
-
   TH2F* RecoGammaSum_tot_vs_GenGammaSum_[10];
   for(int ibin=0; ibin <10; ibin++)
     {
@@ -238,6 +225,61 @@ int main(int argc, char* argv[])
       RecoGammaSum_tot_vs_GenGammaSum_[ibin]  = dir.make<TH2F>(("RecoGammaSum_tot_vs_GenGammaSum_"+histname).c_str()  , "SumPt_{gamma reco} vs SumPt_{gamma gen};SumPt_{gamma reco};SumPt_{gamma gen}" , 2000, 0.0, 75.0,2000, 0, 75);
     }  
   
+  TH1F* Ratio_RecSumPtCgdHad_GenJetCgdHad_[10];
+  for(int ibin=0; ibin <10; ibin++)
+    {
+      char tmphistname[100];
+      sprintf(tmphistname,"_%d_to_%d",ibin,ibin+1);
+      std::string histname(tmphistname);
+      Ratio_RecSumPtCgdHad_GenJetCgdHad_[ibin]  = dir.make<TH1F>(("Ratio_RecSumPtCgdHad_GenJetCgdHad_"+histname).c_str()  , "SumPt_{chgd had} / SumPt_{gen Jet chgd had};SumPt_{reco chgd had}/SumPt_{genJet chgd had};# of events" , 500, 0, 5.0);
+    }  
+  
+
+  TH1F* Ratio_RecSumPtGam_GenJetSumPtGam_[10];
+  for(int ibin=0; ibin <10; ibin++)
+    {
+      char tmphistname[100];
+      sprintf(tmphistname,"_%d_to_%d",ibin,ibin+1);
+      std::string histname(tmphistname);
+      Ratio_RecSumPtGam_GenJetSumPtGam_[ibin]  = dir.make<TH1F>(("Ratio_RecSumPtGam_GenJetSumPtGam_"+histname).c_str()  , "SumPt_{#gamma reco} / SumPt_{#gamma gen};SumPt_{#gamma reco}/SumPt_{#gamma gen};# of events" , 500, 0, 5.0);
+    }  
+
+  TH1F* Ratio_GenJetPtSumGam_Minus_GenJetSumPtGam_[10];
+  for(int ibin=0; ibin <10; ibin++)
+    {
+      char tmphistname[100];
+      sprintf(tmphistname,"_%d_to_%d",ibin,ibin+1);
+      std::string histname(tmphistname);
+      Ratio_GenJetPtSumGam_Minus_GenJetSumPtGam_[ibin]  = dir.make<TH1F>(("Ratio_GenJetPtSumGam_Minus_GenJetSumPtGam_"+histname).c_str()  , "(SumPt_{#gamma gen} - SumPt_{#gamma reco})/Pt_{Gen Tau Jet} ; (SumPt_{#gamma gen}-SumPt_{#gamma reco})/Pt_{Gen Tau Jet};# of events" , 500, -1.0, 1.0);
+    }  
+
+  TH1F* Ratio_GenJetPtSumChdHad_Minus_GenJetSumPtChdHad_[10];
+  for(int ibin=0; ibin <10; ibin++)
+    {
+      char tmphistname[100];
+      sprintf(tmphistname,"_%d_to_%d",ibin,ibin+1);
+      std::string histname(tmphistname);
+      Ratio_GenJetPtSumChdHad_Minus_GenJetSumPtChdHad_[ibin]  = dir.make<TH1F>(("Ratio_GenJetPtSumChsHad_Minus_GenJetSumPtChdHad_"+histname).c_str()  , "(SumPt_{Chd Had gen} - SumPt_{Chd Had reco})/Pt_{Gen Tau Jet} ; (SumPt_{Chd Had gen}-SumPt_{Chd Had reco})/Pt_{Gen Tau Jet};# of events" , 500, -0.5, 0.5);
+    }  
+
+
+  TH1F* Ratio_GenJetPtSumChdHad_Minus_GenJetSumPtChdHad_decaymode_[5];
+  std::string decaymode[5]={"OneP0Pi0", "OneP1Pi0", "OneP2Pi0", "ThreeP0Pi0", "ThreeP1Pi0"};
+  for(int ibin=0; ibin <5; ibin++)
+    {
+      std::string histname(decaymode[ibin]);
+      Ratio_GenJetPtSumChdHad_Minus_GenJetSumPtChdHad_decaymode_[ibin]  = dir.make<TH1F>(("Ratio_GenJetPtSumChsHad_Minus_GenJetSumPtChdHad_"+histname).c_str()  , "(SumPt_{Chd Had gen} - SumPt_{Chd Had reco})/Pt_{Gen Tau Jet} ; (SumPt_{Chd Had gen}-SumPt_{Chd Had reco})/Pt_{Gen Tau Jet};# of events" , 500, -0.5, 0.5);
+    }  
+  
+  
+  TH1F* Ratio_GenJetPtSumGam_Minus_GenJetSumPtGam_decaymode_[5];
+  //std::string decaymode[5]={"OneP0Pi0", "OneP1Pi0", "OneP2Pi0", "ThreeP0Pi0", "ThreeP1Pi0"};
+  for(int ibin=0; ibin <5; ibin++)
+    {
+      std::string histname(decaymode[ibin]);
+      Ratio_GenJetPtSumGam_Minus_GenJetSumPtGam_decaymode_[ibin]  = dir.make<TH1F>(("Ratio_GenJetPtSumGam_Minus_GenJetSumPtGam_"+histname).c_str()  , "(SumPt_{#gamma gen} - SumPt_{#gamma reco})/Pt_{Gen Tau Jet} ; (SumPt_{#gamma gen}-SumPt_{#gamma reco})/Pt_{Gen Tau Jet};# of events" , 500, -1.0, 1.0);
+    }  
+
   // loop the events
   int ievt=0;  
   for(unsigned int iFile=0; iFile<inputFiles_.size(); ++iFile){
@@ -253,28 +295,15 @@ int main(int argc, char* argv[])
       //  * after the loop close the input file
       // ----------------------------------------------------------------------      
       fwlite::Event ev(inFile);
+      Int_t itau                                                        ;
+      float PionSumPt          , PhotonSumPt                            ;
+      float tmpPFCPtSum        , tmpPFGPtSum         , tmpPFNPtSum      ;
+      float tmpPFCisoPtSum     , tmpPFGisoPtSum       , tmpPFNisoPtSum  ;
+      float genTauPt           , tauPt                                  ;
+      float PFCisoPtSum        , PFGisoPtSum         , PFNisoPtSum      ;
+      float PtRes              , PFJetPt                                ;
+      int   recotaudecaymode   , gendecaymodeInt =-999                  ;
       
-      Int_t itau;
-      float PionSumPt;
-      float PhotonSumPt;
-      float tmpPFCPtSum;
-      float tmpPFGPtSum;
-      float tmpPFNPtSum;
-      
-      float tmpPFCisoPtSum;
-      float tmpPFGisoPtSum;
-      float tmpPFNisoPtSum;
-      
-      
-      float genTauPt ;
-      float tauPt;
-      float PFCisoPtSum;
-      float PFGisoPtSum;
-      float PFNisoPtSum;
-      int gendecaymodeInt =-999;
-      float PtRes;
-      int recotaudecaymode;
-      float PFJetPt ;
       for(ev.toBegin(); !ev.atEnd(); ++ev, ++ievt){
 	edm::EventBase const & event = ev;
 	// break loop if maximal number of events is reached 
@@ -287,6 +316,24 @@ int main(int argc, char* argv[])
 	using namespace std;
 	using namespace reco;
 	using namespace pat;
+	/*edm::Handle<std::vector<pat::Tau> > patTausAK5GenJetMatchedHandle;
+	  event.getByLabel(std::string("patTausAK5GenJetMatched"), patTausAK5GenJetMatchedHandle);
+	  for(std::vector<pat::Tau>::const_iterator tauAK5GenJetMatchedItr=patTausAK5GenJetMatchedHandle->begin(); tauAK5GenJetMatchedItr!=patTausAK5GenJetMatchedHandle->end(); ++tauAK5GenJetMatchedItr)
+	  {
+	  if( tauAK5GenJetMatchedItr->pt() > 20.0 &&  tauAK5GenJetMatchedItr->pt() < 40.0 )      {
+	  if(tauAK5GenJetMatchedItr->genJet() ) {
+	  if ( tauAK5GenJetMatchedItr->pfJetRef().isNonnull() ) {
+	  std::string genTauDecayMode = JetMCTagUtils::genTauDecayMode(*tauAK5GenJetMatchedItr->genJet());		  
+	  cout<<"Matched Jet Pt = "<<tauAK5GenJetMatchedItr->pfJetRef()->pt()<<endl;
+	  cout<<"new decay mode is =  "<<genTauDecayMode<<endl;
+	  
+	  //}
+	  }
+	  }
+	  }
+	  }
+	*/
+
 	//////////////////////////////////////////////////////////////
 	//////////////////////////Clean Pat Taus//////////////////////
 	//////////////////////////////////////////////////////////////
@@ -341,7 +388,8 @@ int main(int argc, char* argv[])
 			for (int iList = 0; iList <int(genParticleList.size()); iList++)
 			  {
 			    //look for charged hadrons, check if there is sme mistake in pdgId, summing Pt of all charged hadrons.
-			    if(abs(genParticleList[iList]->pdgId()) == 211 || abs(genParticleList[iList]->pdgId()) == 321)
+			    // if(abs(genParticleList[iList]->pdgId()) == 211 || abs(genParticleList[iList]->pdgId()) == 321)
+			    if(abs(genParticleList[iList]->charge()) > 0.5 )
 			      PionSumPt+= genParticleList[iList]->pt();
 			    
 			    //look for photons coming from pi0, summing Pt of all Photons
@@ -364,22 +412,25 @@ int main(int argc, char* argv[])
 		    
 		    // charged candidates in signal region
 		    const reco::PFCandidateRefVector &chargedref = tauItr->signalPFChargedHadrCands() ;
-		    for(int i=0; i<(int)chargedref.size(); i++)
-		      tmpPFCPtSum = tmpPFCPtSum + chargedref[i]->pt();
-		    PFCPtSum_->Fill(tmpPFCPtSum);
-		    
+		    if( chargedref.size() > 0 ) {
+		      for(int i=0; i<(int)chargedref.size(); i++)
+			tmpPFCPtSum = tmpPFCPtSum + chargedref[i]->pt();
+		      PFCPtSum_->Fill(tmpPFCPtSum);
+		    }
 		    //Gamma chandidates in Signal region
 		    const reco::PFCandidateRefVector &gammaref = tauItr->signalPFGammaCands();
-		    for(int i=0; i<(int)gammaref.size(); i++)
-		      tmpPFGPtSum = tmpPFGPtSum + gammaref[i]->pt();
-		    PFGPtSum_->Fill(tmpPFGPtSum);
-		    
+		    if ( gammaref.size() > 0) {
+		      for(int i=0; i<(int)gammaref.size(); i++)
+			tmpPFGPtSum = tmpPFGPtSum + gammaref[i]->pt();
+		      PFGPtSum_->Fill(tmpPFGPtSum);
+		    }
 		    //Neutral hadrons in signal region, ideally it should be ZERO, and has been checked that it is zero.
 		    const reco::PFCandidateRefVector &neutralref = tauItr->signalPFNeutrHadrCands();
-		    for(int i=0; i<(int)neutralref.size(); i++)
-		      tmpPFNPtSum = tmpPFNPtSum + neutralref[i]->pt();
-		    PFNPtSum_->Fill(tmpPFNPtSum);
-		    
+		    if ( neutralref.size() > 0 ) {
+		      for(int i=0; i<(int)neutralref.size(); i++)
+			tmpPFNPtSum = tmpPFNPtSum + neutralref[i]->pt();
+		      PFNPtSum_->Fill(tmpPFNPtSum);
+		    }
 		    //Sum of Gamma and Charged hadrons in Signal Region
 		    PFCandidateSumPt_->Fill(tmpPFGPtSum+tmpPFCPtSum);
 		    //Ratio of (Sum of Gamma and Charged hadrons in Signal Region) and GenTauJetPt , Ideally it should be
@@ -392,33 +443,28 @@ int main(int argc, char* argv[])
 		    tmpPFCisoPtSum = 0.0;
 		    tmpPFGisoPtSum = 0.0;
 		    tmpPFNisoPtSum = 0.0;
-		    
 		    //Charged hadrons in Isolation Region
 		    const reco::PFCandidateRefVector &chargedisoref = tauItr->isolationPFChargedHadrCands() ;
 		    for(int i=0; i<(int)chargedisoref.size(); i++)
 		      tmpPFCisoPtSum = tmpPFCisoPtSum + chargedisoref[i]->pt() ;
 		    PFCisoPtSum = tmpPFCisoPtSum;
 		    PFCisoPtSum_->Fill(tmpPFCisoPtSum);
-		    
 		    //Charged hadrons in Isolation Region
 		    const reco::PFCandidateRefVector &gammaisoref = tauItr->isolationPFGammaCands();
 		    for(int i=0; i<(int)gammaisoref.size(); i++)
 		      tmpPFGisoPtSum = tmpPFGisoPtSum + gammaisoref[i]->pt() ;
 		    PFGisoPtSum = tmpPFGisoPtSum;
 		    PFGisoPtSum_->Fill(tmpPFGisoPtSum);
-		    
 		    //Charged hadrons in Isolation Region
 		    const reco::PFCandidateRefVector &neutralisoref = tauItr->isolationPFNeutrHadrCands();
 		    for(int i=0; i<(int)neutralisoref.size(); i++)
 		      tmpPFNisoPtSum = tmpPFNisoPtSum + neutralisoref[i]->pt() ; 
 		    PFNisoPtSum = tmpPFNisoPtSum;
 		    PFNisoPtSum_->Fill(tmpPFNisoPtSum);
-		    
 		    //Sum of (Charged hadrons, Neutral hadrons, Photons) in Isolation Region
 		    PFCandidateisoSumPt_->Fill(tmpPFNisoPtSum + tmpPFGisoPtSum + tmpPFCisoPtSum);
 		    //Ratio of ( Sum of (Charged hadrons, Neutral hadrons, Photons) in Isolation Region ) and GenTauJetPt
 		    PFCandidateisoSumPtDivGenTauPt_->Fill((tmpPFNisoPtSum + tmpPFGisoPtSum + tmpPFCisoPtSum)/genTauPt);
-		    
 		    /////////////////////////////////////////////////////////////////// 
 		    ///////////////Particle Flow Jets////////////////////////////////// 
 		    /////////////////////////////////////////////////////////////////// 
@@ -426,6 +472,29 @@ int main(int argc, char* argv[])
 		    PFJetPt_->Fill(tauItr->pfJetRef()->pt());
 		    PFJetPhi_->Fill(tauItr->pfJetRef()->phi());
 		    PFJetEta_->Fill(tauItr->pfJetRef()->eta());
+		    
+		    std::vector <reco::PFCandidatePtr> pfJetConstituents = tauItr->pfJetRef()->getPFConstituents();
+		    float PFJetConst_gammaSumPt = 0;
+		    for ( int iParticle = 0; iParticle < int(pfJetConstituents.size()); iParticle++)
+		      {
+			if(pfJetConstituents[iParticle]->particleId()==reco::PFCandidate::gamma)  //particle id 4 is reco::PFCandidate::gamma
+			  {
+			    PFJetConst_gammaSumPt += pfJetConstituents[iParticle]->pt() ;
+			  }
+		      }
+		    PtResNew_->Fill( (PFJetPt - tmpPFGPtSum + PFJetConst_gammaSumPt)/genTauPt );
+		    
+		    //for debuging
+		    //cout<<"photon is found with Pt "<<pfJetConstituents[iParticle]->pt()<<endl;
+		    //cout<<"particle number = "<<iParticle<<"  with particle id = "<<pfJetConstituents[iParticle]->particleId()<<" and   particle Pt  = "<<pfJetConstituents[iParticle]->pt()<<endl;
+		    //cout<<" Photon Sum Pt in PFJet = "<<PFJetConst_gammaSumPt<<endl;
+		    //cout<<" particleId() = "<<pfJetConstituents.size()<<endl;
+		    /*cout<<" PfJet Charged hadron Pt = "<<tauItr->pfJetRef()->chargedHadronEnergy()<<endl;
+		      cout<<" PfJet Neutral hadron Pt = "<<tauItr->pfJetRef()->neutralHadronEnergy()<<endl;
+		    cout<<" PfJet Gamma          Pt = "<<tauItr->pfJetRef()->photonEnergy()<<endl;
+		    cout<<" PfJet Total          Pt = "<<( tauItr->pfJetRef()->photonEnergy() + tauItr->pfJetRef()->neutralHadronEnergy()  +  tauItr->pfJetRef()->chargedHadronEnergy() )<<endl;
+		    */
+
 		    
 		    /////////////////////////////////////////////////////////////////// 
 		    ///////////////////////Pat Tau Jet///////////////////////////////// 
@@ -437,14 +506,12 @@ int main(int argc, char* argv[])
 		    recotaudecaymode = tauItr->decayMode();
 		    recotaudecaymode_->Fill(tauItr->decayMode());
 		    reco_vs_gen_decay_mode_->Fill(gendecaymodeInt , recotaudecaymode);
-		    
 		    // fill PtRes when gen decay mode and reco decay mode are same
 		    if(recotaudecaymode == gendecaymodeInt)
 		      matched_PtRes_->Fill(tauPt/genTauPt);
 		    // fill PtRes for all selected taus which are matched to gen tau Jet in eta, phi
 		    PtRes = tauPt/genTauPt;
 		    PtRes_->Fill(tauPt/genTauPt);
-		    
 		    //fill PtRes according to gen tau decay mode
 		    if(gendecaymodeInt==0)
 		      PTResOneProng0Pi0_->Fill(PtRes);
@@ -456,12 +523,10 @@ int main(int argc, char* argv[])
 		      PTResThreeProng0Pi0_->Fill(PtRes);
 		    if(gendecaymodeInt==11)
 		      PTResThreeProng1Pi0_->Fill(PtRes);
-		    
 		    // These three histo are for checking bugs, keeping them alive in code for some time. 
 		    OneMinusPtRes_->Fill(1.0-(tauPt/genTauPt));
 		    GenMinusPatPt_->Fill(abs(genTauPt - tauPt));
 		    SigPlusIso_div_genJetPt_->Fill((tmpPFNisoPtSum + tmpPFGisoPtSum + tmpPFCisoPtSum+tmpPFGPtSum+tmpPFCPtSum)/genTauPt);
-		    
 		    //requiring this, if condition is not satisfied then default value is -999 will be filled in histo. 
 		    //check if this is required or not .. ?
 		    if (PFJetPt !=-999 && genTauPt !=-999 && tauPt != -999)
@@ -479,11 +544,42 @@ int main(int argc, char* argv[])
 				SumPFN_vs_SumPFG_[i]->Fill((PFNisoPtSum)/delta,(PFGisoPtSum)/delta);
 				//fill (reco tau decay mode) vs (gen tau decay mode) in bins of PtRes
 				reco_vs_gen_decay_mode_in_bin_[i]->Fill(gendecaymodeInt , recotaudecaymode);
+				//Reco Gamma Sum Pt in signal vs Gamma Sum Pt in GenJet  matched to tau.
 				RecoGammaSum_vs_GenGammaSum_[i]->Fill(PhotonSumPt,tmpPFGPtSum);
+				//Reco Gamma Sum Pt in (signal + isolation list)  vs Gamma Sum Pt in GenJet  matched to tau.
 				RecoGammaSum_tot_vs_GenGammaSum_[i]->Fill(PhotonSumPt, ( tmpPFGPtSum + tmpPFGisoPtSum ) );
+				//(sumPt of patTau signalPFChargedHadrCands()) /  (sum Pt of patTau->genJet() constituents with abs(charge) > 0.5 )
+				Ratio_RecSumPtCgdHad_GenJetCgdHad_[i]->Fill(tmpPFCPtSum/PionSumPt);
+				//(sumPt of patTau signalPFGammaCands()) /  (sum Pt of patTau->genJet() constituents with pdgId == 22 )
+				Ratio_RecSumPtGam_GenJetSumPtGam_[i]->Fill(tmpPFGPtSum/PhotonSumPt);
+				//( (sum Pt of patTau->genJet() constituents with pdgId == 22 ) - (sumPt of patTau signalPFGammaCands()) ) / genTauPt
+				Ratio_GenJetPtSumGam_Minus_GenJetSumPtGam_[i]->Fill( (PhotonSumPt - tmpPFGPtSum)/genTauPt ) ;
+				// ( (sum Pt of patTau->genJet() constituents with abs(charge) > 0.5 ) - (sumPt of patTau signalPFChargedHadrCands()) ) / genTauPt
+				Ratio_GenJetPtSumChdHad_Minus_GenJetSumPtChdHad_[i]->Fill( (PionSumPt - tmpPFCPtSum)/genTauPt ) ;
 			      }
 			  }
+			if(gendecaymodeInt==0){
+			  Ratio_GenJetPtSumChdHad_Minus_GenJetSumPtChdHad_decaymode_[0]->Fill( (PionSumPt - tmpPFCPtSum)/genTauPt ) ;
+			  Ratio_GenJetPtSumGam_Minus_GenJetSumPtGam_decaymode_[0]->Fill( (PhotonSumPt - tmpPFGPtSum)/genTauPt ) ;
+			}
+			if(gendecaymodeInt==1) {
+			  Ratio_GenJetPtSumChdHad_Minus_GenJetSumPtChdHad_decaymode_[1]->Fill( (PionSumPt - tmpPFCPtSum)/genTauPt ) ;
+			  Ratio_GenJetPtSumGam_Minus_GenJetSumPtGam_decaymode_[1]->Fill( (PhotonSumPt - tmpPFGPtSum)/genTauPt ) ;
+			}
+			if(gendecaymodeInt==2) {
+			  Ratio_GenJetPtSumChdHad_Minus_GenJetSumPtChdHad_decaymode_[2]->Fill( (PionSumPt - tmpPFCPtSum)/genTauPt ) ;
+			  Ratio_GenJetPtSumGam_Minus_GenJetSumPtGam_decaymode_[2]->Fill( (PhotonSumPt - tmpPFGPtSum)/genTauPt ) ;
+			}
+			if(gendecaymodeInt==10) {
+			  Ratio_GenJetPtSumChdHad_Minus_GenJetSumPtChdHad_decaymode_[3]->Fill( (PionSumPt - tmpPFCPtSum)/genTauPt ) ;
+			  Ratio_GenJetPtSumGam_Minus_GenJetSumPtGam_decaymode_[3]->Fill( (PhotonSumPt - tmpPFGPtSum)/genTauPt ) ;
+			}
+			if(gendecaymodeInt==11) {
+			  Ratio_GenJetPtSumChdHad_Minus_GenJetSumPtChdHad_decaymode_[4]->Fill( (PionSumPt - tmpPFCPtSum)/genTauPt ) ;
+			  Ratio_GenJetPtSumGam_Minus_GenJetSumPtGam_decaymode_[4]->Fill( (PhotonSumPt - tmpPFGPtSum)/genTauPt ) ;
+			}
 		      }
+		    
 		    
 		    //requiring this, if condition is not satisfied then default value is -999 will be filled in histo. 
 		    //check if this is required or not .. ?
@@ -507,20 +603,13 @@ int main(int argc, char* argv[])
 			      }
 			  }
 		      }//if (PFJetPt !=-999 && genTauPt !=-999 && tauPt != -999)
-
-		    
-
-
-		    
 		    }//genTauDecayMode == "threeProng1Pi0" ))...{
 		}//if ( tauItr->pfJetRef().isNonnull() ) {
 	      }//if(tauItr->genJet() )...{	
 	    }//if((tauItr->pt() > 20.0 && tauItr->pt() < 40.0))...{
 	  }//for(std::vector<pat::Tau>::const_iterator tauItr=tauHandle->begin(); tauItr!=tauHandle->end(); ++tauItr)...{
-	
 	//	Book_Fill_histograms object1;
 	//object1.bookHistograms();
-	
       }//for(ev.toBegin(); !ev.atEnd(); ++ev, ++ievt){
       // close input file
       inFile->Close();
