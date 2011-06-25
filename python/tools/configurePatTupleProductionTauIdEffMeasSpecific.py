@@ -103,9 +103,9 @@ def configurePatTupleProductionTauIdEffMeasSpecific(process, patSequenceBuilder 
         beamSpotSource = cms.InputTag("offlineBeamSpot")
     )
     process.selectedPatMuonsForTauIdEffPFRelIso = process.selectedPatMuonsPFRelIso.clone(
-        chargedHadronIso = process.patMuonsLoosePFIsoEmbedded04.chargedHadronIso,
-        neutralHadronIso = process.patMuonsLoosePFIsoEmbedded04.neutralHadronIso,
-        photonIso        = process.patMuonsLoosePFIsoEmbedded04.photonIso,
+        chargedHadronIso = process.patMuonsLoosePFIsoEmbedded03.chargedHadronIso,
+        neutralHadronIso = process.patMuonsLoosePFIsoEmbedded03.neutralHadronIso,
+        photonIso        = process.patMuonsLoosePFIsoEmbedded03.photonIso,
         sumPtMax         = cms.double(0.30),
         sumPtMethod      = cms.string("relative")
     )

@@ -37,7 +37,8 @@ muons_recInfo = cms.PSet(
         ecalIso = cms.string("ecalIso"),
         hcalIso = cms.string("hcalIso"),
 
-        # Pt sum of charged + neutral hadrons and photons within isolation cones of size dR = 0.4/0.6
+        # Pt sum of charged + neutral hadrons and photons within isolation cones of size dR = 0.3/0.4/0.6
+        ptSumLooseIsolation03 = cms.string("userFloat('pfLooseIsoPt03')"),
         ptSumLooseIsolation04 = cms.string("userFloat('pfLooseIsoPt04')"),
         ptSumLooseIsolation06 = cms.string("userFloat('pfLooseIsoPt06')")
     )

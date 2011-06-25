@@ -453,8 +453,6 @@ void applyStyleOption(TH1* histogram, const std::string& histogramTitle,
 
 void drawHistograms(TH1* histogramZtautau, double normZtautau,
 		    TH1* histogramZmumu, double normZmumu,
-		    //TH1* histogramDYmumuM2to10, double normDYmumuM2to10,
-		    //TH1* histogramDYmumuM10to20, double normDYmumuM10to20,		    
 		    TH1* histogramQCD, double normQCD,
 		    TH1* histogramWplusJets, double normWplusJets,
 		    TH1* histogramTTplusJets, double normTTplusJets,
@@ -474,8 +472,6 @@ void drawHistograms(TH1* histogramZtautau, double normZtautau,
   //std::cout << "<drawHistograms>:" << std::endl;
   //std::cout << " Ztautau:       histogram = " << histogramZtautau       << ", norm = " << normZtautau       << std::endl;
   //std::cout << " Zmumu:         histogram = " << histogramZmumu         << ", norm = " << normZmumu         << std::endl;
-  //std::cout << " DYmumuM2to10:  histogram = " << histogramDYmumuM2to10  << ", norm = " << normDYmumuM2to10  << std::endl;
-  //std::cout << " DYmumuM10to20: histogram = " << histogramDYmumuM10to20 << ", norm = " << normDYmumuM10to20 << std::endl;
   //std::cout << " QCD:           histogram = " << histogramQCD           << ", norm = " << normQCD           << std::endl;
   //std::cout << " WplusJets:     histogram = " << histogramWplusJets     << ", norm = " << normWplusJets     << std::endl;
   //std::cout << " TTplusJets:    histogram = " << histogramTTplusJets    << ", norm = " << normTTplusJets    << std::endl;
@@ -495,13 +491,8 @@ void drawHistograms(TH1* histogramZtautau, double normZtautau,
   
 //--- sum Z/gamma* --> mu+ mu- contributions
   TH1* templateZmumu         = ( normZmumu         > 0. ) ? normalize(histogramZmumu,         normZmumu)         : histogramZmumu;
-  //TH1* templateDYmumuM2to10  = ( normDYmumuM2to10  > 0. ) ? normalize(histogramDYmumuM2to10,  normDYmumuM2to10)  : histogramDYmumuM2to10;
-  //TH1* templateDYmumuM10to20 = ( normDYmumuM10to20 > 0. ) ? normalize(histogramDYmumuM10to20, normDYmumuM10to20) : histogramDYmumuM10to20;
-  TH1* templateDYmumuSum = (TH1*)templateZmumu->Clone();
-  //templateDYmumuSum->Add(templateDYmumuM2to10);
-  //templateDYmumuSum->Add(templateDYmumuM10to20);
-  applyStyleOption(templateDYmumuSum, histogramTitle, xAxisTitle);
-  templateDYmumuSum->SetFillColor(596);
+  applyStyleOption(templateZmumu, histogramTitle, xAxisTitle);
+  templateZmumu->SetFillColor(596);
 
   TH1* templateQCD           = ( normQCD           > 0. ) ? normalize(histogramQCD,           normQCD)           : histogramQCD;
   applyStyleOption(templateQCD, histogramTitle, xAxisTitle);
@@ -523,7 +514,7 @@ void drawHistograms(TH1* histogramZtautau, double normZtautau,
 //--- draw histograms for individual processes
   THStack smSum("smSum", "smSum");
   smSum.Add(templateTTplusJets);
-  smSum.Add(templateDYmumuSum);  
+  smSum.Add(templateZmumu);  
   smSum.Add(templateWplusJets);
   smSum.Add(templateQCD);
   smSum.Add(templateZtautau);
@@ -544,7 +535,7 @@ void drawHistograms(TH1* histogramZtautau, double normZtautau,
   legend.AddEntry(templateZtautau,    "Z/#gamma^{*} #rightarrow #tau^{+} #tau^{-}", "f");
   legend.AddEntry(templateQCD,        "QCD",                                        "f");
   legend.AddEntry(templateWplusJets,  "W + jets",                                   "f");
-  legend.AddEntry(templateDYmumuSum,  "Z/#gamma^{*} #rightarrow #mu^{+} #mu^{-}",   "f");
+  legend.AddEntry(templateZmumu,      "Z/#gamma^{*} #rightarrow #mu^{+} #mu^{-}",   "f");
   legend.AddEntry(templateTTplusJets, "t#bar{t} + jets",                            "f");
   legend.Draw();
 
@@ -571,7 +562,7 @@ void drawHistograms(TH1* histogramZtautau, double normZtautau,
   canvas->Print(outputFilePath.append(outputFileName).data());
 
 //--- draw histograms for all background processes summed plus Ztautau signal 
-  TH1* templateSMbgSum = (TH1*)templateDYmumuSum->Clone();
+  TH1* templateSMbgSum = (TH1*)templateZmumu->Clone();
   templateSMbgSum->Add(templateQCD);
   templateSMbgSum->Add(templateWplusJets);
   templateSMbgSum->Add(templateTTplusJets);
@@ -658,9 +649,6 @@ void drawHistograms(TH1* histogramZtautau, double normZtautau,
 
   if ( templateZtautau       != histogramZtautau       ) delete templateZtautau;
   if ( templateZmumu         != histogramZmumu         ) delete templateZmumu;
-  //if ( templateDYmumuM2to10  != histogramDYmumuM2to10  ) delete templateDYmumuM2to10;
-  //if ( templateDYmumuM10to20 != histogramDYmumuM10to20 ) delete templateDYmumuM10to20;
-  delete templateDYmumuSum;
   if ( templateQCD           != histogramQCD           ) delete templateQCD;
   if ( templateWplusJets     != histogramWplusJets     ) delete templateWplusJets;
   if ( templateTTplusJets    != histogramTTplusJets    ) delete templateTTplusJets;
@@ -682,8 +670,6 @@ void drawHistograms(std::map<std::string, std::map<std::string, TH1*> >& distrib
 
   drawHistograms(templatesAll["Ztautau"][region][observable_key], normFactors["Ztautau"],
 		 templatesAll["Zmumu"][region][observable_key], normFactors["Zmumu"],
-		 //templatesAll["DYmumuM2to10"][region][observable_key], normFactors["DYmumuM2to10"],
-		 //templatesAll["DYmumuM10to20"][region][observable_key], normFactors["DYmumuM10to20"],
 		 templatesAll["QCD"][region][observable_key], normFactors["QCD"],
 		 templatesAll["WplusJets"][region][observable_key], normFactors["WplusJets"],
 		 templatesAll["TTplusJets"][region][observable_key], normFactors["TTplusJets"],
@@ -1299,12 +1285,6 @@ void fitUsingRooFit(std::map<std::string, std::map<std::string, TH1*> >& distrib
   //pDiTauCharge_OS_SS["Zmumu"]->setConstant(true);
   pMuonIso_tight_loose["Zmumu"]->setConstant(true);
   pDiTauKine_Sig_Bgr["Zmumu"]->setConstant(true);
-  //pDiTauCharge_OS_SS["DYmumuM2to10"]->setConstant(true);
-  //pMuonIso_tight_loose["DYmumuM2to10"]->setConstant(true);
-  //pDiTauKine_Sig_Bgr["DYmumuM2to10"]->setConstant(true);
-  //pDiTauCharge_OS_SS["DYmumuM10to20"]->setConstant(true);
-  //pMuonIso_tight_loose["DYmumuM10to20"]->setConstant(true);
-  //pDiTauKine_Sig_Bgr["DYmumuM10to20"]->setConstant(true);
 
   pDiTauCharge_OS_SS["TTplusJets"]->setConstant(true);
   pMuonIso_tight_loose["TTplusJets"]->setConstant(true);
@@ -1316,10 +1296,6 @@ void fitUsingRooFit(std::map<std::string, std::map<std::string, TH1*> >& distrib
   TObjArray fitConstraintsC1;
   fitConstraintsC1.Add(makeFitConstraint(normABCD["Zmumu"],      
 					 normABCD["Zmumu"]->getVal(),                 2.0*normABCD["Zmumu"]->getVal()));
-  //fitConstraintsC1.Add(makeFitConstraint(normABCD["DYmumuM2to10"],      
-  //					   normABCD["DYmumuM2to10"]->getVal(),          1.0*normABCD["DYmumuM2to10"]->getVal()));
-  //fitConstraintsC1.Add(makeFitConstraint(normABCD["DYmumuM10to20"],      
-  //					   normABCD["DYmumuM10to20"]->getVal(),         1.0*normABCD["DYmumuM10to20"]->getVal()));  
   fitConstraintsC1.Add(makeFitConstraint(normABCD["QCD"],        
 					 normABCD["QCD"]->getVal(),                   1.0*normABCD["QCD"]->getVal()));
   fitConstraintsC1.Add(makeFitConstraint(normABCD["WplusJets"],  
@@ -1543,61 +1519,61 @@ void fitUsingRooFit(std::map<std::string, std::map<std::string, TH1*> >& distrib
 		 normFactorABCD, "ABCD", getKey(fitVariable, tauId),
 		 std::string("All Events: ").append(fitVariable).append(" (scaled by normalization det. by fit)"),
 		 xAxisTitles ? (*xAxisTitles)[fitVariable] : "",
-		 std::string("controlPlotsTauIdEff_ABCD_").append(fitVariable).append("_fitted.png"), sysShift);
+		 std::string("controlPlotsTauIdEff_wConstraints_ABCD_").append(fitVariable).append("_fitted.png"), sysShift);
   drawHistograms(distributionsData, templatesAll,  
 		 normFactorABCD, "ABCD", getKey("diTauMt", tauId),
 		 "All Events: M_{T} (scaled by normalization det. by fit)", xAxisTitles ? (*xAxisTitles)["diTauMt"] : "",
-		 "controlPlotsTauIdEff_ABCD_Mt_fitted.png", sysShift);
+		 "controlPlotsTauIdEff_wConstraints_ABCD_Mt_fitted.png", sysShift);
   drawHistograms(distributionsData, templatesAll,  
 		 normFactorA, "A", getKey("diTauMt", tauId),
 		 "Region A: M_{T} (scaled by normalization det. by fit)", xAxisTitles ? (*xAxisTitles)["diTauMt"] : "",
-		 "controlPlotsTauIdEff_A_Mt_fitted.png", sysShift);
+		 "controlPlotsTauIdEff_wConstraints_A_Mt_fitted.png", sysShift);
   drawHistograms(distributionsData, templatesAll,  
 		 normFactorB, "B", getKey("diTauMt", tauId),
 		 "Region B: M_{T} (scaled by normalization det. by fit)", xAxisTitles ? (*xAxisTitles)["diTauMt"] : "",
-		 "controlPlotsTauIdEff_B_Mt_fitted.png", sysShift);
+		 "controlPlotsTauIdEff_wConstraints_B_Mt_fitted.png", sysShift);
   drawHistograms(distributionsData, templatesAll,  
 		 normFactorC1, "C1", getKey(fitVariable, tauId),		 
 		 std::string("Region C1: ").append(fitVariable).append(" (scaled by normalization det. by fit)"), 
 		 xAxisTitles ? (*xAxisTitles)[fitVariable] : "",
-		 std::string("controlPlotsTauIdEff_C1_").append(fitVariable).append("_fitted.png"), sysShift,
+		 std::string("controlPlotsTauIdEff_wConstraints_C1_").append(fitVariable).append("_fitted.png"), sysShift,
 		 true);
   drawHistograms(distributionsData, templatesAll,  
 		 normFactorC1p, "C1p", getKey(fitVariable, tauId, "passed"),
 		 std::string("Region C1p: ").append(fitVariable).append(", ").append(tauId).append(" (scaled by normalization det. by fit)"),
 		 xAxisTitles ? (*xAxisTitles)[fitVariable] : "",
-		 std::string("controlPlotsTauIdEff_C1p_").append(fitVariable).append("_").append(tauId).append("_fitted.png"), sysShift,
+		 std::string("controlPlotsTauIdEff_wConstraints_C1p_").append(fitVariable).append("_").append(tauId).append("_fitted.png"), sysShift,
 		 true);
   drawHistograms(distributionsData, templatesAll,  
 		 normFactorC1f, "C1f", getKey(fitVariable, tauId, "failed"),
 		 std::string("Region C1f: ").append(fitVariable).append(", ").append(tauId).append(" (scaled by normalization det. by fit)"),
 		 xAxisTitles ? (*xAxisTitles)[fitVariable] : "",
-		 std::string("controlPlotsTauIdEff_C1f_").append(fitVariable).append("_").append(tauId).append("_fitted.png"), sysShift,
+		 std::string("controlPlotsTauIdEff_wConstraints_C1f_").append(fitVariable).append("_").append(tauId).append("_fitted.png"), sysShift,
 		 true);
   if ( fitTauIdEffC2 ) {
     drawHistograms(distributionsData, templatesAll,  
 		   normFactorC2p, "C2p", getKey("diTauMt", tauId, "passed"),
 		   std::string("Region C2p: ").append(fitVariable).append(", ").append(tauId).append(" (scaled by normalization det. by fit)"),
 		   xAxisTitles ? (*xAxisTitles)["diTauMt"] : "",
-		   std::string("controlPlotsTauIdEff_C2p_").append(fitVariable).append("_").append(tauId).append("_fitted.png"), sysShift,
+		   std::string("controlPlotsTauIdEff_wConstraints_C2p_").append(fitVariable).append("_").append(tauId).append("_fitted.png"), sysShift,
 		   true);
     drawHistograms(distributionsData, templatesAll,  
 		   normFactorC2f, "C2f", getKey("diTauMt", tauId, "failed"),
 		   std::string("Region C2f: ").append(fitVariable).append(", ").append(tauId).append(" (scaled by normalization det. by fit)"),
 		   xAxisTitles ? (*xAxisTitles)["diTauMt"] : "",
-		   std::string("controlPlotsTauIdEff_C2f_").append(fitVariable).append("_").append(tauId).append("_fitted.png"), sysShift,
+		   std::string("controlPlotsTauIdEff_wConstraints_C2f_").append(fitVariable).append("_").append(tauId).append("_fitted.png"), sysShift,
 		   true);
   } else {
     drawHistograms(distributionsData, templatesAll,  
 		   normFactorC2, "C2", getKey("diTauMt", tauId),
 		   "Region C2: M_{T} (scaled by normalization det. by fit)", xAxisTitles ? (*xAxisTitles)["diTauMt"] : "",
-		   "controlPlotsTauIdEff_C2_Mt_fitted.png", sysShift,
+		   "controlPlotsTauIdEff_wConstraints_C2_Mt_fitted.png", sysShift,
 		   true);
   }
   drawHistograms(distributionsData, templatesAll,  
 		 normFactorD, "D", getKey("diTauMt", tauId),
 		 "Region D: M_{T} (scaled by normalization det. by fit)", xAxisTitles ? (*xAxisTitles)["diTauMt"] : "",
-		 "controlPlotsTauIdEff_D_Mt_fitted.png", sysShift);
+		 "controlPlotsTauIdEff_wConstraints_D_Mt_fitted.png", sysShift);
 }
 
 void addFileNames(TChain* chain, const std::string& inputFilePath, const std::string& sampleName, const std::string& jobId)
@@ -1859,8 +1835,8 @@ void fitTauIdEff_wConstraints()
   bool runClosureTest = false;
   //bool runClosureTest = true;
 
-  //bool runQuickTest = false;
-  bool runQuickTest = true;
+  bool runQuickTest = false;
+  //bool runQuickTest = true;
 
   //bool fitTauIdEffC2 = false;
   bool fitTauIdEffC2 = true;
@@ -1916,7 +1892,8 @@ void fitTauIdEff_wConstraints()
   saveRunLumiSectionEventNumbers["C2f"] = false;
   saveRunLumiSectionEventNumbers["D"] = false;
 
-  double corrFactorData = 0.965;                                 // Data/MC correction for muon isolation and trigger efficiencies
+  double corrFactorData = 0.971*0.993*0.975;                     // Data/MC correction for muon trigger, id. and isolation efficiencies
+                                                                 // (numbers taken from CMS AN-2011/153)
   double dataIntLumi = 191*corrFactorData;
 
   //std::string sampleZtautau = "ZtautauPU156bx";
@@ -1997,12 +1974,7 @@ void fitTauIdEff_wConstraints()
 
     std::map<std::string, std::map<std::string, TH1*> > distributionsData; // key = (region, observable)
     if ( loadHistogramsFromFile ) { 
-      if ( runClosureTest ) {
-	std::cout << ">>> NOTE: RUNNING CLOSURE TEST <<<" << std::endl;
-	//distributionsData = loadHistograms(histogramInputFile, "sum", regions, tauIds, fitVariables, *sysShift);
-      } else {
-	distributionsData = loadHistograms(histogramInputFile, "Data", regions, tauIds, fitVariables, *sysShift);
-      }
+      distributionsData = loadHistograms(histogramInputFile, "Data", regions, tauIds, fitVariables, *sysShift);
     } else {
       TChain* chainData_2011RunA = new TChain("Events");
       TChain* chainData_2011RunB = new TChain("Events");
@@ -2095,11 +2067,11 @@ void fitTauIdEff_wConstraints()
     }
 
     std::map<std::string, std::map<std::string, std::map<std::string, TH1*> > > templatesAll; // key = (process, region, observable)
-    templatesAll["Ztautau"]       = templatesZtautau;
-    templatesAll["Zmumu"]         = templatesZmumu;
-    templatesAll["QCD"]           = templatesQCD;
-    templatesAll["WplusJets"]     = templatesWplusJets;
-    templatesAll["TTplusJets"]    = templatesTTplusJets;
+    templatesAll["Ztautau"]    = templatesZtautau;
+    templatesAll["Zmumu"]      = templatesZmumu;
+    templatesAll["QCD"]        = templatesQCD;
+    templatesAll["WplusJets"]  = templatesWplusJets;
+    templatesAll["TTplusJets"] = templatesTTplusJets;
     
     std::vector<std::string> processes;
     processes.push_back(std::string("Ztautau"));
@@ -2175,15 +2147,13 @@ void fitTauIdEff_wConstraints()
 	    key != region->second.end(); ++key ) {
 	drawHistograms(templatesZtautau[region->first][key->first], -1.,
 		       templatesZmumu[region->first][key->first], -1.,
-		       //templatesDYmumuM2to10[region->first][key->first], -1.,
-		       //templatesDYmumuM10to20[region->first][key->first], -1.,
 		       templatesQCD[region->first][key->first], -1.,
 		       templatesWplusJets[region->first][key->first], -1.,
 		       templatesTTplusJets[region->first][key->first], -1.,
 		       distributionsData[region->first][key->first],
 		       std::string("Region ").append(region->first).append(": ").append(key->first).append(" (scaled by cross-section)"),
 		       xAxisTitles[key->first],
-		       std::string("controlPlotsTauIdEff_").append(region->first).append("_").append(key->first).append(".root"), *sysShift);
+		       std::string("controlPlotsTauIdEff_wConstraints_").append(region->first).append("_").append(key->first).append(".png"), *sysShift);
       }
     }
 
@@ -2283,7 +2253,8 @@ void fitTauIdEff_wConstraints()
       for ( std::vector<std::string>::const_iterator fitVariable = fitVariables.begin();
 	    fitVariable != fitVariables.end(); ++fitVariable ) {
 	std::cout << " fitVariable = " << (*fitVariable) << ":" 
-		  << " result = " << effValues[*tauId][*fitVariable]*100. << " +/- " << effErrors[*tauId][*fitVariable]*100. << "%" << std::endl;
+		  << " result = " << effValues[*tauId][*fitVariable]*100. 
+		  << " +/- " << effErrors[*tauId][*fitVariable]*100. << "%" << std::endl;
 	
 	double numEventsC    = numEventsAll["Ztautau"]["C"][getKey("diTauMt", *tauId)];
         double numEventsC1   = numEventsAll["Ztautau"]["C1"][getKey("diTauMt", *tauId)];

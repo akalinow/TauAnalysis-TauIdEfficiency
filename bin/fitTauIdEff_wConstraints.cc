@@ -756,23 +756,19 @@ int main(int argc, const char* argv[])
   TBenchmark clock;
   clock.Start("fitTauIdEff_wConstraints");
 
-  //std::string inputFilePath = "/nfs/data4/verzetti/tagprobe/NTuples/NTuplesJun06_v2_pureweight/"; // for Mauro
-  std::string inputFilePath = 
-    "/data2/veelken/CMSSW_4_1_x/ntuples/TauIdEffMeas/2011Jun10/user/m/mverzett/tagprobe/Jun06Skim/edntuples_v3/"; // for Christian
-  const std::string jobId = "2011Jun06V2";
-
   bool runClosureTest = false;
   //bool runClosureTest = true;
 
   //bool fitTauIdEffC2 = false;
   bool fitTauIdEffC2 = true;
 
-  //const std::string histogramFileName = "fitTauIdEff_wConstraints_2011June10.root";
-  const std::string histogramFileName = "fitTauIdEff_wConstraints_2011June06_PUreweighted.root";
+  const std::string histogramFileName = "fitTauIdEff_wConstraints_2011June06_PUreweighted_2011Jun20.root";
 
   std::vector<sysUncertaintyEntry> sysUncertainties;
-  sysUncertainties.push_back(sysUncertaintyEntry("SysTauJetEnUp", "SysTauJetEnDown", "SysTauJetEnDiff"));
-  //sysUncertainties.push_back(sysUncertaintyEntry("SysJetEnUp", "SysJetEnDown", "SysJetEnDiff"));
+  sysUncertainties.push_back(
+    sysUncertaintyEntry("SysTauJetEnUp", "SysTauJetEnDown", "SysTauJetEnDiff")); // needed for diTauVisMassFromJet
+  sysUncertainties.push_back(
+    sysUncertaintyEntry("SysJetEnUp",    "SysJetEnDown",    "SysJetEnDiff"));    // needed for diTauMt
 
   bool runSysUncertainties = false;
   //bool runSysUncertainties = true;

@@ -333,8 +333,10 @@ int main(int argc, const char* argv[])
   const std::string histogramFileName = "fitTauIdEff_wConstraints_2011June06_PUreweighted.root";
 
   std::vector<sysUncertaintyEntry> sysUncertainties;
-  sysUncertainties.push_back(sysUncertaintyEntry("SysTauJetEnUp", "SysTauJetEnDown", "SysTauJetEnDiff"));
-  //sysUncertainties.push_back(sysUncertaintyEntry("SysJetEnUp", "SysJetEnDown", "SysJetEnDiff"));
+  sysUncertainties.push_back(
+    sysUncertaintyEntry("SysTauJetEnUp", "SysTauJetEnDown", "SysTauJetEnDiff")); // needed for diTauVisMassFromJet
+  sysUncertainties.push_back(
+    sysUncertaintyEntry("SysJetEnUp",    "SysJetEnDown",    "SysJetEnDiff"));    // needed for diTauMt
 
   bool runSysUncertainties = false;
   //bool runSysUncertainties = true;

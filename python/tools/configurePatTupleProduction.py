@@ -83,48 +83,61 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
     #process.load("CommonTools.ParticleFlow.pfNoPileUp_cff")
     # for CMSSW_3_8_x and CMSSW_4_1_x release series
     process.load("PhysicsTools.PFCandProducer.pfNoPileUp_cff")
-        
-    process.patMuonsLoosePFIsoEmbedded04 = cms.EDProducer("PATMuonPFIsolationEmbedder",
+
+    process.patMuonsLoosePFIsoEmbedded03 = cms.EDProducer("PATMuonPFIsolationEmbedder",
         src = cms.InputTag('patMuons'),                                       
-        userFloatName = cms.string('pfLooseIsoPt04'),
+        userFloatName = cms.string('pfLooseIsoPt03'),
         pfCandidateSource = cms.InputTag('pfNoPileUp'),
         chargedHadronIso = cms.PSet(
             ptMin = cms.double(0.5),        
             dRvetoCone = cms.double(-1.),
-            dRisoCone = cms.double(0.4)
+            dRisoCone = cms.double(0.3)
         ),
         neutralHadronIso = cms.PSet(
             ptMin = cms.double(1.0),        
             dRvetoCone = cms.double(0.08),        
-            dRisoCone = cms.double(0.4)
+            dRisoCone = cms.double(0.3)
         ),
         photonIso = cms.PSet(
             ptMin = cms.double(1.0),        
             dPhiVeto = cms.double(-1.),
             dEtaVeto = cms.double(-1.),
             dRvetoCone = cms.double(0.05),
+            dRisoCone = cms.double(0.3)
+        )
+    )
+    process.patMuonsLoosePFIsoEmbedded04 = process.patMuonsLoosePFIsoEmbedded03.clone(
+        src = cms.InputTag('patMuonsLoosePFIsoEmbedded03'),
+        userFloatName = cms.string('pfLooseIsoPt04'),
+        pfCandidateSource = cms.InputTag('pfNoPileUp'),
+        chargedHadronIso = process.patMuonsLoosePFIsoEmbedded03.chargedHadronIso.clone(
+            dRisoCone = cms.double(0.4)
+        ),
+        neutralHadronIso = process.patMuonsLoosePFIsoEmbedded03.neutralHadronIso.clone(
+            dRisoCone = cms.double(0.4)
+        ),
+        photonIso = process.patMuonsLoosePFIsoEmbedded03.photonIso.clone(
             dRisoCone = cms.double(0.4)
         )
     )
-
-    process.patMuonsLoosePFIsoEmbedded06 = process.patMuonsLoosePFIsoEmbedded04.clone(
+    process.patMuonsLoosePFIsoEmbedded06 = process.patMuonsLoosePFIsoEmbedded03.clone(
         src = cms.InputTag('patMuonsLoosePFIsoEmbedded04'),
         userFloatName = cms.string('pfLooseIsoPt06'),
         pfCandidateSource = cms.InputTag('pfNoPileUp'),
-        chargedHadronIso = process.patMuonsLoosePFIsoEmbedded04.chargedHadronIso.clone(
+        chargedHadronIso = process.patMuonsLoosePFIsoEmbedded03.chargedHadronIso.clone(
             dRisoCone = cms.double(0.6)
         ),
-        neutralHadronIso = process.patMuonsLoosePFIsoEmbedded04.neutralHadronIso.clone(
+        neutralHadronIso = process.patMuonsLoosePFIsoEmbedded03.neutralHadronIso.clone(
             dRisoCone = cms.double(0.6)
         ),
-        photonIso = process.patMuonsLoosePFIsoEmbedded04.photonIso.clone(
+        photonIso = process.patMuonsLoosePFIsoEmbedded03.photonIso.clone(
             dRisoCone = cms.double(0.6)
         )
     )
 
     process.patMuonsLoosePFIsoEmbedded = cms.Sequence(
         process.pfNoPileUpSequence
-       * process.patMuonsLoosePFIsoEmbedded04 * process.patMuonsLoosePFIsoEmbedded06
+       * process.patMuonsLoosePFIsoEmbedded03 * process.patMuonsLoosePFIsoEmbedded04 * process.patMuonsLoosePFIsoEmbedded06
     )
     #--------------------------------------------------------------------------------
 

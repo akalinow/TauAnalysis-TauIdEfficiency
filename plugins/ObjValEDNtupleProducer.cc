@@ -20,6 +20,11 @@ namespace {
   }
 }
 
+void insertInto(std::vector<std::string>& a, const std::vector<std::string>& b)
+{
+  a.insert(a.begin(), b.begin(), b.end());
+}
+
 ObjValEDNtupleProducer::ObjValEDNtupleProducer(const edm::ParameterSet& cfg)
 {
   std::cout << "<ObjValEDNtupleProducer::ObjValEDNtupleProducer>:" << std::endl;
@@ -54,22 +59,29 @@ ObjValEDNtupleProducer::ObjValEDNtupleProducer(const edm::ParameterSet& cfg)
 
     // Get the names of all the columns
     edm::ParameterSet columnsCfg = cfgObjValExtractor.getParameter<edm::ParameterSet>("columns");
-    std::vector<std::string> columnNames = columnsCfg.getParameterNamesForType<std::string>();
+    std::vector<std::string> columnNames;
+    insertInto(columnNames, columnsCfg.getParameterNamesForType<std::string>());
+    insertInto(columnNames, columnsCfg.getParameterNamesForType<edm::ParameterSet>());
 
     // Build each column source
     for( std::vector<std::string>::const_iterator columnName = columnNames.begin();
         columnName != columnNames.end(); ++columnName ) {
-      std::string columnCfg = columnsCfg.getParameter<std::string>(*columnName);
+      edm::ParameterSet columnCfg;
+      if ( columnsCfg.existsAs<std::string>(*columnName) ) {
+	std::string columnValue = columnsCfg.getParameter<std::string>(*columnName);
 
-      // concatentate relavant information into a single PSet to send to the ObjValExtractors
-      edm::ParameterSet tempNtupleCfg(cfgObjValExtractor);
-      tempNtupleCfg.addParameter<std::string>("value", columnCfg);
+        // concatentate relavant information into a single PSet to send to the ObjValExtractors
+        columnCfg = cfgObjValExtractor;
+	columnCfg.addParameter<std::string>("value", columnValue);
+      } else if ( columnsCfg.existsAs<edm::ParameterSet>(*columnName) ) {
+	columnCfg = columnsCfg.getParameter<edm::ParameterSet>(*columnName);
+      } else assert(0);  
 
       // Check if we are taking specific indices
       if ( isVectorExtractor ) {
 	// Build a vector getter
         ObjValVectorExtractorBase* objValExtractor =
-            ObjValVectorExtractorPluginFactory::get()->create(pluginTypeObjValExtractor, tempNtupleCfg);
+            ObjValVectorExtractorPluginFactory::get()->create(pluginTypeObjValExtractor, columnCfg);
         std::string niceColumnName = createBranchName(ntupleName_, cfgCollection.label(), *columnName);
         ntupleVectorEntryType* ntupleEntry = new ntupleVectorEntryType(niceColumnName, objValExtractor, indices);
         ntupleVectorEntries_.push_back(ntupleEntry);
@@ -77,11 +89,11 @@ ObjValEDNtupleProducer::ObjValEDNtupleProducer(const edm::ParameterSet& cfg)
         // Loop over each index
         for ( vunsigned::const_iterator index = indices.begin(); 
 	      index != indices.end(); ++index ) {
-          edm::ParameterSet tempNtupleCfgWithIndex = tempNtupleCfg;
-          tempNtupleCfgWithIndex.addParameter<unsigned>("index", *index);
+          edm::ParameterSet columnCfgWithIndex = columnCfg;
+          columnCfgWithIndex.addParameter<unsigned>("index", *index);
           // Build entry
           ObjValExtractorBase* objValExtractor =
-              ObjValExtractorPluginFactory::get()->create(pluginTypeObjValExtractor, tempNtupleCfgWithIndex);
+              ObjValExtractorPluginFactory::get()->create(pluginTypeObjValExtractor, columnCfgWithIndex);
           std::string niceColumnName;
           if ( indices.size() == 1 && (*index) == 0 )
             niceColumnName = createBranchName(ntupleName_, cfgCollection.label(), *columnName);

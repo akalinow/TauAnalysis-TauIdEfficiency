@@ -24,6 +24,7 @@ tauIdEffMeas_template01 = cms.PSet(
         phi = cms.string("phi()"),
 
         # loose isolation
+        ptSumLooseIsolation03 = cms.string("userFloat('pfLooseIsoPt03')"),
         ptSumLooseIsolation04 = cms.string("userFloat('pfLooseIsoPt04')"),
         ptSumLooseIsolation06 = cms.string("userFloat('pfLooseIsoPt06')")
     )
@@ -92,3 +93,53 @@ tauIdEffMeas_template04pfTau.columns.visMassFromJet = cms.string("(leg1().p4() +
 
 tauIdEffMeas_template04caloTau = copy.deepcopy(tauIdEffMeas_template04)
 tauIdEffMeas_template04caloTau.columns.visMassFromJet = cms.string("(leg1().p4() + leg2().jetRef().p4()).mass()")
+
+#--------------------------------------------------------------------------------
+# Single muon Trigger efficiency
+#--------------------------------------------------------------------------------
+
+tauIdEffMeas_template05 = cms.PSet(
+    # Select multiplicy of object(s) to store
+    vector = cms.bool(False),
+    indices = cms.vuint32([0]), # Store values for first object only
+    
+    # Extractor plugin
+    pluginType = cms.string("KineEventReweightExtractor"),
+
+    # Collection to extract from
+    src = cms.InputTag(""),
+
+    # Variables to compute for this source
+    columns = cms.PSet(
+        muonHLTeff = cms.PSet(    
+            weightLookupTable = cms.PSet(
+                inputFileName = cms.FileInPath('TauAnalysis/TauIdEfficiency/data/singleMuHLTeff.root'),
+                lutName = cms.string("hEff")
+            ),
+    
+            variables = cms.PSet(
+                x = cms.PSet(
+                    pluginType = cms.string("PATMuonValExtractor"),
+                    src = cms.InputTag('selectedPatMuonsForTauIdEffTrkIPcumulative'),
+                    value = cms.string("pt()"),
+                    vector = cms.bool(False),
+                    indices = cms.vuint32([0])
+                ),
+                y = cms.PSet(
+                    pluginType = cms.string("PATMuonValExtractor"),
+                    src = cms.InputTag('selectedPatMuonsForTauIdEffTrkIPcumulative'),
+                    value = cms.string("eta()"),
+                    vector = cms.bool(False),
+                    indices = cms.vuint32([0])
+                ),
+                z = cms.PSet(
+                    pluginType = cms.string("PATMuonValExtractor"),
+                    src = cms.InputTag('selectedPatMuonsForTauIdEffTrkIPcumulative'),
+                    value = cms.string("? pt() > 0. ? userFloat('pfLooseIsoPt03')/pt() : -1."),
+                    vector = cms.bool(False),
+                    indices = cms.vuint32([0])
+                )
+            )
+        )
+    )
+)

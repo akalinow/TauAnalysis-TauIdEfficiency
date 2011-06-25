@@ -40,6 +40,17 @@ double PATLepTauPairVisMassFromJetExtractor<T>::operator()(const edm::Event& evt
     else if ( patTauPtr->isCaloTau() ) p4Tau = patTauPtr->caloTauTagInfoRef()->calojetRef()->p4();
     else assert(0);
 
+    // CV: in case tau momentum has been shifted by jet energy-scale uncertainties,
+    //     propagate this shift to visible mass
+    //    (for estimation of systematic uncertainties)
+    //
+    // NOTE: "shiftByJECuncertainty" is set by TauAnalysis/RecoTools/plugins/SmearedTauProducer.cc 
+    //
+    if ( patTauPtr->hasUserFloat("shiftByJECuncertainty") ) {
+      double shiftByJECuncertainty = patTauPtr->userFloat("shiftByJECuncertainty");
+      p4Tau *= (1. + shiftByJECuncertainty);
+    }
+
     return (diTauPairPtr->leg1()->p4() + p4Tau).mass();
   } else {
     return -1.;

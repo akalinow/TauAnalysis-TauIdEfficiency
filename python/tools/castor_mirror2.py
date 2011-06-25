@@ -10,9 +10,10 @@ import TauAnalysis.Configuration.tools.castor as castor
 
 # Where to store the files
 LOCAL_DIRECTORY = [
-    "/tmp/abdollah/tau_fakerate_ntuples",
-    "/tmp/tau_commissioning",
+    #"/tmp/abdollah/tau_fakerate_ntuples",
+    #"/tmp/tau_commissioning",
     "/data2/friis/tau_fakerate_ntuples"
+    #"/data2/veelken/CMSSW_4_1_x/ntuples/TauIdEffMeas/2011Jun10"
 ]
 
 # How to identify castor files

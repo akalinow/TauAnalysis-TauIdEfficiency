@@ -555,27 +555,30 @@ int main(int argc, const char* argv[])
   clock.Start("makeTauIdEffPlots");
 
   //std::string inputFilePath = "/nfs/data4/verzetti/tagprobe/NTuples/NTuplesJun06_v2_pureweight/"; // for Mauro
-  std::string inputFilePath = 
-    "/data2/veelken/CMSSW_4_1_x/ntuples/TauIdEffMeas/2011Jun10/user/m/mverzett/tagprobe/Jun06Skim/edntuples_v3/"; // for Christian
-  const std::string jobId = "2011Jun06V2";
+  //const std::string jobId = "2011Jun06V2";  
+  std::string inputFilePath = // for Christian
+    //"/data2/veelken/CMSSW_4_1_x/ntuples/TauIdEffMeas/2011Jun10/user/m/mverzett/tagprobe/Jun06Skim/edntuples_v3/"; // for Christian
+    "/data2/veelken/CMSSW_4_1_x/ntuples/TauIdEffMeas/2011Jun18/user/v/veelken/CMSSW_4_1_x/ntuples/TauIdEffMeas/";
+  //const std::string jobId = "2011Jun06V2";
+  const std::string jobId = "2011Jun18V1";  
 
   //const std::string branchName_suffix = "local";
   const std::string branchName_suffix = "lxbatch";
 
-  bool runQuickTest = false;
-  //bool runQuickTest = true;
+  //bool runQuickTest = false;
+  bool runQuickTest = true;
 
-  //const std::string histogramFileName = "fitTauIdEff_wConstraints_2011June10.root";
-  const std::string histogramFileName = "fitTauIdEff_wConstraints_2011June06_PUreweighted.root";
+  const std::string histogramFileName = "fitTauIdEff_wConstraints_2011June18V1_PUreweighted.root";
 
   //bool applyPUreweightingMC = false;
   bool applyPUreweightingMC = true;
 
   std::vector<std::string> sysUncertainties;
-  sysUncertainties.push_back(std::string("SysTauJetEnUp"));
+  sysUncertainties.push_back(std::string("SysTauJetEnUp"));   // needed for diTauVisMassFromJet
   sysUncertainties.push_back(std::string("SysTauJetEnDown"));
-  //sysUncertainties.push_back(std::string("SysJetEnUp"));
-  //sysUncertainties.push_back(std::string("SysJetEnDown"));
+  sysUncertainties.push_back(std::string("SysJetEnUp"));      // needed for diTauMt
+  sysUncertainties.push_back(std::string("SysJetEnDown"));
+
   //bool runSysUncertainties = false;
   bool runSysUncertainties = true;
 

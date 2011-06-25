@@ -149,7 +149,10 @@ process.ntupleProducer = cms.EDProducer("ObjValEDNtupleProducer",
         # variables specific to tau id. efficiency measurement
         tauIdEffMeas01 = process.tauIdEffMeas_template01.clone(
             src = cms.InputTag('selectedPatMuonsForTauIdEffTrkIPcumulative')
-        )
+        ),
+        tauIdEffMeas05 = process.tauIdEffMeas_template05.clone(
+            src = cms.InputTag('selectedPatMuonsForTauIdEffTrkIPcumulative')
+        )                                                                               
     )
 )
 
@@ -278,11 +281,21 @@ process.o = cms.EndPath(process.ntupleOutputModule)
 #                   Modify the content of the extractors
 #--------------------------------------------------------------------------------
 import TauAnalysis.Configuration.pathModifiers as pathModifiers
-pathModifiers.ExtractorAddColumn(process.ntupleProducer.sources,'PATTauVectorValExtractor', 'productionVertexZ',cms.string("vertex().z()"),True)
-pathModifiers.ExtractorAddColumn(process.ntupleProducer.sources,'PATMuTauPairValExtractor', 'tauVertexZ',cms.string("leg2().vertex().z()"),True)
-pathModifiers.ExtractorAddColumn(process.ntupleProducer.sources,'PATMuTauPairValExtractor', 'muVertexZ',cms.string("leg1().vertex().z()"),True)
+pathModifiers.ExtractorAddColumn(process.ntupleProducer.sources,
+                                 'PATTauVectorValExtractor', 'productionVertexZ', cms.string("vertex().z()"), True)
+pathModifiers.ExtractorAddColumn(process.ntupleProducer.sources,
+                                 'PATMuTauPairValExtractor', 'tauVertexZ', cms.string("leg2().vertex().z()"), True)
+pathModifiers.ExtractorAddColumn(process.ntupleProducer.sources,
+                                 'PATMuTauPairValExtractor', 'muVertexZ', cms.string("leg1().vertex().z()"), True)
+#--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
+#
+# CV: do **not** apply HLT trigger conditions to CMSSW_4_1_x MC,
+#     weight simulated events by trigger efficiencies measured in Data instead
+#
+process.commonSkimSequence.remove(process.hltMu)
+#--------------------------------------------------------------------------------    
 
 # define order in which different paths are run
 process.schedule = cms.Schedule(
