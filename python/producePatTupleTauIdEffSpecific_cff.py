@@ -2,10 +2,7 @@ import FWCore.ParameterSet.Config as cms
 
 from TauAnalysis.TauIdEfficiency.filterDataQuality_cfi import *
 
-# for CMSSW_4_2_0_pre8 and higher
-#from CommonTools.ParticleFlow.pfNoPileUp_cff import *
-# for CMSSW_3_8_x and CMSSW_4_1_x release series
-from PhysicsTools.PFCandProducer.pfNoPileUp_cff import *
+from CommonTools.ParticleFlow.pfNoPileUp_cff import *
 
 from TauAnalysis.RecoTools.recoVertexSelection_cff import *
 from TauAnalysis.RecoTools.patMuonSelection_cfi import *
