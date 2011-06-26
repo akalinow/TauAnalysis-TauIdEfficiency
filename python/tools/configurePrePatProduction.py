@@ -5,10 +5,7 @@ def configurePrePatProduction(process, pfCandidateCollection = "particleFlow",
 
     #--------------------------------------------------------------------------------
     # PFCandidate pile-up removal
-    # for CMSSW_4_2_0_pre8 and higher
-    #process.load("CommonTools.ParticleFlow.pfNoPileUp_cff")
-    # for CMSSW_3_8_x and CMSSW_4_1_x release series
-    process.load("PhysicsTools.PFCandProducer.pfNoPileUp_cff")
+    process.load("CommonTools.ParticleFlow.pfNoPileUp_cff")
     process.pfPileUp.Enable = cms.bool(True)
     process.prePatProductionSequence = cms.Sequence(process.pfNoPileUpSequence)
 

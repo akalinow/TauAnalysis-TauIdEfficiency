@@ -15,12 +15,15 @@ process.load('Configuration/StandardSequences/MagneticField_cff')
 process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
 
 #--------------------------------------------------------------------------------
+from PhysicsTools.PatAlgos.tools.cmsswVersionTools import pickRelValInputFiles
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
-        #'rfio:/castor/cern.ch/user/m/mverzett/tagprobe/skims/TauIdEffMeas_Harvested_May20/skim_PPmuXptGt20Mu15_chunk_0_91c4.root'
-         'file:/data2/veelken/CMSSW_4_1_x/skims/ZtoMuTau/DYtautau_spring11_powhegZ2_1_1_XvY.root'                        
-    ),
-    skipEvents = cms.untracked.uint32(0)            
+    pickRelValInputFiles( cmsswVersion  = 'CMSSW_4_2_0_pre8'
+                        , relVal        = 'RelValTTbar'
+                        , globalTag     = 'START42_V7'
+                        , numberOfFiles = 1
+                        )
+    )
 )
 
 # print event content 
@@ -294,7 +297,8 @@ pathModifiers.ExtractorAddColumn(process.ntupleProducer.sources,
 # CV: do **not** apply HLT trigger conditions to CMSSW_4_1_x MC,
 #     weight simulated events by trigger efficiencies measured in Data instead
 #
-process.commonSkimSequence.remove(process.hltMu)
+if isMC:
+    process.commonSkimSequence.remove(process.hltMu)
 #--------------------------------------------------------------------------------    
 
 # define order in which different paths are run

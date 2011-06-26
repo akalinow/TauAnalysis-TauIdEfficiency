@@ -150,7 +150,8 @@ def buildTauSequence(
             dEtaVeto = cms.double(-1.),  # to account for photon conversions in electron isolation case        
             dRvetoCone = cms.double(0.15),
             dRisoCone = cms.double(0.4)
-        )
+        ),
+        direction = cms.string('track')
     )
     patTauLoosePFIsoEmbedder04Name = collectionName[0] + "LoosePFIsoEmbedded04" + collectionName[1]
     setattr(process, patTauLoosePFIsoEmbedder04Name, patTauLoosePFIsoEmbedder04)

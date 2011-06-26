@@ -79,10 +79,7 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
     #--------------------------------------------------------------------------------
     # compute Pt sum of charged + neutral hadrons and photons within isolation cones of size dR = 0.4/0.6
 
-    # for CMSSW_4_2_0_pre8 and higher
-    #process.load("CommonTools.ParticleFlow.pfNoPileUp_cff")
-    # for CMSSW_3_8_x and CMSSW_4_1_x release series
-    process.load("PhysicsTools.PFCandProducer.pfNoPileUp_cff")
+    process.load("CommonTools.ParticleFlow.pfNoPileUp_cff")
 
     process.patMuonsLoosePFIsoEmbedded03 = cms.EDProducer("PATMuonPFIsolationEmbedder",
         src = cms.InputTag('patMuons'),                                       

@@ -36,12 +36,18 @@ trigger_template = cms.PSet(
         hltMu15v1prescale    = cms.string("HLT_Mu15_v1:prescale"),
         hltMu15v2bit         = cms.string("HLT_Mu15_v2:bit"),
         hltMu15v2prescale    = cms.string("HLT_Mu15_v2:prescale"),
-        hltIsoMu15v5bit      = cms.string("HLT_IsoMu15_v5:bit"),
-        hltIsoMu15v5prescale = cms.string("HLT_IsoMu15_v5:prescale"),
         hltIsoMu17v5bit      = cms.string("HLT_IsoMu17_v5:bit"),
         hltIsoMu17v5prescale = cms.string("HLT_IsoMu17_v5:prescale"),
+        hltIsoMu17v6bit      = cms.string("HLT_IsoMu17_v6:bit"),
+        hltIsoMu17v6prescale = cms.string("HLT_IsoMu17_v6:prescale"),
+        hltIsoMu17v8bit      = cms.string("HLT_IsoMu17_v8:bit"),
+        hltIsoMu17v8prescale = cms.string("HLT_IsoMu17_v8:prescale"),
+        hltIsoMu17v9bit      = cms.string("HLT_IsoMu17_v9:bit"),
+        hltIsoMu17v9prescale = cms.string("HLT_IsoMu17_v9:prescale"),
         hltMu24v1bit         = cms.string("HLT_Mu24_v1:bit"),
-        hltMu24v1prescale    = cms.string("HLT_Mu24_v1:prescale")
+        hltMu24v1prescale    = cms.string("HLT_Mu24_v1:prescale"),
+        hltMu24v2bit         = cms.string("HLT_Mu24_v2:bit"),
+        hltMu24v2prescale    = cms.string("HLT_Mu24_v2:prescale")
     ),
 
     # define L1 seeds of all HLT trigger paths used in (edm)Ntuple filling
