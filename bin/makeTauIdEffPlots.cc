@@ -121,7 +121,7 @@ std::map<std::string, std::map<std::string, std::string> > makeBranchNameDict(
       branchNameDiTau = replace(branchNameDiTau, "Cumulative", std::string(sysShift).append("Cumulative"));
     } else if ( sysShift == "SysJetEnUp"                 ||
 		sysShift == "SysJetEnDown"               ) {
-      branchNameTau   = replace(branchNameTau,   "Cumulative", std::string(sysShift).append("Cumulative"));
+      //branchNameTau   = replace(branchNameTau,   "Cumulative", std::string(sysShift).append("Cumulative"));
       branchNameDiTau = replace(branchNameDiTau, "Cumulative", std::string(sysShift).append("Cumulative"));
     } else assert(0);
     
@@ -213,8 +213,10 @@ void writeRunLumiSectionEventNumberFile(const std::string& process, TTree* tree,
   delete outputFile;
 }
 
-std::map<std::string, TH1*> makeHistograms(
-  const std::string& process, const std::string& region, double weight,
+void makeHistograms(
+  const std::string& process, 
+  std::map<std::string, TH1*>& histograms,
+  const std::string& region, double weight,
   TTree* tree, const std::string& treeSelection, 
   const std::string& tauId, const std::vector<std::string>& tauIdValues,
   const std::vector<std::string>& observables,
@@ -232,8 +234,6 @@ std::map<std::string, TH1*> makeHistograms(
   //std::cout << " region = " << region << std::endl;
   //std::cout << " treeSelection = " << treeSelection << std::endl;
   //std::cout << " applyPUreweighting = " << applyPUreweighting << std::endl;
-
-  std::map<std::string, TH1*> retVal;
 
 //--- prepare "dummy" tau id. selection
 //    in case no tau id. selection has been passed as function argument
@@ -331,7 +331,7 @@ std::map<std::string, TH1*> makeHistograms(
 	max = 0.50;
       } else {
 	std::cout << "Error in <makeHistograms>: undefined observable = " << (*observable) << " --> skipping !!" << std::endl;
-	return retVal;
+	return;
       }
       
       TH1* histogram = new TH1F(histogramName.data(), histogramName.data(), numBins, min, max);
@@ -348,8 +348,9 @@ std::map<std::string, TH1*> makeHistograms(
 		<< " entries = " << histogram->GetEntries() << ", integral = " << integral 
 		<< " (fitted fraction = " << fittedFraction << ")" << std::endl;
       
-      std::string key = getKey(*observable, tauId, *tauIdValue);	
-      if ( histogram != 0 ) retVal[key] = histogram;
+      std::string key = getKey(*observable, tauId, *tauIdValue, sysShift);	
+      if ( histogram != 0 ) histograms[key] = histogram;
+      std::cout << "--> storing histogram: key = " << key << std::endl;
 
       if ( histogram->GetEntries() > 0 && saveRunLumiSectionEventNumbers && sysShift == "CENTRAL_VALUE" ) 
 	writeRunLumiSectionEventNumberFile(process, tree, extTreeSelection, region, tauId, *tauIdValue, branchNames);
@@ -357,12 +358,12 @@ std::map<std::string, TH1*> makeHistograms(
   }
 
   std::cout << std::endl;
-
-  return retVal;
 }
 
-std::map<std::string, TH1*> makeDistributionsInRegion(
-  const std::string& process, const std::string& region, double weight,
+void makeDistributionsInRegion(
+  const std::string& process, 
+  std::map<std::string, TH1*>& histograms,
+  const std::string& region, double weight,
   TTree* tree, 
   const std::string& tauId, const std::vector<std::string>& fitVariables,
   std::map<std::string, std::string>& branchNames, 
@@ -410,7 +411,7 @@ std::map<std::string, TH1*> makeDistributionsInRegion(
     treeSelection.append(exprMuonIso_tight).append(" && ").append(exprDiTauCharge_SS);
   } else {
     std::cout << "Error in <makeDistribution>: undefined region = " << region << " --> skipping !!" << std::endl;
-    return std::map<std::string, TH1*>();
+    return;
   }
 
   if      ( region.find("1") != std::string::npos ) treeSelection.append(" && ").append(exprDiTauKine_Sig);
@@ -419,16 +420,20 @@ std::map<std::string, TH1*> makeDistributionsInRegion(
   std::vector<std::string> observables = getObservables(region, fitVariables);
   std::vector<std::string> tauIdValues = getTauIdValues(region);
 
-  return makeHistograms(process, region, weight,
-			tree, treeSelection,
-			tauId, tauIdValues, observables,
-			branchNames, applyPUreweighting,
-			sysShift,
-			saveRunLumiSectionEventNumbers);
+  makeHistograms(process, 
+		 histograms,
+		 region, weight,
+		 tree, treeSelection,
+		 tauId, tauIdValues, observables,
+		 branchNames, applyPUreweighting,
+		 sysShift,
+		 saveRunLumiSectionEventNumbers);
 }
 
-std::map<std::string, std::map<std::string, TH1*> > makeDistributionsAllRegions(
-  const std::string& process, double weight,
+void makeDistributionsAllRegions(
+  const std::string& process, 
+  std::map<std::string, std::map<std::string, TH1*> >& histograms,
+  double weight,
   TTree* tree, const std::vector<std::string>& regions,
   const std::vector<std::string>& tauIds, const std::vector<std::string>& fitVariables,
   std::map<std::string, std::map<std::string, std::string> >& branchNames, 
@@ -451,8 +456,6 @@ std::map<std::string, std::map<std::string, TH1*> > makeDistributionsAllRegions(
   
   std::cout << "<makeDistributionsAllRegions>:" << std::endl;
 
-  std::map<std::string, std::map<std::string, TH1*> > retVal;
-  
   for ( std::vector<std::string>::const_iterator tauId = tauIds.begin();
 	tauId != tauIds.end(); ++tauId ) {	
     for ( std::vector<std::string>::const_iterator region = regions.begin();
@@ -461,22 +464,16 @@ std::map<std::string, std::map<std::string, TH1*> > makeDistributionsAllRegions(
       bool saveRunLumiSectionEventNumbers_region = ( saveRunLumiSectionEventNumbers && tauId == tauIds.begin() ) ?
 	(*saveRunLumiSectionEventNumbers)[*region] : false;
 
-      std::map<std::string, TH1*> retVal_region = makeDistributionsInRegion(process, *region, weight,
-									    tree, 
-									    *tauId, fitVariables,
-									    branchNames[*tauId], applyPUreweighting,
-									    sysShift,
-									    saveRunLumiSectionEventNumbers_region);
-
-      for ( std::map<std::string, TH1*>::iterator distribution = retVal_region.begin();
-	    distribution != retVal_region.end(); ++distribution ) {
-	retVal[*region][distribution->first] = distribution->second;
-	//std::cout << " retVal[" << (*region) << "][" << distribution->first << "] = " << distribution->second << std::endl;
-      }
+      makeDistributionsInRegion(process, 
+				histograms[*region],
+				*region, weight,
+				tree, 
+				*tauId, fitVariables,
+				branchNames[*tauId], applyPUreweighting,
+				sysShift,
+				saveRunLumiSectionEventNumbers_region);
     }
   }
-
-  return retVal;
 }
 
 void addFileNames(TChain* chain, const std::string& inputFilePath, const std::string& sampleName, const std::string& jobId)
@@ -565,8 +562,8 @@ int main(int argc, const char* argv[])
   //const std::string branchName_suffix = "local";
   const std::string branchName_suffix = "lxbatch";
 
-  //bool runQuickTest = false;
-  bool runQuickTest = true;
+  bool runQuickTest = false;
+  //bool runQuickTest = true;
 
   const std::string histogramFileName = "fitTauIdEff_wConstraints_2011June18V1_PUreweighted.root";
 
@@ -579,8 +576,8 @@ int main(int argc, const char* argv[])
   sysUncertainties.push_back(std::string("SysJetEnUp"));      // needed for diTauMt
   sysUncertainties.push_back(std::string("SysJetEnDown"));
 
-  //bool runSysUncertainties = false;
-  bool runSysUncertainties = true;
+  bool runSysUncertainties = false;
+  //bool runSysUncertainties = true;
 
   std::vector<std::string> regions;
   regions.push_back(std::string("ABCD"));
@@ -650,8 +647,8 @@ int main(int argc, const char* argv[])
   //tauIds.push_back(std::string("tauDiscrIsolationMedium"));   
   //tauIds.push_back(std::string("tauDiscrIsolationTight"));
   tauIds.push_back(std::string("tauDiscrHPSloose"));  // "new" HPS implemented in HPS+TaNC combined algorithm
-  tauIds.push_back(std::string("tauDiscrHPSmedium"));
-  tauIds.push_back(std::string("tauDiscrHPStight"));
+  //tauIds.push_back(std::string("tauDiscrHPSmedium"));
+  //tauIds.push_back(std::string("tauDiscrHPStight"));
 
   std::vector<std::string> fitVariables;
   //fitVariables.push_back("diTauHt");
@@ -672,9 +669,16 @@ int main(int argc, const char* argv[])
   sysShifts.push_back("CENTRAL_VALUE");
   if ( runSysUncertainties ) sysShifts.insert(sysShifts.end(), sysUncertainties.begin(), sysUncertainties.end());
 
+  std::map<std::string, std::map<std::string, TH1*> > distributionsData;  // key = (region, observable)
+  std::map<std::string, std::map<std::string, TH1*> > templatesZtautau;  
+  std::map<std::string, std::map<std::string, TH1*> > templatesZmumu;    
+  std::map<std::string, std::map<std::string, TH1*> > templatesQCD; 
+  std::map<std::string, std::map<std::string, TH1*> > templatesWplusJets; 
+  std::map<std::string, std::map<std::string, TH1*> > templatesTTplusJets; 
+
   for ( std::vector<std::string>::const_iterator sysShift = sysShifts.begin();
 	sysShift != sysShifts.end(); ++sysShift ) {
-    std::cout << "running fit for sysShift = " << (*sysShift) << "..." << std::endl;
+    std::cout << "filling histograms for sysShift = " << (*sysShift) << "..." << std::endl;
 
 //--- initialize alias --> branchName mapping
     typedef std::map<std::string, std::string> branchNameDictEntry;
@@ -691,7 +695,6 @@ int main(int argc, const char* argv[])
     xAxisTitles["diTauVisMass"]        = "M_{vis}^{#mu#tau} [GeV]";
     xAxisTitles["diTauVisMassFromJet"] = xAxisTitles["diTauVisMass"];
 
-    std::map<std::string, std::map<std::string, TH1*> > distributionsData; // key = (region, observable)
     TChain* chainData_2011RunA_v1 = new TChain("Events");
     TChain* chainData_2011RunA_v2 = new TChain("Events");
     if ( !runQuickTest ) { addFileNames(chainData_2011RunA_v1, inputFilePath, "data_SingleMu_Run2011A_PromptReco_v1", jobId);
@@ -704,86 +707,70 @@ int main(int argc, const char* argv[])
     chainData->Add(chainData_2011RunA_v1);
     chainData->Add(chainData_2011RunA_v2);
     printFileInfo(chainData, "chainData");
-    distributionsData = 
-      makeDistributionsAllRegions("Data", 1.0, chainData, regions,
-				  tauIds, fitVariables, branchNamesData, false, *sysShift, &saveRunLumiSectionEventNumbers);
+    makeDistributionsAllRegions("Data", 
+                                distributionsData, 1.0, chainData, regions,
+                                tauIds, fitVariables, branchNamesData, false, *sysShift, &saveRunLumiSectionEventNumbers);
     delete chainData;
     delete chainData_2011RunA_v1;
     delete chainData_2011RunA_v2;
-
-    std::map<std::string, std::map<std::string, TH1*> > templatesZtautau; // key = (region, observable)
+ 
     TChain* chainZtautau = new TChain("Events");
     if ( !runQuickTest ) addFileNames(chainZtautau, inputFilePath, sampleZtautau, jobId);
-    else                 chainZtautau->Add(std::string(inputFilePath).append("tauIdEffMeasEDNtuple_Ztautau_powheg_2011Jun06V2_0_ba35.root").data());
+    else                 chainZtautau->Add(std::string(inputFilePath).append("tauIdEffMeasEDNtuple_Ztautau_powheg_2011Jun18V1_0_ba35.root").data());
     printFileInfo(chainZtautau, "chainZtautau");
-    templatesZtautau = 
-      makeDistributionsAllRegions("Ztautau", weightFactorZtautau*corrFactorZtautau, chainZtautau, regions, 
-				  tauIds, fitVariables, branchNamesMC, applyPUreweightingMC, *sysShift);
+    makeDistributionsAllRegions("Ztautau", 
+                                templatesZtautau, weightFactorZtautau*corrFactorZtautau, chainZtautau, regions, 
+				tauIds, fitVariables, branchNamesMC, applyPUreweightingMC, *sysShift);
     delete chainZtautau;
 
     std::map<std::string, std::map<std::string, TH1*> > templatesZmumu; // key = (region, observable)
+
     TChain* chainZmumu = new TChain("Events");
     if ( !runQuickTest ) addFileNames(chainZmumu, inputFilePath, sampleZmumu, jobId);
     else                 chainZmumu->Add(std::string(inputFilePath).append("tauIdEffMeasEDNtuple_Zmumu_powheg_2011Jun06V2_0_f76a.root").data());
     printFileInfo(chainZmumu, "chainZmumu");
-    templatesZmumu = 
-      makeDistributionsAllRegions("Zmumu", weightFactorZmumu*corrFactorZmumu, chainZmumu, regions, 
-				  tauIds, fitVariables, branchNamesMC, applyPUreweightingMC, *sysShift);
+    makeDistributionsAllRegions("Zmumu", 
+                                templatesZmumu, weightFactorZmumu*corrFactorZmumu, chainZmumu, regions, 
+                                tauIds, fitVariables, branchNamesMC, applyPUreweightingMC, *sysShift);
     delete chainZmumu;
 
-    std::map<std::string, std::map<std::string, TH1*> > templatesQCD; // key = (region, observable)
     TChain* chainQCD = new TChain("Events");
     if ( !runQuickTest ) addFileNames(chainQCD, inputFilePath, sampleQCD, jobId);
     else                 chainQCD->Add(std::string(inputFilePath).append("tauIdEffMeasEDNtuple_PPmuXptGt20Mu15_2011Jun06V2_0_ed96.root").data());
     printFileInfo(chainQCD, "chainQCD");
-    templatesQCD = 
-      makeDistributionsAllRegions("QCD", weightFactorQCD*corrFactorQCD, chainQCD, regions, 
-				  tauIds, fitVariables, branchNamesMC, applyPUreweightingMC, *sysShift);
+    makeDistributionsAllRegions("QCD", 
+                                templatesQCD, weightFactorQCD*corrFactorQCD, chainQCD, regions, 
+		        	tauIds, fitVariables, branchNamesMC, applyPUreweightingMC, *sysShift);
     delete chainQCD;
 
-    std::map<std::string, std::map<std::string, TH1*> > templatesWplusJets; // key = (region, observable)
     TChain* chainWplusJets = new TChain("Events");
     if ( !runQuickTest ) addFileNames(chainWplusJets, inputFilePath, sampleWplusJets, jobId);
     else                 chainWplusJets->Add(std::string(inputFilePath).append("tauIdEffMeasEDNtuple_WplusJets_madgraph_2011Jun06V2_0_1127.root").data());
     printFileInfo(chainWplusJets, "chainWplusJets");
-    templatesWplusJets = 
-      makeDistributionsAllRegions("WplusJets", weightFactorWplusJets*corrFactorWplusJets, chainWplusJets, regions, 
-				  tauIds, fitVariables, branchNamesMC, applyPUreweightingMC, *sysShift);
+    makeDistributionsAllRegions("WplusJets", 
+                                templatesWplusJets, weightFactorWplusJets*corrFactorWplusJets, chainWplusJets, regions, 
+				tauIds, fitVariables, branchNamesMC, applyPUreweightingMC, *sysShift);
     delete chainWplusJets;
 
-    std::map<std::string, std::map<std::string, TH1*> > templatesTTplusJets; // key = (region, observable)
     TChain* chainTTplusJets = new TChain("Events");
     if ( !runQuickTest ) addFileNames(chainTTplusJets, inputFilePath, sampleTTplusJets, jobId);
     else                 chainTTplusJets->Add(std::string(inputFilePath).append("tauIdEffMeasEDNtuple_TTplusJets_madgraph_2011Jun06V2_0_5a68.root").data());
     printFileInfo(chainTTplusJets, "chainTTplusJets");
-    templatesTTplusJets = 
-      makeDistributionsAllRegions("TTplusJets", weightFactorTTplusJets*corrFactorTTplusJets, chainTTplusJets, regions, 
-				  tauIds, fitVariables, branchNamesMC, applyPUreweightingMC, *sysShift);
+    makeDistributionsAllRegions("TTplusJets", 
+                                templatesTTplusJets, weightFactorTTplusJets*corrFactorTTplusJets, chainTTplusJets, regions, 
+				tauIds, fitVariables, branchNamesMC, applyPUreweightingMC, *sysShift);
     delete chainTTplusJets;
-
-    std::map<std::string, std::map<std::string, std::map<std::string, TH1*> > > templatesAll; // key = (process, region, observable)
-    templatesAll["Ztautau"]    = templatesZtautau;
-    templatesAll["Zmumu"]      = templatesZmumu;
-    templatesAll["QCD"]        = templatesQCD;
-    templatesAll["WplusJets"]  = templatesWplusJets;
-    templatesAll["TTplusJets"] = templatesTTplusJets;
-    
-    std::vector<std::string> processes;
-    processes.push_back(std::string("Ztautau"));
-    processes.push_back(std::string("Zmumu"));
-    processes.push_back(std::string("QCD"));
-    processes.push_back(std::string("WplusJets"));
-    processes.push_back(std::string("TTplusJets"));
-
-//--- save histograms
-    TFile* histogramOutputFile = new TFile(histogramFileName.data(), "RECREATE");
-    saveHistograms(histogramOutputFile, distributionsData);
-    for ( std::vector<std::string>::const_iterator process = processes.begin();
-	  process != processes.end(); ++process ) {
-      saveHistograms(histogramOutputFile, templatesAll[*process]);
-    }
-    delete histogramOutputFile;
   }
+    
+//--- save histograms
+  TFile* histogramOutputFile = new TFile(histogramFileName.data(), "RECREATE");
+  saveHistograms(histogramOutputFile, distributionsData);
+  saveHistograms(histogramOutputFile, templatesZtautau);
+  saveHistograms(histogramOutputFile, templatesZmumu);
+  saveHistograms(histogramOutputFile, templatesQCD);
+  saveHistograms(histogramOutputFile, templatesWplusJets);
+  saveHistograms(histogramOutputFile, templatesTTplusJets);
+  delete histogramOutputFile;
 
   delete canvas;
 
