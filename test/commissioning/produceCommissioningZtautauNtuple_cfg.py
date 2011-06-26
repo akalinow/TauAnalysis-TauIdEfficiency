@@ -61,9 +61,9 @@ pfCandidateCollection = "particleFlow" # pile-up removal disabled
 # define GlobalTag to be used for event reconstruction
 # (only relevant for HPS tau reconstruction algorithm)
 if isMC:
-    process.GlobalTag.globaltag = cms.string('START311_V2::All')
+    process.GlobalTag.globaltag = cms.string('START42_V12::All')
 else:
-    process.GlobalTag.globaltag = cms.string('GR_R_311_V2::All')
+    process.GlobalTag.globaltag = cms.string('GR_R_42_V14::All')
 #--------------------------------------------------------------------------------    
 
 #--------------------------------------------------------------------------------
