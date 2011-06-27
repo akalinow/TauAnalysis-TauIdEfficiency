@@ -133,6 +133,8 @@ std::map<std::string, std::map<std::string, std::string> > makeBranchNameDict(
     
     branchNames["genPUreweight"] = getBranchName("double", "addPileupInfo", "vtxMultReweight", branchName_suffix);
 
+    branchNames["muonTriggerEffWeight"] = getBranchName("double", branchNameMuon, "muonHLTeff", branchName_suffix);
+
     branchNames["muonPt"] = getBranchName("double", branchNameMuon, "pt", branchName_suffix);
     branchNames["muonEta"] = getBranchName("double", branchNameMuon, "eta", branchName_suffix);
     branchNames["muonLooseIsoPtSum04"] = getBranchName("double", branchNameMuon, "ptSumLooseIsolation04", branchName_suffix);
@@ -221,7 +223,7 @@ void makeHistograms(
   const std::string& tauId, const std::vector<std::string>& tauIdValues,
   const std::vector<std::string>& observables,
   std::map<std::string, std::string>& branchNames, 
-  bool applyPUreweighting,
+  bool applyPUreweighting, bool applyMuonTriggerEffWeightingMC,
   const std::string& sysShift = "CENTRAL_VALUE",
   bool saveRunLumiSectionEventNumbers = false)
 {
@@ -251,7 +253,7 @@ void makeHistograms(
 //   (cuts that might as well have been applied during (ED)Ntuple production)
     std::string extTreeSelection;
 
-    if ( applyPUreweighting ) extTreeSelection.append("(");
+    if ( applyPUreweighting || applyMuonTriggerEffWeightingMC ) extTreeSelection.append("(");
 
     if ( treeSelection != "" ) {
       extTreeSelection.append(treeSelection);
@@ -275,7 +277,9 @@ void makeHistograms(
     else if ( (*tauIdValue) == "all"    ) {}
     else assert(0);
 
-    if ( applyPUreweighting ) extTreeSelection.append(")").append("*").append(branchNames["genPUreweight"]);
+    if ( applyPUreweighting || applyMuonTriggerEffWeightingMC ) extTreeSelection.append(")");
+    if ( applyPUreweighting             ) extTreeSelection.append("*").append(branchNames["genPUreweight"]);
+    if ( applyMuonTriggerEffWeightingMC ) extTreeSelection.append("*").append(branchNames["muonTriggerEffWeight"]);
 
     std::cout << " treeSelection = " << extTreeSelection << std::endl;
 
@@ -367,7 +371,7 @@ void makeDistributionsInRegion(
   TTree* tree, 
   const std::string& tauId, const std::vector<std::string>& fitVariables,
   std::map<std::string, std::string>& branchNames, 
-  bool applyPUreweighting,
+  bool applyPUreweighting, bool applyMuonTriggerEffWeightingMC,
   const std::string& sysShift = "CENTRAL_VALUE",
   bool saveRunLumiSectionEventNumbers = false)
 {
@@ -425,7 +429,7 @@ void makeDistributionsInRegion(
 		 region, weight,
 		 tree, treeSelection,
 		 tauId, tauIdValues, observables,
-		 branchNames, applyPUreweighting,
+		 branchNames, applyPUreweighting, applyMuonTriggerEffWeightingMC,
 		 sysShift,
 		 saveRunLumiSectionEventNumbers);
 }
@@ -437,7 +441,7 @@ void makeDistributionsAllRegions(
   TTree* tree, const std::vector<std::string>& regions,
   const std::vector<std::string>& tauIds, const std::vector<std::string>& fitVariables,
   std::map<std::string, std::map<std::string, std::string> >& branchNames, 
-  bool applyPUreweighting,
+  bool applyPUreweighting, bool applyMuonTriggerEffWeightingMC,
   const std::string& sysShift = "CENTRAL_VALUE",
   std::map<std::string, bool>* saveRunLumiSectionEventNumbers = NULL)
 {
@@ -469,7 +473,7 @@ void makeDistributionsAllRegions(
 				*region, weight,
 				tree, 
 				*tauId, fitVariables,
-				branchNames[*tauId], applyPUreweighting,
+				branchNames[*tauId], applyPUreweighting, applyMuonTriggerEffWeightingMC,
 				sysShift,
 				saveRunLumiSectionEventNumbers_region);
     }
@@ -569,6 +573,9 @@ int main(int argc, const char* argv[])
 
   //bool applyPUreweightingMC = false;
   bool applyPUreweightingMC = true;
+
+  //bool applyMuonTriggerEffWeightingMC = false;
+  bool applyMuonTriggerEffWeightingMC = true;
 
   std::vector<std::string> sysUncertainties;
   sysUncertainties.push_back(std::string("SysTauJetEnUp"));   // needed for diTauVisMassFromJet
@@ -709,7 +716,7 @@ int main(int argc, const char* argv[])
     printFileInfo(chainData, "chainData");
     makeDistributionsAllRegions("Data", 
                                 distributionsData, 1.0, chainData, regions,
-                                tauIds, fitVariables, branchNamesData, false, *sysShift, &saveRunLumiSectionEventNumbers);
+                                tauIds, fitVariables, branchNamesData, false, false, *sysShift, &saveRunLumiSectionEventNumbers);
     delete chainData;
     delete chainData_2011RunA_v1;
     delete chainData_2011RunA_v2;
@@ -720,7 +727,7 @@ int main(int argc, const char* argv[])
     printFileInfo(chainZtautau, "chainZtautau");
     makeDistributionsAllRegions("Ztautau", 
                                 templatesZtautau, weightFactorZtautau*corrFactorZtautau, chainZtautau, regions, 
-				tauIds, fitVariables, branchNamesMC, applyPUreweightingMC, *sysShift);
+				tauIds, fitVariables, branchNamesMC, applyPUreweightingMC, applyMuonTriggerEffWeightingMC, *sysShift);
     delete chainZtautau;
 
     std::map<std::string, std::map<std::string, TH1*> > templatesZmumu; // key = (region, observable)
@@ -731,7 +738,7 @@ int main(int argc, const char* argv[])
     printFileInfo(chainZmumu, "chainZmumu");
     makeDistributionsAllRegions("Zmumu", 
                                 templatesZmumu, weightFactorZmumu*corrFactorZmumu, chainZmumu, regions, 
-                                tauIds, fitVariables, branchNamesMC, applyPUreweightingMC, *sysShift);
+                                tauIds, fitVariables, branchNamesMC, applyPUreweightingMC, applyMuonTriggerEffWeightingMC, *sysShift);
     delete chainZmumu;
 
     TChain* chainQCD = new TChain("Events");
@@ -740,7 +747,7 @@ int main(int argc, const char* argv[])
     printFileInfo(chainQCD, "chainQCD");
     makeDistributionsAllRegions("QCD", 
                                 templatesQCD, weightFactorQCD*corrFactorQCD, chainQCD, regions, 
-		        	tauIds, fitVariables, branchNamesMC, applyPUreweightingMC, *sysShift);
+		        	tauIds, fitVariables, branchNamesMC, applyPUreweightingMC, applyMuonTriggerEffWeightingMC, *sysShift);
     delete chainQCD;
 
     TChain* chainWplusJets = new TChain("Events");
@@ -749,7 +756,7 @@ int main(int argc, const char* argv[])
     printFileInfo(chainWplusJets, "chainWplusJets");
     makeDistributionsAllRegions("WplusJets", 
                                 templatesWplusJets, weightFactorWplusJets*corrFactorWplusJets, chainWplusJets, regions, 
-				tauIds, fitVariables, branchNamesMC, applyPUreweightingMC, *sysShift);
+				tauIds, fitVariables, branchNamesMC, applyPUreweightingMC, applyMuonTriggerEffWeightingMC, *sysShift);
     delete chainWplusJets;
 
     TChain* chainTTplusJets = new TChain("Events");
@@ -758,7 +765,7 @@ int main(int argc, const char* argv[])
     printFileInfo(chainTTplusJets, "chainTTplusJets");
     makeDistributionsAllRegions("TTplusJets", 
                                 templatesTTplusJets, weightFactorTTplusJets*corrFactorTTplusJets, chainTTplusJets, regions, 
-				tauIds, fitVariables, branchNamesMC, applyPUreweightingMC, *sysShift);
+				tauIds, fitVariables, branchNamesMC, applyPUreweightingMC, applyMuonTriggerEffWeightingMC, *sysShift);
     delete chainTTplusJets;
   }
     
