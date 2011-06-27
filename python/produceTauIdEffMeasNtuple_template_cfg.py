@@ -6,7 +6,7 @@ process = cms.Process("prodTauIdEffMeasNtuple")
 # of electrons, muons and tau-jets with non-standard isolation cones
 process.load('Configuration/StandardSequences/Services_cff')
 process.load('FWCore/MessageService/MessageLogger_cfi')
-process.MessageLogger.cerr.FwkReport.reportEvery = 10000
+process.MessageLogger.cerr.FwkReport.reportEvery = 100
 #process.MessageLogger.cerr.threshold = cms.untracked.string('INFO')
 #process.MessageLogger.suppressInfo = cms.untracked.vstring()
 process.MessageLogger.suppressWarning = cms.untracked.vstring("PATTriggerProducer",)
@@ -15,14 +15,9 @@ process.load('Configuration/StandardSequences/MagneticField_cff')
 process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
 
 #--------------------------------------------------------------------------------
-from PhysicsTools.PatAlgos.tools.cmsswVersionTools import pickRelValInputFiles
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
-    pickRelValInputFiles( cmsswVersion  = 'CMSSW_4_2_0_pre8'
-                        , relVal        = 'RelValTTbar'
-                        , globalTag     = 'START42_V7'
-                        , numberOfFiles = 1
-                        )
+        'file:/data2/friis/CMSSW_4_2_X/skims/06-27-MatthewsZTTEvents/crab_0_110627_082505/ZTTCands_merged_v1.root'
     )
 )
 
@@ -42,7 +37,7 @@ process.maxEvents = cms.untracked.PSet(
 isMC = True # use for MC
 ##isMC = False # use for Data
 ##HLTprocessName = "HLT" # use for 2011 Data
-HLTprocessName = "REDIGI311X" # use for Spring'11 reprocessed MC
+HLTprocessName = "HLT" # use for Summer'11 MC
 pfCandidateCollection = "particleFlow" # pile-up removal disabled
 ##pfCandidateCollection = "pfNoPileUp" # pile-up removal enabled
 applyZrecoilCorrection = False
