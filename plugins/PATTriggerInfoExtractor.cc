@@ -9,6 +9,8 @@
 
 const std::string value_separator = ":";
 
+int PATTriggerInfoExtractor::numWarnings_ = 0;
+
 PATTriggerInfoExtractor::PATTriggerInfoExtractor(const edm::ParameterSet& cfg)
   : cfgError_(0)
 {
@@ -53,7 +55,6 @@ PATTriggerInfoExtractor::PATTriggerInfoExtractor(const edm::ParameterSet& cfg)
   }
 
   maxWarnings_ = cfg.exists("maxWarnings") ? cfg.getParameter<int>("maxWarnings") : 1;
-  numWarnings_ = 0;
 }
 
 PATTriggerInfoExtractor::~PATTriggerInfoExtractor()

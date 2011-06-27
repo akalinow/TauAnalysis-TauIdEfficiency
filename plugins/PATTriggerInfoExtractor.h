@@ -8,7 +8,7 @@
  *
  * \author Christian, UC Davis
  *
- * \version $Revision: 1.3 $
+ * \version $Revision: 1.4 $
  */
 
 #include "FWCore/Framework/interface/Event.h"
@@ -39,7 +39,7 @@ class PATTriggerInfoExtractor : public ObjValExtractorBase
   int value_;
 
   int maxWarnings_;
-  mutable int numWarnings_;
+  static int numWarnings_;
 
   int cfgError_;
 };
