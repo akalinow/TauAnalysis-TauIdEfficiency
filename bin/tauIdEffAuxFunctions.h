@@ -169,27 +169,32 @@ void drawHistograms(TH1* histogramZtautau, double normZtautau,
   canvas->SetBottomMargin(0.12);
 
 //--- scale template histograms to given normalization factors
-  TH1* templateZtautau       = ( normZtautau       > 0. ) ? normalize(histogramZtautau,       normZtautau)       : histogramZtautau;
+  TH1* templateZtautau    = ( normZtautau    > 0. ) ? normalize(histogramZtautau,    normZtautau)    : histogramZtautau;
   applyStyleOption(templateZtautau, histogramTitle, xAxisTitle);
+  templateZtautau->SetFillStyle(1001);
   templateZtautau->SetFillColor(628);
   
 //--- sum Z/gamma* --> mu+ mu- contributions
-  TH1* templateZmumu         = ( normZmumu         > 0. ) ? normalize(histogramZmumu,         normZmumu)         : histogramZmumu;
+  TH1* templateZmumu      = ( normZmumu      > 0. ) ? normalize(histogramZmumu,      normZmumu)      : histogramZmumu;
   applyStyleOption(templateZmumu, histogramTitle, xAxisTitle);
+  templateZmumu->SetFillStyle(1001);
   templateZmumu->SetFillColor(596);
 
-  TH1* templateQCD           = ( normQCD           > 0. ) ? normalize(histogramQCD,           normQCD)           : histogramQCD;
+  TH1* templateQCD        = ( normQCD        > 0. ) ? normalize(histogramQCD,        normQCD)        : histogramQCD;
   applyStyleOption(templateQCD, histogramTitle, xAxisTitle);
+  templateQCD->SetFillStyle(1001);
   templateQCD->SetFillColor(797);
 
-  TH1* templateWplusJets     = ( normWplusJets     > 0. ) ? normalize(histogramWplusJets,     normWplusJets)     : histogramWplusJets;
+  TH1* templateWplusJets  = ( normWplusJets  > 0. ) ? normalize(histogramWplusJets,  normWplusJets)  : histogramWplusJets;
   applyStyleOption(templateWplusJets, histogramTitle, xAxisTitle);
+  templateWplusJets->SetFillStyle(1001);
   templateWplusJets->SetFillColor(856);
 
-  TH1* templateTTplusJets    = ( normTTplusJets    > 0. ) ? normalize(histogramTTplusJets,    normTTplusJets)    : histogramTTplusJets;
+  TH1* templateTTplusJets = ( normTTplusJets > 0. ) ? normalize(histogramTTplusJets, normTTplusJets) : histogramTTplusJets;
   applyStyleOption(templateTTplusJets, histogramTitle, xAxisTitle);
+  templateTTplusJets->SetFillStyle(1001);
   templateTTplusJets->SetFillColor(618);
-
+  
   applyStyleOption(histogramData, histogramTitle, xAxisTitle);
   histogramData->SetLineColor(1);
   histogramData->SetMarkerColor(1);
@@ -250,8 +255,10 @@ void drawHistograms(TH1* histogramZtautau, double normZtautau,
   templateSMbgSum->Add(templateWplusJets);
   templateSMbgSum->Add(templateTTplusJets);
   applyStyleOption(templateSMbgSum, histogramTitle, xAxisTitle);
+  templateSMbgSum->SetFillStyle(1001);
   templateSMbgSum->SetFillColor(42);
 
+  templateZtautau->SetFillStyle(1001);
   templateZtautau->SetFillColor(46);
 
   THStack smSum2("smSum", "smSum");
@@ -288,6 +295,7 @@ void drawHistograms(TH1* histogramZtautau, double normZtautau,
   TH1* templateSMsum = (TH1*)templateSMbgSum->Clone();
   templateSMsum->Add(templateZtautau);
   applyStyleOption(templateSMsum, histogramTitle, xAxisTitle);
+  templateSMsum->SetFillStyle(1001);
   templateSMsum->SetFillColor(10);
   templateSMsum->SetLineColor(1);
   templateSMsum->SetLineWidth(2);
@@ -503,6 +511,26 @@ void loadHistograms(
 	  std::string key = getKey(*observable, *tauId, *tauIdValue, sysShift);	
 	  //std::cout << "--> key = " << key << std::endl;
 	  if ( histogram != 0 ) histogramMap[*region][key] = histogram;
+/*
+	  TH1* histogramABCD = histogramMap["ABCD"][key];
+	  if ( !histogramABCD ) {
+	    TString histogramABCDname = TString(histogram->GetName()).ReplaceAll(Form("_%s_", region->data()), "_ABCD_");
+	    histogramABCD = (TH1*)histogram->Clone(histogramABCDname.Data());
+	    histogramMap["ABCD"][key] = histogramABCD;
+	  } else {
+	    histogramABCD->Add(histogram);
+	  }
+ */
+	  if ( (*region) == "C1" || (*region) == "C2" ) {
+	    TH1* histogramC = histogramMap["C"][key];
+	    if ( !histogramC ) {
+	      TString histogramCname = TString(histogram->GetName()).ReplaceAll(Form("_%s_", region->data()), "_C_");
+	      histogramC = (TH1*)histogram->Clone(histogramCname.Data());
+	      histogramMap["C"][key] = histogramC;
+	    } else {
+	      histogramC->Add(histogram);
+	    }
+	  }
 	}
       }
     }
@@ -585,7 +613,7 @@ void sumHistograms(std::map<std::string, std::map<std::string, std::map<std::str
       for ( std::map<std::string, TH1*>::const_iterator key = region->second.begin();
 	    key != region->second.end(); ++key ) {
 	TH1* histogram = templatesAll[*process][region->first][key->first];
-	
+
 	TH1* histogramSum = templatesAll[processNameSum][region->first][key->first];
 	if ( !histogramSum ) {
 	  std::string histogramName = histogram->GetName();
