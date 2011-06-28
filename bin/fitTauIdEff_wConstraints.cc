@@ -767,8 +767,8 @@ int main(int argc, const char* argv[])
   TBenchmark clock;
   clock.Start("fitTauIdEff_wConstraints");
 
-  bool runClosureTest = false;
-  //bool runClosureTest = true;
+  //bool runClosureTest = false;
+  bool runClosureTest = true;
 
   bool takeQCDfromData = false;
   //bool takeQCDfromData = true;
@@ -797,7 +797,7 @@ int main(int argc, const char* argv[])
   regions.push_back(std::string("A"));
   regions.push_back(std::string("B"));
   regions.push_back(std::string("B1"));  // QCD enriched control region (SS, loose muon isolation, Mt && Pzeta cuts applied)
-  //regions.push_back(std::string("C"));
+  regions.push_back(std::string("C"));
   regions.push_back(std::string("C1"));
   regions.push_back(std::string("C1p"));
   regions.push_back(std::string("C1f"));
