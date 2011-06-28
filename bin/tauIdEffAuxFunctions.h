@@ -511,26 +511,6 @@ void loadHistograms(
 	  std::string key = getKey(*observable, *tauId, *tauIdValue, sysShift);	
 	  //std::cout << "--> key = " << key << std::endl;
 	  if ( histogram != 0 ) histogramMap[*region][key] = histogram;
-/*
-	  TH1* histogramABCD = histogramMap["ABCD"][key];
-	  if ( !histogramABCD ) {
-	    TString histogramABCDname = TString(histogram->GetName()).ReplaceAll(Form("_%s_", region->data()), "_ABCD_");
-	    histogramABCD = (TH1*)histogram->Clone(histogramABCDname.Data());
-	    histogramMap["ABCD"][key] = histogramABCD;
-	  } else {
-	    histogramABCD->Add(histogram);
-	  }
- */
-	  if ( (*region) == "C1" || (*region) == "C2" ) {
-	    TH1* histogramC = histogramMap["C"][key];
-	    if ( !histogramC ) {
-	      TString histogramCname = TString(histogram->GetName()).ReplaceAll(Form("_%s_", region->data()), "_C_");
-	      histogramC = (TH1*)histogram->Clone(histogramCname.Data());
-	      histogramMap["C"][key] = histogramC;
-	    } else {
-	      histogramC->Add(histogram);
-	    }
-	  }
 	}
       }
     }
