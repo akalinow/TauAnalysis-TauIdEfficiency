@@ -770,8 +770,8 @@ int main(int argc, const char* argv[])
   bool runClosureTest = false;
   //bool runClosureTest = true;
 
-  //bool takeQCDfromData = false;
-  bool takeQCDfromData = true;
+  bool takeQCDfromData = false;
+  //bool takeQCDfromData = true;
 
   // CV: fitting fake-rates of background processes
   //     in C2f/C2p regions causes bias of fit result (2011/06/28)
@@ -970,6 +970,15 @@ int main(int argc, const char* argv[])
 		       std::string("Region ").append(region->first).append(": ").append(key->first).append(" (scaled by cross-section)"),
 		       xAxisTitles[key->first],
 		       std::string("controlPlotsTauIdEff_wConstraints_").append(region->first).append("_").append(key->first).append(".png"));
+    }
+  }
+
+  for ( std::map<std::string, std::map<std::string, TH1*> >::const_iterator region = distributionsData.begin();
+	region != distributionsData.end(); ++region ) {
+    for ( std::map<std::string, TH1*>::const_iterator key = region->second.begin();
+	  key != region->second.end(); ++key ) {
+      std::cout << "numEvents[" << "Data" << "][" << region->first << "][" << key->first << "] = "
+		<< getIntegral(key->second, true, true) << std::endl;
     }
   }
 
