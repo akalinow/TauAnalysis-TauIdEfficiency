@@ -96,7 +96,7 @@ configurePrePatProduction(process, pfCandidateCollection = pfCandidateCollection
 from TauAnalysis.TauIdEfficiency.tools.configurePatTupleProductionTauIdEffMeasSpecific import *
 
 patTupleConfig = configurePatTupleProductionTauIdEffMeasSpecific(
-    process, hltProcess = HLTprocessName, addGenInfo = isMC, applyZrecoilCorrection = applyZrecoilCorrection)
+    process, hltProcess = HLTprocessName, isMC = isMC, applyZrecoilCorrection = applyZrecoilCorrection)
 process.patTrigger.addL1Algos = False
 #--------------------------------------------------------------------------------
 
@@ -201,7 +201,6 @@ process.o = cms.EndPath(process.ntupleOutputModule)
 
 import TauAnalysis.Configuration.pathModifiers as pathModifiers
 pathModifiers.PathModifier(process.p, 'doSVreco', cms.bool(False), True)
-pathModifiers.PathModifier(process.muonCaloTauSkimPath, 'doSVreco', cms.bool(False),True)
 pathModifiers.PathModifier(process.muonPFTauFixedConeSkimPath, 'doSVreco', cms.bool(False),True)
 pathModifiers.PathModifier(process.muonPFTauShrinkingConeSkimPath, 'doSVreco', cms.bool(False),True)
 pathModifiers.PathModifier(process.muonPFTauHPSskimPath, 'doSVreco', cms.bool(False),True)
@@ -211,7 +210,6 @@ pathModifiers.PathModifier(process.muonPFTauHPSpTaNCskimPath, 'doSVreco', cms.bo
 # define order in which different paths are run
 process.schedule = cms.Schedule(
     process.p,
-    process.muonCaloTauSkimPath,
     process.muonPFTauFixedConeSkimPath,
     process.muonPFTauShrinkingConeSkimPath,
     process.muonPFTauHPSskimPath,

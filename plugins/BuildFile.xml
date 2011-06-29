@@ -15,15 +15,18 @@
   <use   name="DataFormats/VertexReco"/>
   <use   name="SimDataFormats/GeneratorProducts"/>
   <use   name="SimDataFormats/PileupSummaryInfo"/>
+  <use   name="JetMETCorrections/Objects"/>
   <use   name="PhysicsTools/JetMCUtils"/>
   <use   name="PhysicsTools/MVAComputer"/>
   <use   name="PhysicsTools/MVATrainer"/>
   <use   name="PhysicsTools/SelectorUtils"/>
+  <use   name="RecoTauTag/RecoTau"/>
   <use   name="TauAnalysis/BgEstimationTools"/>
   <use   name="TauAnalysis/CandidateTools"/>
   <use   name="TauAnalysis/Core"/>
   <use   name="TauAnalysis/DQMTools"/>
   <use   name="TauAnalysis/GenSimTools"/>
+  <use   name="TauAnalysis/RecoTools"/>
   <use   name="TauAnalysis/TauIdEfficiency"/>
   <use   name="rootgraphics"/>
 </library>

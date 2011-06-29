@@ -4,13 +4,13 @@
  /** \class PATTauCollectionDiffAnalyzer
   *
   * Compare content of two (PAT)Tau collections
-  * (moduleto be used for debugging purposes)
+  * (module to be used for debugging purposes)
   * 
   * \author Christian Veelken, UC Davis
   *
-  * \version $Revision: 1.1 $
+  * \version $Revision: 1.2 $
   *
-  * $Id: PATTauCollectionDiffAnalyzer.h,v 1.1 2010/06/20 16:00:56 veelken Exp $
+  * $Id: PATTauCollectionDiffAnalyzer.h,v 1.2 2010/09/28 11:23:39 jkolb Exp $
   *
   */
 

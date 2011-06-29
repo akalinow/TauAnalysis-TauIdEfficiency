@@ -142,7 +142,7 @@ def buildTauSequence(
         neutralHadronIso = cms.PSet(
             ptMin = cms.double(1000.),        
             dRvetoCone = cms.double(0.15),        
-            dRisoCone = cms.double(0.4)
+            dRisoCone = cms.double(0.)
         ),
         photonIso = cms.PSet(
             ptMin = cms.double(1.5),        

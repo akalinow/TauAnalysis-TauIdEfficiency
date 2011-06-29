@@ -94,7 +94,7 @@ configurePrePatProduction(process, pfCandidateCollection = pfCandidateCollection
 from TauAnalysis.TauIdEfficiency.tools.configurePatTupleProductionTauIdEffMeasSpecific import *
 
 patTupleConfig = configurePatTupleProductionTauIdEffMeasSpecific(
-    process, hltProcess = HLTprocessName, addGenInfo = isMC, applyZrecoilCorrection = applyZrecoilCorrection)
+    process, hltProcess = HLTprocessName, isMC = isMC, applyZrecoilCorrection = applyZrecoilCorrection)
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
@@ -104,7 +104,6 @@ patTupleConfig = configurePatTupleProductionTauIdEffMeasSpecific(
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigRunLumiSectionEventNumber_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigTrigger_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigVertex_cfi")
-process.load("TauAnalysis.TauIdEfficiency.ntupleConfigCaloTau_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigPFTauFixedCone_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigPFTauShrinkingCone_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigPFTauHPS_cfi")
@@ -148,14 +147,13 @@ process.ntupleProducer = cms.EDProducer("ObjValEDNtupleProducer",
         tauIdEffMeas01 = process.tauIdEffMeas_template01.clone(
             src = cms.InputTag('selectedPatMuonsForTauIdEffTrkIPcumulative')
         ),
-        tauIdEffMeas05 = process.tauIdEffMeas_template05.clone(
+        tauIdEffMeas05 = process.tauIdEffMeas_template04.clone(
             src = cms.InputTag('selectedPatMuonsForTauIdEffTrkIPcumulative')
         )                                                                               
     )
 )
 
 patTauTemplates = {
-    "caloTau"            : process.caloTaus_recInfo,
     "pfTauFixedCone"     : process.pfTausFixedCone_recInfo,
     "pfTauShrinkingCone" : process.pfTausShrinkingCone_recInfo,
     "pfTauHPS"           : process.pfTausHPS_recInfo,
@@ -163,11 +161,10 @@ patTauTemplates = {
 }
 
 muTauTemplates = {
-    "caloTau"            : [ process.tauIdEffMeas_template03caloTau, process.tauIdEffMeas_template04caloTau ], 
-    "pfTauFixedCone"     : [ process.tauIdEffMeas_template03pfTau,   process.tauIdEffMeas_template04pfTau   ],
-    "pfTauShrinkingCone" : [ process.tauIdEffMeas_template03pfTau,   process.tauIdEffMeas_template04pfTau   ],
-    "pfTauHPS"           : [ process.tauIdEffMeas_template03pfTau,   process.tauIdEffMeas_template04pfTau   ],
-    "pfTauHPSpTaNC"      : [ process.tauIdEffMeas_template03pfTau,   process.tauIdEffMeas_template04pfTau   ]
+    "pfTauFixedCone"     : [ process.tauIdEffMeas_template03pfTau ],
+    "pfTauShrinkingCone" : [ process.tauIdEffMeas_template03pfTau ],
+    "pfTauHPS"           : [ process.tauIdEffMeas_template03pfTau ],
+    "pfTauHPSpTaNC"      : [ process.tauIdEffMeas_template03pfTau ]
 }
 
 # add branches for collections of Tau-jet candidates and Muon + Tau-Jet candidate pairs
@@ -197,11 +194,6 @@ for algorithm in patTupleConfig["algorithms"]:
             src = cms.InputTag(muTauPairCollection)
         )
         setattr(process.ntupleProducer.sources, attr03Name, attr03)
-        attr04Name = "tauIdEffMeas04_%s" % muTauPairCollection
-        attr04 = muTauTemplates[algorithm][1].clone(
-            src = cms.InputTag(muTauPairCollection)
-        )
-        setattr(process.ntupleProducer.sources, attr04Name, attr04)
 
 if isMC:
     # add in information about generator level visible taus and all generator level jets
@@ -220,13 +212,9 @@ if isMC:
 process.load('CondCore.DBCommon.CondDBSetup_cfi')
 process.jec = cms.ESSource("PoolDBESSource",
     process.CondDBSetup,
-    ## DBParameters = cms.PSet(
-    ##     messageLevel = cms.untracked.int32(0)
-    ##     ),
-    ## timetype = cms.string('runnumber'),
     toGet = cms.VPSet(
          cms.PSet(record = cms.string("JetCorrectionsRecord"),
-                  tag = cms.string("JetCorrectorParametersCollection_Jec10V3_AK5Calo"),#JetCorrectorParametersCollection_Jec11_V1_AK5Calo
+                  tag = cms.string("JetCorrectorParametersCollection_Jec10V3_AK5Calo"),
                   label=cms.untracked.string("AK5Calo")),
          cms.PSet(record = cms.string("JetCorrectionsRecord"),
                   tag = cms.string("JetCorrectorParametersCollection_Jec10V3_AK5PF"),
@@ -235,7 +223,6 @@ process.jec = cms.ESSource("PoolDBESSource",
                   tag = cms.string("JetCorrectorParametersCollection_Jec10V3_AK5PFchs"),
                   label=cms.untracked.string("AK5PF"))
     ),
-    ## here you add as many jet types as you need (AK5Calo, AK5JPT, AK7PF, AK7Calo, KT4PF, KT4Calo, KT6PF, KT6Calo)
     connect = cms.string('sqlite_fip:TauAnalysis/Configuration/data/Jec10V3.db')
     #connect = cms.string("frontier://FrontierPrep/CMS_COND_PHYSICSTOOLS")
 )
@@ -279,27 +266,27 @@ process.o = cms.EndPath(process.ntupleOutputModule)
 #                   Modify the content of the extractors
 #--------------------------------------------------------------------------------
 import TauAnalysis.Configuration.pathModifiers as pathModifiers
-pathModifiers.ExtractorAddColumn(process.ntupleProducer.sources,
-                                 'PATTauVectorValExtractor', 'productionVertexZ', cms.string("vertex().z()"), True)
-pathModifiers.ExtractorAddColumn(process.ntupleProducer.sources,
-                                 'PATMuTauPairValExtractor', 'tauVertexZ', cms.string("leg2().vertex().z()"), True)
-pathModifiers.ExtractorAddColumn(process.ntupleProducer.sources,
-                                 'PATMuTauPairValExtractor', 'muVertexZ', cms.string("leg1().vertex().z()"), True)
-#--------------------------------------------------------------------------------
+additionalNtupleVariables = [
+    [ 'PATTauVectorValExtractor', 'productionVertexZ',  "vertex().z()"                    ],
+    [ 'PATTauVectorValExtractor', 'preselLoosePFIsoPt', "userFloat('preselLoosePFIsoPt')" ],
+    [ 'PATTauVectorValExtractor', 'origTauPt',          "userFloat('origTauPt')"          ],
+    [ 'PATTauVectorValExtractor', 'origTauEta',         "userFloat('origTauEta')"         ],
+    [ 'PATTauVectorValExtractor', 'origTauPhi',         "userFloat('origTauPhi')"         ],
+    [ 'PATTauVectorValExtractor', 'origTauMass',        "userFloat('origTauMass')"        ],
+    [ 'PATMuTauPairValExtractor', 'tauVertexZ',         "leg2().vertex().z()"             ],
+    [ 'PATMuTauPairValExtractor', 'muVertexZ',          "leg1().vertex().z()"             ]    
+]
+for additionalNtupleVariable in additionalNtupleVariables:
+    if len(additionalNtupleVariable) != 3:
+        raise ValueError("Invalid format of 'additionalNtupleVariable' !!")
 
+    pathModifiers.ExtractorAddColumn(process.ntupleProducer.sources,
+      additionalNtupleVariable[0], additionalNtupleVariable[1], cms.string(additionalNtupleVariable[2]), True)
 #--------------------------------------------------------------------------------
-#
-# CV: do **not** apply HLT trigger conditions to CMSSW_4_1_x MC,
-#     weight simulated events by trigger efficiencies measured in Data instead
-#
-if isMC:
-    process.commonSkimSequence.remove(process.hltMu)
-#--------------------------------------------------------------------------------    
 
 # define order in which different paths are run
 process.schedule = cms.Schedule(
     process.p,
-    process.muonCaloTauSkimPath,
     process.muonPFTauFixedConeSkimPath,
     process.muonPFTauShrinkingConeSkimPath,
     process.muonPFTauHPSskimPath,
@@ -307,7 +294,18 @@ process.schedule = cms.Schedule(
     process.o
 )
 
-# print-out all python configuration parameter information
-#print process.dumpPython()
-processDumpFile = open('OldNtupleDump.py' , 'w')
-print >> processDumpFile, process.dumpPython()
+tauIdEffSampleEventSelection = cms.untracked.PSet( # CV: ONLY FOR TESTING !!!
+    SelectEvents = cms.untracked.PSet(
+        SelectEvents = cms.vstring(
+            'muonPFTauHPSpTaNCskimPath'
+        )
+    )
+)
+process.ntupleOutputModule.SelectEvents = cms.untracked.PSet( # CV: ONLY FOR TESTING !!!
+    SelectEvents = cms.vstring('muonPFTauHPSpTaNCskimPath')
+)
+process.schedule = cms.Schedule( # CV: ONLY FOR TESTING !!!
+    process.p,
+    process.muonPFTauHPSpTaNCskimPath,
+    process.o
+)

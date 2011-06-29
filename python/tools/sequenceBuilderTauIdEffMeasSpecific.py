@@ -11,11 +11,10 @@ def buildSequenceTauIdEffMeasSpecific(process,
                                       patMuonCollectionName = "selectedPatMuonsForTauIdEffTrkIP",
                                       tauIdAlgorithmName = None, patTauCollectionName = "patTaus",
                                       patMEtCollectionName = "patPFMETs",
-                                      patTauPreselectionCriteria = None,
                                       patTauProducerPrototype = None,
                                       patTauCleanerPrototype = None,
                                       patTauTriggerMatcherProtoType = None,
-                                      addGenInfo = False, applyZrecoilCorrection = False, runSVfit = False):
+                                      isMC = False, applyZrecoilCorrection = False, runSVfit = False):
 
     #print("<buildSequenceTauIdEffMeasSpecific>:")
     #print(" patTauCollectionName = %s" % patTauCollectionName)
@@ -23,9 +22,6 @@ def buildSequenceTauIdEffMeasSpecific(process,
     # check that tauIdAlgorithmName is defined, non-null and composed of two parts
     if tauIdAlgorithmName is None or len(tauIdAlgorithmName) != 2:
         raise ValueError("Undefined of invalid 'tauIdAlgorithmName' Parameter !!")
-    # check that patTauPreselectionCriteria are defined and non-null
-    if patTauPreselectionCriteria is None:
-        raise ValueError("Undefined 'patTauPreselectionCriteria' Parameter !!")
 
     patTauProducerName = "".join(patTauCollectionName)
 
@@ -66,34 +62,61 @@ def buildSequenceTauIdEffMeasSpecific(process,
     selectedPatTausAntiOverlapWithMuonsVetoName = \
         "selectedPat%ss%sAntiOverlapWithMuonsVeto" % (tauIdAlgorithmName[0], tauIdAlgorithmName[1])
     selectedPatTausAntiOverlapWithMuonsVeto = process.selectedPatTausForMuTauAntiOverlapWithMuonsVeto.clone(
-        dRmin = cms.double(0.7),
+        dRmin = cms.double(0.5),
         srcNotToBeFiltered = cms.VInputTag(composeModuleName([patMuonCollectionName, "cumulative"]))
     )
     setattr(process, selectedPatTausAntiOverlapWithMuonsVetoName, selectedPatTausAntiOverlapWithMuonsVeto)
     patTauSelectionModules.append(selectedPatTausAntiOverlapWithMuonsVeto)
 
-    allPatTauPreselectionCriteria = []
-    allPatTauPreselectionCriteria.append(["Eta23",    "abs(eta) < 2.3"                     ])
-    allPatTauPreselectionCriteria.append(["Pt20",     "pt > 20."                           ])
-    allPatTauPreselectionCriteria.extend(patTauPreselectionCriteria)
-    allPatTauPreselectionCriteria.append(["PFRelIso", "userFloat('pfLooseIsoPt06') < 1000."])
+    process.load("RecoTauTag.RecoTau.PFRecoTauQualityCuts_cfi")
+    process.load("TauAnalysis.RecoTools.patLeptonPFIsolationSelector_cfi")
+    selectedPatPFTausForTauIdEffName = \
+        "selectedPat%ss%sForTauIdEff" % (tauIdAlgorithmName[0], tauIdAlgorithmName[1])
+    selectedPatPFTausForTauIdEff = cms.EDFilter("PATPFTauSelectorForTauIdEff",
+        minJetPt = cms.double(20.0),
+        maxJetEta = cms.double(2.3),
+        trackQualityCuts = process.PFTauQualityCuts.signalQualityCuts,
+        minLeadTrackPt = cms.double(5.0),
+        maxDzLeadTrack = cms.double(0.2),
+        maxLeadTrackPFElectronMVA = cms.double(0.6),
+        applyECALcrackVeto = cms.bool(True),
+        minDeltaRtoNearestMuon = cms.double(0.5),
+        muonSelection = cms.string("isGlobalMuon() | isTrackerMuon() | isStandAloneMuon()"),
+        srcMuon = cms.InputTag('patMuons'),
+        pfIsolation = cms.PSet(
+            chargedHadronIso = cms.PSet(
+                ptMin = cms.double(1.0),        
+                dRvetoCone = cms.double(0.15),
+                dRisoCone = cms.double(0.4)
+            ),
+            neutralHadronIso = cms.PSet(
+                ptMin = cms.double(1000.),        
+                dRvetoCone = cms.double(0.15),        
+                dRisoCone = cms.double(0.)
+            ),
+            photonIso = cms.PSet(
+                ptMin = cms.double(1.5),        
+                dPhiVeto = cms.double(-1.),  # asymmetric Eta x Phi veto region 
+                dEtaVeto = cms.double(-1.),  # to account for photon conversions in electron isolation case        
+                dRvetoCone = cms.double(0.15),
+                dRisoCone = cms.double(0.4)
+            )
+        ),
+        maxPFIsoPt = cms.double(2.5),
+        srcPFIsoCandidates = cms.InputTag('pfNoPileUp'),
+        srcBeamSpot = cms.InputTag('offlineBeamSpot'),
+        srcVertex = cms.InputTag('offlinePrimaryVerticesWithBS'),
+        filter = cms.bool(False)                                                  
+    )
+    setattr(process, selectedPatPFTausForTauIdEffName, selectedPatPFTausForTauIdEff)
+    patTauSelectionModules.append(selectedPatPFTausForTauIdEff)
 
-    lastModuleName = None
-    
-    for patTauPreselectionCriterion in allPatTauPreselectionCriteria:
-
-        if len(patTauPreselectionCriterion) != 2:
-            raise ValueError("Invalid format of pat::Tau selection criteria !!")
-                
-        patTauSelectionModuleName = "selectedPat%ss%s%s" % (tauIdAlgorithmName[0], tauIdAlgorithmName[1], patTauPreselectionCriterion[0])
-        patTauSelectionModule = cms.EDFilter("PATTauSelector",
-            cut = cms.string(patTauPreselectionCriterion[1]),
-            filter = cms.bool(False)                                 
-        )
-        setattr(process, patTauSelectionModuleName, patTauSelectionModule)
-        patTauSelectionModules.append(patTauSelectionModule)
-
-        lastModuleName = patTauSelectionModuleName
+    # for MC   apply L1Offset + L2 + L3 jet-energy corrections,
+    # for Data apply L1Offset + L2 + L3 + L2/L3 residual corrections
+    if isMC:
+        setattr(selectedPatPFTausForTauIdEff, "jetEnergyCorrection", cms.string('ak5PFL1L2L3'))
+    else:
+        setattr(selectedPatPFTausForTauIdEff, "jetEnergyCorrection", cms.string('ak5PFL1L2L3Residual'))
 
     patTauSelConfigurator = objSelConfigurator(
         patTauSelectionModules,
@@ -107,7 +130,19 @@ def buildSequenceTauIdEffMeasSpecific(process,
     setattr(process, patTauSelectionSequenceName, patTauSelectionSequence)
     sequence += patTauSelectionSequence
 
-    selTauCollectionName = lastModuleName
+    selTauCollectionName = selectedPatPFTausForTauIdEffName
+    
+    patTauCollections = []
+    for patTauSelectionModule in patTauSelectionModules:
+        patTauCollections.append(composeModuleName([patTauSelectionModule.label(), "cumulative"]))
+    patTauForTauIdEffCounter = cms.EDAnalyzer("PATCandViewCountAnalyzer",
+        src = cms.VInputTag(patTauCollections),
+        minNumEntries = cms.int32(1),
+        maxNumEntries = cms.int32(1000)                                   
+    )
+    patTauForTauIdEffCounterName = "pat%s%sForTauIdEffCounter" % (tauIdAlgorithmName[0], tauIdAlgorithmName[1])
+    setattr(process, patTauForTauIdEffCounterName, patTauForTauIdEffCounter)
+    sequence += patTauForTauIdEffCounter
 
     #--------------------------------------------------------------------------------
     # produce collections of Jets shifted Up/Down in energy
@@ -308,7 +343,7 @@ def buildSequenceTauIdEffMeasSpecific(process,
         if hasattr(allMuTauPairsModule, "pfMEtSign"):
             delattr(allMuTauPairsModule, "pfMEtSign")
     
-    if addGenInfo:
+    if isMC:
         setattr(allMuTauPairsModule, "srcGenParticles", cms.InputTag('genParticles'))
     else:
         setattr(allMuTauPairsModule, "srcGenParticles", cms.InputTag(''))
@@ -359,13 +394,21 @@ def buildSequenceTauIdEffMeasSpecific(process,
     #print("muTauPairSystematicsForTauIdEff:", muTauPairSystematicsForTauIdEff)
 
     process.load("TauAnalysis.CandidateTools.muTauPairSelection_cfi")
-    selectedMuTauPairsModuleName = composeModuleName(["selectedMu", "".join(tauIdAlgorithmName), "PairsForTauIdEff"])
-    selectedMuTauPairsModule = process.selectedMuTauPairsAntiOverlapVeto.clone(
+    selectedMuTauPairsAntiOverlapVetoModuleName = \
+      composeModuleName(["selectedMu", "".join(tauIdAlgorithmName), "PairsAntiOverlapVetoForTauIdEff"])
+    selectedMuTauPairsAntiOverlapVetoModule = process.selectedMuTauPairsAntiOverlapVeto.clone(
         cut = cms.string('dR12 > 0.7')
     )
-    setattr(process, selectedMuTauPairsModuleName, selectedMuTauPairsModule)        
+    setattr(process, selectedMuTauPairsAntiOverlapVetoModuleName, selectedMuTauPairsAntiOverlapVetoModule)
+    selectedMuTauPairsDzModuleName = \
+      composeModuleName(["selectedMu", "".join(tauIdAlgorithmName), "PairsDzForTauIdEff"])
+    selectedMuTauPairsDzModule = selectedMuTauPairsAntiOverlapVetoModule.clone(
+        cut = cms.string('abs(leg1().vertex().z() - leg2().vertex().z()) < 0.2')
+    )
+    setattr(process, selectedMuTauPairsDzModuleName, selectedMuTauPairsDzModule)    
     muTauPairSelConfigurator = objSelConfigurator(
-        [ selectedMuTauPairsModule ],
+        [ selectedMuTauPairsAntiOverlapVetoModule,
+          selectedMuTauPairsDzModule ],
         src = allMuTauPairsModuleName,
         pyModuleName = __name__,
         doSelIndividual = True
@@ -376,6 +419,19 @@ def buildSequenceTauIdEffMeasSpecific(process,
     setattr(process, muTauPairSelectionSequenceName, muTauPairSelectionSequence)
     sequence += muTauPairSelectionSequence
 
+    muTauPairForTauIdEffCounter = cms.EDAnalyzer("PATCandViewCountAnalyzer",
+        src = cms.VInputTag(
+            allMuTauPairsModuleName,
+            composeModuleName([selectedMuTauPairsAntiOverlapVetoModuleName, "cumulative"]),                         
+            composeModuleName([selectedMuTauPairsDzModuleName, "cumulative"])
+        ),      
+        minNumEntries = cms.int32(1),
+        maxNumEntries = cms.int32(1000)                                   
+    )
+    muTauPairForTauIdEffCounterName = composeModuleName(["mu", "".join(tauIdAlgorithmName), "PairForTauIdEffCounter"])
+    setattr(process, muTauPairForTauIdEffCounterName, muTauPairForTauIdEffCounter)
+    sequence += muTauPairForTauIdEffCounter
+    
     #--------------------------------------------------------------------------------
     # produce collections of smeared Muon + Tau-jet candidate pairs
     # **with** Z-recoil corrections applied
@@ -412,19 +468,19 @@ def buildSequenceTauIdEffMeasSpecific(process,
 
         #print("muTauPairSystematicsForTauIdEffZllRecoilCorrected:", muTauPairSystematicsForTauIdEffZllRecoilCorrected)
 
-        selectedMuTauPairsZllRecoilCorrectedModuleName = \
-            composeModuleName(["selectedMu", "".join(tauIdAlgorithmName), "PairsForTauIdEffZllRecoilCorrected"])
-        selectedMuTauPairsZllRecoilCorrectedModule = copy.deepcopy(selectedMuTauPairsModule)
-        setattr(process, selectedMuTauPairsZllRecoilCorrectedModuleName, selectedMuTauPairsZllRecoilCorrectedModule)
+        selectedMuTauPairsDzZllRecoilCorrectedModuleName = \
+            composeModuleName(["selectedMu", "".join(tauIdAlgorithmName), "PairsDzForTauIdEffZllRecoilCorrected"])
+        selectedMuTauPairsDzZllRecoilCorrectedModule = copy.deepcopy(selectedMuTauPairsDzModule)
+        setattr(process, selectedMuTauPairsDzZllRecoilCorrectedModuleName, selectedMuTauPairsDzZllRecoilCorrectedModule)
         muTauPairSelConfiguratorZllRecoilCorrected = objSelConfigurator(
-            [ selectedMuTauPairsZllRecoilCorrectedModule ],
+            [ selectedMuTauPairsDzZllRecoilCorrectedModule ],
             src = configZllRecoilCorrection['diTauProducerModuleZllRecoilCorrectedName'],
             pyModuleName = __name__,
             doSelIndividual = True
         )    
         setattr(muTauPairSelConfiguratorZllRecoilCorrected, "systematics", muTauPairSystematicsForTauIdEffZllRecoilCorrected)
         muTauPairSelectionSequenceZllRecoilCorrectedName = \
-            composeModuleName(["selectMu", "".join(tauIdAlgorithmName), "PairsForTauIdEffZllRecoilCorrected"])
+            composeModuleName(["selectMu", "".join(tauIdAlgorithmName), "PairsForTauIdEffDzZllRecoilCorrected"])
         muTauPairSelectionSequenceZllRecoilCorrected = muTauPairSelConfiguratorZllRecoilCorrected.configure(process = process)
         setattr(process, muTauPairSelectionSequenceZllRecoilCorrectedName, muTauPairSelectionSequenceZllRecoilCorrected)
         sequence += muTauPairSelectionSequenceZllRecoilCorrected
@@ -432,35 +488,35 @@ def buildSequenceTauIdEffMeasSpecific(process,
     retVal = {}
     retVal["sequence"] = sequence
     retVal["patTauCollections"] = [
-        composeModuleName([selTauCollectionName,                                                             "cumulative"]),
-        composeModuleName([selTauCollectionName,                               "sysTauJetEnUp",              "cumulative"]),
-        composeModuleName([selTauCollectionName,                               "sysTauJetEnDown",            "cumulative"])
+        composeModuleName([selTauCollectionName,                                                               "cumulative"]),
+        composeModuleName([selTauCollectionName,                                 "sysTauJetEnUp",              "cumulative"]),
+        composeModuleName([selTauCollectionName,                                 "sysTauJetEnDown",            "cumulative"])
     ]        
     retVal["muTauPairCollections"] = [
-        composeModuleName([selectedMuTauPairsModuleName,                                                     "cumulative"]),
-        composeModuleName([selectedMuTauPairsModuleName,                       "sysMuonPtUp",                "cumulative"]),
-        composeModuleName([selectedMuTauPairsModuleName,                       "sysMuonPtDown",              "cumulative"]),
-        composeModuleName([selectedMuTauPairsModuleName,                       "sysTauJetEnUp",              "cumulative"]),
-        composeModuleName([selectedMuTauPairsModuleName,                       "sysTauJetEnDown",            "cumulative"]),
-        composeModuleName([selectedMuTauPairsModuleName,                       "sysJetEnUp",                 "cumulative"]),
-        composeModuleName([selectedMuTauPairsModuleName,                       "sysJetEnDown",               "cumulative"])
+        composeModuleName([selectedMuTauPairsDzModuleName,                                                     "cumulative"]),
+        composeModuleName([selectedMuTauPairsDzModuleName,                       "sysMuonPtUp",                "cumulative"]),
+        composeModuleName([selectedMuTauPairsDzModuleName,                       "sysMuonPtDown",              "cumulative"]),
+        composeModuleName([selectedMuTauPairsDzModuleName,                       "sysTauJetEnUp",              "cumulative"]),
+        composeModuleName([selectedMuTauPairsDzModuleName,                       "sysTauJetEnDown",            "cumulative"]),
+        composeModuleName([selectedMuTauPairsDzModuleName,                       "sysJetEnUp",                 "cumulative"]),
+        composeModuleName([selectedMuTauPairsDzModuleName,                       "sysJetEnDown",               "cumulative"])
     ]
     if applyZrecoilCorrection:
         retVal["muTauPairCollections"].extend([
-            composeModuleName([selectedMuTauPairsZllRecoilCorrectedModuleName,                               "cumulative"]),
-            composeModuleName([selectedMuTauPairsZllRecoilCorrectedModuleName, "sysMuonPtUp",                "cumulative"]),
-            composeModuleName([selectedMuTauPairsZllRecoilCorrectedModuleName, "sysMuonPtDown",              "cumulative"]),
-            composeModuleName([selectedMuTauPairsZllRecoilCorrectedModuleName, "sysTauJetEnUp",              "cumulative"]),
-            composeModuleName([selectedMuTauPairsZllRecoilCorrectedModuleName, "sysTauJetEnDown",            "cumulative"]),
-            composeModuleName([selectedMuTauPairsZllRecoilCorrectedModuleName, "sysJetEnUp",                 "cumulative"]),
-            composeModuleName([selectedMuTauPairsZllRecoilCorrectedModuleName, "sysJetEnDown",               "cumulative"]),
-            composeModuleName([selectedMuTauPairsZllRecoilCorrectedModuleName, "sysZllRecoilCorrectionUp",   "cumulative"]),
-            composeModuleName([selectedMuTauPairsZllRecoilCorrectedModuleName, "sysZllRecoilCorrectionDown", "cumulative"])
+            composeModuleName([selectedMuTauPairsDzZllRecoilCorrectedModuleName,                               "cumulative"]),
+            composeModuleName([selectedMuTauPairsDzZllRecoilCorrectedModuleName, "sysMuonPtUp",                "cumulative"]),
+            composeModuleName([selectedMuTauPairsDzZllRecoilCorrectedModuleName, "sysMuonPtDown",              "cumulative"]),
+            composeModuleName([selectedMuTauPairsDzZllRecoilCorrectedModuleName, "sysTauJetEnUp",              "cumulative"]),
+            composeModuleName([selectedMuTauPairsDzZllRecoilCorrectedModuleName, "sysTauJetEnDown",            "cumulative"]),
+            composeModuleName([selectedMuTauPairsDzZllRecoilCorrectedModuleName, "sysJetEnUp",                 "cumulative"]),
+            composeModuleName([selectedMuTauPairsDzZllRecoilCorrectedModuleName, "sysJetEnDown",               "cumulative"]),
+            composeModuleName([selectedMuTauPairsDzZllRecoilCorrectedModuleName, "sysZllRecoilCorrectionUp",   "cumulative"]),
+            composeModuleName([selectedMuTauPairsDzZllRecoilCorrectedModuleName, "sysZllRecoilCorrectionDown", "cumulative"])
         ])
     retVal["patJetCollections"] = [
-        composeModuleName([selectedPatJetsEt20ModuleName,                                                    "cumulative"]),
-        composeModuleName([selectedPatJetsEt20ModuleName,                      "sysJetEnUp",                 "cumulative"]),
-        composeModuleName([selectedPatJetsEt20ModuleName,                      "sysJetEnDown",               "cumulative"])
+        composeModuleName([selectedPatJetsEt20ModuleName,                                                      "cumulative"]),
+        composeModuleName([selectedPatJetsEt20ModuleName,                        "sysJetEnUp",                 "cumulative"]),
+        composeModuleName([selectedPatJetsEt20ModuleName,                        "sysJetEnDown",               "cumulative"])
     ]    
     return retVal
     

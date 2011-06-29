@@ -65,40 +65,11 @@ tauIdEffMeas_template03pfTau.columns.chargeTauLeadTrack = \
 tauIdEffMeas_template03pfTau.columns.charge = \
   cms.string("leg1.charge() + leg2.charge()")
 
-tauIdEffMeas_template03caloTau = copy.deepcopy(tauIdEffMeas_template03)
-tauIdEffMeas_template03caloTau.columns.chargeTauLeadTrack = \
-  cms.string("? leg2.leadTrack().isNonnull() ? (leg1.charge() + leg2.leadTrack().charge()) : -1000.")
-tauIdEffMeas_template03caloTau.columns.charge = \
-  cms.string("leg1.charge() + leg2.charge()")
-
-tauIdEffMeas_template04 = cms.PSet(
-    # Select multiplicy of object(s) to store
-    vector = cms.bool(False),
-    indices = cms.vuint32([0]), # Store values for first object only
-    
-    # Extractor plugin
-    pluginType = cms.string("PATMuTauPairVisMassFromJetExtractor"),
-    
-    # Collection to extract from
-    src = cms.InputTag(""),
-
-    # Variables to compute for this source
-    columns = cms.PSet(
-        visMassFromJet = cms.string("")
-    )
-)
-
-tauIdEffMeas_template04pfTau = copy.deepcopy(tauIdEffMeas_template04)
-tauIdEffMeas_template04pfTau.columns.visMassFromJet = cms.string("(leg1().p4() + leg2().jetRef().p4()).mass()")
-
-tauIdEffMeas_template04caloTau = copy.deepcopy(tauIdEffMeas_template04)
-tauIdEffMeas_template04caloTau.columns.visMassFromJet = cms.string("(leg1().p4() + leg2().jetRef().p4()).mass()")
-
 #--------------------------------------------------------------------------------
 # Single muon Trigger efficiency
 #--------------------------------------------------------------------------------
 
-tauIdEffMeas_template05 = cms.PSet(
+tauIdEffMeas_template04 = cms.PSet(
     # Select multiplicy of object(s) to store
     vector = cms.bool(False),
     indices = cms.vuint32([0]), # Store values for first object only

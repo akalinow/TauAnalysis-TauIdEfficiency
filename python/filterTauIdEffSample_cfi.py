@@ -14,10 +14,10 @@ hltMu = cms.EDFilter("EventSelPluginFilter",
         pluginType = cms.string('TriggerResultEventSelector'),
         src = cms.InputTag('TriggerResults::HLT'),
         triggerPaths = cms.vstring(
-            'HLT_IsoMu12_v1',
-            'HLT_Mu15_v1', 'HLT_Mu15_v2', 'HLT_IsoMu15_v5',
-            'HLT_IsoMu17_v5', 'HLT_IsoMu17_v6',
-            'HLT_Mu24_v2'
+            #'HLT_IsoMu12_v1',
+            #'HLT_Mu15_v1', 'HLT_Mu15_v2',
+            'HLT_IsoMu17_v5', 'HLT_IsoMu17_v6', 'HLT_IsoMu17_v8', 'HLT_IsoMu17_v9', 'HLT_IsoMu17_v11',
+            #'HLT_Mu24_v1', 'HLT_Mu24_v2'
         )
     )
 )
@@ -32,34 +32,28 @@ hltMu = cms.EDFilter("EventSelPluginFilter",
 # select events containing at least one Muon + Tau pair passing selection
 #--------------------------------------------------------------------------------
 
-muonCaloTauFilter = cms.EDFilter("PATCandViewCountFilter",
-    src = cms.InputTag('selectedMuCaloTauPairsForTauIdEffCumulative'),      
-    minNumber = cms.uint32(1),
-    maxNumber = cms.uint32(1)                                   
-)
-
 muonPFTauFixedConeFilter = cms.EDFilter("PATCandViewCountFilter",
-    src = cms.InputTag('selectedMuPFTauFixedConePairsForTauIdEffCumulative'),      
+    src = cms.InputTag('selectedMuPFTauFixedConePairsDzForTauIdEffCumulative'),
     minNumber = cms.uint32(1),
-    maxNumber = cms.uint32(1)                                   
+    maxNumber = cms.uint32(1000)                                   
 )
 
 muonPFTauShrinkingConeFilter = cms.EDFilter("PATCandViewCountFilter",
-    src = cms.InputTag('selectedMuPFTauShrinkingConePairsForTauIdEffCumulative'),      
+    src = cms.InputTag('selectedMuPFTauShrinkingConePairsDzForTauIdEffCumulative'),      
     minNumber = cms.uint32(1),
-    maxNumber = cms.uint32(1)                                   
+    maxNumber = cms.uint32(1000)                                   
 )
 
 muonPFTauHPSfilter = cms.EDFilter("PATCandViewCountFilter",
-    src = cms.InputTag('selectedMuPFTauHPSpairsForTauIdEffCumulative'),      
+    src = cms.InputTag('selectedMuPFTauHPSpairsDzForTauIdEffCumulative'),      
     minNumber = cms.uint32(1),
-    maxNumber = cms.uint32(1)                                   
+    maxNumber = cms.uint32(1000)                                   
 )
 
 muonPFTauHPSpTaNCfilter = cms.EDFilter("PATCandViewCountFilter",
-    src = cms.InputTag('selectedMuPFTauHPSpTaNCpairsForTauIdEffCumulative'),      
+    src = cms.InputTag('selectedMuPFTauHPSpTaNCpairsDzForTauIdEffCumulative'),      
     minNumber = cms.uint32(1),
-    maxNumber = cms.uint32(1)                                   
+    maxNumber = cms.uint32(1000)                                   
 )
 
 #--------------------------------------------------------------------------------
@@ -92,7 +86,6 @@ countEventsPassed = cms.EDAnalyzer("DQMEventCounter",
     meName = cms.string('numEventsPassed')                                         
 )
 
-muonCaloTauSkimPath = cms.Path(countEventsProcessed + commonSkimSequence + muonCaloTauFilter + countEventsPassed)
 muonPFTauFixedConeSkimPath = cms.Path(countEventsProcessed + commonSkimSequence + muonPFTauFixedConeFilter + countEventsPassed)
 muonPFTauShrinkingConeSkimPath = cms.Path(countEventsProcessed + commonSkimSequence + muonPFTauShrinkingConeFilter + countEventsPassed)
 muonPFTauHPSskimPath = cms.Path(countEventsProcessed + commonSkimSequence + muonPFTauHPSfilter + countEventsPassed)
@@ -101,7 +94,6 @@ muonPFTauHPSpTaNCskimPath = cms.Path(countEventsProcessed + commonSkimSequence +
 tauIdEffSampleEventSelection = cms.untracked.PSet(
     SelectEvents = cms.untracked.PSet(
         SelectEvents = cms.vstring(
-            'muonCaloTauSkimPath',
             'muonPFTauFixedConeSkimPath',
             'muonPFTauShrinkingConeSkimPath',
             'muonPFTauHPSskimPath',
