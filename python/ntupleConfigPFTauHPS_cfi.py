@@ -85,6 +85,16 @@ pfTausHPS_recInfo = cms.PSet(
         byIsolationLoose = cms.string("tauID('byLooseIsolation')"),
         byIsolationMedium = cms.string("tauID('byMediumIsolation')"),
         byIsolationTight = cms.string("tauID('byTightIsolation')"),
+
+        byIsolationDeltaBetaCorrVLoose = cms.string("tauID('byVLooseIsolationDeltaBetaCorr')"),
+        byIsolationDeltaBetaCorrLoose = cms.string("tauID('byLooseIsolationDeltaBetaCorr')"),
+        byIsolationDeltaBetaCorrMedium = cms.string("tauID('byMediumIsolationDeltaBetaCorr')"),
+        byIsolationDeltaBetaCorrTight = cms.string("tauID('byTightIsolationDeltaBetaCorr')"),
+
+        byCombinedIsolationDeltaBetaCorrVLoose = cms.string("tauID('byVLooseCombinedIsolationDeltaBetaCorr')"),
+        byCombinedIsolationDeltaBetaCorrLoose = cms.string("tauID('byLooseCombinedIsolationDeltaBetaCorr')"),
+        byCombinedIsolationDeltaBetaCorrMedium = cms.string("tauID('byMediumCombinedIsolationDeltaBetaCorr')"),
+        byCombinedIsolationDeltaBetaCorrTight = cms.string("tauID('byTightCombinedIsolationDeltaBetaCorr')"),
         
         # discriminators against electrons/muons
         againstElectronLoose = cms.string("tauID('againstElectronLoose')"),
