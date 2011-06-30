@@ -79,7 +79,8 @@ def buildSequenceTauIdEffMeasSpecific(process,
         minLeadTrackPt = cms.double(5.0),
         maxDzLeadTrack = cms.double(0.2),
         maxLeadTrackPFElectronMVA = cms.double(0.6),
-        applyECALcrackVeto = cms.bool(True),
+        #applyECALcrackVeto = cms.bool(True),
+        applyECALcrackVeto = cms.bool(False),                                        
         minDeltaRtoNearestMuon = cms.double(0.5),
         muonSelection = cms.string("isGlobalMuon() | isTrackerMuon() | isStandAloneMuon()"),
         srcMuon = cms.InputTag('patMuons'),
@@ -87,7 +88,7 @@ def buildSequenceTauIdEffMeasSpecific(process,
             chargedHadronIso = cms.PSet(
                 ptMin = cms.double(1.0),        
                 dRvetoCone = cms.double(0.15),
-                dRisoCone = cms.double(0.4)
+                dRisoCone = cms.double(0.6)
             ),
             neutralHadronIso = cms.PSet(
                 ptMin = cms.double(1000.),        
@@ -99,7 +100,7 @@ def buildSequenceTauIdEffMeasSpecific(process,
                 dPhiVeto = cms.double(-1.),  # asymmetric Eta x Phi veto region 
                 dEtaVeto = cms.double(-1.),  # to account for photon conversions in electron isolation case        
                 dRvetoCone = cms.double(0.15),
-                dRisoCone = cms.double(0.4)
+                dRisoCone = cms.double(0.6)
             )
         ),
         maxPFIsoPt = cms.double(2.5),
@@ -397,13 +398,14 @@ def buildSequenceTauIdEffMeasSpecific(process,
     selectedMuTauPairsAntiOverlapVetoModuleName = \
       composeModuleName(["selectedMu", "".join(tauIdAlgorithmName), "PairsAntiOverlapVetoForTauIdEff"])
     selectedMuTauPairsAntiOverlapVetoModule = process.selectedMuTauPairsAntiOverlapVeto.clone(
-        cut = cms.string('dR12 > 0.7')
+        cut = cms.string('dR12 > 0.5')
     )
     setattr(process, selectedMuTauPairsAntiOverlapVetoModuleName, selectedMuTauPairsAntiOverlapVetoModule)
     selectedMuTauPairsDzModuleName = \
       composeModuleName(["selectedMu", "".join(tauIdAlgorithmName), "PairsDzForTauIdEff"])
     selectedMuTauPairsDzModule = selectedMuTauPairsAntiOverlapVetoModule.clone(
-        cut = cms.string('abs(leg1().vertex().z() - leg2().vertex().z()) < 0.2')
+        #cut = cms.string('abs(leg1().vertex().z() - leg2().vertex().z()) < 0.2')
+        cut = cms.string('abs(leg1().vertex().z() - leg2().vertex().z()) < 1.e+3')
     )
     setattr(process, selectedMuTauPairsDzModuleName, selectedMuTauPairsDzModule)    
     muTauPairSelConfigurator = objSelConfigurator(

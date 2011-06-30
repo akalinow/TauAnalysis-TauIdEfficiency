@@ -101,7 +101,8 @@ def configurePatTupleProductionTauIdEffMeasSpecific(process, patSequenceBuilder 
     )
     process.selectedPatMuonsForTauIdEffVbTfId   = process.selectedPatMuonsVbTfId.clone(
         beamSpotSource = cms.InputTag("offlineBeamSpot"),
-        maxIPz = cms.double(0.2), # 2mm
+        maxIPxy = cms.double(0.045), # 450 microns
+        maxIPz = cms.double(0.200), # 2mm
         IPtrackType = cms.string('innerTrack'),
         IPrefType = cms.string('vertex'),
         vertexSource = cms.InputTag('selectedPrimaryVertexHighestPtTrackSum')

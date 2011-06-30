@@ -14,7 +14,7 @@
  *
  * \version $Revision: 1.1 $
  *
- * $Id: PATPFTauSelectorForTauIdEff.cc,v 1.1 2010/11/06 14:43:54 veelken Exp $
+ * $Id: PATPFTauSelectorForTauIdEff.h,v 1.1 2011/06/29 18:16:08 veelken Exp $
  *
  */
 
@@ -75,6 +75,8 @@ private:
   // utility to sort (PF)tau-jet candidates in order of decreasing Pt
   // (taken from PhysicsTools/PatAlgos/plugins/PATTauProducer.h)
   GreaterByPt<pat::Tau> pfTauPtComparator_;
+
+  int verbosity_;
 };
 
 #endif
