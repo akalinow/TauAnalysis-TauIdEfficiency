@@ -154,7 +154,7 @@ bool PATPFTauSelectorForTauIdEff::filter(edm::Event& evt, const edm::EventSetup&
 //    but without dR < 0.1 matching between leading track and jet-axis applied)
     if ( !leadPFChargedHadron ) continue;
 
-//--- require "leading" PFChargedHadron to pass Pt cut
+//--- require "leading" (highest Pt) PFChargedHadron to pass Pt cut
 //   (corresponding to "leading track Pt cut" applied in PFTau reconstruction,
 //    but without dR < 0.1 matching between leading track and jet-axis applied)
     if ( !(leadPFChargedHadron->pt() > minLeadTrackPt_) ) continue;
@@ -206,6 +206,9 @@ bool PATPFTauSelectorForTauIdEff::filter(edm::Event& evt, const edm::EventSetup&
 //--- set four-vector of selected (PF)tau-jet candidate
 //    to jet-energy corrected four-vector of associated PFJet
     pfTau_output.setP4(p4PFJetCorrected);
+
+//--- store charge of "leading" track
+    pfTau_output.addUserFloat("leadTrackCharge", leadPFChargedHadron->charge());
 
 //--- store (PF)isolation Pt sum in userFloat variables
     pfTau_output.addUserFloat("preselLoosePFIsoPt", loosePFIsoPt);
