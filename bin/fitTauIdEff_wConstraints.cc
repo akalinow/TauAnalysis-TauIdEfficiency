@@ -767,11 +767,11 @@ int main(int argc, const char* argv[])
   TBenchmark clock;
   clock.Start("fitTauIdEff_wConstraints");
 
-  //bool runClosureTest = false;
-  bool runClosureTest = true;
+  bool runClosureTest = false;
+  //bool runClosureTest = true;
 
-  bool takeQCDfromData = false;
-  //bool takeQCDfromData = true;
+  //bool takeQCDfromData = false;
+  bool takeQCDfromData = true;
 
   // CV: fitting fake-rates of background processes
   //     in C2f/C2p regions causes bias of fit result (2011/06/28)
@@ -779,7 +779,7 @@ int main(int argc, const char* argv[])
   //bool fitTauIdEffC2 = true;
 
   //const std::string histogramFileName = "fitTauIdEff_wConstraints_2011June06_PUreweighted_2011Jun20.root";
-  const std::string histogramFileName = "fitTauIdEff_wConstraints_2011June28_matthew.root";
+  const std::string histogramFileName = "fitTauIdEff_wConstraints_2011June30_matthew.root";
 
   std::vector<sysUncertaintyEntry> sysUncertainties;
   sysUncertainties.push_back(
