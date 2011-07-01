@@ -173,8 +173,12 @@ bool PATPFTauSelectorForTauIdEff::filter(edm::Event& evt, const edm::EventSetup&
 
 //--- require "leading" PFChargedHadron to pass cut on (anti-)PFElectron MVA output
 //   (corresponding to discriminatorAgainstElectrons(Loose) applied in PFTau reconstruction)
-    if ( verbosity_ ) std::cout << " PFElectronMVA = " << leadPFChargedHadron->mva_e_pi() << std::endl;
-    if ( !produceAll_ && !(leadPFChargedHadron->mva_e_pi() < maxLeadTrackPFElectronMVA_) ) continue;
+    bool isElectron = false;
+    if ( leadPFChargedHadron ) {
+      if ( verbosity_ ) std::cout << " PFElectronMVA = " << leadPFChargedHadron->mva_e_pi() << std::endl;
+      if ( !(leadPFChargedHadron->mva_e_pi() < maxLeadTrackPFElectronMVA_) ) isElectron = true;
+    }
+    if ( !produceAll_ && isElectron ) continue;
     bool isECALcrack = (TMath::Abs(p4PFJetCorrected.eta()) > 1.442 && TMath::Abs(p4PFJetCorrected.eta()) < 1.560);
     if ( !produceAll_ && applyECALcrackVeto_ && isECALcrack ) continue;
 
@@ -183,20 +187,22 @@ bool PATPFTauSelectorForTauIdEff::filter(edm::Event& evt, const edm::EventSetup&
 //    whether the cut against muons is looser or tighter can be controlled 
 //    via the 'muonSelection' configuration parameter)
     bool isMuon = false;
-    for ( PATMuonCollection::const_iterator muon = muons->begin();
-	  muon != muons->end(); ++muon ) {
-      if ( muonSelection_ == 0 || (*muonSelection_)(*muon) ) {
-	double dR = deltaR(leadPFChargedHadron->p4(), muon->p4());
-	if ( dR < minDeltaRtoNearestMuon_ ) {
-	  if ( verbosity_ ) {
-	    std::cout << " muon: Pt = " << muon->pt() << "," 
-		      << " eta = " << muon->eta() << ", phi = " << muon->phi() 
-		      << " --> dR = " << dR << std::endl;
-	    std::cout << "(isGlobalMuon = " << muon->isGlobalMuon() << ","
-		      << " isTrackerMuon = " << muon->isTrackerMuon() << ","
-		      << " isStandAloneMuon = " << muon->isStandAloneMuon() << ")" << std::endl;
+    if ( leadPFChargedHadron ) {
+      for ( PATMuonCollection::const_iterator muon = muons->begin();
+	    muon != muons->end(); ++muon ) {
+	if ( muonSelection_ == 0 || (*muonSelection_)(*muon) ) {
+	  double dR = deltaR(leadPFChargedHadron->p4(), muon->p4());
+	  if ( dR < minDeltaRtoNearestMuon_ ) {
+	    if ( verbosity_ ) {
+	      std::cout << " muon: Pt = " << muon->pt() << "," 
+			<< " eta = " << muon->eta() << ", phi = " << muon->phi() 
+			<< " --> dR = " << dR << std::endl;
+	      std::cout << "(isGlobalMuon = " << muon->isGlobalMuon() << ","
+			<< " isTrackerMuon = " << muon->isTrackerMuon() << ","
+			<< " isStandAloneMuon = " << muon->isStandAloneMuon() << ")" << std::endl;
+	    }
+	    isMuon = true;
 	  }
-	  isMuon = true;
 	}
       }
     }
