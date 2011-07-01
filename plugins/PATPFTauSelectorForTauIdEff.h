@@ -12,9 +12,9 @@
  * 
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.1 $
+ * \version $Revision: 1.2 $
  *
- * $Id: PATPFTauSelectorForTauIdEff.h,v 1.1 2011/06/29 18:16:08 veelken Exp $
+ * $Id: PATPFTauSelectorForTauIdEff.h,v 1.2 2011/06/30 13:31:35 veelken Exp $
  *
  */
 
@@ -72,10 +72,14 @@ private:
   edm::InputTag srcVertex_;
   edm::InputTag srcRhoFastJet_;
 
+  // special flag to add userFloats to all pat::Taus
+  // without applying any selection cuts
+  bool produceAll_;
+
   // utility to sort (PF)tau-jet candidates in order of decreasing Pt
   // (taken from PhysicsTools/PatAlgos/plugins/PATTauProducer.h)
   GreaterByPt<pat::Tau> pfTauPtComparator_;
-
+  
   int verbosity_;
 };
 
