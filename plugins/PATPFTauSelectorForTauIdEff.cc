@@ -207,6 +207,9 @@ bool PATPFTauSelectorForTauIdEff::filter(edm::Event& evt, const edm::EventSetup&
 //    to jet-energy corrected four-vector of associated PFJet
     pfTau_output.setP4(p4PFJetCorrected);
 
+//--- store number of tracks passing quality criteria
+    pfTau_output.addUserFloat("numTracks", selPFChargedHadrons.size());
+
 //--- store charge of "leading" track
     pfTau_output.addUserFloat("leadTrackCharge", leadPFChargedHadron->charge());
 
