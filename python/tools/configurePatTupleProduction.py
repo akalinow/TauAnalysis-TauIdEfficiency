@@ -19,7 +19,8 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
                                 patCaloTauCleanerPrototype = None,
                                 addSVfitInfo = False,
                                 hltProcess = "HLT",
-                                isMC = False):
+                                isMC = False,
+                                applyTauVertexMatch = True):
 
     # check that patSequenceBuilder and patTauCleanerPrototype are defined and non-null
     if patSequenceBuilder is None:
@@ -152,7 +153,8 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
         patTauProducerPrototype = process.patCaloTauProducer,
         patTauCleanerPrototype = patCaloTauCleanerPrototype,
         triggerMatcherProtoType = process.patTauTriggerMatchHLTprotoType,
-        addGenInfo = isMC
+        addGenInfo = isMC,
+        applyTauVertexMatch = applyTauVertexMatch
     )
     process.caloTauSequence = retVal_caloTau["sequence"]
 
@@ -185,7 +187,8 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
         patTauProducerPrototype = process.patPFTauProducerFixedCone,
         patTauCleanerPrototype = patPFTauCleanerPrototype,
         triggerMatcherProtoType = process.patTauTriggerMatchHLTprotoType,
-        addGenInfo = isMC
+        addGenInfo = isMC,
+        applyTauVertexMatch = applyTauVertexMatch
     )
     process.pfTauSequenceFixedCone = retVal_pfTauFixedCone["sequence"]
 
@@ -221,7 +224,8 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
         patTauProducerPrototype = process.patPFTauProducerShrinkingCone,
         patTauCleanerPrototype = patPFTauCleanerPrototype,
         triggerMatcherProtoType = process.patTauTriggerMatchHLTprotoType,
-        addGenInfo = isMC
+        addGenInfo = isMC,
+        applyTauVertexMatch = applyTauVertexMatch
     )
     process.pfTauSequenceShrinkingCone = retVal_pfTauShrinkingCone["sequence"]
 
@@ -258,7 +262,8 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
         patTauProducerPrototype = process.patPFTauProducerHPS,
         patTauCleanerPrototype = patPFTauCleanerPrototype,
         triggerMatcherProtoType = process.patTauTriggerMatchHLTprotoType,
-        addGenInfo = isMC
+        addGenInfo = isMC,
+        applyTauVertexMatch = applyTauVertexMatch
     )
     process.pfTauSequenceHPS = retVal_pfTauHPS["sequence"]
 
@@ -291,7 +296,8 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
         patTauProducerPrototype = process.patPFTauProducerHPSpTaNC,
         patTauCleanerPrototype = patPFTauCleanerPrototype,
         triggerMatcherProtoType = process.patTauTriggerMatchHLTprotoType,
-        addGenInfo = isMC
+        addGenInfo = isMC,
+        applyTauVertexMatch = applyTauVertexMatch
     )
     process.pfTauSequenceHPSpTaNC = retVal_pfTauHPSpTaNC["sequence"]
 

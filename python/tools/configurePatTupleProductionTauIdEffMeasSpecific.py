@@ -36,7 +36,7 @@ def configurePatTupleProductionTauIdEffMeasSpecific(process, patSequenceBuilder 
     )
 
     patTupleConfig = configurePatTupleProduction(process, patSequenceBuilder,
-                                                 patPFTauCleanerPrototype, patCaloTauCleanerPrototype, True, hltProcess, isMC)
+                                                 patPFTauCleanerPrototype, patCaloTauCleanerPrototype, True, hltProcess, isMC, False)
    
     process.producePatTupleTauIdEffMeasSpecific = cms.Sequence(
         process.patDefaultSequence

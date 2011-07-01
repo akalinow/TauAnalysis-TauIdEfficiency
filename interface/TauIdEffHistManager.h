@@ -9,7 +9,7 @@
  *
  * \version $Revision: 1.1 $
  *
- * $Id: TauIdEffHistManager.h,v 1.1 2011/07/01 10:41:48 veelken Exp $
+ * $Id: TauIdEffHistManager.h,v 1.1 2011/07/01 13:26:36 veelken Exp $
  *
  */
 
@@ -60,6 +60,7 @@ class TauIdEffHistManager
 
   TH1* histogramVisMass_;
   TH1* histogramMt_;
+  TH1* histogramPzetaDiff_;
 };
 
 #endif

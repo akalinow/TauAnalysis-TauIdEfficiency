@@ -39,6 +39,20 @@
   <use   name="TauAnalysis/FittingTools"/>
   <use   name="roofit"/>
 </bin>
+<bin   file="FWLiteTauIdEffAnalyzer.cc" name="FWLiteTauIdEffAnalyzer">
+  <use   name="DataFormats/Common"/>
+  <use   name="DataFormats/FWLite"/>
+  <use   name="DataFormats/StdDictionaries"/>
+  <use   name="DataFormats/WrappedStdDictionaries"/>
+  <use   name="FWCore/ParameterSet"/>
+  <use   name="FWCore/PythonParameterSet"/>
+  <use   name="FWCore/Utilities"/>
+  <use   name="PhysicsTools/FWLite"/>
+  <use   name="DataFormats/StdDictionaries"/>
+  <use   name="DataFormats/WrappedStdDictionaries"/>
+  <use   name="TauAnalysis/TauIdEfficiency"/>
+  <use   name="AnalysisDataFormats/TauAnalysis"/>
+</bin>
 <bin   file="fitTauIdEff_wConstraints.cc" name="fitTauIdEff_wConstraints">
   <use   name="roofit"/>
   <use   name="root"/>

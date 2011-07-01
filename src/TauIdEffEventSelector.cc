@@ -2,6 +2,8 @@
 
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 
+#include "FWCore/Utilities/interface/Exception.h"
+
 // define flag for Mt && Pzeta cut (not appplied, Mt && Pzeta cut passed, Mt || Pzeta cut failed) 
 // and tau id. discriminators      (no tau id. discriminators applied, all discriminators passed, at least one discriminator failed)
 enum { kNotApplied, kSignalLike, kBackgroundLike };
@@ -28,9 +30,9 @@ TauIdEffEventSelector::TauIdEffEventSelector(const edm::ParameterSet& cfg)
   muTauPairChargeMax_     =  +1.e+3; 
   MtMin_                  =  -1.e+3;
   MtMax_                  =  40.0;
-  PzetaMin_               = -20.0;
-  PzetaMax_               =  +1.e+3;
-  MtAndPzetaCut_          = kNotApplied;
+  PzetaDiffMin_           = -20.0;
+  PzetaDiffMax_           =  +1.e+3;
+  MtAndPzetaDiffCut_      = kNotApplied;
   tauIdDiscriminatorMin_  =   0.5;
   tauIdDiscriminatorMax_  =  +1.e+3;
   tauIdDiscriminatorCut_  = kNotApplied;
@@ -64,8 +66,8 @@ TauIdEffEventSelector::TauIdEffEventSelector(const edm::ParameterSet& cfg)
       << "Invalid region = " << region_ << " !!\n";
   }
 
-  if      ( region_.find("1") != std::string::npos ) MtAndPzetaCut_ = kSignalLike;
-  else if ( region_.find("2") != std::string::npos ) MtAndPzetaCut_ = kBackgroundLike;
+  if      ( region_.find("1") != std::string::npos ) MtAndPzetaDiffCut_ = kSignalLike;
+  else if ( region_.find("2") != std::string::npos ) MtAndPzetaDiffCut_ = kBackgroundLike;
 
   if      ( region_.find("p") != std::string::npos ) tauIdDiscriminatorCut_ = kSignalLike;
   else if ( region_.find("f") != std::string::npos ) tauIdDiscriminatorCut_ = kBackgroundLike;
@@ -88,7 +90,7 @@ bool TauIdEffEventSelector::operator()(const PATMuTauPair& muTauPair, pat::strbi
   double muTauPairCharge = muTauPair.leg1()->charge() + muTauPair.leg2()->userFloat("leadTrackCharge");
   double visMass         = (muTauPair.leg1()->p4() + muTauPair.leg2()->p4()).mass();
   double Mt              = muTauPair.mt1MET();
-  double Pzeta           = muTauPair.pZeta() - 1.5*muTauPair.pZetaVis();
+  double PzetaDiff       = muTauPair.pZeta() - 1.5*muTauPair.pZetaVis();
   
   if ( muonPt          >  muonPtMin_             && muonPt          >  muonPtMax_             &&
        muonEta         >  muonEtaMin_            && muonEta         <  muonEtaMax_            &&
@@ -100,7 +102,7 @@ bool TauIdEffEventSelector::operator()(const PATMuTauPair& muTauPair, pat::strbi
        muTauPairCharge >  muTauPairChargeMin_    && muTauPairCharge <  muTauPairChargeMin_    && 
        visMass         >  visMassCutoffMin_      && visMass         <  visMassCutoffMax_      &&
        Mt              >  MtCutoffMin_           && Mt              <  MtCutoffMax_           ) {
-    bool MtAndPzetaCut_passed = (Mt > MtMin_ && Mt > MtMax_ && Pzeta > PzetaMin_ && Pzeta < PzetaMax_);
+    bool MtAndPzetaDiffCut_passed = (Mt > MtMin_ && Mt > MtMax_ && PzetaDiff > PzetaDiffMin_ && PzetaDiff < PzetaDiffMax_);
 
     bool tauIdDiscriminators_passed = true;
     for ( vstring::const_iterator tauIdDiscriminator = tauIdDiscriminators_.begin();
@@ -110,9 +112,9 @@ bool TauIdEffEventSelector::operator()(const PATMuTauPair& muTauPair, pat::strbi
 	     tauIdDiscriminator_value < tauIdDiscriminatorMax_) ) tauIdDiscriminators_passed = false;
     }
 
-    if ( ( MtAndPzetaCut_ == kNotApplied                                             ||
-	  (MtAndPzetaCut_ == kSignalLike             &&  MtAndPzetaCut_passed)       ||
-	  (MtAndPzetaCut_ == kBackgroundLike         && !MtAndPzetaCut_passed)       ) &&
+    if ( ( MtAndPzetaDiffCut_ == kNotApplied                                         ||
+	  (MtAndPzetaDiffCut_ == kSignalLike         &&  MtAndPzetaDiffCut_passed)   ||
+	  (MtAndPzetaDiffCut_ == kBackgroundLike     && !MtAndPzetaDiffCut_passed)   ) &&
 	 ( tauIdDiscriminatorCut_ == kNotApplied                                     ||
 	  (tauIdDiscriminatorCut_ == kSignalLike     &&  tauIdDiscriminators_passed) ||
 	  (tauIdDiscriminatorCut_ == kBackgroundLike && !tauIdDiscriminators_passed) ) ) return true;
