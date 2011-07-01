@@ -2,6 +2,7 @@
 
 import FWCore.ParameterSet.Config as cms
 import os
+import sys
 
 process = cms.Process("Demo")
 
@@ -14,7 +15,7 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(50) )
 
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
-                                'file:/nfs/data4/verzetti/tagprobe/testNtuples/tauIdEffMeasTestPattupleV3.root'
+                                'file:/nfs/data4/verzetti/tagprobe/NTuples/TestPattuple.root'
 )
 )
 
@@ -60,9 +61,9 @@ process.makePlotsChannel = cms.EDAnalyzer('HistoPlotter',
                                               process.oldHPSLoose,
                                               process.oldHPSMedium,
                                               process.oldHPSTight,
-                                              process.combinedTancOnePercent,
-                                              process.combinedTancHalfPercent,
-                                              process.combinedTancQuarterPercent,
+#                                              process.combinedTancOnePercent,
+#                                              process.combinedTancHalfPercent,
+#                                              process.combinedTancQuarterPercent,
                                               ),#vpset
                                           plotVariables = cms.VPSet(
                                               process.diTauVisMassFromJet
@@ -77,3 +78,13 @@ process.makePlotsChannel = cms.EDAnalyzer('HistoPlotter',
 process.p = cms.Path(
     process.makePlotsChannel
     )
+
+#Define option for serial running
+for option in sys.argv:
+    if(option.find('load=') != -1):
+        loadFile= option[option.find('=')+1:]
+        process.load(loadFile)
+        print loadFile+' loaded'
+        process.source.fileNames = process.config.extFileNames
+        process.makePlotsChannel.outputFile = process.config.extOutputFile
+        process.makePlotsChannel.channel = process.config.extChannelName
