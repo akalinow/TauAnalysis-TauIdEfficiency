@@ -1,12 +1,12 @@
 import FWCore.ParameterSet.Config as cms
 
-process = cms.Process("prodTauIdEffMeasNtuple")
+process = cms.Process("prodTauIdEffMeasPATTuple")
 
 # import of standard configurations for RECOnstruction
 # of electrons, muons and tau-jets with non-standard isolation cones
 process.load('Configuration/StandardSequences/Services_cff')
 process.load('FWCore/MessageService/MessageLogger_cfi')
-process.MessageLogger.cerr.FwkReport.reportEvery = 10000
+process.MessageLogger.cerr.FwkReport.reportEvery = 100
 #process.MessageLogger.cerr.threshold = cms.untracked.string('INFO')
 #process.MessageLogger.suppressInfo = cms.untracked.vstring()
 process.MessageLogger.suppressWarning = cms.untracked.vstring("PATTriggerProducer",)
@@ -17,10 +17,9 @@ process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
 #--------------------------------------------------------------------------------
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
-        'rfio:/castor/cern.ch/user/m/mverzett/tagprobe/skims/TauIdEffMeas_2011May13/tauIdEffSample_Ztautau_powheg_2011May20_RECO_266_1_qvJ.root'
-        #'rfio:/castor/cern.ch/user/m/mverzett/tagprobe/skims/TauIdEffMeas_2011May13/tauIdEffSample_DYtautauM10to20_powheg_2011May20_RECO_14_1_yrh.root'
-    ),
-    skipEvents = cms.untracked.uint32(0)            
+        #'file:/data2/friis/CMSSW_4_2_X/skims/06-27-MatthewsZTTEvents/crab_0_110627_082505/ZTTCands_merged_v1.root'
+        'file:/afs/cern.ch/user/v/veelken/scratch0/CMSSW_4_2_4_patch1/src/TauAnalysis/Skimming/test/testOutput/tauIdEffSample_RECO_relval.root'
+    )
 )
 
 # print event content 
@@ -36,10 +35,10 @@ process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(-1)
 )
 
-##isMC = True # use for MC
-isMC = False # use for Data
-#HLTprocessName = "HLT" # use for 2011 Data
-HLTprocessName = "REDIGI311X" # use for Spring'11 reprocessed MC
+isMC = True # use for MC
+##isMC = False # use for Data
+##HLTprocessName = "HLT" # use for 2011 Data
+HLTprocessName = "HLT" # use for Summer'11 MC
 pfCandidateCollection = "particleFlow" # pile-up removal disabled
 ##pfCandidateCollection = "pfNoPileUp" # pile-up removal enabled
 applyZrecoilCorrection = False
@@ -61,9 +60,9 @@ applyZrecoilCorrection = False
 # define GlobalTag to be used for event reconstruction
 # (only relevant for HPS tau reconstruction algorithm)
 if isMC:
-    process.GlobalTag.globaltag = cms.string('START311_V2::All')
+    process.GlobalTag.globaltag = cms.string('START42_V12::All')
 else:
-    process.GlobalTag.globaltag = cms.string('GR_P_V14::All')
+    process.GlobalTag.globaltag = cms.string('GR_R_42_V14::All')
 #--------------------------------------------------------------------------------    
 
 #--------------------------------------------------------------------------------
@@ -97,122 +96,29 @@ from TauAnalysis.TauIdEfficiency.tools.configurePatTupleProductionTauIdEffMeasSp
 
 patTupleConfig = configurePatTupleProductionTauIdEffMeasSpecific(
     process, hltProcess = HLTprocessName, isMC = isMC, applyZrecoilCorrection = applyZrecoilCorrection)
-process.patTrigger.addL1Algos = False
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
-#                                   Put the correct jet energy correction
-#------------------------------------------------------------------------------------------------------------------------
+#
+# define Jet Energy Corrections
+#
 process.load('CondCore.DBCommon.CondDBSetup_cfi')
 process.jec = cms.ESSource("PoolDBESSource",
-                           process.CondDBSetup,
-                           ## DBParameters = cms.PSet(
-                           ##     messageLevel = cms.untracked.int32(0)
-                           ##     ),
-                           ## timetype = cms.string('runnumber'),
-                           toGet = cms.VPSet(
-                               cms.PSet(record = cms.string("JetCorrectionsRecord"),
-                                        tag = cms.string("JetCorrectorParametersCollection_Jec10V3_AK5Calo"),#JetCorrectorParametersCollection_Jec11_V1_AK5Calo
-                                        label=cms.untracked.string("AK5Calo")),
-                               cms.PSet(record = cms.string("JetCorrectionsRecord"),
-                                        tag = cms.string("JetCorrectorParametersCollection_Jec10V3_AK5PF"),
-                                        label=cms.untracked.string("AK5PF")),                                   
-                               cms.PSet(record = cms.string("JetCorrectionsRecord"),
-                                        tag = cms.string("JetCorrectorParametersCollection_Jec10V3_AK5PFchs"),
-                                        label=cms.untracked.string("AK5PF"))
-                               ),
-                           ## here you add as many jet types as you need (AK5Calo, AK5JPT, AK7PF, AK7Calo, KT4PF, KT4Calo, KT6PF, KT6Calo)
-                           connect = cms.string('sqlite_fip:TauAnalysis/Configuration/data/Jec10V3.db')
-                           #connect = cms.string("frontier://FrontierPrep/CMS_COND_PHYSICSTOOLS")
-                           )
-process.es_prefer_jec = cms.ESPrefer('PoolDBESSource','jec')
-#-------------------------------------------------------------------------------------------------------------------------
-
-#-------------------------------------------------------------------------------------------------------------------------
-#                   Pileup reweight (from old NTuple)
-#-------------------------------------------------------------------------------------------------------------------------
-process.load("TauAnalysis.TauIdEfficiency.ntupleConfigVertex_cfi")
-process.ntupleProducer = cms.EDProducer("ObjValEDNtupleProducer",
-                                        ntupleName = cms.string("tauIdEffNtuple"),
-                                        sources = cms.PSet(                                            
-                                            )
-                                        )
-# in order to match vertex multiplicity distribution in Data                                             
-setattr(process.ntupleProducer.sources, "vertexMultReweight", process.vertexMultReweight_template)
-#-------------------------------------------------------------------------------------------------------------------------
-
-#--------------------------------------------------------------------------------
-#
-# Save ntuple
-#
-process.ntupleOutputModule = cms.OutputModule("PoolOutputModule",
-                                              cms.PSet(
-                                                  outputCommands = cms.untracked.vstring(
-                                                      'drop *',
-                                                      'keep edmMergeableCounter_*_*_*',
-                                                      'keep *TriggerEvent_*_*_*',
-                                                      'keep patMuons_selectedPatMuonsForTauIdEffTrkIPcumulative_*_*',
-                                                      'keep *_patMuonsStandAlone_*_*',
-                                                      'keep patTaus_selectedPatPFTausShrinkingConePFRelIsoCumulative_*_*',
-                                                      'keep patTaus_selectedPatPFTausHPSpTaNCPFRelIsoCumulative_*_*',
-                                                      'keep patTaus_selectedPatPFTausHPSPFRelIsoCumulative_*_*',
-                                                      'keep patTaus_selectedPatPFTausHPSpTaNCPFRelIsoCumulative_*_*',
-                                                      'keep *CompositePtrCandidateT1T2MEt*_selectedMuPFTauShrinkingConePairsForTauIdEffCumulative_*_*',
-                                                      'keep *CompositePtrCandidateT1T2MEt*_selectedMuPFTauHPSpTaNCpairsForTauIdEffCumulative_*_*',
-                                                      'keep *CompositePtrCandidateT1T2MEt*_selectedMuPFTauHPSpairsForTauIdEffCumulative_*_*',
-                                                      'keep *CompositePtrCandidateT1T2MEt*_selectedMuPFTauHPSpTaNCpairsForTauIdEffCumulative_*_*',
-                                                      'keep *Vertex*_*_*_*',
-                                                      'keep *_ak5PFJets_*_*',
-                                                      'keep *_ak5CaloJets_*_*',
-                                                      'keep *PFCandidate*_*_*_*'
-                                                      )               
-                                                  ),
-                                              process.tauIdEffSampleEventSelection,
-                                              fileName = cms.untracked.string("tauIdEffMeasEDNtuple.root")      
-                                              )
-if isMC:
-    process.ntupleOutputModule.outputCommands.extend(
-      cms.untracked.vstring(
-            "keep *_*_*vtxMultReweight*_*",
-            'keep *GenJet*_*_*_*',
-            'keep *recoGenMET_*_*_*',
-            'keep *_genParticles_*_*',
-            'keep *_generator_*_*',
-            'keep *_*GenJets_*_*',
-            'keep *_addPileupInfo_*_*'
-            )
-    )
-#--------------------------------------------------------------------------------
-
-process.p = cms.Path(
-    process.prePatProductionSequence
-   + process.patDefaultSequence
-   + process.producePatTupleTauIdEffMeasSpecific
-   #+ process.printEventContent
-   #+ process.printGenParticleList
-   + process.ntupleProducer
+    process.CondDBSetup,
+    toGet = cms.VPSet(
+         cms.PSet(record = cms.string("JetCorrectionsRecord"),
+                  tag = cms.string("JetCorrectorParametersCollection_Jec10V3_AK5Calo"),
+                  label=cms.untracked.string("AK5Calo")),
+         cms.PSet(record = cms.string("JetCorrectionsRecord"),
+                  tag = cms.string("JetCorrectorParametersCollection_Jec10V3_AK5PF"),
+                  label=cms.untracked.string("AK5PF")),                                   
+         cms.PSet(record = cms.string("JetCorrectionsRecord"),
+                  tag = cms.string("JetCorrectorParametersCollection_Jec10V3_AK5PFchs"),
+                  label=cms.untracked.string("AK5PF"))
+    ),
+    connect = cms.string('sqlite_fip:TauAnalysis/Configuration/data/Jec10V3.db')
+    #connect = cms.string("frontier://FrontierPrep/CMS_COND_PHYSICSTOOLS")
 )
+process.es_prefer_jec = cms.ESPrefer('PoolDBESSource', 'jec')
+#-------------------------------------------------------------------------------------------------------------------------
 
-process.options = cms.untracked.PSet(
-    wantSummary = cms.untracked.bool(True)
-)
-
-process.o = cms.EndPath(process.ntupleOutputModule)
-
-import TauAnalysis.Configuration.pathModifiers as pathModifiers
-pathModifiers.PathModifier(process.p, 'doSVreco', cms.bool(False), True)
-pathModifiers.PathModifier(process.muonPFTauFixedConeSkimPath, 'doSVreco', cms.bool(False),True)
-pathModifiers.PathModifier(process.muonPFTauShrinkingConeSkimPath, 'doSVreco', cms.bool(False),True)
-pathModifiers.PathModifier(process.muonPFTauHPSskimPath, 'doSVreco', cms.bool(False),True)
-pathModifiers.PathModifier(process.muonPFTauHPSpTaNCskimPath, 'doSVreco', cms.bool(False),True)
-## process.allMuTauPairs.doSVreco = cms.bool(False)
-
-# define order in which different paths are run
-process.schedule = cms.Schedule(
-    process.p,
-    process.muonPFTauFixedConeSkimPath,
-    process.muonPFTauShrinkingConeSkimPath,
-    process.muonPFTauHPSskimPath,
-    process.muonPFTauHPSpTaNCskimPath,
-    process.o
-)

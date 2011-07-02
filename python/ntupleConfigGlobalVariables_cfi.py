@@ -35,14 +35,14 @@ numGlobalMuons_template = cms.PSet(
     )  
 )
 
-numStandAloneMuons_template = cms.PSet(
+numGoodMuons_template = cms.PSet(
     vector = cms.bool(False),
 
     pluginType = cms.string("NumCandidateExtractor"),
-    src = cms.InputTag("patMuonsStandAlone"),
+    src = cms.InputTag("patGoodMuons"),
 
     columns = cms.PSet(
-        multiplicity = cms.string("numStandAloneMuons")
+        multiplicity = cms.string("numGoodMuons")
     )  
 )
 

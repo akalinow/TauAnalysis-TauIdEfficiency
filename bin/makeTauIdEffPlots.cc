@@ -140,7 +140,7 @@ std::map<std::string, std::map<std::string, std::string> > makeBranchNameDict(
     branchNames["muonLooseIsoPtSum04"] = getBranchName("double", branchNameMuon, "ptSumLooseIsolation04", branchName_suffix);
     branchNames["muonLooseIsoPtSum06"] = getBranchName("double", branchNameMuon, "ptSumLooseIsolation06", branchName_suffix);
     branchNames["numMuonsGlobal"] = getBranchName("double", "patMuonsGlobal", "multiplicity", branchName_suffix);
-    branchNames["numMuonsStandAlone"] = getBranchName("double", "patMuonsStandAlone", "multiplicity", branchName_suffix);
+    branchNames["numGoodMuons"] = getBranchName("double", "patGoodMuons", "multiplicity", branchName_suffix);
 
     branchNames["tauPt"] = getBranchName("doubles", branchNameTau, "pt", branchName_suffix);
     branchNames["tauEta"] = getBranchName("doubles", branchNameTau, "eta", branchName_suffix);
@@ -265,7 +265,7 @@ void makeHistograms(
     extTreeSelection.append(" && abs(").append(branchNames["tauEta"]).append(") < 2.3");
     extTreeSelection.append(" && abs(").append(branchNames["tauJetEta"]).append(") < 2.3");
     extTreeSelection.append(" && ").append(branchNames["tauLooseIsoPtSum06"]).append(" < 2.5");
-    extTreeSelection.append(" && ").append(branchNames["numMuonsStandAlone"]).append(" < 1.5");
+    extTreeSelection.append(" && ").append(branchNames["numGoodMuons"]).append(" < 1.5");
     extTreeSelection.append(" && ").append(branchNames["diTauVisMassFromJet"]).append(" > 20");
     extTreeSelection.append(" && ").append(branchNames["diTauVisMassFromJet"]).append(" < 200");
     extTreeSelection.append(" && ").append(branchNames["diTauMt"]).append(" < 80");

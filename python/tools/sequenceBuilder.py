@@ -194,7 +194,8 @@ def buildQCDdiJetTauSequence(
     patTauProducerPrototype = None,
     patTauCleanerPrototype = None,
     triggerMatcherProtoType = None,
-    addGenInfo = False):
+    addGenInfo = False,
+    applyTauVertexMatch = True):
     '''
     blah
     '''
@@ -241,7 +242,8 @@ def buildGenericTauSequence(
     patTauProducerPrototype = None,
     patTauCleanerPrototype = None,
     triggerMatcherProtoType = None,
-    addGenInfo = False):
+    addGenInfo = False,
+    applyTauVertexMatch = True):
     '''
     blah
     '''

@@ -69,7 +69,7 @@ tauIdEffMeas_template03pfTau.columns.charge = \
 # Single muon Trigger efficiency
 #--------------------------------------------------------------------------------
 
-tauIdEffMeas_template04 = cms.PSet(
+tauIdEffMeas_muonTriggerEff = cms.PSet(
     # Select multiplicy of object(s) to store
     vector = cms.bool(False),
     indices = cms.vuint32([0]), # Store values for first object only

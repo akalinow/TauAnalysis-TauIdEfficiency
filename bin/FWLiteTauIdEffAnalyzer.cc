@@ -8,7 +8,7 @@
  *
  * \version $Revision: 1.1 $
  *
- * $Id: FWLiteTauIdEffAnalyzer.cc,v 1.1 2011/07/01 10:41:48 veelken Exp $
+ * $Id: FWLiteTauIdEffAnalyzer.cc,v 1.1 2011/07/01 18:30:16 veelken Exp $
  *
  */
 
@@ -25,14 +25,16 @@
 #include "DataFormats/FWLite/interface/InputSource.h"
 #include "DataFormats/FWLite/interface/OutputFiles.h"
 
+#include "DataFormats/PatCandidates/interface/Tau.h"
+#include "DataFormats/PatCandidates/interface/Muon.h"
+#include "DataFormats/PatCandidates/interface/TriggerEvent.h"
+#include "DataFormats/PatCandidates/interface/TriggerAlgorithm.h"
+
 #include "TauAnalysis/TauIdEfficiency/interface/TauIdEffEventSelector.h"
 #include "TauAnalysis/TauIdEfficiency/interface/TauIdEffHistManager.h"
 
 #include "AnalysisDataFormats/TauAnalysis/interface/CompositePtrCandidateT1T2MEt.h"
 #include "AnalysisDataFormats/TauAnalysis/interface/CompositePtrCandidateT1T2MEtFwd.h"
-
-#include "DataFormats/PatCandidates/interface/TriggerEvent.h"
-#include "DataFormats/PatCandidates/interface/TriggerAlgorithm.h"
 
 typedef std::vector<std::string> vstring;
 
@@ -84,6 +86,7 @@ int main(int argc, char* argv[])
   edm::InputTag srcMuTauPairs = cfg.getParameter<edm::InputTag>("srcMuTauPairs");
   edm::InputTag srcTrigger = cfg.getParameter<edm::InputTag>("srcTrigger");
   vstring hltPaths = cfg.getParameter<vstring>("hltPaths");
+  edm::InputTag srcGoodMuons = cfg.getParameter<edm::InputTag>("srcGoodMuons");
   typedef std::vector<edm::InputTag> vInputTag;
   vInputTag srcWeights = cfg.getParameter<vInputTag>("weights");
 
@@ -146,7 +149,15 @@ int main(int argc, char* argv[])
 	}
       }
 
-      if ( isTriggered ) {
+      typedef std::vector<pat::Muon> PATMuonCollection;
+      edm::Handle<PATMuonCollection> goodMuons;
+      evt.getByLabel(srcGoodMuons, goodMuons);
+      size_t numGoodMuons = goodMuons->size();
+
+//--- require event to pass trigger requirements
+//    and to contain only one "good quality" muon
+      if ( isTriggered && numGoodMuons <= 1 ) {
+
 //--- compute event weight
 //   (pile-up reweighting, Data/MC correction factors,...)
 	double evtWeight = 1.0;

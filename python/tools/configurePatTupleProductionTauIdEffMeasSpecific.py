@@ -66,10 +66,10 @@ def configurePatTupleProductionTauIdEffMeasSpecific(process, patSequenceBuilder 
     )
     process.producePatTupleTauIdEffMeasSpecific += process.patMuonsGlobal
 
-    process.patMuonsStandAlone = process.patMuonsGlobal.clone(
-        cut = cms.string('isStandAloneMuon()')
+    process.patGoodMuons = process.patMuonsGlobal.clone(
+        cut = cms.string('isGlobalMuon() | isStandAloneMuon() | isTrackerMuon()')
     )
-    process.producePatTupleTauIdEffMeasSpecific += process.patMuonsStandAlone   
+    process.producePatTupleTauIdEffMeasSpecific += process.patGoodMuons
 
     #--------------------------------------------------------------------------------
     # define Muon momentum scale corrections

@@ -1,102 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 
-process = cms.Process("prodTauIdEffMeasNtuple")
-
-# import of standard configurations for RECOnstruction
-# of electrons, muons and tau-jets with non-standard isolation cones
-process.load('Configuration/StandardSequences/Services_cff')
-process.load('FWCore/MessageService/MessageLogger_cfi')
-process.MessageLogger.cerr.FwkReport.reportEvery = 100
-#process.MessageLogger.cerr.threshold = cms.untracked.string('INFO')
-#process.MessageLogger.suppressInfo = cms.untracked.vstring()
-process.MessageLogger.suppressWarning = cms.untracked.vstring("PATTriggerProducer",)
-process.load('Configuration/StandardSequences/GeometryIdeal_cff')
-process.load('Configuration/StandardSequences/MagneticField_cff')
-process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
-
-#--------------------------------------------------------------------------------
-process.source = cms.Source("PoolSource",
-    fileNames = cms.untracked.vstring(
-        #'file:/data2/friis/CMSSW_4_2_X/skims/06-27-MatthewsZTTEvents/crab_0_110627_082505/ZTTCands_merged_v1.root'
-        'file:/afs/cern.ch/user/v/veelken/scratch0/CMSSW_4_2_4_patch1/src/TauAnalysis/Skimming/test/testOutput/tauIdEffSample_RECO_relval.root'
-    )
-)
-
-# print event content 
-process.printEventContent = cms.EDAnalyzer("EventContentAnalyzer")
-
-# print gen. particle information
-process.printGenParticleList = cms.EDAnalyzer("ParticleListDrawer",
-    src = cms.InputTag("genParticles"),
-    maxEventsToPrint = cms.untracked.int32(100)
-)
-
-process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(-1)
-)
-
-isMC = True # use for MC
-##isMC = False # use for Data
-##HLTprocessName = "HLT" # use for 2011 Data
-HLTprocessName = "HLT" # use for Summer'11 MC
-pfCandidateCollection = "particleFlow" # pile-up removal disabled
-##pfCandidateCollection = "pfNoPileUp" # pile-up removal enabled
-applyZrecoilCorrection = False
-#applyZrecoilCorrection = True
-#---------------------------------------------------------------------
-
-#--------------------------------------------------------------------------------
-# define "hooks" for replacing configuration parameters
-# in case running jobs on the CERN batch system/grid
-#
-#__isMC = #isMC#
-#__HLTprocessName = #HLTprocessName#
-#__pfCandidateCollection = #pfCandidateCollection#
-#__applyZrecoilCorrection = #applyZrecoilCorrection#
-#
-#--------------------------------------------------------------------------------
-
-#--------------------------------------------------------------------------------
-# define GlobalTag to be used for event reconstruction
-# (only relevant for HPS tau reconstruction algorithm)
-if isMC:
-    process.GlobalTag.globaltag = cms.string('START42_V12::All')
-else:
-    process.GlobalTag.globaltag = cms.string('GR_R_42_V14::All')
-#--------------------------------------------------------------------------------    
-
-#--------------------------------------------------------------------------------
-# define skimming criteria
-# (in order to be able to produce Tau Ntuple directly from unskimmed Monte Carlo/datasets;
-#  HLT single jet trigger passed && either two CaloJets or two PFJets of Pt > 10 GeV within |eta| < 2.5)
-process.load('TauAnalysis.TauIdEfficiency.filterTauIdEffSample_cfi')
-
-process.hltMu.selector.src = cms.InputTag('TriggerResults::%s' % HLTprocessName)
-
-if isMC:
-    process.dataQualityFilters.remove(process.hltPhysicsDeclared)
-    process.dataQualityFilters.remove(process.dcsstatus)
-#--------------------------------------------------------------------------------
-
-#--------------------------------------------------------------------------------
-#
-# produce collections of objects needed as input for PAT-tuple production
-# (e.g. rerun reco::Tau identification algorithms with latest tags)
-#
-from TauAnalysis.TauIdEfficiency.tools.configurePrePatProduction import configurePrePatProduction
-
-configurePrePatProduction(process, pfCandidateCollection = pfCandidateCollection, addGenInfo = isMC)
-
-#process.prePatProductionSequence.remove(process.tautagging)
-#--------------------------------------------------------------------------------
-
-#--------------------------------------------------------------------------------
-# import utility function for configurating PAT-tuple production
-from TauAnalysis.TauIdEfficiency.tools.configurePatTupleProductionTauIdEffMeasSpecific import *
-
-patTupleConfig = configurePatTupleProductionTauIdEffMeasSpecific(
-    process, hltProcess = HLTprocessName, isMC = isMC, applyZrecoilCorrection = applyZrecoilCorrection)
-#--------------------------------------------------------------------------------
+from TauAnalysis.TauIdEfficiency.produceTauIdEffMeasPATTuple_template_cfg import *
 
 #--------------------------------------------------------------------------------
 #
@@ -135,9 +39,9 @@ process.ntupleProducer = cms.EDProducer("ObjValEDNtupleProducer",
         # with sum(trackPt) exceeding different thresholds
         vertexMultiplicity = process.vertexMultiplicity_template,
 
-        # number of reconstructed global muons in the event
+        # number of reconstructed global (global || stand-alone || tracker) muons in the event
         numGlobalMuons = process.numGlobalMuons_template,
-        numStandAloneMuons = process.numStandAloneMuons_template,                                    
+        numStandAloneMuons = process.numGoodMuons_template,                                    
 
         # global variables describing the underlying event/
         # amount of hadronic activity                                                                                            
@@ -147,8 +51,8 @@ process.ntupleProducer = cms.EDProducer("ObjValEDNtupleProducer",
         # variables specific to tau id. efficiency measurement
         tauIdEffMeas01 = process.tauIdEffMeas_template01.clone(
             src = cms.InputTag('selectedPatMuonsForTauIdEffTrkIPcumulative')
-        ),
-        tauIdEffMeas05 = process.tauIdEffMeas_template04.clone(
+        ),                                                   
+        muonTriggerEff = process.tauIdEffMeas_muonTriggerEff.clone(
             src = cms.InputTag('selectedPatMuonsForTauIdEffTrkIPcumulative')
         )                                                                               
     )
@@ -208,32 +112,8 @@ if isMC:
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
-#                                   Put the correct jet energy correction
-#------------------------------------------------------------------------------------------------------------------------
-process.load('CondCore.DBCommon.CondDBSetup_cfi')
-process.jec = cms.ESSource("PoolDBESSource",
-    process.CondDBSetup,
-    toGet = cms.VPSet(
-         cms.PSet(record = cms.string("JetCorrectionsRecord"),
-                  tag = cms.string("JetCorrectorParametersCollection_Jec10V3_AK5Calo"),
-                  label=cms.untracked.string("AK5Calo")),
-         cms.PSet(record = cms.string("JetCorrectionsRecord"),
-                  tag = cms.string("JetCorrectorParametersCollection_Jec10V3_AK5PF"),
-                  label=cms.untracked.string("AK5PF")),                                   
-         cms.PSet(record = cms.string("JetCorrectionsRecord"),
-                  tag = cms.string("JetCorrectorParametersCollection_Jec10V3_AK5PFchs"),
-                  label=cms.untracked.string("AK5PF"))
-    ),
-    connect = cms.string('sqlite_fip:TauAnalysis/Configuration/data/Jec10V3.db')
-    #connect = cms.string("frontier://FrontierPrep/CMS_COND_PHYSICSTOOLS")
-)
-process.es_prefer_jec = cms.ESPrefer('PoolDBESSource', 'jec')
-#-------------------------------------------------------------------------------------------------------------------------
-
-
-#--------------------------------------------------------------------------------
 #
-# Save ntuple
+# Save Ntuple
 #
 process.ntupleOutputModule = cms.OutputModule("PoolOutputModule",
     cms.PSet(
@@ -291,22 +171,6 @@ process.schedule = cms.Schedule(
     process.muonPFTauFixedConeSkimPath,
     process.muonPFTauShrinkingConeSkimPath,
     process.muonPFTauHPSskimPath,
-    process.muonPFTauHPSpTaNCskimPath,
-    process.o
-)
-
-tauIdEffSampleEventSelection = cms.untracked.PSet( # CV: ONLY FOR TESTING !!!
-    SelectEvents = cms.untracked.PSet(
-        SelectEvents = cms.vstring(
-            'muonPFTauHPSpTaNCskimPath'
-        )
-    )
-)
-process.ntupleOutputModule.SelectEvents = cms.untracked.PSet( # CV: ONLY FOR TESTING !!!
-    SelectEvents = cms.vstring('muonPFTauHPSpTaNCskimPath')
-)
-process.schedule = cms.Schedule( # CV: ONLY FOR TESTING !!!
-    process.p,
     process.muonPFTauHPSpTaNCskimPath,
     process.o
 )
