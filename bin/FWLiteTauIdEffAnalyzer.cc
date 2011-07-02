@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.2 $
+ * \version $Revision: 1.3 $
  *
- * $Id: FWLiteTauIdEffAnalyzer.cc,v 1.2 2011/07/02 10:42:44 veelken Exp $
+ * $Id: FWLiteTauIdEffAnalyzer.cc,v 1.3 2011/07/02 14:55:18 veelken Exp $
  *
  */
 
@@ -56,7 +56,8 @@ struct regionEntryType
       tauIdName_(tauIdName),
       selector_(0),
       histManager_(0),
-      numMuTauPairs_selected_(0)
+      numMuTauPairs_selected_(0),
+      numMuTauPairsWeighted_selected_(0.)
   {
     edm::ParameterSet cfgSelector;
     cfgSelector.addParameter<vstring>("tauIdDiscriminators", tauIdDiscriminators);
@@ -86,6 +87,7 @@ struct regionEntryType
   TauIdEffEventSelector* selector_;
   TauIdEffHistManager* histManager_;
   int numMuTauPairs_selected_;
+  double numMuTauPairsWeighted_selected_;
 };
 
 int main(int argc, char* argv[]) 
@@ -152,7 +154,8 @@ int main(int argc, char* argv[])
 //--- book "dummy" histogram counting number of processed events
   TH1* histogramEventCounter = fs.make<TH1F>("numEventsProcessed", "Number of processed Events", 1, -0.5, +0.5);
   
-  int numEvents_processed = 0;  
+  int numEvents_processed = 0; 
+  double numEventsWeighted_processed = 0;
   
   bool maxEvents_processed = false;
   for ( vstring::const_iterator inputFileName = inputFiles.files().begin();
@@ -187,26 +190,26 @@ int main(int argc, char* argv[])
 	}
       }
 
+//--- compute event weight
+//   (pile-up reweighting, Data/MC correction factors,...)
+      double evtWeight = 1.0;
+      for ( vInputTag::const_iterator srcWeight = srcWeights.begin();
+	    srcWeight != srcWeights.end(); ++srcWeight ) {
+	edm::Handle<double> weight;
+	evt.getByLabel(*srcWeight, weight);
+	evtWeight *= (*weight);
+      }
+
+//--- require event to pass trigger requirements
+//    and to contain only one "good quality" muon
       typedef std::vector<pat::Muon> PATMuonCollection;
       edm::Handle<PATMuonCollection> goodMuons;
       evt.getByLabel(srcGoodMuons, goodMuons);
       size_t numGoodMuons = goodMuons->size();
 
-//--- require event to pass trigger requirements
-//    and to contain only one "good quality" muon
       if ( isTriggered && numGoodMuons <= 1 ) {
 
-//--- compute event weight
-//   (pile-up reweighting, Data/MC correction factors,...)
-	double evtWeight = 1.0;
-	for ( vInputTag::const_iterator srcWeight = srcWeights.begin();
-	      srcWeight != srcWeights.end(); ++srcWeight ) {
-	  edm::Handle<double> weight;
-	  evt.getByLabel(*srcWeight, weight);
-	  evtWeight *= (*weight);
-	}
-
-//--- iterator over collection of muon + tau-jet pairs
+//--- iterate over collection of muon + tau-jet pairs
 	edm::Handle<PATMuTauPairCollection> muTauPairs;
 	evt.getByLabel(srcMuTauPairs, muTauPairs);
 
@@ -220,6 +223,7 @@ int main(int argc, char* argv[])
 	      //std::cout << "--> selection passed !!" << std::endl;
 	      (*regionEntry)->histManager_->fillHistograms(*muTauPair, evtWeight);
 	      ++(*regionEntry)->numMuTauPairs_selected_;
+	      (*regionEntry)->numMuTauPairsWeighted_selected_ += evtWeight;
 	    }
 	  }
 	}
@@ -230,6 +234,7 @@ int main(int argc, char* argv[])
 
 //--- quit event loop if maximal number of events to be processed is reached 
       ++numEvents_processed;
+      numEventsWeighted_processed += evtWeight;
       if ( maxEvents > 0 && numEvents_processed >= maxEvents ) maxEvents_processed = true;
     }
 
@@ -244,7 +249,9 @@ int main(int argc, char* argv[])
 	regionEntry != regionEntries.end(); ++regionEntry ) {
     if ( (*regionEntry)->tauIdName_ != lastTauIdName ) 
       std::cout << " numMuTauPairs_selected, " << (*regionEntry)->tauIdName_ << std::endl;
-    std::cout << "  region " << (*regionEntry)->region_ << ": " << (*regionEntry)->numMuTauPairs_selected_ << std::endl;
+    std::cout << "  region " << (*regionEntry)->region_ << ":" 
+	      << " " << (*regionEntry)->numMuTauPairs_selected_ 
+	      << " (weighted = " << (*regionEntry)->numMuTauPairsWeighted_selected_ << ")" << std::endl;
     lastTauIdName = (*regionEntry)->tauIdName_;
   }
 
