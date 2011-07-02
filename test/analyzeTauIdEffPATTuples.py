@@ -24,6 +24,7 @@ inputFiles = os.listdir(inputFilePath)
 #print(inputFiles)
 
 configFileNames = []
+outputFileNames = []
 
 for sampleToAnalyze in samplesToAnalyze:
 
@@ -59,6 +60,8 @@ for sampleToAnalyze in samplesToAnalyze:
             inputFiles_string += "', '"
         inputFiles_string += inputFile_process
     inputFiles_string += "'"
+
+    outputFileName = os.path.join(outputFilePath, 'analyzeTauIdEffHistograms_%s_%s.root' % (sampleToAnalyze, jobId))
 
     weights_string = ""
     if not recoSampleDefinitionsTauIdEfficiency_7TeV['MERGE_SAMPLES'][sampleToAnalyze]['type'] == 'Data':
@@ -139,16 +142,15 @@ process.tauIdEffAnalyzer = cms.PSet(
 
     weights = cms.VInputTag(%s)
 )
-""" % (inputFiles_string,
-       os.path.join(outputFilePath, 'analyzeTauIdEffHistograms_%s_%s.root' % (sampleToAnalyze, jobId)),
-       sampleToAnalyze,
-       weights_string)
+""" % (inputFiles_string, outputFileName, sampleToAnalyze, weights_string)
 
     configFileName = "analyzeTauIdEffPATtuple_%s_cfg.py" % sampleToAnalyze
     configFile = open(configFileName, "w")
     configFile.write(config)
     configFile.close()
     configFileNames.append(configFileName)
+
+    outputFileNames.append(outputFileName)
 
 executable = '../../../../bin/slc5_amd64_gcc434/FWLiteTauIdEffAnalyzer'
 
@@ -157,7 +159,20 @@ shellFile = open(shellFileName, "w")
 shellFile.write("#!/bin/csh -f\n")
 shellFile.write("\n")
 for configFileName in configFileNames:
-    shellFile.write('%s %s' % (executable, configFileName))
+    shellFile.write('%s %s\n' % (executable, configFileName))
 shellFile.close()
 
 print("Finished building config files. Now execute 'source %s'." % shellFileName)
+
+haddFileName = "mergeTauIdEffHistograms.csh"
+haddFile = open(haddFileName, "w")
+haddFile.write("#!/bin/csh -f\n")
+haddFile.write("\n")
+haddOutputFileName = os.path.join(outputFilePath, 'analyzeTauIdEffHistograms_all_%s.root' % jobId)
+haddCommandLine = "hadd %s" % haddOutputFileName
+for outputFileName in outputFileNames:
+    haddCommandLine += " %s" % outputFileName
+haddFile.write("%s\n" % haddCommandLine)
+haddFile.close()
+
+print("Once all FWLiteTauIdEffAnalyzer jobs have finished, execute 'source %s' to merge output files." % haddFileName)
