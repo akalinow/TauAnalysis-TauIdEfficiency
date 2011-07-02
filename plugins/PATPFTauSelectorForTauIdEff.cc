@@ -173,11 +173,12 @@ bool PATPFTauSelectorForTauIdEff::filter(edm::Event& evt, const edm::EventSetup&
 
 //--- require "leading" PFChargedHadron to pass cut on (anti-)PFElectron MVA output
 //   (corresponding to discriminatorAgainstElectrons(Loose) applied in PFTau reconstruction)
-    bool isElectron = false;
+    double PFElectronMVA = -1.;
     if ( leadPFChargedHadron ) {
       if ( verbosity_ ) std::cout << " PFElectronMVA = " << leadPFChargedHadron->mva_e_pi() << std::endl;
-      if ( !(leadPFChargedHadron->mva_e_pi() < maxLeadTrackPFElectronMVA_) ) isElectron = true;
+      PFElectronMVA = leadPFChargedHadron->mva_e_pi();
     }
+    bool isElectron = !(PFElectronMVA < maxLeadTrackPFElectronMVA_);
     if ( !produceAll_ && isElectron ) continue;
     bool isECALcrack = (TMath::Abs(p4PFJetCorrected.eta()) > 1.442 && TMath::Abs(p4PFJetCorrected.eta()) < 1.560);
     if ( !produceAll_ && applyECALcrackVeto_ && isECALcrack ) continue;
@@ -186,27 +187,32 @@ bool PATPFTauSelectorForTauIdEff::filter(edm::Event& evt, const edm::EventSetup&
 //   (corresponding to discriminatorAgainstMuons applied in PFTau reconstruction;
 //    whether the cut against muons is looser or tighter can be controlled 
 //    via the 'muonSelection' configuration parameter)
-    bool isMuon = false;
+    const pat::Muon* nearestMuon = 0;
+    double dRnearestMuon = 1.e+3;
     if ( leadPFChargedHadron ) {
       for ( PATMuonCollection::const_iterator muon = muons->begin();
 	    muon != muons->end(); ++muon ) {
 	if ( muonSelection_ == 0 || (*muonSelection_)(*muon) ) {
 	  double dR = deltaR(leadPFChargedHadron->p4(), muon->p4());
-	  if ( dR < minDeltaRtoNearestMuon_ ) {
-	    if ( verbosity_ ) {
-	      std::cout << " muon: Pt = " << muon->pt() << "," 
-			<< " eta = " << muon->eta() << ", phi = " << muon->phi() 
-			<< " --> dR = " << dR << std::endl;
-	      std::cout << "(isGlobalMuon = " << muon->isGlobalMuon() << ","
-			<< " isTrackerMuon = " << muon->isTrackerMuon() << ","
-			<< " isStandAloneMuon = " << muon->isStandAloneMuon() << ")" << std::endl;
-	    }
-	    isMuon = true;
+	  if ( dR < dRnearestMuon ) {
+	    nearestMuon = &(*muon);
+	    dRnearestMuon = dR;	    
 	  }
 	}
       }
     }
-    if ( verbosity_ ) std::cout << " isMuon = " << isMuon << std::endl;
+    bool isMuon = (dRnearestMuon < minDeltaRtoNearestMuon_);
+    if ( verbosity_ ) {
+      if ( nearestMuon && dRnearestMuon < minDeltaRtoNearestMuon_ ) {
+	std::cout << " muon: Pt = " << nearestMuon->pt() << "," 
+		  << " eta = " << nearestMuon->eta() << ", phi = " << nearestMuon->phi() 
+		  << " --> dR = " << dRnearestMuon << std::endl;
+	std::cout << "(isGlobalMuon = " << nearestMuon->isGlobalMuon() << ","
+		  << " isTrackerMuon = " << nearestMuon->isTrackerMuon() << ","
+		  << " isStandAloneMuon = " << nearestMuon->isStandAloneMuon() << ")" << std::endl;
+      }
+      std::cout << " isMuon = " << isMuon << std::endl;
+    }
     if ( !produceAll_ && isMuon ) continue;
 
 //--- all cuts passed 
@@ -231,6 +237,10 @@ bool PATPFTauSelectorForTauIdEff::filter(edm::Event& evt, const edm::EventSetup&
     } else {
       pfTau_output.addUserFloat("hasLeadTrack",    0.);
     }
+
+//--- store electron/muon veto flags
+    pfTau_output.addUserFloat("PFElectronMVA", PFElectronMVA);
+    pfTau_output.addUserFloat("dRnearestMuon", dRnearestMuon);
 
 //--- store Pt, eta, phi and mass of "original" PFTau four-vector in userFloat variables
     pfTau_output.addUserFloat("origTauPt",   pfTau_input->pt());

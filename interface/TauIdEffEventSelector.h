@@ -8,9 +8,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.1 $
+ * \version $Revision: 1.2 $
  *
- * $Id: TauIdEffEventSelector.h,v 1.1 2011/07/01 10:41:48 veelken Exp $
+ * $Id: TauIdEffEventSelector.h,v 1.2 2011/07/01 18:30:16 veelken Exp $
  *
  */
 
@@ -55,20 +55,21 @@ class TauIdEffEventSelector : public EventSelector
   double tauPtMax_;  
   double tauEtaMin_;
   double tauEtaMax_;
+  double tauLeadTrackPtMin_;
   double tauAbsIsoMin_;
   double tauAbsIsoMax_;
   double muTauPairAbsDzMax_;
-  double muTauPairChargeMin_;
-  double muTauPairChargeMax_;
+  double muTauPairChargeProdMin_;
+  double muTauPairChargeProdMax_;
   double MtMin_;
   double MtMax_;
   double PzetaDiffMin_;
   double PzetaDiffMax_;
-  bool   MtAndPzetaDiffCut_;
+  int    MtAndPzetaDiffCut_;
 
   double tauIdDiscriminatorMin_;
   double tauIdDiscriminatorMax_;
-  bool   tauIdDiscriminatorCut_;
+  int    tauIdDiscriminatorCut_;
 
   double visMassCutoffMin_;
   double visMassCutoffMax_;

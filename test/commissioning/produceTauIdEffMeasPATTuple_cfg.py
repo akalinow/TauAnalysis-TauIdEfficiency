@@ -4,6 +4,7 @@ from TauAnalysis.TauIdEfficiency.produceTauIdEffMeasPATTupleSpecific_template_cf
 
 process.patTupleOutputModule.outputCommands = cms.untracked.vstring(
     'drop *',
+    'keep EventAux_*_*_*',
     'keep edmMergeableCounter_*_*_*',
     'keep patMuons_selectedPatMuonsForTauIdEffTrkIPcumulative_*_*',
     'keep patMuons_patGoodMuons_*_*',

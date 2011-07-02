@@ -18,33 +18,55 @@ samplesToAnalyze = [
 ]
 
 if len(samplesToAnalyze) == 0:
-    samplesToAnalyze = recoSampleDefinitionsTauIdEff_7TeV['MERGE_SAMPLES'].keys()
+    samplesToAnalyze = recoSampleDefinitionsTauIdEfficiency_7TeV['MERGE_SAMPLES'].keys()
 
 inputFiles = os.listdir(inputFilePath)
+#print(inputFiles)
 
 configFileNames = []
 
 for sampleToAnalyze in samplesToAnalyze:
-    processSearchStrings = "".join('_', recoSampleDefinitionsTauIdEff_7TeV['MERGE_SAMPLES'][sampleToAnalyze]['samples'], '_')
-    jobIdSearchString = "".join('_', jobId, '_')
+
+    isMC = False
 
     inputFiles_process = []
-    for inputFile in inputFiles:
+    for inputFile in inputFiles:        
         isPATtuple = (inputFile.find("tauIdEffMeasPATtuple") != -1)        
         isProcess_matched = False
-        for processSearchString in processSearchStrings:
+        processes = recoSampleDefinitionsTauIdEfficiency_7TeV['MERGE_SAMPLES'][sampleToAnalyze]['samples']
+        for process in processes:
+            processSearchString = "".join(['_', process, '_'])
             if inputFile.find(processSearchString) != -1:
                 isProcess_matched = True
+        jobIdSearchString = "".join(['_', jobId, '_'])        
         isJobId_matched = (inputFile.find(jobIdSearchString) != -1)
         
         if isPATtuple and isProcess_matched and isJobId_matched:
-            inputFiles_process.append(inputFile)
+            inputFiles_process.append(os.path.join(inputFilePath, inputFile))
 
-    if len(inputFiles_process):
+    #print(sampleToAnalyze)
+    #print(inputFiles_process)
+
+    if len(inputFiles_process) == 0:
         print("process %s has not input files --> skipping !!" % sampleToAnalyze)
         continue
 
-config = """
+    print("building config file for process %s..." % sampleToAnalyze)
+
+    inputFiles_string = "'"
+    for i, inputFile_process in enumerate(inputFiles_process):
+        if i > 0:
+            inputFiles_string += "', '"
+        inputFiles_string += inputFile_process
+    inputFiles_string += "'"
+
+    weights_string = ""
+    if not recoSampleDefinitionsTauIdEfficiency_7TeV['MERGE_SAMPLES'][sampleToAnalyze]['type'] == 'Data':
+        weights_string += "".join(["'", "ntupleProducer:tauIdEffNtuple#addPileupInfo#vtxMultReweight", "'"])
+        #weights_string += "".join(["'", "ntupleProducer:tauIdEffNtuple#selectedPatMuonsForTauIdEffTrkIPcumulative#muonHLTeff", "'"])
+
+    config = \
+"""
 import FWCore.ParameterSet.Config as cms
 
 process = cms.PSet()
@@ -58,7 +80,7 @@ process.fwliteInput = cms.PSet(
 )
     
 process.fwliteOutput = cms.PSet(
-    fileName  = cms.string('analyzeTauIdEffHistograms_%.root')
+    fileName  = cms.string('%s')
 )
 
 process.tauIdEffAnalyzer = cms.PSet(
@@ -70,6 +92,7 @@ process.tauIdEffAnalyzer = cms.PSet(
         'A1',
         'B',
         'B1',
+        'C',
         'C1',
         'C1p',
         'C1f',
@@ -105,11 +128,21 @@ process.tauIdEffAnalyzer = cms.PSet(
 
     sysShift = cms.string("CENTRAL_VALUE"),
 
-    srcTrigger cms.InputTag('patTriggerEvent'),
+    srcTrigger = cms.InputTag('patTriggerEvent'),
+    hltPaths = cms.vstring(
+        'HLT_IsoMu17_v5', 'HLT_IsoMu17_v6', 'HLT_IsoMu17_v8', 'HLT_IsoMu17_v9', 'HLT_IsoMu17_v11'
+    ),
+    
     srcGoodMuons = cms.InputTag('patGoodMuons'),
-    srcMuTauPairs = cms.InputTag('selectedMuPFTauHPSpairsForTauIdEffCumulative')
+    
+    srcMuTauPairs = cms.InputTag('selectedMuPFTauHPSpairsDzForTauIdEffCumulative'),
+
+    weights = cms.VInputTag(%s)
 )
-""" % (inputFiles_process, sampleToAnalyze, sampleToAnalyze)
+""" % (inputFiles_string,
+       os.path.join(outputFilePath, 'analyzeTauIdEffHistograms_%s_%s.root' % (sampleToAnalyze, jobId)),
+       sampleToAnalyze,
+       weights_string)
 
     configFileName = "analyzeTauIdEffPATtuple_%s_cfg.py" % sampleToAnalyze
     configFile = open(configFileName, "w")

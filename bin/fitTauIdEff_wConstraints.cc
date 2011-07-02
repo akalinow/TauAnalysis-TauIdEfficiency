@@ -763,7 +763,7 @@ int main(int argc, const char* argv[])
 
   gROOT->SetBatch(true);
 
-//--- keep track of time it took the macro to execute
+//--- keep track of time it takes the macro to execute
   TBenchmark clock;
   clock.Start("fitTauIdEff_wConstraints");
 

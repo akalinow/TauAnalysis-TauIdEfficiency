@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from TauAnalysis.Configuration.recoSampleDefinitionsZtoMuTau_7TeV_grid_cfi import recoSampleDefinitionsZtoMuTau_7TeV
+from TauAnalysis.TauIdEfficiency.recoSampleDefinitionsTauIdEfficiency_7TeV_grid_cfi import recoSampleDefinitionsTauIdEfficiency_7TeV
 from TauAnalysis.Configuration.submitAnalysisToLXBatch import submitAnalysisToLXBatch
 from TauAnalysis.Configuration.userRegistry import getAnalysisFilePath, getJobId, getBatchHarvestLocation, getHarvestingFilePath
 import TauAnalysis.Configuration.tools.castor as castor
@@ -54,13 +54,13 @@ def customizeConfigFile(sampleName, cfgFileName_original, cfgFileName_modified =
         isMC = "True"
     cfg_modified = cfg_modified.replace("#isMC#", isMC)
     HLTprocessName = 'HLT'
-    if 'hlt' in recoSampleDefinitionsZtoMuTau_7TeV['RECO_SAMPLES'][sampleName].keys():
-        HLTprocessName = recoSampleDefinitionsZtoMuTau_7TeV['RECO_SAMPLES'][sampleName]['hlt'].getProcessName()
+    if 'hlt' in recoSampleDefinitionsTauIdEfficiency_7TeV['RECO_SAMPLES'][sampleName].keys():
+        HLTprocessName = recoSampleDefinitionsTauIdEfficiency_7TeV['RECO_SAMPLES'][sampleName]['hlt'].getProcessName()
     cfg_modified = cfg_modified.replace("#HLTprocessName#", "'%s'" % HLTprocessName)
     cfg_modified = cfg_modified.replace("#pfCandidateCollection#", "'%s'" % pfCandidateCollection)
     applyZrecoilCorrection = "False"
-    if 'applyZrecoilCorrection' in recoSampleDefinitionsZtoMuTau_7TeV['RECO_SAMPLES'][sampleName].keys() and \
-      recoSampleDefinitionsZtoMuTau_7TeV['RECO_SAMPLES'][sampleName]['applyZrecoilCorrection']:
+    if 'applyZrecoilCorrection' in recoSampleDefinitionsTauIdEfficiency_7TeV['RECO_SAMPLES'][sampleName].keys() and \
+      recoSampleDefinitionsTauIdEfficiency_7TeV['RECO_SAMPLES'][sampleName]['applyZrecoilCorrection']:
         applyZrecoilCorrection = "True"                
     cfg_modified = cfg_modified.replace("#applyZrecoilCorrection#", "%s" % applyZrecoilCorrection)
 
@@ -73,7 +73,7 @@ def customizeConfigFile(sampleName, cfgFileName_original, cfgFileName_modified =
     return cfgFileName_modified
 
 if len(samplesToAnalyze) == 0:
-    samplesToAnalyze = recoSampleDefinitionsZtoMuTau_7TeV['SAMPLES_TO_ANALYZE']
+    samplesToAnalyze = recoSampleDefinitionsTauIdEfficiency_7TeV['SAMPLES_TO_ANALYZE']
 
 shFileNames_modified = []
 
@@ -85,7 +85,7 @@ for sampleToAnalyze in samplesToAnalyze:
     # apply further modifications and submit job to lxbatch
     shFileName = \
       submitAnalysisToLXBatch(configFile = configFile_customized, channel = channel,
-                              samples = recoSampleDefinitionsZtoMuTau_7TeV,
+                              samples = recoSampleDefinitionsTauIdEfficiency_7TeV,
                               samplesToAnalyze = [ sampleToAnalyze ],
                               disableFactorization = True, disableSysUncertainties = True, disableZrecoilCorrections = True,
                               # Options for local running

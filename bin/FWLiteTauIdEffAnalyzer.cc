@@ -6,11 +6,13 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.1 $
+ * \version $Revision: 1.2 $
  *
- * $Id: FWLiteTauIdEffAnalyzer.cc,v 1.1 2011/07/01 18:30:16 veelken Exp $
+ * $Id: FWLiteTauIdEffAnalyzer.cc,v 1.2 2011/07/02 10:42:44 veelken Exp $
  *
  */
+
+#include "FWCore/FWLite/interface/AutoLibraryLoader.h"
 
 #include "DataFormats/FWLite/interface/Event.h"
 #include "DataFormats/Common/interface/Handle.h"
@@ -36,14 +38,25 @@
 #include "AnalysisDataFormats/TauAnalysis/interface/CompositePtrCandidateT1T2MEt.h"
 #include "AnalysisDataFormats/TauAnalysis/interface/CompositePtrCandidateT1T2MEtFwd.h"
 
+#include <TFile.h>
+#include <TTree.h>
+#include <TSystem.h>
+#include <TROOT.h>
+#include <TBenchmark.h>
+
 typedef std::vector<std::string> vstring;
 
 struct regionEntryType
 {
-  regionEntryType(const std::string& process, const std::string& region, 
-		  const vstring& tauIdDiscriminators, const std::string& tauIdName)
-    : selector_(0),
-      histManager_(0)
+  regionEntryType(fwlite::TFileService& fs,
+		  const std::string& process, const std::string& region, 
+		  const vstring& tauIdDiscriminators, const std::string& tauIdName, const std::string& sysShift)
+    : process_(process),
+      region_(region),
+      tauIdName_(tauIdName),
+      selector_(0),
+      histManager_(0),
+      numMuTauPairs_selected_(0)
   {
     edm::ParameterSet cfgSelector;
     cfgSelector.addParameter<vstring>("tauIdDiscriminators", tauIdDiscriminators);
@@ -57,15 +70,22 @@ struct regionEntryType
     if      ( region.find("p") != std::string::npos ) label = "passed";
     else if ( region.find("f") != std::string::npos ) label = "failed";
     else                                              label = "all";
+    if ( sysShift != "CENTRAL_VALUE" ) label.append("_").append(sysShift);
     cfgHistManager.addParameter<std::string>("label", label);
+    histManager_ = new TauIdEffHistManager(cfgHistManager);
+    histManager_->bookHistograms(fs);
   }
   ~regionEntryType()
   {
     delete selector_;
     delete histManager_;
   }
+  std::string process_;
+  std::string region_;
+  std::string tauIdName_;
   TauIdEffEventSelector* selector_;
   TauIdEffHistManager* histManager_;
+  int numMuTauPairs_selected_;
 };
 
 int main(int argc, char* argv[]) 
@@ -76,19 +96,33 @@ int main(int argc, char* argv[])
     return 0;
   }
 
+  std::cout << "<FWLiteTauIdEffAnalyzer>:" << std::endl;
+
+//--- load framework libraries
+  gSystem->Load("libFWCoreFWLite");
+  AutoLibraryLoader::enable();
+
+//--- keep track of time it takes the macro to execute
+  TBenchmark clock;
+  clock.Start("FWLiteTauIdEffAnalyzer");
+
 //--- read python configuration parameters
   if ( !edm::readPSetsFrom(argv[1])->existsAs<edm::ParameterSet>("process") ) 
     throw cms::Exception("TauIdEffEventSelector") 
       << "No ParameterSet 'process' found in configuration file = " << argv[1] << " !!\n";
 
-  const edm::ParameterSet& cfg = edm::readPSetsFrom(argv[1])->getParameter<edm::ParameterSet>("process");
+  edm::ParameterSet cfg = edm::readPSetsFrom(argv[1])->getParameter<edm::ParameterSet>("process");
 
-  edm::InputTag srcMuTauPairs = cfg.getParameter<edm::InputTag>("srcMuTauPairs");
-  edm::InputTag srcTrigger = cfg.getParameter<edm::InputTag>("srcTrigger");
-  vstring hltPaths = cfg.getParameter<vstring>("hltPaths");
-  edm::InputTag srcGoodMuons = cfg.getParameter<edm::InputTag>("srcGoodMuons");
+  edm::ParameterSet cfgTauIdEffAnalyzer = cfg.getParameter<edm::ParameterSet>("tauIdEffAnalyzer");
+
+  edm::InputTag srcMuTauPairs = cfgTauIdEffAnalyzer.getParameter<edm::InputTag>("srcMuTauPairs");
+  edm::InputTag srcTrigger = cfgTauIdEffAnalyzer.getParameter<edm::InputTag>("srcTrigger");
+  vstring hltPaths = cfgTauIdEffAnalyzer.getParameter<vstring>("hltPaths");
+  edm::InputTag srcGoodMuons = cfgTauIdEffAnalyzer.getParameter<edm::InputTag>("srcGoodMuons");
   typedef std::vector<edm::InputTag> vInputTag;
-  vInputTag srcWeights = cfg.getParameter<vInputTag>("weights");
+  vInputTag srcWeights = cfgTauIdEffAnalyzer.getParameter<vInputTag>("weights");
+  std::string sysShift = cfgTauIdEffAnalyzer.exists("sysShift") ?
+    cfgTauIdEffAnalyzer.getParameter<std::string>("sysShift") : "CENTRAL_VALUE";
 
   fwlite::InputSource inputFiles(cfg); 
   int maxEvents = inputFiles.maxEvents();
@@ -100,17 +134,17 @@ int main(int argc, char* argv[])
 //    for different ABCD regions
   std::vector<regionEntryType*> regionEntries;
 
-  std::string process = cfg.getParameter<std::string>("process");
-  vstring regions = cfg.getParameter<vstring>("regions");
+  std::string process = cfgTauIdEffAnalyzer.getParameter<std::string>("process");
+  vstring regions = cfgTauIdEffAnalyzer.getParameter<vstring>("regions");
   typedef std::vector<edm::ParameterSet> vParameterSet;
-  vParameterSet cfgTauIdDiscriminators = cfg.getParameter<vParameterSet>("tauIds");
+  vParameterSet cfgTauIdDiscriminators = cfgTauIdEffAnalyzer.getParameter<vParameterSet>("tauIds");
   for ( vParameterSet::const_iterator cfgTauIdDiscriminator = cfgTauIdDiscriminators.begin();
 	cfgTauIdDiscriminator != cfgTauIdDiscriminators.end(); ++cfgTauIdDiscriminator ) {
     for ( vstring::const_iterator region = regions.begin();
 	  region != regions.end(); ++region ) {
       vstring tauIdDiscriminators = cfgTauIdDiscriminator->getParameter<vstring>("discriminators");
       std::string tauIdName = cfgTauIdDiscriminator->getParameter<std::string>("name");
-      regionEntryType* regionEntry = new regionEntryType(process, *region, tauIdDiscriminators, tauIdName);
+      regionEntryType* regionEntry = new regionEntryType(fs, process, *region, tauIdDiscriminators, tauIdName, sysShift);
       regionEntries.push_back(regionEntry);
     }
   }
@@ -119,7 +153,6 @@ int main(int argc, char* argv[])
   TH1* histogramEventCounter = fs.make<TH1F>("numEventsProcessed", "Number of processed Events", 1, -0.5, +0.5);
   
   int numEvents_processed = 0;  
-  int numMuTauPairs_selected = 0;
   
   bool maxEvents_processed = false;
   for ( vstring::const_iterator inputFileName = inputFiles.files().begin();
@@ -130,6 +163,11 @@ int main(int argc, char* argv[])
     if ( !inputFile ) 
       throw cms::Exception("TauIdEffEventSelector") 
 	<< "Failed to open inputFile = " << (*inputFileName) << " !!\n";
+
+    std::cout << " opening inputFile = " << (*inputFileName);
+    TTree* tree = dynamic_cast<TTree*>(inputFile->Get("Events"));
+    if ( tree ) std::cout << " (" << tree->GetEntries() << " Events)";
+    std::cout << std::endl;
 
     fwlite::Event evt(inputFile);
     for ( evt.toBegin(); !(evt.atEnd() || maxEvents_processed); ++evt ) {
@@ -174,16 +212,16 @@ int main(int argc, char* argv[])
 
 	for ( PATMuTauPairCollection::const_iterator muTauPair = muTauPairs->begin();
 	      muTauPair != muTauPairs->end(); ++muTauPair ) {
-	  bool isMuTauPair_selected;
 	  for ( std::vector<regionEntryType*>::iterator regionEntry = regionEntries.begin();
 		regionEntry != regionEntries.end(); ++regionEntry ) {
+	    //std::cout << "checking region = " << (*regionEntry)->region_ << std::endl;
 	    pat::strbitset evtSelFlags;
 	    if ( (*regionEntry)->selector_->operator()(*muTauPair, evtSelFlags) ) {
+	      //std::cout << "--> selection passed !!" << std::endl;
 	      (*regionEntry)->histManager_->fillHistograms(*muTauPair, evtWeight);
-	      isMuTauPair_selected = true;
+	      ++(*regionEntry)->numMuTauPairs_selected_;
 	    }
 	  }
-	  if ( isMuTauPair_selected ) ++numMuTauPairs_selected;
 	}
       }
       
@@ -199,8 +237,18 @@ int main(int argc, char* argv[])
     delete inputFile;
   }
 
-  std::cout << " numEvents_processed = " << numEvents_processed << std::endl;
-  std::cout << " numMuTauPairs_selected(ABCD) = " << numMuTauPairs_selected << std::endl;
+  std::cout << "<FWLiteTauIdEffAnalyzer>:" << std::endl;
+  std::cout << " numEvents_processed: " << numEvents_processed << std::endl;
+  std::string lastTauIdName = "";
+  for ( std::vector<regionEntryType*>::iterator regionEntry = regionEntries.begin();
+	regionEntry != regionEntries.end(); ++regionEntry ) {
+    if ( (*regionEntry)->tauIdName_ != lastTauIdName ) 
+      std::cout << " numMuTauPairs_selected, " << (*regionEntry)->tauIdName_ << std::endl;
+    std::cout << "  region " << (*regionEntry)->region_ << ": " << (*regionEntry)->numMuTauPairs_selected_ << std::endl;
+    lastTauIdName = (*regionEntry)->tauIdName_;
+  }
+
+  clock.Show("FWLiteTauIdEffAnalyzer");
 
   return 0;
 }
