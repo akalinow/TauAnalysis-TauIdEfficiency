@@ -6,15 +6,17 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.3 $
+ * \version $Revision: 1.4 $
  *
- * $Id: FWLiteTauIdEffAnalyzer.cc,v 1.3 2011/07/02 14:55:18 veelken Exp $
+ * $Id: FWLiteTauIdEffAnalyzer.cc,v 1.4 2011/07/02 15:52:34 veelken Exp $
  *
  */
 
 #include "FWCore/FWLite/interface/AutoLibraryLoader.h"
 
 #include "DataFormats/FWLite/interface/Event.h"
+#include "DataFormats/FWLite/interface/LuminosityBlock.h"
+#include "DataFormats/FWLite/interface/Run.h"
 #include "DataFormats/Common/interface/Handle.h"
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
@@ -31,6 +33,7 @@
 #include "DataFormats/PatCandidates/interface/Muon.h"
 #include "DataFormats/PatCandidates/interface/TriggerEvent.h"
 #include "DataFormats/PatCandidates/interface/TriggerAlgorithm.h"
+#include "DataFormats/Common/interface/MergeableCounter.h"
 
 #include "TauAnalysis/TauIdEfficiency/interface/TauIdEffEventSelector.h"
 #include "TauAnalysis/TauIdEfficiency/interface/TauIdEffHistManager.h"
@@ -125,6 +128,7 @@ int main(int argc, char* argv[])
   vInputTag srcWeights = cfgTauIdEffAnalyzer.getParameter<vInputTag>("weights");
   std::string sysShift = cfgTauIdEffAnalyzer.exists("sysShift") ?
     cfgTauIdEffAnalyzer.getParameter<std::string>("sysShift") : "CENTRAL_VALUE";
+  edm::InputTag srcEventCounter = cfgTauIdEffAnalyzer.getParameter<edm::InputTag>("srcEventCounter");
 
   fwlite::InputSource inputFiles(cfg); 
   int maxEvents = inputFiles.maxEvents();
@@ -152,11 +156,23 @@ int main(int argc, char* argv[])
   }
 
 //--- book "dummy" histogram counting number of processed events
-  TH1* histogramEventCounter = fs.make<TH1F>("numEventsProcessed", "Number of processed Events", 1, -0.5, +0.5);
+  TH1* histogramEventCounter = fs.make<TH1F>("numEventsProcessed", "Number of processed Events", 3, -0.5, +2.5);
+  histogramEventCounter->GetXaxis()->SetBinLabel(1, "all Events (DBS)");      // CV: bin numbers start at 1 (not 0) !!
+  histogramEventCounter->GetXaxis()->SetBinLabel(2, "processed by Skimming");
+  histogramEventCounter->GetXaxis()->SetBinLabel(3, "analyzed in PAT-tuple");
+  
+  if ( cfgTauIdEffAnalyzer.exists("allEvents_DBS") ) {
+    histogramEventCounter->SetBinContent(1, cfgTauIdEffAnalyzer.getParameter<int>("allEvents_DBS"));
+  } else {
+    histogramEventCounter->SetBinContent(1, -1.);
+  }
   
   int numEvents_processed = 0; 
   double numEventsWeighted_processed = 0;
   
+  edm::RunNumber_t lastLumiBlock_run = -1;
+  edm::LuminosityBlockNumber_t lastLumiBlock_ls = -1;
+
   bool maxEvents_processed = false;
   for ( vstring::const_iterator inputFileName = inputFiles.files().begin();
 	inputFileName != inputFiles.files().end() && !maxEvents_processed; ++inputFileName ) {
@@ -174,6 +190,17 @@ int main(int argc, char* argv[])
 
     fwlite::Event evt(inputFile);
     for ( evt.toBegin(); !(evt.atEnd() || maxEvents_processed); ++evt ) {
+
+//--- check if new luminosity section has started;
+//    if so, retrieve number of events contained in this luminosity section before skimming
+      if ( !(evt.id().run() == lastLumiBlock_run && evt.luminosityBlock() == lastLumiBlock_ls) ) {
+	const fwlite::LuminosityBlock& ls = evt.getLuminosityBlock();
+	edm::Handle<edm::MergeableCounter> numEvents_skimmed;
+	ls.getByLabel(srcEventCounter, numEvents_skimmed);
+	if ( numEvents_skimmed.isValid() ) histogramEventCounter->Fill(1, numEvents_skimmed->value);
+	lastLumiBlock_run = evt.id().run();
+	lastLumiBlock_ls = evt.luminosityBlock();
+      }
 
 //--- check that event has passed triggers
       edm::Handle<pat::TriggerEvent> hltEvent;
@@ -230,7 +257,7 @@ int main(int argc, char* argv[])
       }
       
 //--- fill "dummy" histogram counting number of processed events
-      histogramEventCounter->Fill(0);
+      histogramEventCounter->Fill(2);
 
 //--- quit event loop if maximal number of events to be processed is reached 
       ++numEvents_processed;
@@ -240,6 +267,20 @@ int main(int argc, char* argv[])
 
 //--- close input file
     delete inputFile;
+  }
+
+//--- scale histograms to account for events lost, 
+//    due to aborted skimming/crab or PAT-tuple production/lxbatch jobs
+  if ( histogramEventCounter->GetBinContent(1) > histogramEventCounter->GetBinContent(2) && 
+       histogramEventCounter->GetBinContent(2) > 0.                                      ) {
+    double factor = histogramEventCounter->GetBinContent(1)/histogramEventCounter->GetBinContent(2);
+    std::cout << "--> scaling histograms by factor = " << factor 
+	      << " to account for events lost," 
+	      << " due to aborted skimming/crab or PAT-tuple production/lxbatch jobs." << std::endl;
+    for ( std::vector<regionEntryType*>::iterator regionEntry = regionEntries.begin();
+	  regionEntry != regionEntries.end(); ++regionEntry ) {
+      (*regionEntry)->histManager_->scaleHistograms(factor);
+    }
   }
 
   std::cout << "<FWLiteTauIdEffAnalyzer>:" << std::endl;

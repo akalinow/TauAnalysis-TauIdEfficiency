@@ -47,16 +47,29 @@ void TauIdEffHistManager::fillHistograms(const PATMuTauPair& muTauPair, double w
   histogramPzetaDiff_->Fill(muTauPair.pZeta() - 1.5*muTauPair.pZetaVis(), weight);
 }
 
+void TauIdEffHistManager::scaleHistograms(double factor)
+{
+  for ( std::vector<TH1*>::iterator histogram = histograms_.begin();
+	histogram != histograms_.end(); ++histogram ) {
+    if ( !(*histogram)->GetSumw2N() ) (*histogram)->Sumw2(); // CV: compute "proper" errors before scaling histogram
+    (*histogram)->Scale(factor);
+  }
+}
+
 TH1* TauIdEffHistManager::book1D(fwlite::TFileService& fs,
 				 const std::string& distribution, const std::string& title, int numBins, double min, double max)
 {
-  return fs.make<TH1F>(getHistogramName(distribution).data(), title.data(), numBins, min, max);
+  TH1* retVal = fs.make<TH1D>(getHistogramName(distribution).data(), title.data(), numBins, min, max);;
+  histograms_.push_back(retVal);
+  return retVal;
 }
  
 TH1* TauIdEffHistManager::book1D(fwlite::TFileService& fs,
 				 const std::string& distribution, const std::string& title, int numBins, float* binning)
 {
-  return fs.make<TH1F>(getHistogramName(distribution).data(), title.data(), numBins, binning);
+  TH1* retVal = fs.make<TH1D>(getHistogramName(distribution).data(), title.data(), numBins, binning);
+  histograms_.push_back(retVal);
+  return retVal;
 }
  
 std::string TauIdEffHistManager::getHistogramName(const std::string& distribution)

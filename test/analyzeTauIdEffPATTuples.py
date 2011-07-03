@@ -18,7 +18,7 @@ samplesToAnalyze = [
 ]
 
 if len(samplesToAnalyze) == 0:
-    samplesToAnalyze = recoSampleDefinitionsTauIdEfficiency_7TeV['MERGE_SAMPLES'].keys()
+    samplesToAnalyze = recoSampleDefinitionsTauIdEfficiency_7TeV['RECO_SAMPLES'].keys()
 
 inputFiles = os.listdir(inputFilePath)
 #print(inputFiles)
@@ -30,43 +30,53 @@ for sampleToAnalyze in samplesToAnalyze:
 
     isMC = False
 
-    inputFiles_process = []
+    # check if inputFile is PAT-tuple and
+    # matches sampleToAnalyze, jobId
+    inputFiles_sample = []
     for inputFile in inputFiles:        
-        isPATtuple = (inputFile.find("tauIdEffMeasPATtuple") != -1)        
-        isProcess_matched = False
-        processes = recoSampleDefinitionsTauIdEfficiency_7TeV['MERGE_SAMPLES'][sampleToAnalyze]['samples']
-        for process in processes:
-            processSearchString = "".join(['_', process, '_'])
-            if inputFile.find(processSearchString) != -1:
-                isProcess_matched = True
-        jobIdSearchString = "".join(['_', jobId, '_'])        
-        isJobId_matched = (inputFile.find(jobIdSearchString) != -1)
-        
-        if isPATtuple and isProcess_matched and isJobId_matched:
-            inputFiles_process.append(os.path.join(inputFilePath, inputFile))
+        if inputFile.find("tauIdEffMeasPATtuple") != -1 and \
+           inputFile.find("".join(['_', sampleToAnalyze, '_'])) != -1 and \
+           inputFile.find("".join(['_', jobId, '_'])) != -1:
+            inputFiles_sample.append(os.path.join(inputFilePath, inputFile))
 
     #print(sampleToAnalyze)
-    #print(inputFiles_process)
+    #print(inputFiles_sample)
 
-    if len(inputFiles_process) == 0:
-        print("process %s has not input files --> skipping !!" % sampleToAnalyze)
+    if len(inputFiles_sample) == 0:
+        print("Sample %s has not input files --> skipping !!" % sampleToAnalyze)
         continue
 
-    print("building config file for process %s..." % sampleToAnalyze)
+    # find name of associated "process"
+    process_matched = None
+    processes = recoSampleDefinitionsTauIdEfficiency_7TeV['MERGE_SAMPLES'].keys()
+    for process in processes:
+        for sample in recoSampleDefinitionsTauIdEfficiency_7TeV['MERGE_SAMPLES'][process]['samples']:
+            if sample == sampleToAnalyze:
+                process_matched = process
+
+    if not process_matched:
+        print("No process associated to sample %s --> skipping !!" % sampleToAnalyze)
+        continue
+
+    print("building config file for sample %s..." % sampleToAnalyze)
 
     inputFiles_string = "'"
-    for i, inputFile_process in enumerate(inputFiles_process):
+    for i, inputFile_sample in enumerate(inputFiles_sample):
         if i > 0:
             inputFiles_string += "', '"
-        inputFiles_string += inputFile_process
+        inputFiles_string += inputFile_sample
     inputFiles_string += "'"
 
     outputFileName = os.path.join(outputFilePath, 'analyzeTauIdEffHistograms_%s_%s.root' % (sampleToAnalyze, jobId))
 
     weights_string = ""
-    if not recoSampleDefinitionsTauIdEfficiency_7TeV['MERGE_SAMPLES'][sampleToAnalyze]['type'] == 'Data':
+    if not recoSampleDefinitionsTauIdEfficiency_7TeV['MERGE_SAMPLES'][process_matched]['type'] == 'Data':
         weights_string += "".join(["'", "ntupleProducer:tauIdEffNtuple#addPileupInfo#vtxMultReweight", "'"])
         #weights_string += "".join(["'", "ntupleProducer:tauIdEffNtuple#selectedPatMuonsForTauIdEffTrkIPcumulative#muonHLTeff", "'"])
+
+    allEvents_DBS = -1
+    if not recoSampleDefinitionsTauIdEfficiency_7TeV['MERGE_SAMPLES'][process_matched]['type'] == 'Data':
+        allEvents_DBS = recoSampleDefinitionsTauIdEfficiency_7TeV['RECO_SAMPLES'][sampleToAnalyze]['events_processed']
 
     config = \
 """
@@ -140,9 +150,13 @@ process.tauIdEffAnalyzer = cms.PSet(
     
     srcMuTauPairs = cms.InputTag('selectedMuPFTauHPSpairsDzForTauIdEffCumulative'),
 
-    weights = cms.VInputTag(%s)
+    weights = cms.VInputTag(%s),
+
+    # CV: 'srcEventCounter' is defined in TauAnalysis/Skimming/test/skimTauIdEffSample_cfg.py
+    srcEventCounter = cms.InputTag('totalEventsProcessed'),
+    allEvents_DBS = cms.int32(%i)
 )
-""" % (inputFiles_string, outputFileName, sampleToAnalyze, weights_string)
+""" % (inputFiles_string, outputFileName, process_matched, weights_string, allEvents_DBS)
 
     configFileName = "analyzeTauIdEffPATtuple_%s_cfg.py" % sampleToAnalyze
     configFile = open(configFileName, "w")
@@ -159,7 +173,9 @@ shellFile = open(shellFileName, "w")
 shellFile.write("#!/bin/csh -f\n")
 shellFile.write("\n")
 for configFileName in configFileNames:
-    shellFile.write('%s %s\n' % (executable, configFileName))
+    # CV: add '&' at end of command-line to run all FWLiteTauIdEffAnalyzer jobs in parallel
+    logFileName = configFileName.replace("_cfg.py", ".log")
+    shellFile.write('%s %s >&! %s &\n' % (executable, configFileName, logFileName))
 shellFile.close()
 
 print("Finished building config files. Now execute 'source %s'." % shellFileName)

@@ -7,9 +7,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.1 $
+ * \version $Revision: 1.2 $
  *
- * $Id: TauIdEffHistManager.h,v 1.1 2011/07/01 13:26:36 veelken Exp $
+ * $Id: TauIdEffHistManager.h,v 1.2 2011/07/01 18:30:16 veelken Exp $
  *
  */
 
@@ -32,6 +32,10 @@ class TauIdEffHistManager
   /// book and fill histograms
   void bookHistograms(fwlite::TFileService&);
   void fillHistograms(const PATMuTauPair&, double);
+  
+  /// scale all bin-contents/bin-errors by factor given as function argument
+  /// (to account for events lost, due to aborted skimming/crab or PAT-tuple production/lxbatch jobs)
+  void scaleHistograms(double);
 
  protected:
 
@@ -61,6 +65,8 @@ class TauIdEffHistManager
   TH1* histogramVisMass_;
   TH1* histogramMt_;
   TH1* histogramPzetaDiff_;
+
+  std::vector<TH1*> histograms_;
 };
 
 #endif
