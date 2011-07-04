@@ -47,7 +47,9 @@ process.patTupleOutputModule = cms.OutputModule("PoolOutputModule",
             'keep *Vertex*_*_*_*',
             'keep *_ak5PFJets_*_*',
             'keep *_ak5CaloJets_*_*',
-            'keep *PFCandidate*_*_*_*'
+            'keep *PFCandidate*_*_*_*',
+            'keep *_patMETs_*_*',
+            'keep *_patPFMETs_*_*'                                            
         )               
     ),
     process.tauIdEffSampleEventSelection,

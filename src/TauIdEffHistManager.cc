@@ -15,23 +15,26 @@ TauIdEffHistManager::~TauIdEffHistManager()
 // nothing to be done yet...
 }
 
-void TauIdEffHistManager::bookHistograms(fwlite::TFileService& fs)
+void TauIdEffHistManager::bookHistograms(TFileDirectory& dir)
 {
-  histogramMuonPt_       = book1D(fs, "muonPt",          "muonPt",                                40,          0. ,         100.);
-  histogramMuonEta_      = book1D(fs, "muonEta",         "muonEta",                               50,         -2.5,         +2.5);
-  histogramMuonPhi_      = book1D(fs, "muonPhi",         "muonPhi",                               36, -TMath::Pi(), +TMath::Pi());
+  histogramMuonPt_       = book1D(dir, "muonPt",          "P_{T}^{#mu}",                           40,          0. ,         100.);
+  histogramMuonEta_      = book1D(dir, "muonEta",         "#eta_{#mu}",                            50,         -2.5,         +2.5);
+  histogramMuonPhi_      = book1D(dir, "muonPhi",         "#phi_{#mu}",                            36, -TMath::Pi(), +TMath::Pi());
   
-  histogramTauPt_        = book1D(fs, "tauJetPt",        "tauPt",                                 40,          0. ,         100.);
-  histogramTauEta_       = book1D(fs, "tauJetEta",       "tauEta",                                50,         -2.5,         +2.5);
-  histogramTauPhi_       = book1D(fs, "tauJetPhi",       "tauPhi",                                36, -TMath::Pi(), +TMath::Pi());
-  histogramTauNumTracks_ = book1D(fs, "tauJetNumTracks", "tauNumTracks",                          25,         -0.5,         24.5);
+  histogramTauPt_        = book1D(dir, "tauJetPt",        "P_{T}^{#tau}",                          40,          0. ,         100.);
+  histogramTauEta_       = book1D(dir, "tauJetEta",       "#eta_{#tau}",                           50,         -2.5,         +2.5);
+  histogramTauPhi_       = book1D(dir, "tauJetPhi",       "#phi_{#tau}",                           36, -TMath::Pi(), +TMath::Pi());
+  histogramTauNumTracks_ = book1D(dir, "tauJetNumTracks", "Num. Tracks #tau-Jet",                  25,         -0.5,         24.5);
   
-  histogramVisMass_      = book1D(fs, "diTauVisMass",    "M_{vis}(#mu + #tau_{had})",             36,         20.0,        200.0);
-  histogramMt_           = book1D(fs, "diTauMt",         "M_{T}(#mu + MET)",                      16,          0.0,         80.0);
-  histogramPzetaDiff_    = book1D(fs, "diTauPzetaDiff",  "P_{#zeta} - 1.5 #cdot P_{#zeta}^{vis}", 24,        -80.0,        +40.0);
+  histogramVisMass_      = book1D(dir, "diTauVisMass",    "M_{vis}(#mu + #tau_{had})",             36,         20.0,        200.0);
+  histogramMt_           = book1D(dir, "diTauMt",         "M_{T}(#mu + MET)",                      16,          0.0,         80.0);
+  histogramPzetaDiff_    = book1D(dir, "diTauPzetaDiff",  "P_{#zeta} - 1.5 #cdot P_{#zeta}^{vis}", 24,        -80.0,        +40.0);
+
+  histogramSumEt_        = book1D(dir, "sumEt",           "#Sigma E_{T}^{PF}",                     50,          0.,         500.0);
+  histogramNumVertices_  = book1D(dir, "numVertices",     "Num. Vertices",                         20,         -0.5,         19.5);
 }
 
-void TauIdEffHistManager::fillHistograms(const PATMuTauPair& muTauPair, double weight)
+void TauIdEffHistManager::fillHistograms(const PATMuTauPair& muTauPair, size_t numVertices, double weight)
 {
   histogramMuonPt_->Fill(muTauPair.leg1()->pt(), weight);
   histogramMuonEta_->Fill(muTauPair.leg1()->eta(), weight);
@@ -45,6 +48,9 @@ void TauIdEffHistManager::fillHistograms(const PATMuTauPair& muTauPair, double w
   histogramVisMass_->Fill((muTauPair.leg1()->p4() + muTauPair.leg2()->p4()).mass(), weight); 
   histogramMt_->Fill(muTauPair.mt1MET(), weight);
   histogramPzetaDiff_->Fill(muTauPair.pZeta() - 1.5*muTauPair.pZetaVis(), weight);
+
+  histogramSumEt_->Fill(muTauPair.met()->sumEt(), weight);
+  histogramNumVertices_->Fill(numVertices, weight);
 }
 
 void TauIdEffHistManager::scaleHistograms(double factor)
@@ -56,18 +62,18 @@ void TauIdEffHistManager::scaleHistograms(double factor)
   }
 }
 
-TH1* TauIdEffHistManager::book1D(fwlite::TFileService& fs,
+TH1* TauIdEffHistManager::book1D(TFileDirectory& dir,
 				 const std::string& distribution, const std::string& title, int numBins, double min, double max)
 {
-  TH1* retVal = fs.make<TH1D>(getHistogramName(distribution).data(), title.data(), numBins, min, max);;
+  TH1* retVal = dir.make<TH1D>(getHistogramName(distribution).data(), title.data(), numBins, min, max);;
   histograms_.push_back(retVal);
   return retVal;
 }
  
-TH1* TauIdEffHistManager::book1D(fwlite::TFileService& fs,
+TH1* TauIdEffHistManager::book1D(TFileDirectory& dir,
 				 const std::string& distribution, const std::string& title, int numBins, float* binning)
 {
-  TH1* retVal = fs.make<TH1D>(getHistogramName(distribution).data(), title.data(), numBins, binning);
+  TH1* retVal = dir.make<TH1D>(getHistogramName(distribution).data(), title.data(), numBins, binning);
   histograms_.push_back(retVal);
   return retVal;
 }

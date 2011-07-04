@@ -209,7 +209,8 @@ def buildQCDdiJetTauSequence(
         patTauProducerPrototype = patTauProducerPrototype,
         patTauCleanerPrototype = patTauCleanerPrototype,
         triggerMatcherProtoType = triggerMatcherProtoType,
-        addGenInfo = addGenInfo
+        addGenInfo = addGenInfo,
+        applyTauVertexMatch = applyTauVertexMatch
     )
 
     outputSequence = retVal_tau["sequence"]
@@ -257,7 +258,8 @@ def buildGenericTauSequence(
         patTauProducerPrototype = patTauProducerPrototype,
         patTauCleanerPrototype = patTauCleanerPrototype,
         triggerMatcherProtoType = triggerMatcherProtoType,
-        addGenInfo = addGenInfo
+        addGenInfo = addGenInfo,
+        applyTauVertexMatch = applyTauVertexMatch
     )
 
     # return full sequence for production of basic tau collection,

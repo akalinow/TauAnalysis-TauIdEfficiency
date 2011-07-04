@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.4 $
+ * \version $Revision: 1.5 $
  *
- * $Id: FWLiteTauIdEffAnalyzer.cc,v 1.4 2011/07/02 15:52:34 veelken Exp $
+ * $Id: FWLiteTauIdEffAnalyzer.cc,v 1.5 2011/07/03 10:15:55 veelken Exp $
  *
  */
 
@@ -17,7 +17,6 @@
 #include "DataFormats/FWLite/interface/Event.h"
 #include "DataFormats/FWLite/interface/LuminosityBlock.h"
 #include "DataFormats/FWLite/interface/Run.h"
-#include "DataFormats/Common/interface/Handle.h"
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/PythonParameterSet/interface/MakeParameterSets.h"
@@ -33,7 +32,10 @@
 #include "DataFormats/PatCandidates/interface/Muon.h"
 #include "DataFormats/PatCandidates/interface/TriggerEvent.h"
 #include "DataFormats/PatCandidates/interface/TriggerAlgorithm.h"
+#include "DataFormats/VertexReco/interface/Vertex.h"
+#include "DataFormats/VertexReco/interface/VertexFwd.h"
 #include "DataFormats/Common/interface/MergeableCounter.h"
+#include "DataFormats/Common/interface/Handle.h"
 
 #include "TauAnalysis/TauIdEfficiency/interface/TauIdEffEventSelector.h"
 #include "TauAnalysis/TauIdEfficiency/interface/TauIdEffHistManager.h"
@@ -59,13 +61,30 @@ struct regionEntryType
       tauIdName_(tauIdName),
       selector_(0),
       histManager_(0),
+      histManagerTauEtaLt15_(0),
+      histManagerTauEta15to19_(0),
+      histManagerTauEta19to23_(0),
+      histManagerTauPtLt25_(0),
+      histManagerTauPt25to30_(0),
+      histManagerTauPt30to40_(0),
+      histManagerTauPtGt40_(0),
+      histManagerSumEtLt75_(0),
+      histManagerSumEt75to150_(0),
+      histManagerSumEt150to225_(0),
+      histManagerSumEtGt225_(0),
+      histManagerNumVerticesLeq3_(0),
+      histManagerNumVertices4to6_(0),
+      histManagerNumVertices7to9_(0),
+      histManagerNumVerticesGt10_(0),
       numMuTauPairs_selected_(0),
       numMuTauPairsWeighted_selected_(0.)
   {
     edm::ParameterSet cfgSelector;
     cfgSelector.addParameter<vstring>("tauIdDiscriminators", tauIdDiscriminators);
     cfgSelector.addParameter<std::string>("region", region);
+
     selector_ = new TauIdEffEventSelector(cfgSelector);
+
     edm::ParameterSet cfgHistManager;
     cfgHistManager.addParameter<std::string>("process", process);
     cfgHistManager.addParameter<std::string>("region", region);
@@ -76,19 +95,110 @@ struct regionEntryType
     else                                              label = "all";
     if ( sysShift != "CENTRAL_VALUE" ) label.append("_").append(sysShift);
     cfgHistManager.addParameter<std::string>("label", label);
-    histManager_ = new TauIdEffHistManager(cfgHistManager);
-    histManager_->bookHistograms(fs);
+
+    histManager_                = addHistManager(fs, "",                cfgHistManager);
+
+    histManagerTauEtaLt15_      = addHistManager(fs, "tauEtaLt15",      cfgHistManager);
+    histManagerTauEta15to19_    = addHistManager(fs, "tauEta15to19",    cfgHistManager);
+    histManagerTauEta19to23_    = addHistManager(fs, "tauEta19to23",    cfgHistManager);
+
+    histManagerTauPtLt25_       = addHistManager(fs, "tauPtLt25",       cfgHistManager);
+    histManagerTauPt25to30_     = addHistManager(fs, "tauPt25to30",     cfgHistManager);
+    histManagerTauPt30to40_     = addHistManager(fs, "tauPt30to40",     cfgHistManager);
+    histManagerTauPtGt40_       = addHistManager(fs, "tauPtGt40",       cfgHistManager);
+
+    histManagerSumEtLt75_       = addHistManager(fs, "sumEtLt75",       cfgHistManager);
+    histManagerSumEt75to150_    = addHistManager(fs, "sumEt75to150",    cfgHistManager);
+    histManagerSumEt150to225_   = addHistManager(fs, "sumEt150to225",   cfgHistManager);
+    histManagerSumEtGt225_      = addHistManager(fs, "sumEtGt225",      cfgHistManager);
+
+    histManagerNumVerticesLeq3_ = addHistManager(fs, "numVerticesLeq3", cfgHistManager);
+    histManagerNumVertices4to6_ = addHistManager(fs, "numVertices4to6", cfgHistManager);
+    histManagerNumVertices7to9_ = addHistManager(fs, "numVertices7to9", cfgHistManager);
+    histManagerNumVerticesGt10_ = addHistManager(fs, "numVerticesGt10", cfgHistManager);
   }
   ~regionEntryType()
   {
     delete selector_;
     delete histManager_;
   }
+  TauIdEffHistManager* addHistManager(fwlite::TFileService& fs, const std::string& dirName, const edm::ParameterSet& cfg)
+  {
+    TauIdEffHistManager* retVal = new TauIdEffHistManager(cfg);
+
+    if ( dirName != "" ) {
+      TFileDirectory dir = fs.mkdir(dirName.data());
+      retVal->bookHistograms(dir);
+    } else {
+      retVal->bookHistograms(fs);
+    }
+
+    return retVal;
+  }
+  void analyze(const PATMuTauPair& muTauPair, size_t numVertices, double evtWeight)
+  {
+    pat::strbitset evtSelFlags;
+    if ( selector_->operator()(muTauPair, evtSelFlags) ) {
+//--- fill histograms for "inclusive" tau id. efficiency measurement
+      histManager_->fillHistograms(muTauPair, numVertices, evtWeight);
+
+//--- fill histograms for tau id. efficiency measurement as function of tau-jet pseudo-rapidity
+      double tauAbsEta = TMath::Abs(muTauPair.leg1()->eta());
+      if      ( tauAbsEta < 1.5 ) histManagerTauEtaLt15_->fillHistograms(muTauPair, numVertices, evtWeight);
+      else if ( tauAbsEta < 1.9 ) histManagerTauEta15to19_->fillHistograms(muTauPair, numVertices, evtWeight);
+      else if ( tauAbsEta < 2.3 ) histManagerTauEta19to23_->fillHistograms(muTauPair, numVertices, evtWeight);
+
+//--- fill histograms for tau id. efficiency measurement as function of tau-jet transverse momentum
+      double tauPt = muTauPair.leg1()->pt();
+      if      ( tauPt > 20.0 && tauPt < 25.0 ) histManagerTauPtLt25_->fillHistograms(muTauPair, numVertices, evtWeight);
+      else if ( tauPt > 25.0 && tauPt < 30.0 ) histManagerTauPt25to30_->fillHistograms(muTauPair, numVertices, evtWeight);
+      else if ( tauPt > 30.0 && tauPt < 40.0 ) histManagerTauPt30to40_->fillHistograms(muTauPair, numVertices, evtWeight);
+      else if ( tauPt > 40.0 && tauPt < 80.0 ) histManagerTauPtGt40_->fillHistograms(muTauPair, numVertices, evtWeight);
+      
+//--- fill histograms for tau id. efficiency measurement as function of sumEt
+      double sumEt = muTauPair.met()->sumEt();
+      if      ( sumEt <  75.0 ) histManagerSumEtLt75_->fillHistograms(muTauPair, numVertices, evtWeight);
+      else if ( sumEt < 150.0 ) histManagerSumEt75to150_->fillHistograms(muTauPair, numVertices, evtWeight);
+      else if ( sumEt < 225.0 ) histManagerSumEt150to225_->fillHistograms(muTauPair, numVertices, evtWeight);
+      else                      histManagerSumEtGt225_->fillHistograms(muTauPair, numVertices, evtWeight);
+      
+//--- fill histograms for tau id. efficiency measurement as function of reconstructed vertex multiplicity
+      if      ( numVertices <=  3 ) histManagerNumVerticesLeq3_->fillHistograms(muTauPair, numVertices, evtWeight);
+      else if ( numVertices <=  6 ) histManagerNumVertices4to6_->fillHistograms(muTauPair, numVertices, evtWeight);
+      else if ( numVertices <=  9 ) histManagerNumVertices7to9_->fillHistograms(muTauPair, numVertices, evtWeight);
+      else if ( numVertices <= 20 ) histManagerNumVerticesGt10_->fillHistograms(muTauPair, numVertices, evtWeight);
+
+      ++numMuTauPairs_selected_;
+      numMuTauPairsWeighted_selected_ += evtWeight;
+    }
+  }
   std::string process_;
   std::string region_;
   std::string tauIdName_;
+
   TauIdEffEventSelector* selector_;
+
   TauIdEffHistManager* histManager_;
+
+  TauIdEffHistManager* histManagerTauEtaLt15_;
+  TauIdEffHistManager* histManagerTauEta15to19_;
+  TauIdEffHistManager* histManagerTauEta19to23_;
+
+  TauIdEffHistManager* histManagerTauPtLt25_;
+  TauIdEffHistManager* histManagerTauPt25to30_;
+  TauIdEffHistManager* histManagerTauPt30to40_;
+  TauIdEffHistManager* histManagerTauPtGt40_;
+
+  TauIdEffHistManager* histManagerSumEtLt75_;
+  TauIdEffHistManager* histManagerSumEt75to150_;
+  TauIdEffHistManager* histManagerSumEt150to225_;
+  TauIdEffHistManager* histManagerSumEtGt225_;
+
+  TauIdEffHistManager* histManagerNumVerticesLeq3_;
+  TauIdEffHistManager* histManagerNumVertices4to6_;
+  TauIdEffHistManager* histManagerNumVertices7to9_;
+  TauIdEffHistManager* histManagerNumVerticesGt10_;
+
   int numMuTauPairs_selected_;
   double numMuTauPairsWeighted_selected_;
 };
@@ -124,6 +234,7 @@ int main(int argc, char* argv[])
   edm::InputTag srcTrigger = cfgTauIdEffAnalyzer.getParameter<edm::InputTag>("srcTrigger");
   vstring hltPaths = cfgTauIdEffAnalyzer.getParameter<vstring>("hltPaths");
   edm::InputTag srcGoodMuons = cfgTauIdEffAnalyzer.getParameter<edm::InputTag>("srcGoodMuons");
+  edm::InputTag srcVertices = cfgTauIdEffAnalyzer.getParameter<edm::InputTag>("srcVertices");
   typedef std::vector<edm::InputTag> vInputTag;
   vInputTag srcWeights = cfgTauIdEffAnalyzer.getParameter<vInputTag>("weights");
   std::string sysShift = cfgTauIdEffAnalyzer.exists("sysShift") ?
@@ -235,6 +346,10 @@ int main(int argc, char* argv[])
       size_t numGoodMuons = goodMuons->size();
 
       if ( isTriggered && numGoodMuons <= 1 ) {
+	
+	edm::Handle<reco::VertexCollection> vertices;
+	evt.getByLabel(srcVertices, vertices);
+	size_t numVertices = vertices->size();
 
 //--- iterate over collection of muon + tau-jet pairs
 	edm::Handle<PATMuTauPairCollection> muTauPairs;
@@ -244,14 +359,7 @@ int main(int argc, char* argv[])
 	      muTauPair != muTauPairs->end(); ++muTauPair ) {
 	  for ( std::vector<regionEntryType*>::iterator regionEntry = regionEntries.begin();
 		regionEntry != regionEntries.end(); ++regionEntry ) {
-	    //std::cout << "checking region = " << (*regionEntry)->region_ << std::endl;
-	    pat::strbitset evtSelFlags;
-	    if ( (*regionEntry)->selector_->operator()(*muTauPair, evtSelFlags) ) {
-	      //std::cout << "--> selection passed !!" << std::endl;
-	      (*regionEntry)->histManager_->fillHistograms(*muTauPair, evtWeight);
-	      ++(*regionEntry)->numMuTauPairs_selected_;
-	      (*regionEntry)->numMuTauPairsWeighted_selected_ += evtWeight;
-	    }
+	    (*regionEntry)->analyze(*muTauPair, numVertices, evtWeight);
 	  }
 	}
       }

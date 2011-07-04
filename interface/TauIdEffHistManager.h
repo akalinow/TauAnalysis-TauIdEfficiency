@@ -7,15 +7,15 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.2 $
+ * \version $Revision: 1.3 $
  *
- * $Id: TauIdEffHistManager.h,v 1.2 2011/07/01 18:30:16 veelken Exp $
+ * $Id: TauIdEffHistManager.h,v 1.3 2011/07/03 10:15:56 veelken Exp $
  *
  */
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
-#include "PhysicsTools/FWLite/interface/TFileService.h"
+#include "CommonTools/Utils/interface/TFileDirectory.h"
 
 #include "AnalysisDataFormats/TauAnalysis/interface/CompositePtrCandidateT1T2MEt.h"
 
@@ -30,8 +30,8 @@ class TauIdEffHistManager
   virtual ~TauIdEffHistManager();
 
   /// book and fill histograms
-  void bookHistograms(fwlite::TFileService&);
-  void fillHistograms(const PATMuTauPair&, double);
+  void bookHistograms(TFileDirectory&);
+  void fillHistograms(const PATMuTauPair&, size_t, double);
   
   /// scale all bin-contents/bin-errors by factor given as function argument
   /// (to account for events lost, due to aborted skimming/crab or PAT-tuple production/lxbatch jobs)
@@ -39,8 +39,8 @@ class TauIdEffHistManager
 
  protected:
 
-  TH1* book1D(fwlite::TFileService& fs, const std::string&, const std::string&, int, double, double);
-  TH1* book1D(fwlite::TFileService& fs, const std::string&, const std::string&, int, float*);
+  TH1* book1D(TFileDirectory&, const std::string&, const std::string&, int, double, double);
+  TH1* book1D(TFileDirectory&, const std::string&, const std::string&, int, float*);
 
   std::string getHistogramName(const std::string&);
 
@@ -66,6 +66,9 @@ class TauIdEffHistManager
   TH1* histogramMt_;
   TH1* histogramPzetaDiff_;
 
+  TH1* histogramSumEt_;
+  TH1* histogramNumVertices_;
+  
   std::vector<TH1*> histograms_;
 };
 
