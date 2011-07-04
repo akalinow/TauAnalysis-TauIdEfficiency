@@ -150,6 +150,8 @@ process.tauIdEffAnalyzer = cms.PSet(
     
     srcMuTauPairs = cms.InputTag('selectedMuPFTauHPSpairsDzForTauIdEffCumulative'),
 
+    srcVertices = cms.InputTag('offlinePrimaryVertices'),
+
     weights = cms.VInputTag(%s),
 
     # CV: 'srcEventCounter' is defined in TauAnalysis/Skimming/test/skimTauIdEffSample_cfg.py
