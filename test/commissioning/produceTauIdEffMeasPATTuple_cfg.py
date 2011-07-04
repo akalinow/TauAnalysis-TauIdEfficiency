@@ -33,7 +33,8 @@ process.patTupleOutputModule.outputCommands = cms.untracked.vstring(
     'keep *CompositePtrCandidateT1T2MEt*_selectedMuPFTauHPSpTaNCpairsDzForTauIdEffSysTauJetEnUpCumulative_*_*',
     'keep *CompositePtrCandidateT1T2MEt*_selectedMuPFTauHPSpTaNCpairsDzForTauIdEffSysTauJetEnDownCumulative_*_*',
     'keep *Vertex*_*_*_*',
-    'keep *_*_*muonHLTeff*_*'
+    'keep *_*_*muonHLTeff*_*',
+    'keep *_patPFMETs_*_*'     
 )
 
 from PhysicsTools.PatAlgos.patEventContent_cff import patTriggerEventContent
@@ -46,3 +47,6 @@ if isMC:
             'keep *_addPileupInfo_*_*'
         )
     )
+
+processDumpFile = open('produceTauIdEffMeasPATTuple.dump' , 'w')
+print >> processDumpFile, process.dumpPython()
