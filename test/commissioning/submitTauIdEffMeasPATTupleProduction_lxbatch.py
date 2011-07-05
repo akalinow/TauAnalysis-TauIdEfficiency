@@ -30,11 +30,20 @@ samplesToAnalyze = [
 ]
 
 #outputFilePath = "/castor/cern.ch/user/m/mverzett/tagprobe/patTuples_v6"
-outputFilePath = "/castor/cern.ch/user/v/veelken/CMSSW_4_2_x/PATtuples/TauIdEffMeas"
+outputFilePath = "/castor/cern.ch/user/m/mverzett/tagprobe/"
 
 # Get all the skim files from the castor directory
 skimFilePath = getBatchHarvestLocation(channel)
 skim_files = [ file_info['path'] for file_info in castor.nslsl(skimFilePath) ]
+
+if not os.path.isdir("lxbatch_pattuple"):
+    print 'Creating directory to store the lxbatch jobs: lxbatch_pattuple'
+    os.mkdir('lxbatch_pattuple')
+
+if not os.path.isdir("lxbatch_pat_log"):
+    print 'Creating directory to store the lxbatch logs: lxbatch_pat_log'
+    os.mkdir('lxbatch_pat_log')
+
 
 # Function that maps a sample name to its skim file
 def input_mapper(channel, sample, jobId):
@@ -96,16 +105,17 @@ for sampleToAnalyze in samplesToAnalyze:
                               samplesToAnalyze = [ sampleToAnalyze ],
                               disableFactorization = True, disableSysUncertainties = True, disableZrecoilCorrections = True,
                               # Options for local running
-                              cfgdir = 'lxbatch', 
+                              cfgdir = 'lxbatch_pattuple', 
                               inputFileMap = input_mapper,
                               outputFileMap = output_mapper,
                               outputDirectory = outputFilePath,
                               processName = 'lxbatch',
-                              saveFinalEvents = False)
+                              saveFinalEvents = False,
+                              jobExtention = "_PATTuple")
 
     # rename shell script and move to "./lxbatch" subdirectory
     shFileName_modified = shFileName.replace(jobId, "%s_%s" % (sampleToAnalyze, jobId))
-    subprocess.call("mv %s lxbatch/%s" % (shFileName, shFileName_modified), shell = True)
+    subprocess.call("mv %s lxbatch_pattuple/%s" % (shFileName, shFileName_modified), shell = True)
     shFileNames_modified.append(shFileName_modified)
 
     # move customized config file to "./lxbatch" subdirectory
@@ -113,15 +123,18 @@ for sampleToAnalyze in samplesToAnalyze:
     # NOTE: "TauAnalysis machinery" does not work if customized config file
     #       is created in "./lxbatch" subdirectory from the start
     #
-    subprocess.call("mv %s lxbatch" % configFile_customized, shell = True)
+    subprocess.call("mv %s lxbatch_pattuple" % configFile_customized, shell = True)
 
 # create "master" shell script
 shFileName_master = "submit_lxbatch_PATTuple_analysis_all_%s.sh" % jobId
 shFile_master = open(shFileName_master, "w")
 for shFileName_modified in shFileNames_modified:
-    shFile_master.write("source lxbatch/%s\n" % shFileName_modified)
+    shFile_master.write("source lxbatch_pattuple/%s\n" % shFileName_modified)
 shFile_master.close()
+
+os.system("./swapLogsToPatDir.sh")
 
 print "\n"
 print "Run ./%s to submit **all** jobs" % shFileName_master
 os.chmod(shFileName_master, 0755)
+
