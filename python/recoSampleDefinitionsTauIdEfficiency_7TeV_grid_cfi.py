@@ -55,7 +55,8 @@ TauIdEfficiencySpecific_RECO_SAMPLES = {
         },
         'enableSysUncertainties' : False,
         'enableFakeRates' : True,
-        'hlt' : cms.InputTag("TriggerResults", "", "HLT")
+        'hlt' : cms.InputTag("TriggerResults", "", "HLT"),
+        'SE_black_list' : 'T2_US_UCSD'
     },
     'data_SingleMu_Run2011A_PromptReco_v4' : {
         'datasetpath' : "/SingleMu/Run2011A-PromptReco-v4/AOD",
@@ -76,7 +77,8 @@ TauIdEfficiencySpecific_RECO_SAMPLES = {
         },
         'enableSysUncertainties' : False,
         'enableFakeRates' : True,
-        'hlt' : cms.InputTag("TriggerResults", "", "HLT")
+        'hlt' : cms.InputTag("TriggerResults", "", "HLT"),
+        'SE_black_list' : 'T2_US_UCSD'
     }
 }
 RECO_SAMPLES.update(TauIdEfficiencySpecific_RECO_SAMPLES)
@@ -126,10 +128,22 @@ MERGE_SAMPLES = {
     }
 }
 
+ALL_SAMPLES = {}
+# Update to use the defaults if necessary
+for sample in RECO_SAMPLES.keys():
+    defaults = copy.copy(ZtoMuTau.SAMPLE_DEFAULTS)
+    defaults.update(RECO_SAMPLES[sample])
+    RECO_SAMPLES[sample] = defaults
+    # Combine MERGE and RECO samples in ALL samples
+    # for simple access
+    ALL_SAMPLES.update(MERGE_SAMPLES)
+    ALL_SAMPLES.update(RECO_SAMPLES)
+
 recoSampleDefinitionsTauIdEfficiency_7TeV = {
     'SAMPLES_TO_ANALYZE' : SAMPLES_TO_ANALYZE,
     'SAMPLE_DEFAULTS' : ZtoMuTau.SAMPLE_DEFAULTS,
     'TARGET_LUMI' : TARGET_LUMI,
     'RECO_SAMPLES' : RECO_SAMPLES,
-    'MERGE_SAMPLES' : MERGE_SAMPLES
+    'MERGE_SAMPLES' : MERGE_SAMPLES,
+    'ALL_SAMPLES' : ALL_SAMPLES
 }

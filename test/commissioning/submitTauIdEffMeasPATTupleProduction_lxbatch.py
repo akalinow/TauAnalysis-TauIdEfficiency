@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from TauAnalysis.Configuration.recoSampleDefinitionsZtoMuTau_7TeV_grid_cfi import recoSampleDefinitionsZtoMuTau_7TeV
+from TauAnalysis.TauIdEfficiency.recoSampleDefinitionsTauIdEfficiency_7TeV_grid_cfi import recoSampleDefinitionsTauIdEfficiency_7TeV
 from TauAnalysis.Configuration.submitAnalysisToLXBatch import submitAnalysisToLXBatch
 from TauAnalysis.Configuration.userRegistry import getAnalysisFilePath, getJobId, getBatchHarvestLocation, getHarvestingFilePath
 import TauAnalysis.Configuration.tools.castor as castor
@@ -12,7 +12,7 @@ channel = 'ZtoMuTau_tauIdEff'
 configFile = 'produceTauIdEffMeasPATTuple_cfg.py'
 analysisFilePath = getAnalysisFilePath(channel)
 #jobId = getJobId(channel)
-jobId = '2011May20'
+jobId = '2011Jul01_mauro'
 
 version = "V1"
 
@@ -20,18 +20,17 @@ pfCandidateCollection = "particleFlow" # pile-up removal disabled
 #pfCandidateCollection = "pfNoPileUp"   # pile-up removal enabled
 
 samplesToAnalyze = [
-    'data_SingleMu_Run2011A_PromptReco_v1',
-    'data_SingleMu_Run2011A_PromptReco_v2',
-    'DYtautauM10to20_powheg',
-    'Ztautau_powheg',
-    'qqZll',
-    'DYmumuM10to20_pythia',
-    'Zmumu_powheg',
+    'data_SingleMu_Run2011A_May10ReReco_v1',
+    'data_SingleMu_Run2011A_PromptReco_v4',
+    'Ztautau_pythia',
+    'Zmumu_pythia',
+    'PPmuXptGt20Mu15',
     'WplusJets_madgraph',
     'TTplusJets_madgraph'
 ]
 
-outputFilePath = "/castor/cern.ch/user/m/mverzett/tagprobe/patTuples_v6"
+#outputFilePath = "/castor/cern.ch/user/m/mverzett/tagprobe/patTuples_v6"
+outputFilePath = "/castor/cern.ch/user/v/veelken/CMSSW_4_2_x/PATtuples/TauIdEffMeas"
 
 # Get all the skim files from the castor directory
 skimFilePath = getBatchHarvestLocation(channel)
@@ -40,9 +39,9 @@ skim_files = [ file_info['path'] for file_info in castor.nslsl(skimFilePath) ]
 # Function that maps a sample name to its skim file
 def input_mapper(channel, sample, jobId):
     for input_file in skim_files:
-#        print " unmatched file: %s" % input_file
+        #print " unmatched file: %s" % input_file
         if input_file.find('skim_' + sample + '_chunk') != -1:
-#            print "--> matched file: %s" % input_file
+            #print "--> matched file: %s" % input_file
             yield input_file
 
 # Define what output ntuple file name a sample will have
@@ -58,17 +57,17 @@ def customizeConfigFile(sampleName, cfgFileName_original, cfgFileName_modified =
 
     cfg_modified = cfg_original.replace("#__", "")
     isMC = "False"
-    if recoSampleDefinitionsZtoMuTau_7TeV['RECO_SAMPLES'][sampleName]['type'] != 'Data':
+    if recoSampleDefinitionsTauIdEfficiency_7TeV['RECO_SAMPLES'][sampleName]['type'] != 'Data':
         isMC = "True"
     cfg_modified = cfg_modified.replace("#isMC#", isMC)
     HLTprocessName = 'HLT'
-    if 'hlt' in recoSampleDefinitionsZtoMuTau_7TeV['RECO_SAMPLES'][sampleName].keys():
-        HLTprocessName = recoSampleDefinitionsZtoMuTau_7TeV['RECO_SAMPLES'][sampleName]['hlt'].getProcessName()
+    if 'hlt' in recoSampleDefinitionsTauIdEfficiency_7TeV['RECO_SAMPLES'][sampleName].keys():
+        HLTprocessName = recoSampleDefinitionsTauIdEfficiency_7TeV['RECO_SAMPLES'][sampleName]['hlt'].getProcessName()
     cfg_modified = cfg_modified.replace("#HLTprocessName#", "'%s'" % HLTprocessName)
     cfg_modified = cfg_modified.replace("#pfCandidateCollection#", "'%s'" % pfCandidateCollection)
     applyZrecoilCorrection = "False"
-    if 'applyZrecoilCorrection' in recoSampleDefinitionsZtoMuTau_7TeV['RECO_SAMPLES'][sampleName].keys() and \
-      recoSampleDefinitionsZtoMuTau_7TeV['RECO_SAMPLES'][sampleName]['applyZrecoilCorrection']:
+    if 'applyZrecoilCorrection' in recoSampleDefinitionsTauIdEfficiency_7TeV['RECO_SAMPLES'][sampleName].keys() and \
+      recoSampleDefinitionsTauIdEfficiency_7TeV['RECO_SAMPLES'][sampleName]['applyZrecoilCorrection']:
         applyZrecoilCorrection = "True"                
     cfg_modified = cfg_modified.replace("#applyZrecoilCorrection#", "%s" % applyZrecoilCorrection)
 
@@ -81,7 +80,7 @@ def customizeConfigFile(sampleName, cfgFileName_original, cfgFileName_modified =
     return cfgFileName_modified
 
 if len(samplesToAnalyze) == 0:
-    samplesToAnalyze = recoSampleDefinitionsZtoMuTau_7TeV['SAMPLES_TO_ANALYZE']
+    samplesToAnalyze = recoSampleDefinitionsTauIdEfficiency_7TeV['SAMPLES_TO_ANALYZE']
 
 shFileNames_modified = []
 
@@ -93,11 +92,11 @@ for sampleToAnalyze in samplesToAnalyze:
     # apply further modifications and submit job to lxbatch
     shFileName = \
       submitAnalysisToLXBatch(configFile = configFile_customized, channel = channel,
-                              samples = recoSampleDefinitionsZtoMuTau_7TeV,
+                              samples = recoSampleDefinitionsTauIdEfficiency_7TeV,
                               samplesToAnalyze = [ sampleToAnalyze ],
                               disableFactorization = True, disableSysUncertainties = True, disableZrecoilCorrections = True,
                               # Options for local running
-                              cfgdir = 'lxbatch_pattuple', 
+                              cfgdir = 'lxbatch', 
                               inputFileMap = input_mapper,
                               outputFileMap = output_mapper,
                               outputDirectory = outputFilePath,
@@ -106,7 +105,7 @@ for sampleToAnalyze in samplesToAnalyze:
 
     # rename shell script and move to "./lxbatch" subdirectory
     shFileName_modified = shFileName.replace(jobId, "%s_%s" % (sampleToAnalyze, jobId))
-    subprocess.call("mv %s lxbatch_pattuple/%s" % (shFileName, shFileName_modified), shell = True)
+    subprocess.call("mv %s lxbatch/%s" % (shFileName, shFileName_modified), shell = True)
     shFileNames_modified.append(shFileName_modified)
 
     # move customized config file to "./lxbatch" subdirectory
@@ -114,13 +113,13 @@ for sampleToAnalyze in samplesToAnalyze:
     # NOTE: "TauAnalysis machinery" does not work if customized config file
     #       is created in "./lxbatch" subdirectory from the start
     #
-    subprocess.call("mv %s lxbatch_pattuple" % configFile_customized, shell = True)
+    subprocess.call("mv %s lxbatch" % configFile_customized, shell = True)
 
 # create "master" shell script
 shFileName_master = "submit_lxbatch_PATTuple_analysis_all_%s.sh" % jobId
 shFile_master = open(shFileName_master, "w")
 for shFileName_modified in shFileNames_modified:
-    shFile_master.write("source lxbatch_pattuple/%s\n" % shFileName_modified)
+    shFile_master.write("source lxbatch/%s\n" % shFileName_modified)
 shFile_master.close()
 
 print "\n"
