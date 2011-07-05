@@ -8,9 +8,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.2 $
+ * \version $Revision: 1.3 $
  *
- * $Id: TauIdEffEventSelector.h,v 1.2 2011/07/01 18:30:16 veelken Exp $
+ * $Id: TauIdEffEventSelector.h,v 1.3 2011/07/02 14:55:18 veelken Exp $
  *
  */
 
@@ -33,6 +33,8 @@ class TauIdEffEventSelector : public EventSelector
   /// here is where the selection occurs
   bool operator()(const edm::EventBase& event, pat::strbitset& result) { return true; }
   bool operator()(const PATMuTauPair& muTauPair, pat::strbitset& result);
+
+  friend class regionEntryType; // allow regionEntryType to overwrite cut values
 
  private:
 

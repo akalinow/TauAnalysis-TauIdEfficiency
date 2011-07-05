@@ -21,12 +21,13 @@ TauIdEffEventSelector::TauIdEffEventSelector(const edm::ParameterSet& cfg)
   muonRelIsoMax_            =   0.30;
   tauPtMin_                 =  20.0;   // CV: cut is actually applied on PFJet Pt, not PFTau Pt
   tauPtMax_                 =  +1.e+3; 
-  tauEtaMin_                =  -2.1;
-  tauEtaMax_                =  +2.1;  
+  tauEtaMin_                =  -2.3;
+  tauEtaMax_                =  +2.3;  
   tauLeadTrackPtMin_        =   5.0; 
   tauAbsIsoMin_             =  -1.e+3;
   tauAbsIsoMax_             =   2.5;
-  muTauPairAbsDzMax_        =  +1.e+3;
+  //muTauPairAbsDzMax_        =  +1.e+3;
+  muTauPairAbsDzMax_        =   0.2; // 2mm
   muTauPairChargeProdMin_   =  -1.e+3;
   muTauPairChargeProdMax_   =  +1.e+3; 
   MtMin_                    =  -1.e+3;
@@ -87,6 +88,19 @@ std::string getCutStatus_string(int cut)
   else assert(0);
 }
 
+void printCutValue(const std::string& variable, double value, double min, double max)
+{
+  std::cout << variable << " = " << value;
+  std::cout << " (";
+  if   ( min <= -1.e+3 ) std::cout << "-infinity";
+  else                   std::cout << min;
+  std::cout << "..";
+  if   ( max >= +1.e+3 ) std::cout << "+infinity";
+  else                   std::cout << max;
+  std::cout << ")";
+  std::cout << std::endl;
+}
+
 bool TauIdEffEventSelector::operator()(const PATMuTauPair& muTauPair, pat::strbitset& result)
 {
   //std::cout << "<TauIdEffEventSelector::operator()>:" << std::endl;
@@ -103,10 +117,13 @@ bool TauIdEffEventSelector::operator()(const PATMuTauPair& muTauPair, pat::strbi
   double visMass             = (muTauPair.leg1()->p4() + muTauPair.leg2()->p4()).mass();
   double Mt                  = muTauPair.mt1MET();
   double PzetaDiff           = muTauPair.pZeta() - 1.5*muTauPair.pZetaVis();
-  
-  //std::cout << "muTauPairChargeProd = " << muTauPairChargeProd << std::endl;
-  //std::cout << "Mt = " << Mt << std::endl;
-  //std::cout << "PzetaDiff = " << PzetaDiff << std::endl;
+
+  //printCutValue("tauLeadTrackPt", tauLeadTrackPt, tauLeadTrackPtMin_, +1.e+3);
+  //printCutValue("tauIso", tauIso, tauAbsIsoMin_, tauAbsIsoMax_); 
+  //printCutValue("muTauPairAbsDz", muTauPairAbsDz, -1.e+3, muTauPairAbsDzMax_);
+  //printCutValue("muTauPairChargeProd", muTauPairChargeProd, muTauPairChargeProdMin_, muTauPairChargeProdMax_);
+  //printCutValue("Mt", Mt, TMath::Min(MtMin_, MtCutoffMin_), TMath::Max(MtMax_, MtCutoffMax_));
+  //printCutValue("PzetaDiff", PzetaDiff, PzetaDiffMin_, PzetaDiffMax_);
 
   //std::cout << "MtAndPzetaDiffCut = " << getCutStatus_string(MtAndPzetaDiffCut_) << std::endl;
   //std::cout << "tauIdDiscriminatorCut = " << getCutStatus_string(tauIdDiscriminatorCut_) << std::endl;

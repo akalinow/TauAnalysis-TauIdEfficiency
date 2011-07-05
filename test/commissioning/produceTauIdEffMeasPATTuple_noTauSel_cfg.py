@@ -12,14 +12,15 @@ for processAttrName in dir(process):
 if hasattr(process.patTupleOutputModule, "SelectEvents"):
     delattr(process.patTupleOutputModule, "SelectEvents")
 
-process.source.fileNames = cms.untracked.vstring(
-    'file:/data1/veelken/CMSSW_4_2_x/skims/skimGenZtoMuTauWithinAcc_Ztautau_2011Jun30v2_AOD.root'
-)   
-process.patTupleOutputModule.fileName = cms.untracked.string(
-    '/data1/veelken/CMSSW_4_2_x/PATtuples/tauIdEffMeasPATtupleGenZtoMuTauWithinAcc_Ztautau_2011Jun30v2.root'
-)
+##process.source.fileNames = cms.untracked.vstring(
+##    'file:/data1/veelken/CMSSW_4_2_x/skims/skimGenZtoMuTauWithinAcc_Ztautau_2011Jun30v2__C1sel_AOD.root'
+##)
+##process.source.eventsToProcess = cms.untracked.VEventRange('1:2950:1911182')
+##process.patTupleOutputModule.fileName = cms.untracked.string(
+##    'debug.root'
+##)
 
-processDumpFile = open('produceTauIdEffMeasPATTuple_noTauPresel.dump' , 'w')
+processDumpFile = open('produceTauIdEffMeasPATTuple_noTauSel.dump' , 'w')
 print >> processDumpFile, process.dumpPython()
 
 

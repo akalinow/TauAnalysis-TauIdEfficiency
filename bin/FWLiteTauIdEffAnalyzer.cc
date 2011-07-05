@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.6 $
+ * \version $Revision: 1.7 $
  *
- * $Id: FWLiteTauIdEffAnalyzer.cc,v 1.6 2011/07/04 09:51:23 veelken Exp $
+ * $Id: FWLiteTauIdEffAnalyzer.cc,v 1.7 2011/07/05 07:28:47 veelken Exp $
  *
  */
 
@@ -58,7 +58,9 @@ struct regionEntryType
 		  const vstring& tauIdDiscriminators, const std::string& tauIdName, const std::string& sysShift)
     : process_(process),
       region_(region),
+      tauIdDiscriminators_(tauIdDiscriminators),
       tauIdName_(tauIdName),
+      sysShift_(sysShift),
       selector_(0),
       histManager_(0),
       histManagerTauEtaLt15_(0),
@@ -80,21 +82,20 @@ struct regionEntryType
       numMuTauPairsWeighted_selected_(0.)
   {
     edm::ParameterSet cfgSelector;
-    cfgSelector.addParameter<vstring>("tauIdDiscriminators", tauIdDiscriminators);
-    cfgSelector.addParameter<std::string>("region", region);
+    cfgSelector.addParameter<vstring>("tauIdDiscriminators", tauIdDiscriminators_);
+    cfgSelector.addParameter<std::string>("region", region_);
 
     selector_ = new TauIdEffEventSelector(cfgSelector);
 
     edm::ParameterSet cfgHistManager;
-    cfgHistManager.addParameter<std::string>("process", process);
-    cfgHistManager.addParameter<std::string>("region", region);
-    cfgHistManager.addParameter<std::string>("tauIdDiscriminator", tauIdName);
-    std::string label;
-    if      ( region.find("p") != std::string::npos ) label = "passed";
-    else if ( region.find("f") != std::string::npos ) label = "failed";
-    else                                              label = "all";
-    if ( sysShift != "CENTRAL_VALUE" ) label.append("_").append(sysShift);
-    cfgHistManager.addParameter<std::string>("label", label);
+    cfgHistManager.addParameter<std::string>("process", process_);
+    cfgHistManager.addParameter<std::string>("region", region_);
+    cfgHistManager.addParameter<std::string>("tauIdDiscriminator", tauIdName_);
+    if      ( region.find("p") != std::string::npos ) label_ = "passed";
+    else if ( region.find("f") != std::string::npos ) label_ = "failed";
+    else                                              label_ = "all";
+    if ( sysShift_ != "CENTRAL_VALUE" ) label_.append("_").append(sysShift_);
+    cfgHistManager.addParameter<std::string>("label", label_);
 
     histManager_                = addHistManager(fs, "",                cfgHistManager);
 
@@ -120,7 +121,27 @@ struct regionEntryType
   ~regionEntryType()
   {
     delete selector_;
+
     delete histManager_;
+
+    delete histManagerTauEtaLt15_;
+    delete histManagerTauEta15to19_;
+    delete histManagerTauEta19to23_;
+
+    delete histManagerTauPtLt25_;
+    delete histManagerTauPt25to30_;
+    delete histManagerTauPt30to40_;
+    delete histManagerTauPtGt40_;
+
+    delete histManagerSumEtLt250_;
+    delete histManagerSumEt250to350_;
+    delete histManagerSumEt350to450_;
+    delete histManagerSumEtGt450_;
+
+    delete histManagerNumVerticesLeq4_;
+    delete histManagerNumVertices5to6_;
+    delete histManagerNumVertices7to8_;
+    delete histManagerNumVerticesGt8_;
   }
   TauIdEffHistManager* addHistManager(fwlite::TFileService& fs, const std::string& dirName, const edm::ParameterSet& cfg)
   {
@@ -172,9 +193,13 @@ struct regionEntryType
       numMuTauPairsWeighted_selected_ += evtWeight;
     }
   }
+
   std::string process_;
   std::string region_;
+  vstring tauIdDiscriminators_;
   std::string tauIdName_;
+  std::string sysShift_;
+  std::string label_;
 
   TauIdEffEventSelector* selector_;
 
@@ -223,7 +248,7 @@ int main(int argc, char* argv[])
 
 //--- read python configuration parameters
   if ( !edm::readPSetsFrom(argv[1])->existsAs<edm::ParameterSet>("process") ) 
-    throw cms::Exception("TauIdEffEventSelector") 
+    throw cms::Exception("FWLiteTauIdEffAnalyzer") 
       << "No ParameterSet 'process' found in configuration file = " << argv[1] << " !!\n";
 
   edm::ParameterSet cfg = edm::readPSetsFrom(argv[1])->getParameter<edm::ParameterSet>("process");
@@ -291,7 +316,7 @@ int main(int argc, char* argv[])
 //--- open input file
     TFile* inputFile = TFile::Open(inputFileName->data());
     if ( !inputFile ) 
-      throw cms::Exception("TauIdEffEventSelector") 
+      throw cms::Exception("FWLiteTauIdEffAnalyzer") 
 	<< "Failed to open inputFile = " << (*inputFileName) << " !!\n";
 
     std::cout << " opening inputFile = " << (*inputFileName);
@@ -392,7 +417,8 @@ int main(int argc, char* argv[])
   }
 
   std::cout << "<FWLiteTauIdEffAnalyzer>:" << std::endl;
-  std::cout << " numEvents_processed: " << numEvents_processed << std::endl;
+  std::cout << " numEvents_processed: " << numEvents_processed 
+	    << " (weighted = " << numEventsWeighted_processed << ")" << std::endl;
   std::string lastTauIdName = "";
   for ( std::vector<regionEntryType*>::iterator regionEntry = regionEntries.begin();
 	regionEntry != regionEntries.end(); ++regionEntry ) {

@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.6 $
+ * \version $Revision: 1.1 $
  *
- * $Id: FWLiteTauIdEffPreselNumbers.cc,v 1.6 2011/07/04 09:51:23 veelken Exp $
+ * $Id: FWLiteTauIdEffPreselNumbers.cc,v 1.1 2011/07/05 12:30:16 veelken Exp $
  *
  */
 
@@ -41,6 +41,7 @@
 
 #include "TauAnalysis/TauIdEfficiency/interface/TauIdEffEventSelector.h"
 #include "TauAnalysis/TauIdEfficiency/interface/TauIdEffCutFlowTable.h"
+#include "TauAnalysis/CandidateTools/interface/generalAuxFunctions.h"
 
 #include "AnalysisDataFormats/TauAnalysis/interface/CompositePtrCandidateT1T2MEt.h"
 #include "AnalysisDataFormats/TauAnalysis/interface/CompositePtrCandidateT1T2MEtFwd.h"
@@ -125,6 +126,13 @@ struct regionEntryType
 
     selector_ = new TauIdEffEventSelector(cfgSelector);
 
+//--- disable preselection cuts applied on tau-jet candidates
+    selector_->tauLeadTrackPtMin_      =  -1.e+3; 
+    selector_->tauAbsIsoMax_           =  +1.e+3;
+    selector_->muTauPairAbsDzMax_      =  +1.e+3;
+    selector_->muTauPairChargeProdMin_ =  -1.e+3;
+    selector_->muTauPairChargeProdMax_ =  +1.e+3; 
+    
     tauIdFlags_.resize(6 + tauIdDiscriminators_.size());
     
     edm::ParameterSet cfgCutFlowTable;
@@ -201,23 +209,28 @@ struct regionEntryType
   }
   void analyze(const PATMuTauPair& muTauPair, int genMatchType, size_t numVertices, double evtWeight)
   {
+    //std::cout << "<cutFlowEntryType::analyze>:" << std::endl;
+
     pat::strbitset evtSelFlags;
     if ( selector_->operator()(muTauPair, evtSelFlags) ) {
 
 //--- set flags indicating whether tau-jet candidate passes 
 //    "leading" track finding, leading track Pt and loose (PF)isolation requirements 
 //    plus tau id. discriminators
-      tauIdFlags_[0] = 1;
+      tauIdFlags_[0] = true;
       tauIdFlags_[1] = (muTauPair.leg2()->userFloat("hasLeadTrack")       > 0.5);
-      tauIdFlags_[2] = (muTauPair.leg2()->userFloat("leadTrackPt")        > 5.0);
+      tauIdFlags_[2] = (muTauPair.leg2()->userFloat("leadTrackPt")        > 5.0);      
       tauIdFlags_[3] = (muTauPair.leg2()->userFloat("preselLoosePFIsoPt") < 2.5);
       tauIdFlags_[4] = (muTauPair.leg2()->userFloat("PFElectronMVA")      < 0.6);
       tauIdFlags_[5] = (muTauPair.leg2()->userFloat("dRnearestMuon")      > 0.5);
       int idx = 6;
       for ( vstring::const_iterator tauIdDiscriminator = tauIdDiscriminators_.begin();
 	    tauIdDiscriminator != tauIdDiscriminators_.end(); ++tauIdDiscriminator, ++idx ) {
-	tauIdFlags_[idx] = (muTauPair.leg2()->userFloat(tauIdDiscriminator->data()) > 0.5);
+	//std::cout << " tauIdDiscriminator = " << (*tauIdDiscriminator) << ":" 
+	//	    << " " << muTauPair.leg2()->tauID(tauIdDiscriminator->data()) << std::endl;
+	tauIdFlags_[idx] = (muTauPair.leg2()->tauID(tauIdDiscriminator->data()) > 0.5);
       }
+      //std::cout << "tauIdFlags = " << format_vbool(tauIdFlags_) << std::endl;
 
 //--- fill histograms for "inclusive" tau id. efficiency measurement
       cutFlow_->fillCutFlowTables(0., tauIdFlags_, genMatchType, evtWeight);
@@ -378,6 +391,8 @@ int main(int argc, char* argv[])
     fwlite::Event evt(inputFile);
     for ( evt.toBegin(); !(evt.atEnd() || maxEvents_processed); ++evt ) {
 
+      //std::cout << "processing event " << evt.id().event() << ", run " << evt.id().run() << std::endl;
+
 //--- check that event has passed triggers
       edm::Handle<pat::TriggerEvent> hltEvent;
       evt.getByLabel(srcTrigger, hltEvent);
@@ -392,6 +407,7 @@ int main(int argc, char* argv[])
 	  if ( hltPath && hltPath->wasAccept() ) isTriggered = true;
 	}
       }
+      //std::cout << "isTriggered = " << isTriggered << std::endl;
 
 //--- compute event weight
 //   (pile-up reweighting, Data/MC correction factors,...)
@@ -402,6 +418,7 @@ int main(int argc, char* argv[])
 	evt.getByLabel(*srcWeight, weight);
 	evtWeight *= (*weight);
       }
+      //std::cout << "evtWeight = " << evtWeight << std::endl;
 
 //--- require event to pass trigger requirements
 //    and to contain only one "good quality" muon
@@ -409,9 +426,10 @@ int main(int argc, char* argv[])
       edm::Handle<PATMuonCollection> goodMuons;
       evt.getByLabel(srcGoodMuons, goodMuons);
       size_t numGoodMuons = goodMuons->size();
+      //std::cout << "numGoodMuons = " << numGoodMuons << std::endl;
 
       if ( isTriggered && numGoodMuons <= 1 ) {
-	
+
 	edm::Handle<reco::VertexCollection> vertices;
 	evt.getByLabel(srcVertices, vertices);
 	size_t numVertices = vertices->size();
@@ -423,11 +441,28 @@ int main(int argc, char* argv[])
 	edm::Handle<reco::GenParticleCollection> genParticles;
 	evt.getByLabel(srcGenParticles, genParticles);
 
+	int muTauPairIdx = 0;
 	for ( PATMuTauPairCollection::const_iterator muTauPair = muTauPairs->begin();
-	      muTauPair != muTauPairs->end(); ++muTauPair ) {
+	      muTauPair != muTauPairs->end(); ++muTauPair, ++muTauPairIdx ) {
 	  int genMatchType = getGenMatchType(*muTauPair, *genParticles);
 	  for ( std::vector<regionEntryType*>::iterator regionEntry = regionEntries.begin();
-		regionEntry != regionEntries.end(); ++regionEntry ) {
+		regionEntry != regionEntries.end(); ++regionEntry ) {   
+/* 
+	    if ( (*regionEntry)->region_ == "C1" ) {
+	      pat::strbitset evtSelFlags;
+	      if ( genMatchType == kTauHadMatched || (*regionEntry)->selector_->operator()(*muTauPair, evtSelFlags) ) {
+	    	std::cout << "muTauPair #" << muTauPairIdx << std::endl;
+	    	std::cout << " leg1: Pt = " << muTauPair->leg1()->pt() << "," 
+	    		  << " eta = " << muTauPair->leg1()->eta() << ", phi = " << muTauPair->leg1()->phi() << std::endl;
+	    	std::cout << " leg2: Pt = " << muTauPair->leg2()->pt() << "," 
+	    		  << " eta = " << muTauPair->leg2()->eta() << ", phi = " << muTauPair->leg2()->phi();
+	    	if      ( genMatchType == kTauHadMatched  ) std::cout << " ('true' hadronic tau decay)";
+	    	else if ( genMatchType == kFakeTauMatched ) std::cout << " (tau fake)"; 
+	    	else                                        std::cout << " (no gen. match)"; 
+	    	std::cout << std::endl;
+	      }
+	    }
+ */
 	    (*regionEntry)->analyze(*muTauPair, genMatchType, numVertices, evtWeight);
 	  }
 	}
@@ -446,6 +481,21 @@ int main(int argc, char* argv[])
   std::cout << "<FWLiteTauIdEffPreselNumbers>:" << std::endl;
   std::cout << " numEvents_processed: " << numEvents_processed 
 	    << " (weighted = " << numEventsWeighted_processed << ")" << std::endl;
+  for ( std::vector<regionEntryType*>::iterator regionEntry = regionEntries.begin();
+	regionEntry != regionEntries.end(); ++regionEntry ) {
+    std::cout << " region " << (*regionEntry)->region_ << ", " << (*regionEntry)->tauIdName_ << std::endl;
+    TauIdEffCutFlowTable* cutFlowTableTauHadMatched = (*regionEntry)->cutFlow_->cutFlowTauHadMatched_;
+    double effPreselection = cutFlowTableTauHadMatched->getCutFlowNumber(0, 5)/
+                             cutFlowTableTauHadMatched->getCutFlowNumber(0, 0);
+    std::cout << "  eff(preselection) = " << effPreselection << std::endl;
+    double effTauId = cutFlowTableTauHadMatched->getCutFlowNumber(0, 5 + (*regionEntry)->tauIdDiscriminators_.size())/
+                      cutFlowTableTauHadMatched->getCutFlowNumber(0, 5);
+    std::cout << "  eff(tauId) = " << effTauId << std::endl;
+    TauIdEffCutFlowTable* cutFlowTableFakeTauMatched = (*regionEntry)->cutFlow_->cutFlowFakeTauMatched_;
+    double purity = cutFlowTableTauHadMatched->getCutFlowNumber(0, 5)/
+                   (cutFlowTableTauHadMatched->getCutFlowNumber(0, 5) + cutFlowTableFakeTauMatched->getCutFlowNumber(0, 5));
+    std::cout << "  purity = " << purity << std::endl;
+  }
 
   clock.Show("FWLiteTauIdEffPreselNumbers");
 

@@ -14,7 +14,7 @@ analysisFilePath = getAnalysisFilePath(channel)
 #jobId = getJobId(channel)
 jobId = '2011Jul01_mauro'
 
-version = "V1"
+version = "V2"
 
 pfCandidateCollection = "particleFlow" # pile-up removal disabled
 #pfCandidateCollection = "pfNoPileUp"   # pile-up removal enabled
