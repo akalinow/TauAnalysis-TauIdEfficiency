@@ -71,7 +71,7 @@ def buildSequenceTauIdEffMeasSpecific(process,
     process.load("RecoTauTag.RecoTau.PFRecoTauQualityCuts_cfi")
     process.load("TauAnalysis.RecoTools.patLeptonPFIsolationSelector_cfi")
     selectedPatPFTausForTauIdEffName = \
-        "selectedPat%ss%sForTauIdEff" % (tauIdAlgorithmName[0], tauIdAlgorithmName[1])
+        composeModuleName(["selectedPat%ss%s" % (tauIdAlgorithmName[0], tauIdAlgorithmName[1]), "ForTauIdEff"])
     selectedPatPFTausForTauIdEff = cms.EDFilter("PATPFTauSelectorForTauIdEff",
         minJetPt = cms.double(20.0),
         maxJetEta = cms.double(2.3),
