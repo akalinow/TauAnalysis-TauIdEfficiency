@@ -1,14 +1,14 @@
 
-/** \class FWLiteTauIdEffPreselNumbers
+/** \executable FWLiteTauIdEffPreselNumbers
  *
  * Determine efficiency of "leading" track finding, leading track Pt and loose (PF)isolation requirements 
  * applied in preselection of tau-jet candidates considered for tau id. efficiency measurement.
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.1 $
+ * \version $Revision: 1.2 $
  *
- * $Id: FWLiteTauIdEffPreselNumbers.cc,v 1.1 2011/07/05 12:30:16 veelken Exp $
+ * $Id: FWLiteTauIdEffPreselNumbers.cc,v 1.2 2011/07/05 17:07:22 veelken Exp $
  *
  */
 
@@ -53,6 +53,7 @@
 #include <TBenchmark.h>
 
 typedef std::vector<std::string> vstring;
+typedef std::vector<bool> vbool;
 
 enum { kUnmatched, kTauHadMatched, kFakeTauMatched };
 
@@ -62,45 +63,75 @@ struct cutFlowEntryType
   {
     std::string label = cfg.getParameter<std::string>("label");
 
+    vstring selectionNamesReversed = cfg.getParameter<vstring>("selectionNamesReversed");
+
     edm::ParameterSet cfgTauHadMatched = cfg;
     std::string labelTauHadMatched = std::string(label).append("TauHadMatched");
     cfgTauHadMatched.addParameter<std::string>("label", labelTauHadMatched);
     cutFlowTauHadMatched_ = new TauIdEffCutFlowTable(cfgTauHadMatched);
+    edm::ParameterSet cfgTauHadMatchedReversed = cfg;
+    std::string labelTauHadMatchedReversed = std::string(label).append("TauHadMatchedReversed");
+    cfgTauHadMatchedReversed.addParameter<std::string>("label", labelTauHadMatchedReversed);
+    cfgTauHadMatchedReversed.addParameter<vstring>("selectionNames", selectionNamesReversed);
+    cutFlowTauHadMatchedReversed_ = new TauIdEffCutFlowTable(cfgTauHadMatchedReversed);
+
     edm::ParameterSet cfgFakeTauMatched = cfg;
     std::string labelFakeTauMatched = std::string(label).append("FakeTauMatched");
     cfgFakeTauMatched.addParameter<std::string>("label", labelFakeTauMatched);
     cutFlowFakeTauMatched_ = new TauIdEffCutFlowTable(cfgFakeTauMatched);
+    edm::ParameterSet cfgFakeTauMatchedReversed = cfg;
+    std::string labelFakeTauMatchedReversed = std::string(label).append("FakeTauMatchedReversed");
+    cfgFakeTauMatchedReversed.addParameter<vstring>("selectionNames", selectionNamesReversed);
+    cutFlowFakeTauMatchedReversed_ = new TauIdEffCutFlowTable(cfgFakeTauMatchedReversed);
 
     edm::ParameterSet cfgNoMatchingApplied = cfg;
     std::string labelNoMatchingApplied = std::string(label).append("NoMatchingApplied");
     cfgNoMatchingApplied.addParameter<std::string>("label", labelNoMatchingApplied);
     cutFlowNoMatchingApplied_ = new TauIdEffCutFlowTable(cfgNoMatchingApplied);
+    edm::ParameterSet cfgNoMatchingAppliedReversed = cfg;
+    std::string labelNoMatchingAppliedReversed = std::string(label).append("NoMatchingAppliedReversed");
+    cfgNoMatchingAppliedReversed.addParameter<std::string>("label", labelNoMatchingAppliedReversed);
+    cfgNoMatchingAppliedReversed.addParameter<vstring>("selectionNames", selectionNamesReversed);
+    cutFlowNoMatchingAppliedReversed_ = new TauIdEffCutFlowTable(cfgNoMatchingAppliedReversed);
   }
   ~cutFlowEntryType()
   {
     delete cutFlowTauHadMatched_;
+    delete cutFlowTauHadMatchedReversed_;
     delete cutFlowFakeTauMatched_;
-
+    delete cutFlowFakeTauMatchedReversed_;
     delete cutFlowNoMatchingApplied_;
+    delete cutFlowNoMatchingAppliedReversed_;
   }
   void bookCutFlowTables(TFileDirectory& dir, int numBins, float* binning)
   {
     cutFlowTauHadMatched_->bookCutFlowTable(dir, numBins, binning);
+    cutFlowTauHadMatchedReversed_->bookCutFlowTable(dir, numBins, binning);
     cutFlowFakeTauMatched_->bookCutFlowTable(dir, numBins, binning);
+    cutFlowFakeTauMatchedReversed_->bookCutFlowTable(dir, numBins, binning);
     cutFlowNoMatchingApplied_->bookCutFlowTable(dir, numBins, binning);
+    cutFlowNoMatchingAppliedReversed_->bookCutFlowTable(dir, numBins, binning);
   }
-  void fillCutFlowTables(double x, const std::vector<bool>& selectionFlags, int genMatchType, double evtWeight)
+  void fillCutFlowTables(double x, const vbool& selectionFlags, const vbool& selectionFlagsReversed, int genMatchType, double evtWeight)
   {
-    if      ( genMatchType == kTauHadMatched  ) cutFlowTauHadMatched_->fillCutFlowTable(x, selectionFlags, evtWeight);
-    else if ( genMatchType == kFakeTauMatched ) cutFlowFakeTauMatched_->fillCutFlowTable(x, selectionFlags, evtWeight);
+    if        ( genMatchType == kTauHadMatched  ) {
+      cutFlowTauHadMatched_->fillCutFlowTable(x, selectionFlags, evtWeight);
+      cutFlowTauHadMatchedReversed_->fillCutFlowTable(x, selectionFlagsReversed, evtWeight);
+    } else if ( genMatchType == kFakeTauMatched ) {
+      cutFlowFakeTauMatched_->fillCutFlowTable(x, selectionFlags, evtWeight);
+      cutFlowFakeTauMatchedReversed_->fillCutFlowTable(x, selectionFlagsReversed, evtWeight);
+    }
 
     cutFlowNoMatchingApplied_->fillCutFlowTable(x, selectionFlags, evtWeight);
+    cutFlowNoMatchingAppliedReversed_->fillCutFlowTable(x, selectionFlagsReversed, evtWeight);
   }
 
   TauIdEffCutFlowTable* cutFlowTauHadMatched_;
+  TauIdEffCutFlowTable* cutFlowTauHadMatchedReversed_;
   TauIdEffCutFlowTable* cutFlowFakeTauMatched_;
-
+  TauIdEffCutFlowTable* cutFlowFakeTauMatchedReversed_;
   TauIdEffCutFlowTable* cutFlowNoMatchingApplied_;
+  TauIdEffCutFlowTable* cutFlowNoMatchingAppliedReversed_;
 };
 
 struct regionEntryType
@@ -113,6 +144,8 @@ struct regionEntryType
       tauIdDiscriminators_(tauIdDiscriminators),
       tauIdName_(tauIdName),
       sysShift_(sysShift),
+      numPreselCuts_(6),
+      numTauIdDiscriminators_(tauIdDiscriminators.size()),
       selector_(0),
       cutFlow_(0),
       cutFlowTauAbsEtaBinning_(0),
@@ -132,55 +165,65 @@ struct regionEntryType
     selector_->muTauPairAbsDzMax_      =  +1.e+3;
     selector_->muTauPairChargeProdMin_ =  -1.e+3;
     selector_->muTauPairChargeProdMax_ =  +1.e+3; 
-    
-    tauIdFlags_.resize(6 + tauIdDiscriminators_.size());
-    
+       
     edm::ParameterSet cfgCutFlowTable;
     cfgCutFlowTable.addParameter<std::string>("process", process_);
     cfgCutFlowTable.addParameter<std::string>("region", region_);
     cfgCutFlowTable.addParameter<std::string>("tauIdDiscriminator", tauIdName_);
-    label_ = "presel";
+    label_ = "";
     if ( sysShift != "CENTRAL_VALUE" ) label_.append("_").append(sysShift_);
     cfgCutFlowTable.addParameter<std::string>("label", label_);
 
-    selectionNames_.resize(6 + tauIdDiscriminators_.size());
+    selectionNames_.resize(numPreselCuts_ + numTauIdDiscriminators_);
     selectionNames_[0] = std::string(region);
     selectionNames_[1] = "leadTrackFinding";
     selectionNames_[2] = "leadTrackPtCut";
     selectionNames_[3] = "loosePFIso";
     selectionNames_[4] = "eVeto";
     selectionNames_[5] = "muVeto";
-    int idx = 6;
-    for ( vstring::const_iterator tauIdDiscriminator = tauIdDiscriminators_.begin();
-	  tauIdDiscriminator != tauIdDiscriminators_.end(); ++tauIdDiscriminator, ++idx ) {
-      selectionNames_[idx] = tauIdDiscriminator->data();
+    for ( int iTauIdDiscriminator = 0; iTauIdDiscriminator < numTauIdDiscriminators_; ++iTauIdDiscriminator ) {
+      selectionNames_[numPreselCuts_ + iTauIdDiscriminator] = tauIdDiscriminators_[iTauIdDiscriminator];
     }
     cfgCutFlowTable.addParameter<vstring>("selectionNames", selectionNames_);
+
+    selectionNamesReversed_.resize(selectionNames_.size());
+    for ( int iTauIdDiscriminator = 0; iTauIdDiscriminator < numTauIdDiscriminators_; ++iTauIdDiscriminator ) {
+      selectionNamesReversed_[iTauIdDiscriminator] = selectionNames_[numPreselCuts_ + iTauIdDiscriminator];
+    }
+    for ( int iPreselCut = 0; iPreselCut < numPreselCuts_; ++iPreselCut ) {
+      selectionNamesReversed_[numTauIdDiscriminators_ + iPreselCut] = selectionNames_[iPreselCut];
+    }
+    cfgCutFlowTable.addParameter<vstring>("selectionNamesReversed", selectionNamesReversed_);
+
+    tauIdFlags_.resize(numPreselCuts_ + numTauIdDiscriminators_);
+    tauIdFlagsReversed_.resize(numPreselCuts_ + numTauIdDiscriminators_);
+
+    TFileDirectory dir = fs.mkdir("presel");
 
     float unbinned[] = { -0.5, +0.5 };
     edm::ParameterSet cfgUnbinned = cfgCutFlowTable;
     cfgUnbinned.addParameter<std::string>("binVariable", "");
-    cutFlow_ = addCutFlowEntry(fs, "", 1, unbinned, cfgUnbinned);
+    cutFlow_ = addCutFlowEntry(dir, "", 1, unbinned, cfgUnbinned);
 
     float tauAbsEtaBins[] = { 0.0, 1.5, 1.9, 2.3 }; 
     edm::ParameterSet cfgTauAbsEtaBinning = cfgCutFlowTable;
     cfgTauAbsEtaBinning.addParameter<std::string>("binVariable", "tauAbsEta");
-    cutFlowTauAbsEtaBinning_ = addCutFlowEntry(fs, "tauAbsEtaBinning", 3, tauAbsEtaBins, cfgTauAbsEtaBinning);
+    cutFlowTauAbsEtaBinning_ = addCutFlowEntry(dir, "tauAbsEtaBinning", 3, tauAbsEtaBins, cfgTauAbsEtaBinning);
 
     float tauPtBins[] = { 20.0, 25.0, 30.0, 40.0, 100.0 };
     edm::ParameterSet cfgTauPtBinning = cfgCutFlowTable;
     cfgTauPtBinning.addParameter<std::string>("binVariable", "tauPt");
-    cutFlowTauPtBinning_ = addCutFlowEntry(fs, "tauPtBinning", 4, tauPtBins, cfgTauPtBinning);
+    cutFlowTauPtBinning_ = addCutFlowEntry(dir, "tauPtBinning", 4, tauPtBins, cfgTauPtBinning);
 
     float sumEtBins[] = { 0.0, 250.0, 350.0, 450.0, 1000.0 };
     edm::ParameterSet cfgSumEtBinning = cfgCutFlowTable;
     cfgSumEtBinning.addParameter<std::string>("binVariable", "sumEt");
-    cutFlowSumEtBinning_ = addCutFlowEntry(fs, "sumEtBinning", 4, sumEtBins, cfgSumEtBinning);
+    cutFlowSumEtBinning_ = addCutFlowEntry(dir, "sumEtBinning", 4, sumEtBins, cfgSumEtBinning);
 
     float vtxMultiplicityBins[] = { -0.5, 4.5, 6.5, 8.5, 20.5 };
     edm::ParameterSet cfgVtxMultiplicityBinning = cfgCutFlowTable;
     cfgVtxMultiplicityBinning.addParameter<std::string>("binVariable", "sumEt");
-    cutFlowVtxMultiplicityBinning_ = addCutFlowEntry(fs, "vtxMultiplicityBinning", 4, vtxMultiplicityBins, cfgVtxMultiplicityBinning);
+    cutFlowVtxMultiplicityBinning_ = addCutFlowEntry(dir, "vtxMultiplicityBinning", 4, vtxMultiplicityBins, cfgVtxMultiplicityBinning);
   }
   ~regionEntryType()
   {
@@ -194,15 +237,15 @@ struct regionEntryType
     delete cutFlowVtxMultiplicityBinning_;
   }
   cutFlowEntryType* addCutFlowEntry(
-    fwlite::TFileService& fs, const std::string& dirName, int numBins, float* binning, const edm::ParameterSet& cfg)
+    TFileDirectory& dir, const std::string& dirName, int numBins, float* binning, const edm::ParameterSet& cfg)
   {
     cutFlowEntryType* retVal = new cutFlowEntryType(cfg);
 
     if ( dirName != "" ) {
-      TFileDirectory dir = fs.mkdir(dirName.data());
-      retVal->bookCutFlowTables(dir, numBins, binning);
+      TFileDirectory subdir = dir.mkdir(dirName.data());
+      retVal->bookCutFlowTables(subdir, numBins, binning);
     } else {
-      retVal->bookCutFlowTables(fs, numBins, binning);
+      retVal->bookCutFlowTables(dir, numBins, binning);
     }
 
     return retVal;
@@ -223,32 +266,39 @@ struct regionEntryType
       tauIdFlags_[3] = (muTauPair.leg2()->userFloat("preselLoosePFIsoPt") < 2.5);
       tauIdFlags_[4] = (muTauPair.leg2()->userFloat("PFElectronMVA")      < 0.6);
       tauIdFlags_[5] = (muTauPair.leg2()->userFloat("dRnearestMuon")      > 0.5);
-      int idx = 6;
-      for ( vstring::const_iterator tauIdDiscriminator = tauIdDiscriminators_.begin();
-	    tauIdDiscriminator != tauIdDiscriminators_.end(); ++tauIdDiscriminator, ++idx ) {
-	//std::cout << " tauIdDiscriminator = " << (*tauIdDiscriminator) << ":" 
-	//	    << " " << muTauPair.leg2()->tauID(tauIdDiscriminator->data()) << std::endl;
-	tauIdFlags_[idx] = (muTauPair.leg2()->tauID(tauIdDiscriminator->data()) > 0.5);
+      for ( int iTauIdDiscriminator = 0; iTauIdDiscriminator < numTauIdDiscriminators_; ++iTauIdDiscriminator ) {
+	const std::string tauIdDiscriminator = tauIdDiscriminators_[iTauIdDiscriminator];
+	//std::cout << " tauIdDiscriminator = " << tauIdDiscriminator << ":" 
+	//	    << " " << muTauPair.leg2()->tauID(tauIdDiscriminator.data()) << std::endl;
+	tauIdFlags_[numPreselCuts_ + iTauIdDiscriminator] = (muTauPair.leg2()->tauID(tauIdDiscriminator.data()) > 0.5);
       }
       //std::cout << "tauIdFlags = " << format_vbool(tauIdFlags_) << std::endl;
 
+      for ( int iTauIdDiscriminator = 0; iTauIdDiscriminator < numTauIdDiscriminators_; ++iTauIdDiscriminator ) {
+	tauIdFlagsReversed_[iTauIdDiscriminator] = tauIdFlags_[numPreselCuts_ + iTauIdDiscriminator];
+      }
+      for ( int iPreselCut = 0; iPreselCut < numPreselCuts_; ++iPreselCut ) {
+	tauIdFlagsReversed_[iPreselCut + numTauIdDiscriminators_] = tauIdFlags_[iPreselCut];
+      }
+      //std::cout << "tauIdFlagsReversed = " << format_vbool(tauIdFlagsReversed_) << std::endl;
+
 //--- fill histograms for "inclusive" tau id. efficiency measurement
-      cutFlow_->fillCutFlowTables(0., tauIdFlags_, genMatchType, evtWeight);
+      cutFlow_->fillCutFlowTables(0., tauIdFlags_, tauIdFlagsReversed_, genMatchType, evtWeight);
 
 //--- fill histograms for tau id. efficiency measurement as function of tau-jet pseudo-rapidity
       double tauAbsEta = TMath::Abs(muTauPair.leg1()->eta());
-      cutFlowTauAbsEtaBinning_->fillCutFlowTables(tauAbsEta, tauIdFlags_, genMatchType, evtWeight);
+      cutFlowTauAbsEtaBinning_->fillCutFlowTables(tauAbsEta, tauIdFlags_, tauIdFlagsReversed_, genMatchType, evtWeight);
 
 //--- fill histograms for tau id. efficiency measurement as function of tau-jet transverse momentum
       double tauPt = muTauPair.leg1()->pt();
-      cutFlowTauPtBinning_->fillCutFlowTables(tauPt, tauIdFlags_, genMatchType, evtWeight);
+      cutFlowTauPtBinning_->fillCutFlowTables(tauPt, tauIdFlags_, tauIdFlagsReversed_, genMatchType, evtWeight);
       
 //--- fill histograms for tau id. efficiency measurement as function of sumEt
       double sumEt = muTauPair.met()->sumEt();
-      cutFlowSumEtBinning_->fillCutFlowTables(sumEt, tauIdFlags_, genMatchType, evtWeight);
+      cutFlowSumEtBinning_->fillCutFlowTables(sumEt, tauIdFlags_, tauIdFlagsReversed_, genMatchType, evtWeight);
       
 //--- fill histograms for tau id. efficiency measurement as function of reconstructed vertex multiplicity
-      cutFlowVtxMultiplicityBinning_->fillCutFlowTables(numVertices, tauIdFlags_, genMatchType, evtWeight);
+      cutFlowVtxMultiplicityBinning_->fillCutFlowTables(numVertices, tauIdFlags_, tauIdFlagsReversed_, genMatchType, evtWeight);
     }
   }
 
@@ -259,10 +309,15 @@ struct regionEntryType
   std::string sysShift_;
   std::string label_;
   vstring selectionNames_;
+  vstring selectionNamesReversed_;
   
+  int numPreselCuts_;
+  int numTauIdDiscriminators_;
+
   TauIdEffEventSelector* selector_;
 
-  std::vector<bool> tauIdFlags_;
+  vbool tauIdFlags_;
+  vbool tauIdFlagsReversed_;
   
   cutFlowEntryType* cutFlow_;
 
@@ -383,7 +438,7 @@ int main(int argc, char* argv[])
       throw cms::Exception("FWLiteTauIdEffPreselNumbers") 
 	<< "Failed to open inputFile = " << (*inputFileName) << " !!\n";
 
-    std::cout << " opening inputFile = " << (*inputFileName);
+    std::cout << "opening inputFile = " << (*inputFileName);
     TTree* tree = dynamic_cast<TTree*>(inputFile->Get("Events"));
     if ( tree ) std::cout << " (" << tree->GetEntries() << " Events)";
     std::cout << std::endl;

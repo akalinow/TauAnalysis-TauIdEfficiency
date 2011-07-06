@@ -1,14 +1,14 @@
 
-/** \class FWLiteTauIdEffAnalyzer
+/** \executable FWLiteTauIdEffAnalyzer
  *
  * Apply event selections for ABCD regions 
  * and fill histograms for tau id. efficiency measurement
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.7 $
+ * \version $Revision: 1.8 $
  *
- * $Id: FWLiteTauIdEffAnalyzer.cc,v 1.7 2011/07/05 07:28:47 veelken Exp $
+ * $Id: FWLiteTauIdEffAnalyzer.cc,v 1.8 2011/07/05 17:07:22 veelken Exp $
  *
  */
 
@@ -277,6 +277,10 @@ int main(int argc, char* argv[])
   std::vector<regionEntryType*> regionEntries;
 
   std::string process = cfgTauIdEffAnalyzer.getParameter<std::string>("process");
+  std::cout << " process = " << process << std::endl;
+  std::string processType = cfgTauIdEffAnalyzer.getParameter<std::string>("type");
+  std::cout << " type = " << processType << std::endl;
+  bool isData = (processType == "Data");
   vstring regions = cfgTauIdEffAnalyzer.getParameter<vstring>("regions");
   typedef std::vector<edm::ParameterSet> vParameterSet;
   vParameterSet cfgTauIdDiscriminators = cfgTauIdEffAnalyzer.getParameter<vParameterSet>("tauIds");
@@ -297,12 +301,16 @@ int main(int argc, char* argv[])
   histogramEventCounter->GetXaxis()->SetBinLabel(2, "processed by Skimming");
   histogramEventCounter->GetXaxis()->SetBinLabel(3, "analyzed in PAT-tuple");
   
-  if ( cfgTauIdEffAnalyzer.exists("allEvents_DBS") ) {
+  int allEvents_DBS = cfgTauIdEffAnalyzer.getParameter<int>("allEvents_DBS");
+  if ( allEvents_DBS > 0 ) {
     histogramEventCounter->SetBinContent(1, cfgTauIdEffAnalyzer.getParameter<int>("allEvents_DBS"));
   } else {
     histogramEventCounter->SetBinContent(1, -1.);
   }
   
+  double xSection = cfgTauIdEffAnalyzer.getParameter<double>("xSection");
+  double intLumiData = cfgTauIdEffAnalyzer.getParameter<double>("intLumiData");
+
   int numEvents_processed = 0; 
   double numEventsWeighted_processed = 0;
   
@@ -319,7 +327,7 @@ int main(int argc, char* argv[])
       throw cms::Exception("FWLiteTauIdEffAnalyzer") 
 	<< "Failed to open inputFile = " << (*inputFileName) << " !!\n";
 
-    std::cout << " opening inputFile = " << (*inputFileName);
+    std::cout << "opening inputFile = " << (*inputFileName);
     TTree* tree = dynamic_cast<TTree*>(inputFile->Get("Events"));
     if ( tree ) std::cout << " (" << tree->GetEntries() << " Events)";
     std::cout << std::endl;
@@ -402,17 +410,30 @@ int main(int argc, char* argv[])
     delete inputFile;
   }
 
-//--- scale histograms to account for events lost, 
+//--- scale histograms taken from Monte Carlo simulation
+//    according to cross-section times luminosity
+  if ( !isData ) {
+    double mcScaleFactor = (intLumiData*xSection)/(double)allEvents_DBS;
+    std::cout << " intLumiData = " << intLumiData << std::endl;
+    std::cout << " xSection = " << xSection << std::endl;
+    std::cout << " allEvents_DBS = " << allEvents_DBS << std::endl;
+    std::cout << "--> scaling histograms by factor = " << mcScaleFactor
+	      << " according to cross-section times luminosity." << std::endl;
+
+//--- apply correction to scale-factor in order to account for events lost, 
 //    due to aborted skimming/crab or PAT-tuple production/lxbatch jobs
-  if ( histogramEventCounter->GetBinContent(1) > histogramEventCounter->GetBinContent(2) && 
-       histogramEventCounter->GetBinContent(2) > 0.                                      ) {
-    double factor = histogramEventCounter->GetBinContent(1)/histogramEventCounter->GetBinContent(2);
-    std::cout << "--> scaling histograms by factor = " << factor 
-	      << " to account for events lost," 
-	      << " due to aborted skimming/crab or PAT-tuple production/lxbatch jobs." << std::endl;
+    double lostStatCorrFactor = 1.;
+    if ( histogramEventCounter->GetBinContent(1) > histogramEventCounter->GetBinContent(2) && 
+	 histogramEventCounter->GetBinContent(2) > 0.                                      ) {
+      lostStatCorrFactor = histogramEventCounter->GetBinContent(1)/histogramEventCounter->GetBinContent(2);
+      std::cout << "--> scaling histograms by additional factor = " << lostStatCorrFactor
+		<< " to account for events lost," << std::endl; 
+      std::cout << "    due to aborted skimming/crab or PAT-tuple production/lxbatch jobs." << std::endl;
+    }
+
     for ( std::vector<regionEntryType*>::iterator regionEntry = regionEntries.begin();
 	  regionEntry != regionEntries.end(); ++regionEntry ) {
-      (*regionEntry)->histManager_->scaleHistograms(factor);
+      (*regionEntry)->histManager_->scaleHistograms(mcScaleFactor*lostStatCorrFactor);
     }
   }
 

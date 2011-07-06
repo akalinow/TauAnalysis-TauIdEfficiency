@@ -1,5 +1,28 @@
 
+/** \executable fitTauIdEff_wConstraints
+ *
+ * Perform simultaneous fit of Ztautau signal plus Zmumu, W + jets, QCD and TTbar background yields
+ * in regions A, B, C1f, C1p, C2 and D, in order to determine tau identification efficiency
+ *
+ * \author Christian Veelken, UC Davis
+ *
+ * \version $Revision: 1.2 $
+ *
+ * $Id: fitTauIdEff_wConstraints.cc,v 1.2 2011/07/05 17:07:22 veelken Exp $
+ *
+ */
+
+#include "FWCore/FWLite/interface/AutoLibraryLoader.h"
+
+#include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "FWCore/PythonParameterSet/interface/MakeParameterSets.h"
+
+#include "PhysicsTools/FWLite/interface/TFileService.h"
+#include "DataFormats/FWLite/interface/InputSource.h"
+#include "DataFormats/FWLite/interface/OutputFiles.h"
+
 #include "TauAnalysis/TauIdEfficiency/bin/tauIdEffAuxFunctions.h"
+#include "TauAnalysis/CandidateTools/interface/generalAuxFunctions.h"
 #include "TauAnalysis/FittingTools/interface/templateFitAuxFunctions.h"
 
 #include "RooAddPdf.h"
@@ -759,87 +782,57 @@ void fitUsingRooFit(std::map<std::string, std::map<std::string, TH1*> >& distrib
 
 int main(int argc, const char* argv[])
 {
+//--- parse command-line arguments
+  if ( argc < 2 ) {
+    std::cout << "Usage: " << argv[0] << " [parameters.py]" << std::endl;
+    return 0;
+  }
+
   std::cout << "<fitTauIdEff_wConstraints>:" << std::endl;
 
+//--- disable pop-up windows showing graphics output
   gROOT->SetBatch(true);
+
+//--- load framework libraries
+  gSystem->Load("libFWCoreFWLite");
+  AutoLibraryLoader::enable();
 
 //--- keep track of time it takes the macro to execute
   TBenchmark clock;
   clock.Start("fitTauIdEff_wConstraints");
 
-  bool runClosureTest = false;
-  //bool runClosureTest = true;
+//--- read python configuration parameters
+  if ( !edm::readPSetsFrom(argv[1])->existsAs<edm::ParameterSet>("process") ) 
+    throw cms::Exception("fitTauIdEff_wConstraints") 
+      << "No ParameterSet 'process' found in configuration file = " << argv[1] << " !!\n";
 
-  //bool takeQCDfromData = false;
-  bool takeQCDfromData = true;
+  edm::ParameterSet cfg = edm::readPSetsFrom(argv[1])->getParameter<edm::ParameterSet>("process");
 
-  // CV: fitting fake-rates of background processes
-  //     in C2f/C2p regions causes bias of fit result (2011/06/28)
-  bool fitTauIdEffC2 = false;
-  //bool fitTauIdEffC2 = true;
+  edm::ParameterSet cfgFitTauIdEff_wConstraints = cfg.getParameter<edm::ParameterSet>("fitTauIdEff_wConstraints");
 
-  //const std::string histogramFileName = "fitTauIdEff_wConstraints_2011June06_PUreweighted_2011Jun20.root";
-  const std::string histogramFileName = "fitTauIdEff_wConstraints_2011June30_matthew.root";
-
+  typedef std::vector<std::string> vstring;
+  vstring regions = cfgFitTauIdEff_wConstraints.getParameter<vstring>("regions");
+  vstring tauIds = cfgFitTauIdEff_wConstraints.getParameter<vstring>("tauIds");
+  vstring fitVariables = cfgFitTauIdEff_wConstraints.getParameter<vstring>("fitVariables");
   std::vector<sysUncertaintyEntry> sysUncertainties;
-  sysUncertainties.push_back(
-    sysUncertaintyEntry("SysTauJetEnUp", "SysTauJetEnDown", "SysTauJetEnDiff")); // needed for diTauVisMassFromJet
-  sysUncertainties.push_back(
-    sysUncertaintyEntry("SysJetEnUp",    "SysJetEnDown",    "SysJetEnDiff"));    // needed for diTauMt
+  vstring sysUncertaintyNames = cfgFitTauIdEff_wConstraints.getParameter<vstring>("sysUncertainties");
+  for ( vstring::const_iterator sysUncertaintyName = sysUncertaintyNames.begin();
+	sysUncertaintyName != sysUncertaintyNames.end(); ++sysUncertaintyName ) {
+    sysUncertainties.push_back(sysUncertaintyEntry(std::string(*sysUncertaintyName).append("Up"),
+						   std::string(*sysUncertaintyName).append("Down"),
+						   std::string(*sysUncertaintyName).append("Diff")));
+  }
+  bool runClosureTest = cfgFitTauIdEff_wConstraints.getParameter<bool>("runClosureTest");
+  bool takeQCDfromData = cfgFitTauIdEff_wConstraints.getParameter<bool>("takeQCDfromData");
+  bool fitTauIdEffC2 = cfgFitTauIdEff_wConstraints.getParameter<bool>("fitTauIdEffC2");
+  bool runSysUncertainties = cfgFitTauIdEff_wConstraints.getParameter<bool>("runSysUncertainties");
+  unsigned numPseudoExperiments = cfgFitTauIdEff_wConstraints.getParameter<unsigned>("numPseudoExperiments");
 
-  bool runSysUncertainties = false;
-  //bool runSysUncertainties = true;
-
-  unsigned numPseudoExperiments = 10000;  
-
-  std::vector<std::string> regions;
-  regions.push_back(std::string("ABCD"));
-  regions.push_back(std::string("A"));
-  regions.push_back(std::string("B"));
-  regions.push_back(std::string("B1"));  // QCD enriched control region (SS, loose muon isolation, Mt && Pzeta cuts applied)
-  regions.push_back(std::string("C"));
-  regions.push_back(std::string("C1"));
-  regions.push_back(std::string("C1p"));
-  regions.push_back(std::string("C1f"));
-  regions.push_back(std::string("C2"));
-  regions.push_back(std::string("C2p"));
-  regions.push_back(std::string("C2f"));
-  regions.push_back(std::string("D"));   // generic background control region (SS, tight muon isolation)
-  //regions.push_back(std::string("D1"));
-  //regions.push_back(std::string("D1p"));
-  //regions.push_back(std::string("D1f"));
-  //regions.push_back(std::string("D2"));
-  //regions.push_back(std::string("D2p"));
-  //regions.push_back(std::string("D2f"));
-
-  std::vector<std::string> tauIds;
-  //tauIds.push_back(std::string("tauDiscrTaNCfrOnePercent"));  // "old" TaNC algorithm
-  //tauIds.push_back(std::string("tauDiscrTaNCfrHalfPercent"));
-  //tauIds.push_back(std::string("tauDiscrTaNCfrQuarterPercent"));
-  //tauIds.push_back(std::string("tauDiscrTaNCloose")); // "new" TaNC implemented in HPS+TaNC combined algorithm
-  //tauIds.push_back(std::string("tauDiscrTaNCmedium"));
-  //tauIds.push_back(std::string("tauDiscrTaNCtight"));
-  //tauIds.push_back(std::string("tauDiscrIsolationLoose"));    // "old" HPS algorithm
-  //tauIds.push_back(std::string("tauDiscrIsolationMedium"));   
-  //tauIds.push_back(std::string("tauDiscrIsolationTight"));
-  tauIds.push_back(std::string("tauDiscrHPSloose"));  // "new" HPS implemented in HPS+TaNC combined algorithm
-  tauIds.push_back(std::string("tauDiscrHPSmedium"));
-  tauIds.push_back(std::string("tauDiscrHPStight"));
-
-  std::vector<std::string> fitVariables;
-  //fitVariables.push_back("diTauHt");
-  //fitVariables.push_back("diTauVisMass");
-  fitVariables.push_back("diTauVisMassFromJet");
-  //fitVariables.push_back("muonPt");
-  //fitVariables.push_back("muonEta");
-  //fitVariables.push_back("tauPt");
-  //fitVariables.push_back("tauEta");
-  //fitVariables.push_back("tauNumChargedParticles");
-  //fitVariables.push_back("tauNumParticles");
-  //fitVariables.push_back("tauJetWidth"); CV: signal/background normalizations --> tau id. efficiencies obtained by using jetWidth variable
-  //                                           are **very** different from values obtained by using all other variables
-  //                                          --> there seems to be a problem in modeling jetWidth variable
-  //                                          --> do not use jetWidth variable for now
+  fwlite::InputSource inputFiles(cfg); 
+  if ( inputFiles.files().size() != 1 ) 
+    throw cms::Exception("fitTauIdEff_wConstraints") 
+      << "Input file must be unique, got = " << format_vstring(inputFiles.files()) << " !!\n";
+  std::string histogramFileName = (*inputFiles.files().begin());
 
   std::vector<std::string> sysShifts;
   sysShifts.push_back("CENTRAL_VALUE");
@@ -865,8 +858,10 @@ int main(int argc, const char* argv[])
   for ( std::vector<std::string>::const_iterator sysShift = sysShifts.begin();
 	sysShift != sysShifts.end(); ++sysShift ) {
     std::cout << "loading histograms for sysShift = " << (*sysShift) << "..." << std::endl;
-  
-    loadHistograms(distributionsData,   histogramInputFile, "Data",       regions, tauIds, fitVariables, *sysShift);
+    
+    if ( !runClosureTest ) {
+      loadHistograms(distributionsData, histogramInputFile, "Data",       regions, tauIds, fitVariables, *sysShift);
+    }
 
     loadHistograms(templatesZtautau,    histogramInputFile, "Ztautau",    regions, tauIds, fitVariables, *sysShift);
     loadHistograms(templatesZmumu,      histogramInputFile, "Zmumu",      regions, tauIds, fitVariables, *sysShift);
