@@ -67,7 +67,7 @@ def configurePatTupleProductionTauIdEffMeasSpecific(process, patSequenceBuilder 
     process.producePatTupleTauIdEffMeasSpecific += process.patMuonsGlobal
 
     process.patGoodMuons = process.patMuonsGlobal.clone(
-        cut = cms.string('isGlobalMuon() | isStandAloneMuon() | isTrackerMuon()')
+        cut = cms.string('(isGlobalMuon() | isStandAloneMuon() | isTrackerMuon()) & abs(eta) < 2.5 & pt > 5.0')
     )
     process.producePatTupleTauIdEffMeasSpecific += process.patGoodMuons
 
