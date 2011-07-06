@@ -94,8 +94,8 @@ muonPFTauHPSpTaNCskimPath = cms.Path(countEventsProcessed + commonSkimSequence +
 tauIdEffSampleEventSelection = cms.untracked.PSet(
     SelectEvents = cms.untracked.PSet(
         SelectEvents = cms.vstring(
-            'muonPFTauFixedConeSkimPath',
-            'muonPFTauShrinkingConeSkimPath',
+            #'muonPFTauFixedConeSkimPath',
+            #'muonPFTauShrinkingConeSkimPath',
             'muonPFTauHPSskimPath',
             'muonPFTauHPSpTaNCskimPath'
         )
