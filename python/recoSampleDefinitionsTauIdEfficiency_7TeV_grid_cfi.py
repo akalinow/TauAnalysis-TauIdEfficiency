@@ -63,7 +63,7 @@ TauIdEfficiencySpecific_RECO_SAMPLES = {
         'dbs_url' :  "http://cmsdbsprod.cern.ch/cms_dbs_prod_global/servlet/DBSServlet",
         'lumi_mask' : "/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions11/7TeV/Prompt/Cert_160404-167784_7TeV_PromptReco_Collisions11_JSON.txt",
         'runselection' : "165071-167784",
-        'number_of_jobs' : 2000,
+        'number_of_jobs' : 2500,
         'conditions' : 'GR_R_42_V14::All',
         'events_processed' : -1,
         'skim_eff' : 1.0,

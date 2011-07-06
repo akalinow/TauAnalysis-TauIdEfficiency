@@ -99,24 +99,27 @@ patTupleConfig = configurePatTupleProductionTauIdEffMeasSpecific(
 
 #--------------------------------------------------------------------------------
 #
-# define Jet Energy Corrections
+# configure Jet Energy Corrections
 #
-process.load('CondCore.DBCommon.CondDBSetup_cfi')
+process.load("CondCore.DBCommon.CondDBCommon_cfi")
 process.jec = cms.ESSource("PoolDBESSource",
-    process.CondDBSetup,
-    toGet = cms.VPSet(
-         cms.PSet(record = cms.string("JetCorrectionsRecord"),
-                  tag = cms.string("JetCorrectorParametersCollection_Jec10V3_AK5Calo"),
-                  label=cms.untracked.string("AK5Calo")),
-         cms.PSet(record = cms.string("JetCorrectionsRecord"),
-                  tag = cms.string("JetCorrectorParametersCollection_Jec10V3_AK5PF"),
-                  label=cms.untracked.string("AK5PF")),                                   
-         cms.PSet(record = cms.string("JetCorrectionsRecord"),
-                  tag = cms.string("JetCorrectorParametersCollection_Jec10V3_AK5PFchs"),
-                  label=cms.untracked.string("AK5PF"))
+    DBParameters = cms.PSet(
+        messageLevel = cms.untracked.int32(0)
     ),
-    connect = cms.string('sqlite_fip:TauAnalysis/Configuration/data/Jec10V3.db')
-    #connect = cms.string("frontier://FrontierPrep/CMS_COND_PHYSICSTOOLS")
+    timetype = cms.string('runnumber'),
+    toGet = cms.VPSet(
+        cms.PSet(
+            record = cms.string('JetCorrectionsRecord'),
+            tag    = cms.string('JetCorrectorParametersCollection_Jec11V2_AK5PF'),
+            label  = cms.untracked.string('AK5PF')
+        ),
+        cms.PSet(
+            record = cms.string('JetCorrectionsRecord'),
+            tag    = cms.string('JetCorrectorParametersCollection_Jec11V2_AK5Calo'),
+            label  = cms.untracked.string('AK5Calo')
+        )
+    ),
+    connect = cms.string('sqlite_fip:TauAnalysis/Configuration/data/Jec11V2.db')
 )
 process.es_prefer_jec = cms.ESPrefer('PoolDBESSource', 'jec')
 #-------------------------------------------------------------------------------------------------------------------------
