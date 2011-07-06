@@ -34,7 +34,16 @@ _picobarns =  1.0
 _femtobarns = 1.0e-3
 
 # Integrated luminosity to normalize
-TARGET_LUMI = 0.90*869.1/_picobarns # for runs 160404 - 167496 ("golden" quality) corrected for ~90% PFTau trigger efficiency
+# (computed by lumiCalc)
+TARGET_LUMI = (
+     31721081.742 # HLT_IsoMu17_v5  (160431-163261)
+  + 159796435.413 # HLT_IsoMu17_v6  (163270-163869)
+  +         0.000 # HLT_IsoMu17_v7  (never used ?)
+  + 133197413.435 # HLT_IsoMu17_v8  (165088-165633)
+  + 374195369.821 # HLT_IsoMu17_v9  (165970-167043)
+  +     55375.575 # HLT_IsoMu17_v10 (166346, used only for one run)
+  + 180572068.328 # HLT_IsoMu17_v11 (167078-167913)
+)/_microbarns
 
 RECO_SAMPLES = copy.deepcopy(ZtoMuTau.RECO_SAMPLES)
 TauIdEfficiencySpecific_RECO_SAMPLES = {
@@ -61,8 +70,8 @@ TauIdEfficiencySpecific_RECO_SAMPLES = {
     'data_SingleMu_Run2011A_PromptReco_v4' : {
         'datasetpath' : "/SingleMu/Run2011A-PromptReco-v4/AOD",
         'dbs_url' :  "http://cmsdbsprod.cern.ch/cms_dbs_prod_global/servlet/DBSServlet",
-        'lumi_mask' : "/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions11/7TeV/Prompt/Cert_160404-167784_7TeV_PromptReco_Collisions11_JSON.txt",
-        'runselection' : "165071-167784",
+        'lumi_mask' : "/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions11/7TeV/Prompt/Cert_160404-167913_7TeV_PromptReco_Collisions11_JSON.txt",
+        'runselection' : "165071-167913",
         'number_of_jobs' : 2500,
         'conditions' : 'GR_R_42_V14::All',
         'events_processed' : -1,
@@ -73,7 +82,7 @@ TauIdEfficiencySpecific_RECO_SAMPLES = {
             'HLT_IsoMu17_v8'  : '165088:MIN-165633:MAX',
             'HLT_IsoMu17_v9'  : '165970:MIN-167043:MAX',
             'HLT_IsoMu17_v10' : '166346:MIN-166346:MAX',
-            'HLT_IsoMu17_v11' : '167078:MIN-167784:MAX'
+            'HLT_IsoMu17_v11' : '167078:MIN-167913:MAX'
         },
         'enableSysUncertainties' : False,
         'enableFakeRates' : True,
