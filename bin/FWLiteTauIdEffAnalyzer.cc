@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.9 $
+ * \version $Revision: 1.10 $
  *
- * $Id: FWLiteTauIdEffAnalyzer.cc,v 1.9 2011/07/06 16:18:10 veelken Exp $
+ * $Id: FWLiteTauIdEffAnalyzer.cc,v 1.10 2011/07/07 12:08:51 veelken Exp $
  *
  */
 
@@ -351,7 +351,6 @@ int main(int argc, char* argv[])
 
 	if ( isData ) {
 	  edm::Handle<LumiSummary> lumiSummary;
-	  //lumiSummary.getByLabel(ls, "lumiProducer");
 	  edm::InputTag srcLumiProducer("lumiProducer");
 	  ls.getByLabel(srcLumiProducer, lumiSummary);
 	  intLumiData_analyzed = lumiSummary->intgRecLumi();
@@ -464,8 +463,8 @@ int main(int argc, char* argv[])
   }
   
   if ( isData ) {
-    std::cout << " intLumiData (recorded, IsoMu17 prescale corr.) = " << intLumiData << std::endl;
-    std::cout << " intLumiData_analyzed (recorded) = " << intLumiData_analyzed << std::endl;
+    std::cout << " intLumiData (recorded, IsoMu17 prescale corr.) = " << intLumiData << " pb" << std::endl;
+    std::cout << " intLumiData_analyzed (recorded) = " << intLumiData_analyzed*1.e-6 << " pb" << std::endl;
   }
 
   clock.Show("FWLiteTauIdEffAnalyzer");
