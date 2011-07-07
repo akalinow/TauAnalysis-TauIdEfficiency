@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.8 $
+ * \version $Revision: 1.9 $
  *
- * $Id: FWLiteTauIdEffAnalyzer.cc,v 1.8 2011/07/05 17:07:22 veelken Exp $
+ * $Id: FWLiteTauIdEffAnalyzer.cc,v 1.9 2011/07/06 16:18:10 veelken Exp $
  *
  */
 
@@ -35,6 +35,7 @@
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 #include "DataFormats/Common/interface/MergeableCounter.h"
+#include "DataFormats/Luminosity/interface/LumiSummary.h"
 #include "DataFormats/Common/interface/Handle.h"
 
 #include "TauAnalysis/TauIdEfficiency/interface/TauIdEffEventSelector.h"
@@ -317,6 +318,9 @@ int main(int argc, char* argv[])
   edm::RunNumber_t lastLumiBlock_run = -1;
   edm::LuminosityBlockNumber_t lastLumiBlock_ls = -1;
 
+  double intLumiData_analyzed = 0.;
+  edm::InputTag srcLumiProducer = cfgTauIdEffAnalyzer.getParameter<edm::InputTag>("srcLumiProducer");
+
   bool maxEvents_processed = false;
   for ( vstring::const_iterator inputFileName = inputFiles.files().begin();
 	inputFileName != inputFiles.files().end() && !maxEvents_processed; ++inputFileName ) {
@@ -344,6 +348,14 @@ int main(int argc, char* argv[])
 	if ( numEvents_skimmed.isValid() ) histogramEventCounter->Fill(1, numEvents_skimmed->value);
 	lastLumiBlock_run = evt.id().run();
 	lastLumiBlock_ls = evt.luminosityBlock();
+
+	if ( isData ) {
+	  edm::Handle<LumiSummary> lumiSummary;
+	  //lumiSummary.getByLabel(ls, "lumiProducer");
+	  edm::InputTag srcLumiProducer("lumiProducer");
+	  ls.getByLabel(srcLumiProducer, lumiSummary);
+	  intLumiData_analyzed = lumiSummary->intgRecLumi();
+	}
       }
 
 //--- check that event has passed triggers
@@ -449,6 +461,11 @@ int main(int argc, char* argv[])
 	      << " " << (*regionEntry)->numMuTauPairs_selected_ 
 	      << " (weighted = " << (*regionEntry)->numMuTauPairsWeighted_selected_ << ")" << std::endl;
     lastTauIdName = (*regionEntry)->tauIdName_;
+  }
+  
+  if ( isData ) {
+    std::cout << " intLumiData (recorded, IsoMu17 prescale corr.) = " << intLumiData << std::endl;
+    std::cout << " intLumiData_analyzed (recorded) = " << intLumiData_analyzed << std::endl;
   }
 
   clock.Show("FWLiteTauIdEffAnalyzer");

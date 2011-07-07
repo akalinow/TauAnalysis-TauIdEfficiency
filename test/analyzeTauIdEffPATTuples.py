@@ -8,9 +8,9 @@ import subprocess
 
 channel = 'ZtoMuTau_tauIdEff'
 #jobId = getJobId(channel)
-jobId = '2011Jul03'
+jobId = '2011Jul01_mauroV2'
 
-inputFilePath = '/data1/veelken/tmp/'
+inputFilePath = '/data2/veelken/CMSSW_4_2_x/PATtuples/TauIdEffMeas/2011Jul01_mauro/user/v/veelken/CMSSW_4_2_x/PATtuples/TauIdEffMeas/'
 outputFilePath = '/data1/veelken/tmp/'
 
 samplesToAnalyze = [
@@ -34,7 +34,7 @@ for sampleToAnalyze in samplesToAnalyze:
     # matches sampleToAnalyze, jobId
     inputFiles_sample = []
     for inputFile in inputFiles:        
-        if inputFile.find("tauIdEffMeasPATtuple") != -1 and \
+        if inputFile.find("tauIdEffMeasPATTuple") != -1 and \
            inputFile.find("".join(['_', sampleToAnalyze, '_'])) != -1 and \
            inputFile.find("".join(['_', jobId, '_'])) != -1:
             inputFiles_sample.append(os.path.join(inputFilePath, inputFile))
@@ -60,6 +60,8 @@ for sampleToAnalyze in samplesToAnalyze:
 
     print("building config file for sample %s..." % sampleToAnalyze)
 
+    processType = recoSampleDefinitionsTauIdEfficiency_7TeV['RECO_SAMPLES'][sampleToAnalyze]['type']
+
     inputFiles_string = "'"
     for i, inputFile_sample in enumerate(inputFiles_sample):
         if i > 0:
@@ -75,8 +77,11 @@ for sampleToAnalyze in samplesToAnalyze:
         #weights_string += "".join(["'", "ntupleProducer:tauIdEffNtuple#selectedPatMuonsForTauIdEffTrkIPcumulative#muonHLTeff", "'"])
 
     allEvents_DBS = -1
+    xSection = 0.0
     if not recoSampleDefinitionsTauIdEfficiency_7TeV['MERGE_SAMPLES'][process_matched]['type'] == 'Data':
         allEvents_DBS = recoSampleDefinitionsTauIdEfficiency_7TeV['RECO_SAMPLES'][sampleToAnalyze]['events_processed']
+        xSection = recoSampleDefinitionsTauIdEfficiency_7TeV['RECO_SAMPLES'][sampleToAnalyze]['x_sec']
+    intLumiData = recoSampleDefinitionsTauIdEfficiency_7TeV['TARGET_LUMI']
 
     config = \
 """
@@ -98,13 +103,18 @@ process.fwliteOutput = cms.PSet(
 
 process.tauIdEffAnalyzer = cms.PSet(
     process = cms.string('%s'),
+    type = cms.string('%s'),
 
     regions = cms.vstring(
         'ABCD',
         'A',
         'A1',
+        'A1p',
+        'A1f',
         'B',
         'B1',
+        'B1p',
+        'B1f',
         'C',
         'C1',
         'C1p',
@@ -112,7 +122,10 @@ process.tauIdEffAnalyzer = cms.PSet(
         'C2',
         'C2p',
         'C2f',
-        'D'
+        'D',
+        'D1',
+        'D1p',
+        'D1f'
     ),
     
     tauIds = cms.VPSet(
@@ -156,9 +169,15 @@ process.tauIdEffAnalyzer = cms.PSet(
 
     # CV: 'srcEventCounter' is defined in TauAnalysis/Skimming/test/skimTauIdEffSample_cfg.py
     srcEventCounter = cms.InputTag('totalEventsProcessed'),
-    allEvents_DBS = cms.int32(%i)
+    allEvents_DBS = cms.int32(%i),
+    
+    xSection = cms.double(%f),
+    
+    intLumiData = cms.double(%f),
+
+    srcLumiProducer = cms.InputTag('lumiProducer')
 )
-""" % (inputFiles_string, outputFileName, process_matched, weights_string, allEvents_DBS)
+""" % (inputFiles_string, outputFileName, process_matched, processType, weights_string, allEvents_DBS, xSection, intLumiData)
 
     configFileName = "analyzeTauIdEffPATtuple_%s_cfg.py" % sampleToAnalyze
     configFile = open(configFileName, "w")

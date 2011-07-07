@@ -42,6 +42,7 @@
 <bin   file="FWLiteTauIdEffAnalyzer.cc" name="FWLiteTauIdEffAnalyzer">
   <use   name="DataFormats/Common"/>
   <use   name="DataFormats/FWLite"/>
+  <use   name="DataFormats/Luminosity"/>
   <use   name="DataFormats/StdDictionaries"/>
   <use   name="DataFormats/WrappedStdDictionaries"/>
   <use   name="FWCore/FWLite"/>
