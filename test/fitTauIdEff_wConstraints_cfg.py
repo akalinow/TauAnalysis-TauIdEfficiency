@@ -21,8 +21,8 @@ process.fitTauIdEff_wConstraints = cms.PSet(
     #runClosureTest = cms.bool(False),
     runClosureTest = cms.bool(True),
 
-    takeQCDfromData = cms.bool(False),
-    #takeQCDfromData = cms.bool(True),
+    #takeQCDfromData = cms.bool(False),
+    takeQCDfromData = cms.bool(True),
 
     # CV: fitting fake-rates of background processes
     #     in C2f/C2p regions causes bias of fit result (2011/06/28)
@@ -39,6 +39,8 @@ process.fitTauIdEff_wConstraints = cms.PSet(
         'A',
         'B',
         'B1',  # QCD enriched control region (SS, loose muon isolation, Mt && Pzeta cuts applied)
+        'B1p',
+        'B1f',
         'C',
         'C1',
         'C1p',
