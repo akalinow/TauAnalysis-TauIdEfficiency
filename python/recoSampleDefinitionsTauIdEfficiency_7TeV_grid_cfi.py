@@ -50,7 +50,7 @@ TauIdEfficiencySpecific_RECO_SAMPLES = {
     'data_SingleMu_Run2011A_May10ReReco_v1' : {
         'datasetpath' : '/SingleMu/Run2011A-May10ReReco-v1/AOD',
         'dbs_url' :  "http://cmsdbsprod.cern.ch/cms_dbs_prod_global/servlet/DBSServlet",
-        'lumi_mask' : "/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions11/7TeV/Reprocessing/Cert_160404-163869_7TeV_May10ReReco_Collisions11_JSON.txt",
+        'lumi_mask' : "/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions11/7TeV/Reprocessing/Cert_160404-163869_7TeV_May10ReReco_Collisions11_JSON_v2.txt",
         'runselection' : "160329-163869",
         'number_of_jobs' : 750,
         'conditions' : 'GR_R_42_V14::All',
