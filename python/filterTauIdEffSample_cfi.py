@@ -14,10 +14,7 @@ hltMu = cms.EDFilter("EventSelPluginFilter",
         pluginType = cms.string('TriggerResultEventSelector'),
         src = cms.InputTag('TriggerResults::HLT'),
         triggerPaths = cms.vstring(
-            #'HLT_IsoMu12_v1',
-            #'HLT_Mu15_v1', 'HLT_Mu15_v2',
-            'HLT_IsoMu17_v5', 'HLT_IsoMu17_v6', 'HLT_IsoMu17_v8', 'HLT_IsoMu17_v9', 'HLT_IsoMu17_v11',
-            #'HLT_Mu24_v1', 'HLT_Mu24_v2'
+            'HLT_IsoMu17_v5', 'HLT_IsoMu17_v6', 'HLT_IsoMu17_v8', 'HLT_IsoMu17_v9', 'HLT_IsoMu17_v11'
         )
     )
 )
@@ -94,8 +91,8 @@ muonPFTauHPSpTaNCskimPath = cms.Path(countEventsProcessed + commonSkimSequence +
 tauIdEffSampleEventSelection = cms.untracked.PSet(
     SelectEvents = cms.untracked.PSet(
         SelectEvents = cms.vstring(
-            #'muonPFTauFixedConeSkimPath',
-            #'muonPFTauShrinkingConeSkimPath',
+            ##'muonPFTauFixedConeSkimPath',
+            ##'muonPFTauShrinkingConeSkimPath',
             'muonPFTauHPSskimPath',
             'muonPFTauHPSpTaNCskimPath'
         )
