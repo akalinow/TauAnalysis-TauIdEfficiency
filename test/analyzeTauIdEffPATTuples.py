@@ -2,6 +2,7 @@
 
 from TauAnalysis.TauIdEfficiency.recoSampleDefinitionsTauIdEfficiency_7TeV_grid_cfi import recoSampleDefinitionsTauIdEfficiency_7TeV
 from TauAnalysis.Configuration.userRegistry import getJobId
+from TauAnalysis.CandidateTools.tools.composeModuleName import composeModuleName
 
 import os
 import subprocess
@@ -17,6 +18,11 @@ samplesToAnalyze = [
     # modify in case you want to submit jobs for some of the samples only...
 ]
 
+sysUncertainties = [
+    "sysTauJetEn", # needed for diTauVisMass/diTauVisMassFromJet
+    "sysJetEnUp"   # needed for diTauMt
+]
+
 if len(samplesToAnalyze) == 0:
     samplesToAnalyze = recoSampleDefinitionsTauIdEfficiency_7TeV['RECO_SAMPLES'].keys()
 
@@ -26,6 +32,11 @@ inputFiles = os.listdir(inputFilePath)
 configFileNames = []
 outputFileNames = []
 
+sysUncertainties_expanded = [ "CENTRAL_VALUE" ]
+for sysUncertainty in sysUncertainties:
+    sysUncertainties_expanded.append(sysUncertainty + "Up")
+    sysUncertainties_expanded.append(sysUncertainty + "Down")
+    
 for sampleToAnalyze in samplesToAnalyze:
 
     isMC = False
@@ -69,21 +80,34 @@ for sampleToAnalyze in samplesToAnalyze:
         inputFiles_string += inputFile_sample
     inputFiles_string += "'"
 
-    outputFileName = os.path.join(outputFilePath, 'analyzeTauIdEffHistograms_%s_%s.root' % (sampleToAnalyze, jobId))
+    for sysUncertainty in sysUncertainties_expanded:
 
-    weights_string = ""
-    if not recoSampleDefinitionsTauIdEfficiency_7TeV['MERGE_SAMPLES'][process_matched]['type'] == 'Data':
-        weights_string += "".join(["'", "ntupleProducer:tauIdEffNtuple#addPileupInfo#vtxMultReweight", "'"])
-        #weights_string += "".join(["'", "ntupleProducer:tauIdEffNtuple#selectedPatMuonsForTauIdEffTrkIPcumulative#muonHLTeff", "'"])
+        outputFileName = None
+        if sysUncertainty != "CENTRAL_VALUE":            
+            outputFileName = 'analyzeTauIdEffHistograms_%s_%s_%s.root' % (sampleToAnalyze, sysUncertainty, jobId)
+        else:
+            outputFileName = 'analyzeTauIdEffHistograms_%s_%s.root' % (sampleToAnalyze, jobId)
+        outputFileName_full = os.path.join(outputFilePath, outputFileName)
 
-    allEvents_DBS = -1
-    xSection = 0.0
-    if not recoSampleDefinitionsTauIdEfficiency_7TeV['MERGE_SAMPLES'][process_matched]['type'] == 'Data':
-        allEvents_DBS = recoSampleDefinitionsTauIdEfficiency_7TeV['RECO_SAMPLES'][sampleToAnalyze]['events_processed']
-        xSection = recoSampleDefinitionsTauIdEfficiency_7TeV['RECO_SAMPLES'][sampleToAnalyze]['x_sec']
-    intLumiData = recoSampleDefinitionsTauIdEfficiency_7TeV['TARGET_LUMI']
+        srcMuTauPairs = None
+        if sysUncertainty != "CENTRAL_VALUE":  
+            srcMuTauPairs = composeModuleName([ 'selectedMuPFTauHPSpairsDzForTauIdEff', sysUncertainty, "cumulative" ])            
+        else:
+            srcMuTauPairs = 'selectedMuPFTauHPSpairsDzForTauIdEffCumulative'
 
-    config = \
+        weights_string = ""
+        if not recoSampleDefinitionsTauIdEfficiency_7TeV['MERGE_SAMPLES'][process_matched]['type'] == 'Data':
+            weights_string += "".join(["'", "ntupleProducer:tauIdEffNtuple#addPileupInfo#vtxMultReweight", "'"])
+            #weights_string += "".join(["'", "ntupleProducer:tauIdEffNtuple#selectedPatMuonsForTauIdEffTrkIPcumulative#muonHLTeff", "'"])
+
+        allEvents_DBS = -1
+        xSection = 0.0
+        if not recoSampleDefinitionsTauIdEfficiency_7TeV['MERGE_SAMPLES'][process_matched]['type'] == 'Data':
+            allEvents_DBS = recoSampleDefinitionsTauIdEfficiency_7TeV['RECO_SAMPLES'][sampleToAnalyze]['events_processed']
+            xSection = recoSampleDefinitionsTauIdEfficiency_7TeV['RECO_SAMPLES'][sampleToAnalyze]['x_sec']
+        intLumiData = recoSampleDefinitionsTauIdEfficiency_7TeV['TARGET_LUMI']
+
+        config = \
 """
 import FWCore.ParameterSet.Config as cms
 
@@ -152,7 +176,7 @@ process.tauIdEffAnalyzer = cms.PSet(
         )        
     ),
 
-    sysShift = cms.string("CENTRAL_VALUE"),
+    sysShift = cms.string('%s'),
 
     srcTrigger = cms.InputTag('patTriggerEvent'),
     hltPaths = cms.vstring(
@@ -161,7 +185,7 @@ process.tauIdEffAnalyzer = cms.PSet(
     
     srcGoodMuons = cms.InputTag('patGoodMuons'),
     
-    srcMuTauPairs = cms.InputTag('selectedMuPFTauHPSpairsDzForTauIdEffCumulative'),
+    srcMuTauPairs = cms.InputTag('%s'),
 
     srcVertices = cms.InputTag('offlinePrimaryVertices'),
 
@@ -177,15 +201,20 @@ process.tauIdEffAnalyzer = cms.PSet(
 
     srcLumiProducer = cms.InputTag('lumiProducer')
 )
-""" % (inputFiles_string, outputFileName, process_matched, processType, weights_string, allEvents_DBS, xSection, intLumiData)
+""" % (inputFiles_string, outputFileName_full,
+       process_matched, processType, sysUncertainty, srcMuTauPairs, weights_string, allEvents_DBS, xSection, intLumiData)
 
-    configFileName = "analyzeTauIdEffPATtuple_%s_cfg.py" % sampleToAnalyze
-    configFile = open(configFileName, "w")
-    configFile.write(config)
-    configFile.close()
-    configFileNames.append(configFileName)
+        configFileName = None
+        if sysUncertainty != "CENTRAL_VALUE":  
+            configFileName = "analyzeTauIdEffPATtuple_%s_%s_cfg.py" % (sampleToAnalyze, sysUncertainty)
+        else:
+            configFileName = "analyzeTauIdEffPATtuple_%s_cfg.py" % sampleToAnalyze
+        configFile = open(configFileName, "w")
+        configFile.write(config)
+        configFile.close()
+        configFileNames.append(configFileName)
 
-    outputFileNames.append(outputFileName)
+        outputFileNames.append(outputFileName)
 
 executable = '../../../../bin/slc5_amd64_gcc434/FWLiteTauIdEffAnalyzer'
 

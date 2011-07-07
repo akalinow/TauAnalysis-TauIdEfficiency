@@ -21,16 +21,16 @@ process.fitTauIdEff_wConstraints = cms.PSet(
     #runClosureTest = cms.bool(False),
     runClosureTest = cms.bool(True),
 
-    #takeQCDfromData = cms.bool(False),
-    takeQCDfromData = cms.bool(True),
+    takeQCDfromData = cms.bool(False),
+    #takeQCDfromData = cms.bool(True),
 
     # CV: fitting fake-rates of background processes
     #     in C2f/C2p regions causes bias of fit result (2011/06/28)
     fitTauIdEffC2 = cms.bool(False),
     #fitTauIdEffC2 = cms.bool(True),
     
-    runSysUncertainties = cms.bool(False),
-    #runSysUncertainties = cms.bool(True),
+    #runSysUncertainties = cms.bool(False),
+    runSysUncertainties = cms.bool(True),
 
     numPseudoExperiments = cms.uint32(10000),
 
@@ -69,8 +69,8 @@ process.fitTauIdEff_wConstraints = cms.PSet(
     ),
 
     sysUncertainties = cms.vstring(
-        "CENTRAL_VALUE",
-        #"SysTauJetEn", # needed for diTauVisMass/diTauVisMassFromJet
-        #"SysJetEnUp"   # needed for diTauMt
+        #"CENTRAL_VALUE",
+        "SysTauJetEn", # needed for diTauVisMass/diTauVisMassFromJet
+        "SysJetEnUp"   # needed for diTauMt
     )
 )

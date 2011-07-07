@@ -30,7 +30,8 @@ samplesToAnalyze = [
 ]
 
 #outputFilePath = "/castor/cern.ch/user/m/mverzett/tagprobe/patTuples_v6"
-outputFilePath = "/castor/cern.ch/user/m/mverzett/tagprobe/"
+#outputFilePath = "/castor/cern.ch/user/m/mverzett/tagprobe/"
+outputFilePath = "/castor/cern.ch/user/v/veelken/CMSSW_4_2_x/PATtuples/TauIdEffMeas"
 
 # Get all the skim files from the castor directory
 skimFilePath = getBatchHarvestLocation(channel)
