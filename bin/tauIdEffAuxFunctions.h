@@ -22,6 +22,7 @@
 #include <TCanvas.h>
 #include <TChain.h>
 #include <TFile.h>
+#include <TDirectory.h>
 #include <TH1.h>
 #include <THStack.h>
 #include <TLegend.h>
@@ -466,7 +467,7 @@ RooGaussian* makeFitConstraint(RooAbsReal* p, double value, double error)
 
 void loadHistograms(
   std::map<std::string, std::map<std::string, TH1*> >& histogramMap,
-  TFile* inputFile, const std::string& process, const std::vector<std::string>& regions,
+  TDirectory* inputDirectory, const std::string& process, const std::vector<std::string>& regions,
   const std::vector<std::string>& tauIds, const std::vector<std::string>& fitVariables, const std::string& sysShift)
 {
 //--------------------------------------------------------------------------------
@@ -492,10 +493,10 @@ void loadHistograms(
 	  histogramName.append("_").append(*tauId).append("_").append(*tauIdValue);
 	  if ( sysShift != "CENTRAL_VALUE" ) histogramName.append("_").append(sysShift);
  
-	  TH1* histogram = dynamic_cast<TH1*>(inputFile->Get(histogramName.data()));
+	  TH1* histogram = dynamic_cast<TH1*>(inputDirectory->Get(histogramName.data()));
 	  if ( !histogram ) {
 	    std::cout << "Error in <loadHistograms>: failed to load histogram = " << histogramName 
-		      << " from file = " << inputFile->GetName() << " --> aborting !!";
+		      << " from file/directory = " << inputDirectory->GetName() << " --> aborting !!";
 	    assert(0);
 	  }
 

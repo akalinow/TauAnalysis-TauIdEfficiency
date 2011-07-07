@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.2 $
+ * \version $Revision: 1.11 $
  *
- * $Id: fitTauIdEff.cc,v 1.2 2011/07/05 17:07:22 veelken Exp $
+ * $Id: fitTauIdEff.cc,v 1.11 2011/07/06 16:18:10 veelken Exp $
  *
  */
 
@@ -437,23 +437,27 @@ int main(int argc, const char* argv[])
   histogramMap templatesTTplusJets;
 
   TFile* histogramInputFile = new TFile(histogramFileName.data());
-
+  std::string directory = cfgFitTauIdEff.getParameter<std::string>("directory");
+  TDirectory* histogramInputDirectory = ( directory != "" ) ?
+    dynamic_cast<TDirectory*>(histogramInputFile->Get(directory.data())) : histogramInputFile;
+  if ( !histogramInputDirectory ) 
+    throw cms::Exception("fitTauIdEff") 
+      << "Directory = " << directory << " does not exists in input file = " << histogramFileName << " !!\n";
+  
   for ( std::vector<std::string>::const_iterator sysShift = sysShifts.begin();
 	sysShift != sysShifts.end(); ++sysShift ) {
     std::cout << "loading histograms for sysShift = " << (*sysShift) << "..." << std::endl;
-  
+    
     if ( !runClosureTest ) {
-      loadHistograms(distributionsData, histogramInputFile, "Data",       regions, tauIds, fitVariables, *sysShift);
+      loadHistograms(distributionsData, histogramInputDirectory, "Data",       regions, tauIds, fitVariables, *sysShift);
     }
 
-    loadHistograms(templatesZtautau,    histogramInputFile, "Ztautau",    regions, tauIds, fitVariables, *sysShift);
-    loadHistograms(templatesZmumu,      histogramInputFile, "Zmumu",      regions, tauIds, fitVariables, *sysShift);
-    loadHistograms(templatesQCD,        histogramInputFile, "QCD",        regions, tauIds, fitVariables, *sysShift);
-    loadHistograms(templatesWplusJets,  histogramInputFile, "WplusJets",  regions, tauIds, fitVariables, *sysShift);
-    loadHistograms(templatesTTplusJets, histogramInputFile, "TTplusJets", regions, tauIds, fitVariables, *sysShift);
+    loadHistograms(templatesZtautau,    histogramInputDirectory, "Ztautau",    regions, tauIds, fitVariables, *sysShift);
+    loadHistograms(templatesZmumu,      histogramInputDirectory, "Zmumu",      regions, tauIds, fitVariables, *sysShift);
+    loadHistograms(templatesQCD,        histogramInputDirectory, "QCD",        regions, tauIds, fitVariables, *sysShift);
+    loadHistograms(templatesWplusJets,  histogramInputDirectory, "WplusJets",  regions, tauIds, fitVariables, *sysShift);
+    loadHistograms(templatesTTplusJets, histogramInputDirectory, "TTplusJets", regions, tauIds, fitVariables, *sysShift);
   }
-
-  //delete histogramInputFile;
   
   std::map<std::string, std::map<std::string, std::map<std::string, TH1*> > > templatesAll; // key = (process, region, observable)
   templatesAll["Ztautau"]    = templatesZtautau;
@@ -700,6 +704,26 @@ int main(int argc, const char* argv[])
 
   delete histogramInputFile;
 
+//-- save fit results
+  fwlite::OutputFiles outputFile(cfg);
+  fwlite::TFileService fs = fwlite::TFileService(outputFile.file().data());
+
+  TFileDirectory fitResultOutputDirectory = ( directory != "" ) ?
+    fs.mkdir(directory.data()) : fs;
+
+  for ( std::vector<std::string>::const_iterator tauId = tauIds.begin();
+	tauId != tauIds.end(); ++tauId ) {
+    for ( std::vector<std::string>::const_iterator fitVariable = fitVariables.begin();
+	  fitVariable != fitVariables.end(); ++fitVariable ) {
+      std::string fitResultName  = std::string("fitResult_").append(*fitVariable).append("_").append(*tauId);
+      std::string fitResultTitle = std::string(*tauId).append(" Efficiency, obtained by fitting ").append(*fitVariable);
+      TH1* histogramFitResult = fitResultOutputDirectory.make<TH1F>(fitResultName.data(), fitResultTitle.data(), 1, -0.5, +0.5);
+      int fitResultBin = histogramFitResult->FindBin(0.);
+      histogramFitResult->SetBinContent(fitResultBin, effValues[*tauId][*fitVariable]);
+      histogramFitResult->SetBinError(fitResultBin, effErrors[*tauId][*fitVariable]);
+    }
+  }
+
 //--print time that it took macro to run
   std::cout << "finished executing fitTauIdEff macro:" << std::endl;
   std::cout << " #tauIdDiscr.  = " << tauIds.size() << std::endl;
@@ -707,6 +731,8 @@ int main(int argc, const char* argv[])
   std::cout << " #sysShifts    = " << sysShifts.size() 
 	    << " (numPseudoExperiments = " << numPseudoExperiments << ")" << std::endl;
   clock.Show("fitTauIdEff");
+
+  return 0;
 }
   
  
