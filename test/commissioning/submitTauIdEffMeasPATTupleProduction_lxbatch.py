@@ -12,9 +12,9 @@ channel = 'ZtoMuTau_tauIdEff'
 configFile = 'produceTauIdEffMeasPATTuple_cfg.py'
 analysisFilePath = getAnalysisFilePath(channel)
 #jobId = getJobId(channel)
-jobId = '2011Jul01_mauro'
+jobId = '2011Jul06_mauro'
 
-version = "V2"
+version = "V1"
 
 pfCandidateCollection = "particleFlow" # pile-up removal disabled
 #pfCandidateCollection = "pfNoPileUp"   # pile-up removal enabled
