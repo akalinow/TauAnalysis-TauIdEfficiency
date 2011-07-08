@@ -2,6 +2,62 @@ import FWCore.ParameterSet.Config as cms
 
 from TauAnalysis.TauIdEfficiency.produceTauIdEffMeasPATTuple_template_cfg import *
 
+#--------------------------------------------------------------------------------
+#
+# CV: add (new) SVfit algorithm;
+#     for speed reasons, run SVfit in 'fit' mode only
+#    (using combination of PS + MET likelihoods + logM regularization term
+#     to reconstruct mass of tau lepton pair, as described in CMS AN-11-165)
+#
+muTauPairProducers = [
+    #"allMuPFTauHPSpairsForTauIdEff",
+    #"allMuPFTauHPSpairsForTauIdEffSysJetEnUp",
+    #"allMuPFTauHPSpairsForTauIdEffSysJetEnDown",
+    #"allMuPFTauHPSpairsForTauIdEffSysTauJetEnUp",
+    #"allMuPFTauHPSpairsForTauIdEffSysTauJetEnDown",
+    #"allMuPFTauHPSpTaNCpairsForTauIdEff",
+    #"allMuPFTauHPSpTaNCpairsForTauIdEffSysJetEnUp",
+    #"allMuPFTauHPSpTaNCpairsForTauIdEffSysJetEnDown",
+    #"allMuPFTauHPSpTaNCpairsForTauIdEffSysTauJetEnUp",
+    #"allMuPFTauHPSpTaNCpairsForTauIdEffSysTauJetEnDown"
+]
+for muTauPairProducer in muTauPairProducers:
+    muTauPairProducerModule = getattr(process, muTauPairProducer)
+
+    muTauPairProducerModule.doSVreco = cms.bool(True)
+        
+    muTauPairProducerModule.nSVfit = cms.PSet()
+    muTauPairProducerModule.nSVfit.psKine_MEt_logM_fit = cms.PSet()
+    muTauPairProducerModule.nSVfit.psKine_MEt_logM_fit.config = copy.deepcopy(process.nSVfitConfig_template)
+    muTauPairProducerModule.nSVfit.psKine_MEt_logM_fit.config.event.resonances.A.daughters.leg1 = cms.PSet(
+        src = muTauPairProducerModule.srcLeg1,
+        likelihoodFunctions = cms.VPSet(process.nSVfitMuonLikelihoodPhaseSpace),
+        builder = process.nSVfitTauToMuBuilder
+    )
+    muTauPairProducerModule.nSVfit.psKine_MEt_logM_fit.config.event.resonances.A.daughters.leg2 = cms.PSet(
+        src = muTauPairProducerModule.srcLeg2,
+        likelihoodFunctions = cms.VPSet(process.nSVfitTauLikelihoodPhaseSpace),
+        builder = process.nSVfitTauToHadBuilder
+    )
+    muTauPairProducerModule.nSVfit.psKine_MEt_logM_fit.algorithm = cms.PSet(
+        pluginName = cms.string("nSVfitAlgorithmByLikelihoodMaximization"),
+        pluginType = cms.string("NSVfitAlgorithmByLikelihoodMaximization"),
+        minimizer  = cms.vstring("Minuit2", "Migrad"),
+        maxObjFunctionCalls = cms.uint32(5000),
+        verbosity = cms.int32(0)
+    )
+
+    muTauPairProducerModule.doPFMEtSign = cms.bool(True)
+    
+    muTauPairProducerModule.pfMEtSign = cms.PSet(
+        srcPFJets = cms.InputTag('ak5PFJets'),
+        srcPFCandidates = cms.InputTag('particleFlow'),
+        resolution = process.METSignificance_params,
+        dRoverlapPFJet = cms.double(0.3),
+        dRoverlapPFCandidate = cms.double(0.1)
+    )
+#--------------------------------------------------------------------------------
+
 #-------------------------------------------------------------------------------------------------------------------------
 #
 # Add few Ntuple variables to PAT-tuple
@@ -56,12 +112,22 @@ process.patTupleOutputModule = cms.OutputModule("PoolOutputModule",
             #'keep *_selectedMuPFTauShrinkingConePairsDzForTauIdEffCumulative_*_*',
             #'keep *_selectedMuPFTauShrinkingConePairsDzForTauIdEffSysTauJetEnUpCumulative_*_*',
             #'keep *_selectedMuPFTauShrinkingConePairsDzForTauIdEffSysTauJetEnDownCumulative_*_*',
-            'keep *_selectedMuPFTauHPSpairsDzForTauIdEffCumulative_*_*',
-            'keep *_selectedMuPFTauHPSpairsDzForTauIdEffSysTauJetEnUpCumulative_*_*',
-            'keep *_selectedMuPFTauHPSpairsDzForTauIdEffSysTauJetEnDownCumulative_*_*',
-            'keep *_selectedMuPFTauHPSpTaNCpairsDzForTauIdEffCumulative_*_*',
-            'keep *_selectedMuPFTauHPSpTaNCpairsDzForTauIdEffSysTauJetEnUpCumulative_*_*',
-            'keep *_selectedMuPFTauHPSpTaNCpairsDzForTauIdEffSysTauJetEnDownCumulative_*_*',
+            'keep *_allMuPFTauHPSpairsForTauIdEff_*_*',
+            ##'keep *_allMuPFTauHPSpairsForTauIdEffSysJetEnUp_*_*',
+            ##'keep *_allMuPFTauHPSpairsForTauIdEffSysJetEnDown_*_*',
+            ##'keep *_allMuPFTauHPSpairsForTauIdEffSysTauJetEnUp_*_*',
+            ##'keep *_allMuPFTauHPSpairsForTauIdEffSysTauJetEnDown_*_*',                          
+            #'keep *_selectedMuPFTauHPSpairsDzForTauIdEffCumulative_*_*',
+            #'keep *_selectedMuPFTauHPSpairsDzForTauIdEffSysTauJetEnUpCumulative_*_*',
+            #'keep *_selectedMuPFTauHPSpairsDzForTauIdEffSysTauJetEnDownCumulative_*_*',
+            ##'keep *_allMuPFTauHPSpTaNCpairsForTauIdEff_*_*',
+            ##'keep *_allMuPFTauHPSpTaNCpairsForTauIdEffSysJetEnUp_*_*',
+            ##'keep *_allMuPFTauHPSpTaNCpairsForTauIdEffSysJetEnDown_*_*',
+            ##'keep *_allMuPFTauHPSpTaNCpairsForTauIdEffSysTauJetEnUp_*_*',
+            ##'keep *_allMuPFTauHPSpTaNCpairsForTauIdEffSysTauJetEnDown_*_*',      
+            #'keep *_selectedMuPFTauHPSpTaNCpairsDzForTauIdEffCumulative_*_*',
+            #'keep *_selectedMuPFTauHPSpTaNCpairsDzForTauIdEffSysTauJetEnUpCumulative_*_*',
+            #'keep *_selectedMuPFTauHPSpTaNCpairsDzForTauIdEffSysTauJetEnDownCumulative_*_*',
             'keep *_offlinePrimaryVertices_*_*',
             'keep *_offlinePrimaryVerticesWithBS_*_*',
             'keep *_selectedPrimaryVertexHighestPtTrackSum_*_*',                                         
