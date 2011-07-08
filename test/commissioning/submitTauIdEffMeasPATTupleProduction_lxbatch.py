@@ -12,7 +12,8 @@ channel = 'ZtoMuTau_tauIdEff'
 configFile = 'produceTauIdEffMeasPATTuple_cfg.py'
 analysisFilePath = getAnalysisFilePath(channel)
 #jobId = getJobId(channel)
-jobId = '2011Jul06_mauro'
+#jobId = '2011Jul06_mauro'
+jobId = '2011Jul06v2'
 
 version = "V1"
 
@@ -20,12 +21,12 @@ pfCandidateCollection = "particleFlow" # pile-up removal disabled
 #pfCandidateCollection = "pfNoPileUp"   # pile-up removal enabled
 
 samplesToAnalyze = [
-    'data_SingleMu_Run2011A_May10ReReco_v1',
-    'data_SingleMu_Run2011A_PromptReco_v4',
-    'Ztautau_pythia',
-    'Zmumu_pythia',
-    'PPmuXptGt20Mu15',
-    'WplusJets_madgraph',
+    #'data_SingleMu_Run2011A_May10ReReco_v1',
+    #'data_SingleMu_Run2011A_PromptReco_v4',
+    #'Ztautau_pythia',
+    #'Zmumu_pythia',
+    #'PPmuXptGt20Mu15',
+    #'WplusJets_madgraph',
     'TTplusJets_madgraph'
 ]
 
@@ -56,7 +57,8 @@ def input_mapper(channel, sample, jobId):
 
 # Define what output ntuple file name a sample will have
 def output_mapper(channel, sample, jobId):
-    output_file = "tauIdEffMeasPATTuple_%s_%s%s.root" % (sample, jobId, version)
+    #output_file = "tauIdEffMeasPATTuple_%s_%s%s.root" % (sample, jobId, version)
+    output_file = "tauIdEffMeasPATTuple_%s_%s%s.root" % (sample, '2011Jul06_mauro', version)
     return output_file
 
 # Function to prepare customized config files specific to Tau(ED)Ntuple production

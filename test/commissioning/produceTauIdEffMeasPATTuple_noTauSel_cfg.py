@@ -1,5 +1,29 @@
 import FWCore.ParameterSet.Config as cms
 
+#--------------------------------------------------------------------------------
+# define configuration parameter default values
+
+##isMC = True # use for MC
+isMC = False # use for Data
+##HLTprocessName = "HLT" # use for 2011 Data
+HLTprocessName = "HLT" # use for Summer'11 MC
+pfCandidateCollection = "particleFlow" # pile-up removal disabled
+##pfCandidateCollection = "pfNoPileUp" # pile-up removal enabled
+applyZrecoilCorrection = False
+#applyZrecoilCorrection = True
+#--------------------------------------------------------------------------------
+
+#--------------------------------------------------------------------------------
+# define "hooks" for replacing configuration parameters
+# in case running jobs on the CERN batch system/grid
+#
+#__isMC = #isMC#
+#__HLTprocessName = #HLTprocessName#
+#__pfCandidateCollection = #pfCandidateCollection#
+#__applyZrecoilCorrection = #applyZrecoilCorrection#
+#
+#--------------------------------------------------------------------------------
+
 from TauAnalysis.TauIdEfficiency.produceTauIdEffMeasPATTupleSpecific_template_cfg import *
 
 for processAttrName in dir(process):
@@ -11,14 +35,6 @@ for processAttrName in dir(process):
 
 if hasattr(process.patTupleOutputModule, "SelectEvents"):
     delattr(process.patTupleOutputModule, "SelectEvents")
-
-##process.source.fileNames = cms.untracked.vstring(
-##    'file:/data1/veelken/CMSSW_4_2_x/skims/skimGenZtoMuTauWithinAcc_Ztautau_2011Jun30v2__C1sel_AOD.root'
-##)
-##process.source.eventsToProcess = cms.untracked.VEventRange('1:2950:1911182')
-##process.patTupleOutputModule.fileName = cms.untracked.string(
-##    'debug.root'
-##)
 
 processDumpFile = open('produceTauIdEffMeasPATTuple_noTauSel.dump' , 'w')
 print >> processDumpFile, process.dumpPython()
