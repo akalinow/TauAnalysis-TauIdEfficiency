@@ -1,5 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 
+process = cms.Process("prodTauIdEffMeasNtuple")
+
 #--------------------------------------------------------------------------------
 # define configuration parameter default values
 
@@ -24,7 +26,8 @@ applyZrecoilCorrection = False
 #
 #--------------------------------------------------------------------------------
 
-from TauAnalysis.TauIdEfficiency.produceTauIdEffMeasNtuple_template_cfg import *
+from TauAnalysis.TauIdEfficiency.produceTauIdEffMeasNtupleSpecific import produceTauIdEffMeasNtuple
+produceTauIdEffMeasNtuple(process, isMC, HLTprocessName, pfCandidateCollection, applyZrecoilCorrection)
 
 processDumpFile = open('produceTauIdEffMeasNtuple.dump' , 'w')
 print >> processDumpFile, process.dumpPython()

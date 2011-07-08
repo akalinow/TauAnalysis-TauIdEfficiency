@@ -1,5 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 
+process = cms.Process("prodTauIdEffMeasPATTuple")
+
 #--------------------------------------------------------------------------------
 # define configuration parameter default values
 
@@ -24,7 +26,8 @@ applyZrecoilCorrection = False
 #
 #--------------------------------------------------------------------------------
 
-from TauAnalysis.TauIdEfficiency.produceTauIdEffMeasPATTupleSpecific_template_cfg import *
+from TauAnalysis.TauIdEfficiency.produceTauIdEffMeasPATTupleSpecific import produceTauIdEffMeasPATTuple
+produceTauIdEffMeasPATTuple(process, isMC, HLTprocessName, pfCandidateCollection, applyZrecoilCorrection)
 
 for processAttrName in dir(process):
     processAttr = getattr(process, processAttrName)
