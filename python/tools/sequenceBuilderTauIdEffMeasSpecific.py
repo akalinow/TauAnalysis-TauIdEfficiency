@@ -334,6 +334,7 @@ def buildSequenceTauIdEffMeasSpecific(process,
     allMuTauPairsModule = process.allMuTauPairs.clone(
         srcLeg1 = cms.InputTag(composeModuleName([patMuonCollectionName, "cumulative"])),
         srcLeg2 = cms.InputTag(composeModuleName([selTauCollectionName,  "cumulative"])),
+        dRmin12 = cms.double(0.5),
         srcMET = cms.InputTag(patMEtCollectionName),
         doSVreco = cms.bool(runSVfit),
         doPFMEtSign = cms.bool(runSVfit)
