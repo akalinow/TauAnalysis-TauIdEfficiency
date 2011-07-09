@@ -258,6 +258,8 @@ process.tauIdEffAnalyzer = cms.PSet(
 
         outputFileNames.append(outputFileName_full)
 
+executable = '../../../../bin/slc5_amd64_gcc434/FWLiteTauIdEffAnalyzer'
+
 shellFileName = "analyzeTauIdEffPATtuples.csh"
 shellFile = open(shellFileName, "w")
 shellFile.write("#!/bin/csh -f\n")
@@ -265,11 +267,7 @@ shellFile.write("\n")
 for configFileName in configFileNames:
     # CV: add '&' at end of command-line to run all FWLiteTauIdEffAnalyzer jobs in parallel
     logFileName = configFileName.replace("_cfg.py", ".log")
-    executable = '../../../../bin/slc5_amd64_gcc434/FWLiteTauIdEffAnalyzer'
     shellFile.write('%s %s >&! %s &\n' % (executable, configFileName, logFileName))
-# CV: add command-line for executing FWLiteTauIdEffPreselNumber job
-executablePreselNumbers = '../../../../bin/slc5_amd64_gcc434/FWLiteTauIdEffPreselNumbers'
-shellFile.write('%s %s >&! %s &\n' % (executablePreselNumbers, "compTauIdEffPreselNumbers_cfg.py", "compTauIdEffPreselNumbers.log"))
 shellFile.close()
 
 print("Finished building config files. Now execute 'source %s'." % shellFileName)
@@ -282,9 +280,6 @@ haddOutputFileName = os.path.join(outputFilePath, 'analyzeTauIdEffHistograms_all
 haddCommandLine = "hadd %s" % haddOutputFileName
 for outputFileName in outputFileNames:
     haddCommandLine += " %s" % outputFileName
-# CV: add output file produced by FWLiteTauIdEffPreselNumber job
-outputFileNamePreselNumbers = "/data1/veelken/tmp/compTauIdEffPreselNumbers_Ztautau_pythia_2011Jul06_mauro.root"
-haddCommandLine += " %s" % outputFileNamePreselNumbers
 haddFile.write("%s\n" % haddCommandLine)
 haddFile.close()
 
