@@ -9,9 +9,9 @@ import subprocess
 
 channel = 'ZtoMuTau_tauIdEff'
 #jobId = getJobId(channel)
-jobId = '2011Jul01_mauroV2'
+jobId = '2011Jul06_mauroV3'
 
-inputFilePath = '/data2/veelken/CMSSW_4_2_x/PATtuples/TauIdEffMeas/2011Jul01_mauro/user/v/veelken/CMSSW_4_2_x/PATtuples/TauIdEffMeas/'
+inputFilePath = '/data2/veelken/CMSSW_4_2_x/PATtuples/TauIdEffMeas/2011Jul06_mauro/user/v/veelken/CMSSW_4_2_x/PATtuples/TauIdEffMeas/'
 outputFilePath = '/data1/veelken/tmp/'
 
 samplesToAnalyze = [
@@ -19,8 +19,8 @@ samplesToAnalyze = [
 ]
 
 sysUncertainties = [
-    "sysTauJetEn", # needed for diTauVisMass/diTauVisMassFromJet
-    "sysJetEnUp"   # needed for diTauMt
+    ##"sysTauJetEn", # needed for diTauVisMass/diTauVisMassFromJet
+    ##"sysJetEnUp"   # needed for diTauMt
 ]
 
 if len(samplesToAnalyze) == 0:
@@ -156,24 +156,66 @@ process.tauIdEffAnalyzer = cms.PSet(
         cms.PSet(
             discriminators = cms.vstring(
                 'decayModeFinding',
-                'byLooseIsolationDeltaBetaCorr'
+                'byLooseIsolation'
             ),
             name = cms.string("tauDiscrHPSloose")
         ),
         cms.PSet(
             discriminators = cms.vstring(
                 'decayModeFinding',
-                'byMediumIsolationDeltaBetaCorr'
+                'byMediumIsolation'
             ),
             name = cms.string("tauDiscrHPSmedium")
         ),
         cms.PSet(
             discriminators = cms.vstring(
                 'decayModeFinding',
-                'byTightIsolationDeltaBetaCorr'
+                'byTightIsolation'
             ),
             name = cms.string("tauDiscrHPStight")
-        )        
+        ),     
+        cms.PSet(
+            discriminators = cms.vstring(
+                'decayModeFinding',
+                'byLooseIsolationDeltaBetaCorr'
+            ),
+            name = cms.string("tauDiscrHPSlooseDBcorr")
+        ),
+        cms.PSet(
+            discriminators = cms.vstring(
+                'decayModeFinding',
+                'byMediumIsolationDeltaBetaCorr'
+            ),
+            name = cms.string("tauDiscrHPSmediumDBcorr")
+        ),
+        cms.PSet(
+            discriminators = cms.vstring(
+                'decayModeFinding',
+                'byTightIsolationDeltaBetaCorr'
+            ),
+            name = cms.string("tauDiscrHPStightDBcorr")
+        ),     
+        cms.PSet(
+            discriminators = cms.vstring(
+                'decayModeFinding',
+                'byLooseCombinedIsolationDeltaBetaCorr'
+            ),
+            name = cms.string("tauDiscrHPScombLooseDBcorr")
+        ),
+        cms.PSet(
+            discriminators = cms.vstring(
+                'decayModeFinding',
+                'byMediumCombinedIsolationDeltaBetaCorr'
+            ),
+            name = cms.string("tauDiscrHPScombMediumDBcorr")
+        ),
+        cms.PSet(
+            discriminators = cms.vstring(
+                'decayModeFinding',
+                'byTightCombinedIsolationDeltaBetaCorr'
+            ),
+            name = cms.string("tauDiscrHPScombTightDBcorr")
+        )             
     ),
 
     sysShift = cms.string('%s'),
@@ -214,9 +256,7 @@ process.tauIdEffAnalyzer = cms.PSet(
         configFile.close()
         configFileNames.append(configFileName)
 
-        outputFileNames.append(outputFileName)
-
-executable = '../../../../bin/slc5_amd64_gcc434/FWLiteTauIdEffAnalyzer'
+        outputFileNames.append(outputFileName_full)
 
 shellFileName = "analyzeTauIdEffPATtuples.csh"
 shellFile = open(shellFileName, "w")
@@ -225,7 +265,11 @@ shellFile.write("\n")
 for configFileName in configFileNames:
     # CV: add '&' at end of command-line to run all FWLiteTauIdEffAnalyzer jobs in parallel
     logFileName = configFileName.replace("_cfg.py", ".log")
+    executable = '../../../../bin/slc5_amd64_gcc434/FWLiteTauIdEffAnalyzer'
     shellFile.write('%s %s >&! %s &\n' % (executable, configFileName, logFileName))
+# CV: add command-line for executing FWLiteTauIdEffPreselNumber job
+executablePreselNumbers = '../../../../bin/slc5_amd64_gcc434/FWLiteTauIdEffPreselNumbers'
+shellFile.write('%s %s >&! %s &\n' % (executablePreselNumbers, "compTauIdEffPreselNumbers_cfg.py", "compTauIdEffPreselNumbers.log"))
 shellFile.close()
 
 print("Finished building config files. Now execute 'source %s'." % shellFileName)
@@ -238,6 +282,9 @@ haddOutputFileName = os.path.join(outputFilePath, 'analyzeTauIdEffHistograms_all
 haddCommandLine = "hadd %s" % haddOutputFileName
 for outputFileName in outputFileNames:
     haddCommandLine += " %s" % outputFileName
+# CV: add output file produced by FWLiteTauIdEffPreselNumber job
+outputFileNamePreselNumbers = "/data1/veelken/tmp/compTauIdEffPreselNumbers_Ztautau_pythia_2011Jul06_mauro.root"
+haddCommandLine += " %s" % outputFileNamePreselNumbers
 haddFile.write("%s\n" % haddCommandLine)
 haddFile.close()
 
