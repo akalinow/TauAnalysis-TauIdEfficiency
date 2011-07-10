@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.10 $
+ * \version $Revision: 1.11 $
  *
- * $Id: FWLiteTauIdEffAnalyzer.cc,v 1.10 2011/07/07 12:08:51 veelken Exp $
+ * $Id: FWLiteTauIdEffAnalyzer.cc,v 1.11 2011/07/07 12:23:15 veelken Exp $
  *
  */
 
@@ -64,6 +64,7 @@ struct regionEntryType
       sysShift_(sysShift),
       selector_(0),
       histManager_(0),
+/*
       histManagerTauEtaLt15_(0),
       histManagerTauEta15to19_(0),
       histManagerTauEta19to23_(0),
@@ -79,6 +80,7 @@ struct regionEntryType
       histManagerNumVertices5to6_(0),
       histManagerNumVertices7to8_(0),
       histManagerNumVerticesGt8_(0),
+ */
       numMuTauPairs_selected_(0),
       numMuTauPairsWeighted_selected_(0.)
   {
@@ -99,7 +101,7 @@ struct regionEntryType
     cfgHistManager.addParameter<std::string>("label", label_);
 
     histManager_                = addHistManager(fs, "",                cfgHistManager);
-
+/*
     histManagerTauEtaLt15_      = addHistManager(fs, "tauEtaLt15",      cfgHistManager);
     histManagerTauEta15to19_    = addHistManager(fs, "tauEta15to19",    cfgHistManager);
     histManagerTauEta19to23_    = addHistManager(fs, "tauEta19to23",    cfgHistManager);
@@ -118,13 +120,14 @@ struct regionEntryType
     histManagerNumVertices5to6_ = addHistManager(fs, "numVertices5to6", cfgHistManager);
     histManagerNumVertices7to8_ = addHistManager(fs, "numVertices7to8", cfgHistManager);
     histManagerNumVerticesGt8_  = addHistManager(fs, "numVerticesGt8",  cfgHistManager);
+ */
   }
   ~regionEntryType()
   {
     delete selector_;
 
     delete histManager_;
-
+/*
     delete histManagerTauEtaLt15_;
     delete histManagerTauEta15to19_;
     delete histManagerTauEta19to23_;
@@ -143,6 +146,7 @@ struct regionEntryType
     delete histManagerNumVertices5to6_;
     delete histManagerNumVertices7to8_;
     delete histManagerNumVerticesGt8_;
+ */
   }
   TauIdEffHistManager* addHistManager(fwlite::TFileService& fs, const std::string& dirName, const edm::ParameterSet& cfg)
   {
@@ -163,7 +167,7 @@ struct regionEntryType
     if ( selector_->operator()(muTauPair, evtSelFlags) ) {
 //--- fill histograms for "inclusive" tau id. efficiency measurement
       histManager_->fillHistograms(muTauPair, numVertices, evtWeight);
-
+/*
 //--- fill histograms for tau id. efficiency measurement as function of tau-jet pseudo-rapidity
       double tauAbsEta = TMath::Abs(muTauPair.leg1()->eta());
       if      ( tauAbsEta < 1.5 ) histManagerTauEtaLt15_->fillHistograms(muTauPair, numVertices, evtWeight);
@@ -189,7 +193,7 @@ struct regionEntryType
       else if ( numVertices <=  6 ) histManagerNumVertices5to6_->fillHistograms(muTauPair, numVertices, evtWeight);
       else if ( numVertices <=  8 ) histManagerNumVertices7to8_->fillHistograms(muTauPair, numVertices, evtWeight);
       else if ( numVertices <= 20 ) histManagerNumVerticesGt8_->fillHistograms(muTauPair, numVertices, evtWeight);
-
+ */
       ++numMuTauPairs_selected_;
       numMuTauPairsWeighted_selected_ += evtWeight;
     }
@@ -205,7 +209,7 @@ struct regionEntryType
   TauIdEffEventSelector* selector_;
 
   TauIdEffHistManager* histManager_;
-
+/*
   TauIdEffHistManager* histManagerTauEtaLt15_;
   TauIdEffHistManager* histManagerTauEta15to19_;
   TauIdEffHistManager* histManagerTauEta19to23_;
@@ -224,7 +228,7 @@ struct regionEntryType
   TauIdEffHistManager* histManagerNumVertices5to6_;
   TauIdEffHistManager* histManagerNumVertices7to8_;
   TauIdEffHistManager* histManagerNumVerticesGt8_;
-
+ */
   int numMuTauPairs_selected_;
   double numMuTauPairsWeighted_selected_;
 };
@@ -296,6 +300,11 @@ int main(int argc, char* argv[])
     }
   }
 
+  edm::ParameterSet cfgSelectorABCD;
+  cfgSelectorABCD.addParameter<vstring>("tauIdDiscriminators", vstring());
+  cfgSelectorABCD.addParameter<std::string>("region", "ABCD");
+  TauIdEffEventSelector* selectorABCD = new TauIdEffEventSelector(cfgSelectorABCD);
+
 //--- book "dummy" histogram counting number of processed events
   TH1* histogramEventCounter = fs.make<TH1F>("numEventsProcessed", "Number of processed Events", 3, -0.5, +2.5);
   histogramEventCounter->GetXaxis()->SetBinLabel(1, "all Events (DBS)");      // CV: bin numbers start at 1 (not 0) !!
@@ -312,9 +321,15 @@ int main(int argc, char* argv[])
   double xSection = cfgTauIdEffAnalyzer.getParameter<double>("xSection");
   double intLumiData = cfgTauIdEffAnalyzer.getParameter<double>("intLumiData");
 
-  int numEvents_processed = 0; 
-  double numEventsWeighted_processed = 0;
-  
+  int    numEvents_processed                     = 0; 
+  double numEventsWeighted_processed             = 0.;
+  int    numEvents_passedTrigger                 = 0;
+  double numEventsWeighted_passedTrigger         = 0.;
+  int    numEvents_passedDiMuonVeto              = 0;
+  double numEventsWeighted_passedDiMuonVeto      = 0.;
+  int    numEvents_passedDiMuTauPairVeto         = 0;
+  double numEventsWeighted_passedDiMuTauPairVeto = 0.;
+
   edm::RunNumber_t lastLumiBlock_run = -1;
   edm::LuminosityBlockNumber_t lastLumiBlock_ls = -1;
 
@@ -339,6 +354,19 @@ int main(int argc, char* argv[])
     fwlite::Event evt(inputFile);
     for ( evt.toBegin(); !(evt.atEnd() || maxEvents_processed); ++evt ) {
 
+      //std::cout << "processing run = " << evt.id().run() << ":" 
+      //	  << " ls = " << evt.luminosityBlock() << ", event = " << evt.id().event() << std::endl;
+
+//--- compute event weight
+//   (pile-up reweighting, Data/MC correction factors,...)
+      double evtWeight = 1.0;
+      for ( vInputTag::const_iterator srcWeight = srcWeights.begin();
+	    srcWeight != srcWeights.end(); ++srcWeight ) {
+	edm::Handle<double> weight;
+	evt.getByLabel(*srcWeight, weight);
+	evtWeight *= (*weight);
+      }
+
 //--- check if new luminosity section has started;
 //    if so, retrieve number of events contained in this luminosity section before skimming
       if ( !(evt.id().run() == lastLumiBlock_run && evt.luminosityBlock() == lastLumiBlock_ls) ) {
@@ -353,9 +381,17 @@ int main(int argc, char* argv[])
 	  edm::Handle<LumiSummary> lumiSummary;
 	  edm::InputTag srcLumiProducer("lumiProducer");
 	  ls.getByLabel(srcLumiProducer, lumiSummary);
-	  intLumiData_analyzed = lumiSummary->intgRecLumi();
+	  intLumiData_analyzed += lumiSummary->intgRecLumi();
 	}
       }
+
+//--- fill "dummy" histogram counting number of processed events
+      histogramEventCounter->Fill(2);
+
+//--- quit event loop if maximal number of events to be processed is reached 
+      ++numEvents_processed;
+      numEventsWeighted_processed += evtWeight;
+      if ( maxEvents > 0 && numEvents_processed >= maxEvents ) maxEvents_processed = true;
 
 //--- check that event has passed triggers
       edm::Handle<pat::TriggerEvent> hltEvent;
@@ -372,49 +408,52 @@ int main(int argc, char* argv[])
 	}
       }
 
-//--- compute event weight
-//   (pile-up reweighting, Data/MC correction factors,...)
-      double evtWeight = 1.0;
-      for ( vInputTag::const_iterator srcWeight = srcWeights.begin();
-	    srcWeight != srcWeights.end(); ++srcWeight ) {
-	edm::Handle<double> weight;
-	evt.getByLabel(*srcWeight, weight);
-	evtWeight *= (*weight);
-      }
+      if ( !isTriggered ) continue;
+      ++numEvents_passedTrigger;
+      numEventsWeighted_passedTrigger += evtWeight;
 
-//--- require event to pass trigger requirements
-//    and to contain only one "good quality" muon
+//--- require event to contain only one "good quality" muon
       typedef std::vector<pat::Muon> PATMuonCollection;
       edm::Handle<PATMuonCollection> goodMuons;
       evt.getByLabel(srcGoodMuons, goodMuons);
       size_t numGoodMuons = goodMuons->size();
-
-      if ( isTriggered && numGoodMuons <= 1 ) {
 	
-	edm::Handle<reco::VertexCollection> vertices;
-	evt.getByLabel(srcVertices, vertices);
-	size_t numVertices = vertices->size();
+      if ( !(numGoodMuons <= 1) ) continue;
+      ++numEvents_passedDiMuonVeto;
+      numEventsWeighted_passedDiMuonVeto += evtWeight;
 
-//--- iterate over collection of muon + tau-jet pairs
-	edm::Handle<PATMuTauPairCollection> muTauPairs;
-	evt.getByLabel(srcMuTauPairs, muTauPairs);
+//--- require event to contain exactly one muon + tau-jet pair
+//    passing the selection criteria for region "ABCD"
+      edm::Handle<PATMuTauPairCollection> muTauPairs;
+      evt.getByLabel(srcMuTauPairs, muTauPairs);
 
-	for ( PATMuTauPairCollection::const_iterator muTauPair = muTauPairs->begin();
-	      muTauPair != muTauPairs->end(); ++muTauPair ) {
-	  for ( std::vector<regionEntryType*>::iterator regionEntry = regionEntries.begin();
-		regionEntry != regionEntries.end(); ++regionEntry ) {
-	    (*regionEntry)->analyze(*muTauPair, numVertices, evtWeight);
-	  }
-	}
+      unsigned numMuTauPairsABCD = 0;
+      for ( PATMuTauPairCollection::const_iterator muTauPair = muTauPairs->begin();
+	    muTauPair != muTauPairs->end(); ++muTauPair ) {
+	pat::strbitset evtSelFlags;
+	if ( selectorABCD->operator()(*muTauPair, evtSelFlags) ) ++numMuTauPairsABCD;
       }
       
-//--- fill "dummy" histogram counting number of processed events
-      histogramEventCounter->Fill(2);
+      if ( !(numMuTauPairsABCD <= 1) ) continue;
+      ++numEvents_passedDiMuTauPairVeto;
+      numEventsWeighted_passedDiMuTauPairVeto += evtWeight;
 
-//--- quit event loop if maximal number of events to be processed is reached 
-      ++numEvents_processed;
-      numEventsWeighted_processed += evtWeight;
-      if ( maxEvents > 0 && numEvents_processed >= maxEvents ) maxEvents_processed = true;
+//--- determine number of vertices reconstructed in the event
+//   (needed to parametrize dependency of tau id. efficiency on number of pile-up interactions)
+      edm::Handle<reco::VertexCollection> vertices;
+      evt.getByLabel(srcVertices, vertices);
+      size_t numVertices = vertices->size();
+
+//--- iterate over collection of muon + tau-jet pairs:
+//    check which region muon + tau-jet pair is selected in,
+//    fill histograms for that region
+      for ( PATMuTauPairCollection::const_iterator muTauPair = muTauPairs->begin();
+	    muTauPair != muTauPairs->end(); ++muTauPair ) {
+	for ( std::vector<regionEntryType*>::iterator regionEntry = regionEntries.begin();
+	      regionEntry != regionEntries.end(); ++regionEntry ) {
+	  (*regionEntry)->analyze(*muTauPair, numVertices, evtWeight);
+	}
+      }
     }
 
 //--- close input file
@@ -451,6 +490,12 @@ int main(int argc, char* argv[])
   std::cout << "<FWLiteTauIdEffAnalyzer>:" << std::endl;
   std::cout << " numEvents_processed: " << numEvents_processed 
 	    << " (weighted = " << numEventsWeighted_processed << ")" << std::endl;
+  std::cout << " numEvents_passedTrigger: " << numEvents_passedTrigger 
+	    << " (weighted = " << numEventsWeighted_passedTrigger << ")" << std::endl;
+  std::cout << " numEvents_passedDiMuonVeto: " << numEvents_passedDiMuonVeto 
+	    << " (weighted = " << numEventsWeighted_passedDiMuonVeto << ")" << std::endl;
+  std::cout << " numEvents_passedDiMuTauPairVeto: " << numEvents_passedDiMuTauPairVeto
+	    << " (weighted = " << numEventsWeighted_passedDiMuTauPairVeto << ")" << std::endl;
   std::string lastTauIdName = "";
   for ( std::vector<regionEntryType*>::iterator regionEntry = regionEntries.begin();
 	regionEntry != regionEntries.end(); ++regionEntry ) {

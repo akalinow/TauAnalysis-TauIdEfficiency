@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.2 $
+ * \version $Revision: 1.3 $
  *
- * $Id: FWLiteTauIdEffPreselNumbers.cc,v 1.2 2011/07/05 17:07:22 veelken Exp $
+ * $Id: FWLiteTauIdEffPreselNumbers.cc,v 1.3 2011/07/06 16:18:10 veelken Exp $
  *
  */
 
@@ -36,11 +36,9 @@
 #include "DataFormats/HepMCCandidate/interface/GenParticleFwd.h"
 #include "DataFormats/Common/interface/Handle.h"
 
-#include "PhysicsTools/JetMCUtils/interface/JetMCTag.h"
-#include "TauAnalysis/GenSimTools/interface/genParticleAuxFunctions.h"
-
 #include "TauAnalysis/TauIdEfficiency/interface/TauIdEffEventSelector.h"
 #include "TauAnalysis/TauIdEfficiency/interface/TauIdEffCutFlowTable.h"
+#include "TauAnalysis/CandidateTools/interface/candidateAuxFunctions.h"
 #include "TauAnalysis/CandidateTools/interface/generalAuxFunctions.h"
 
 #include "AnalysisDataFormats/TauAnalysis/interface/CompositePtrCandidateT1T2MEt.h"
@@ -335,18 +333,18 @@ int getGenMatchType(const PATMuTauPair& muTauPair, const reco::GenParticleCollec
 //
 //    NOTE: code to perform matching taken from TauAnalysis/Core/plugins/TauHistManager.cc
 //
-  int absMatchingGenParticlePdgId           = TMath::Abs(getMatchingGenParticlePdgId(muTauPair.leg2()->p4(), genParticles, 0, true));
-  int absMatchingFinalStateGenParticlePdgId = TMath::Abs(getMatchingGenParticlePdgId(muTauPair.leg2()->p4(), genParticles, 0, false));
+  //std::cout << "<getGenMatchType>:" << std::endl;
 
-  std::string genTauDecayMode = "";
-  if ( muTauPair.leg2()->genJet() != 0 ) {
-    genTauDecayMode = JetMCTagUtils::genTauDecayMode(*muTauPair.leg2()->genJet());
-  } else if ( absMatchingGenParticlePdgId == 15 ) { // special handling of tau --> electron/muon decays
-    if      ( absMatchingFinalStateGenParticlePdgId == 11 ) genTauDecayMode = "electron";
-    else if ( absMatchingFinalStateGenParticlePdgId == 13 ) genTauDecayMode = "muon";
-  }
+  const reco::GenParticle* matchingGenParticle = findGenParticle(muTauPair.leg2()->p4(), genParticles);
+  int matchingGenParticleAbsPdgId = ( matchingGenParticle ) ?
+    TMath::Abs(matchingGenParticle->pdgId()) : 0;
+  //std::cout << " matchingGenParticleAbsPdgId = " << matchingGenParticleAbsPdgId << std::endl;
 
-  if ( absMatchingGenParticlePdgId == 15 &&
+  std::string genTauDecayMode = ( matchingGenParticle && matchingGenParticleAbsPdgId == 15 ) ?
+    getGenTauDecayMode(matchingGenParticle) : "";
+  //std::cout << " genTauDecayMode = " << genTauDecayMode << std::endl;
+
+  if ( matchingGenParticleAbsPdgId == 15 &&
        (genTauDecayMode == "oneProng0Pi0"    ||
 	genTauDecayMode == "oneProng1Pi0"    ||
 	genTauDecayMode == "oneProng2Pi0"    ||
@@ -355,10 +353,11 @@ int getGenMatchType(const PATMuTauPair& muTauPair, const reco::GenParticleCollec
 	genTauDecayMode == "threeProngOther" ||
 	genTauDecayMode == "threeProngOther" ||
 	genTauDecayMode == "rare"            ) ) return kTauHadMatched;
-  else if ( (absMatchingGenParticlePdgId >= 1 && absMatchingGenParticlePdgId <= 6) ||
-	     absMatchingGenParticlePdgId == 11 || absMatchingGenParticlePdgId == 13 ||
-	     absMatchingGenParticlePdgId == 21 ||
-	     absMatchingGenParticlePdgId == 22 ) return kFakeTauMatched;
+  else if ( (matchingGenParticleAbsPdgId >=  1 && matchingGenParticleAbsPdgId <=  6) ||
+	     matchingGenParticleAbsPdgId == 11 || matchingGenParticleAbsPdgId == 13  ||
+	    (matchingGenParticleAbsPdgId == 15 && (genTauDecayMode == "electron" || genTauDecayMode == "muon")) ||
+	     matchingGenParticleAbsPdgId == 21 ||
+	     matchingGenParticleAbsPdgId == 22 ) return kFakeTauMatched;
   else                                           return kUnmatched;
 }
 
@@ -425,8 +424,19 @@ int main(int argc, char* argv[])
     }
   }
 
-  int numEvents_processed = 0; 
-  double numEventsWeighted_processed = 0;
+  edm::ParameterSet cfgSelectorABCD;
+  cfgSelectorABCD.addParameter<vstring>("tauIdDiscriminators", vstring());
+  cfgSelectorABCD.addParameter<std::string>("region", "ABCD");
+  TauIdEffEventSelector* selectorABCD = new TauIdEffEventSelector(cfgSelectorABCD);
+
+  int    numEvents_processed                     = 0; 
+  double numEventsWeighted_processed             = 0.;
+  int    numEvents_passedTrigger                 = 0;
+  double numEventsWeighted_passedTrigger         = 0.;
+  int    numEvents_passedDiMuonVeto              = 0;
+  double numEventsWeighted_passedDiMuonVeto      = 0.;
+  int    numEvents_passedDiMuTauPairVeto         = 0;
+  double numEventsWeighted_passedDiMuTauPairVeto = 0.;
   
   bool maxEvents_processed = false;
   for ( vstring::const_iterator inputFileName = inputFiles.files().begin();
@@ -446,7 +456,23 @@ int main(int argc, char* argv[])
     fwlite::Event evt(inputFile);
     for ( evt.toBegin(); !(evt.atEnd() || maxEvents_processed); ++evt ) {
 
-      //std::cout << "processing event " << evt.id().event() << ", run " << evt.id().run() << std::endl;
+      //std::cout << "processing run = " << evt.id().run() << ":" 
+      //	  << " ls = " << evt.luminosityBlock() << ", event = " << evt.id().event() << std::endl;
+
+//--- compute event weight
+//   (pile-up reweighting, Data/MC correction factors,...)
+      double evtWeight = 1.0;
+      for ( vInputTag::const_iterator srcWeight = srcWeights.begin();
+	    srcWeight != srcWeights.end(); ++srcWeight ) {
+	edm::Handle<double> weight;
+	evt.getByLabel(*srcWeight, weight);
+	evtWeight *= (*weight);
+      }
+
+//--- quit event loop if maximal number of events to be processed is reached 
+      ++numEvents_processed;
+      numEventsWeighted_processed += evtWeight;
+      if ( maxEvents > 0 && numEvents_processed >= maxEvents ) maxEvents_processed = true;
 
 //--- check that event has passed triggers
       edm::Handle<pat::TriggerEvent> hltEvent;
@@ -462,71 +488,75 @@ int main(int argc, char* argv[])
 	  if ( hltPath && hltPath->wasAccept() ) isTriggered = true;
 	}
       }
-      //std::cout << "isTriggered = " << isTriggered << std::endl;
 
-//--- compute event weight
-//   (pile-up reweighting, Data/MC correction factors,...)
-      double evtWeight = 1.0;
-      for ( vInputTag::const_iterator srcWeight = srcWeights.begin();
-	    srcWeight != srcWeights.end(); ++srcWeight ) {
-	edm::Handle<double> weight;
-	evt.getByLabel(*srcWeight, weight);
-	evtWeight *= (*weight);
-      }
-      //std::cout << "evtWeight = " << evtWeight << std::endl;
+      if ( !isTriggered ) continue;
+      ++numEvents_passedTrigger;
+      numEventsWeighted_passedTrigger += evtWeight;
 
-//--- require event to pass trigger requirements
-//    and to contain only one "good quality" muon
+//--- require event to contain only one "good quality" muon
       typedef std::vector<pat::Muon> PATMuonCollection;
       edm::Handle<PATMuonCollection> goodMuons;
       evt.getByLabel(srcGoodMuons, goodMuons);
       size_t numGoodMuons = goodMuons->size();
-      //std::cout << "numGoodMuons = " << numGoodMuons << std::endl;
+	
+      if ( !(numGoodMuons <= 1) ) continue;
+      ++numEvents_passedDiMuonVeto;
+      numEventsWeighted_passedDiMuonVeto += evtWeight;
 
-      if ( isTriggered && numGoodMuons <= 1 ) {
+//--- require event to contain exactly one muon + tau-jet pair
+//    passing the selection criteria for region "ABCD"
+      edm::Handle<PATMuTauPairCollection> muTauPairs;
+      evt.getByLabel(srcMuTauPairs, muTauPairs);
 
-	edm::Handle<reco::VertexCollection> vertices;
-	evt.getByLabel(srcVertices, vertices);
-	size_t numVertices = vertices->size();
-
-//--- iterate over collection of muon + tau-jet pairs
-	edm::Handle<PATMuTauPairCollection> muTauPairs;
-	evt.getByLabel(srcMuTauPairs, muTauPairs);
-
-	edm::Handle<reco::GenParticleCollection> genParticles;
-	evt.getByLabel(srcGenParticles, genParticles);
-
-	int muTauPairIdx = 0;
-	for ( PATMuTauPairCollection::const_iterator muTauPair = muTauPairs->begin();
-	      muTauPair != muTauPairs->end(); ++muTauPair, ++muTauPairIdx ) {
-	  int genMatchType = getGenMatchType(*muTauPair, *genParticles);
-	  for ( std::vector<regionEntryType*>::iterator regionEntry = regionEntries.begin();
-		regionEntry != regionEntries.end(); ++regionEntry ) {   
-/* 
-	    if ( (*regionEntry)->region_ == "C1" ) {
-	      pat::strbitset evtSelFlags;
-	      if ( genMatchType == kTauHadMatched || (*regionEntry)->selector_->operator()(*muTauPair, evtSelFlags) ) {
-	    	std::cout << "muTauPair #" << muTauPairIdx << std::endl;
-	    	std::cout << " leg1: Pt = " << muTauPair->leg1()->pt() << "," 
-	    		  << " eta = " << muTauPair->leg1()->eta() << ", phi = " << muTauPair->leg1()->phi() << std::endl;
-	    	std::cout << " leg2: Pt = " << muTauPair->leg2()->pt() << "," 
-	    		  << " eta = " << muTauPair->leg2()->eta() << ", phi = " << muTauPair->leg2()->phi();
-	    	if      ( genMatchType == kTauHadMatched  ) std::cout << " ('true' hadronic tau decay)";
-	    	else if ( genMatchType == kFakeTauMatched ) std::cout << " (tau fake)"; 
-	    	else                                        std::cout << " (no gen. match)"; 
-	    	std::cout << std::endl;
-	      }
-	    }
- */
-	    (*regionEntry)->analyze(*muTauPair, genMatchType, numVertices, evtWeight);
-	  }
-	}
+      unsigned numMuTauPairsABCD = 0;
+      for ( PATMuTauPairCollection::const_iterator muTauPair = muTauPairs->begin();
+	    muTauPair != muTauPairs->end(); ++muTauPair ) {
+	pat::strbitset evtSelFlags;
+	if ( selectorABCD->operator()(*muTauPair, evtSelFlags) ) ++numMuTauPairsABCD;
       }
+      
+      if ( !(numMuTauPairsABCD <= 1) ) continue;
+      ++numEvents_passedDiMuTauPairVeto;
+      numEventsWeighted_passedDiMuTauPairVeto += evtWeight;
 
-//--- quit event loop if maximal number of events to be processed is reached 
-      ++numEvents_processed;
-      numEventsWeighted_processed += evtWeight;
-      if ( maxEvents > 0 && numEvents_processed >= maxEvents ) maxEvents_processed = true;
+//--- determine number of vertices reconstructed in the event
+//   (needed to parametrize dependency of tau id. efficiency on number of pile-up interactions)
+      edm::Handle<reco::VertexCollection> vertices;
+      evt.getByLabel(srcVertices, vertices);
+      size_t numVertices = vertices->size();
+
+//--- iterate over collection of muon + tau-jet pairs:
+//    check which region muon + tau-jet pair is selected in
+//    and whether reconstructed tau-jet matches "true" hadronic tau decay on generator level or is fake,
+//    count number of "true" and fake taus selected in all regions
+      edm::Handle<reco::GenParticleCollection> genParticles;
+      evt.getByLabel(srcGenParticles, genParticles);
+
+      int muTauPairIdx = 0;
+      for ( PATMuTauPairCollection::const_iterator muTauPair = muTauPairs->begin();
+	    muTauPair != muTauPairs->end(); ++muTauPair, ++muTauPairIdx ) {
+	int genMatchType = getGenMatchType(*muTauPair, *genParticles);
+	for ( std::vector<regionEntryType*>::iterator regionEntry = regionEntries.begin();
+	      regionEntry != regionEntries.end(); ++regionEntry ) {   
+/*
+          if ( (*regionEntry)->region_ == "C1" ) {
+            pat::strbitset evtSelFlags;
+	    if ( genMatchType == kTauHadMatched || (*regionEntry)->selector_->operator()(*muTauPair, evtSelFlags) ) {
+	      std::cout << "muTauPair #" << muTauPairIdx << std::endl;
+	      std::cout << " leg1: Pt = " << muTauPair->leg1()->pt() << "," 
+	    	        << " eta = " << muTauPair->leg1()->eta() << ", phi = " << muTauPair->leg1()->phi() << std::endl;
+	      std::cout << " leg2: Pt = " << muTauPair->leg2()->pt() << "," 
+	      	        << " eta = " << muTauPair->leg2()->eta() << ", phi = " << muTauPair->leg2()->phi();
+	      if      ( genMatchType == kTauHadMatched  ) std::cout << " ('true' hadronic tau decay)";
+	      else if ( genMatchType == kFakeTauMatched ) std::cout << " (tau fake)"; 
+	      else                                        std::cout << " (no gen. match)"; 
+	      std::cout << std::endl;
+	    }
+          }
+ */
+	  (*regionEntry)->analyze(*muTauPair, genMatchType, numVertices, evtWeight);
+        }
+      }
     }
 
 //--- close input file
@@ -536,6 +566,12 @@ int main(int argc, char* argv[])
   std::cout << "<FWLiteTauIdEffPreselNumbers>:" << std::endl;
   std::cout << " numEvents_processed: " << numEvents_processed 
 	    << " (weighted = " << numEventsWeighted_processed << ")" << std::endl;
+  std::cout << " numEvents_passedTrigger: " << numEvents_passedTrigger 
+	    << " (weighted = " << numEventsWeighted_passedTrigger << ")" << std::endl;
+  std::cout << " numEvents_passedDiMuonVeto: " << numEvents_passedDiMuonVeto 
+	    << " (weighted = " << numEventsWeighted_passedDiMuonVeto << ")" << std::endl;
+  std::cout << " numEvents_passedDiMuTauPairVeto: " << numEvents_passedDiMuTauPairVeto
+	    << " (weighted = " << numEventsWeighted_passedDiMuTauPairVeto << ")" << std::endl;
   for ( std::vector<regionEntryType*>::iterator regionEntry = regionEntries.begin();
 	regionEntry != regionEntries.end(); ++regionEntry ) {
     std::cout << " region " << (*regionEntry)->region_ << ", " << (*regionEntry)->tauIdName_ << std::endl;

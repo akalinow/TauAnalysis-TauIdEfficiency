@@ -9,7 +9,8 @@ from TauAnalysis.TauIdEfficiency.tools.sequenceBuilderTauIdEffMeasSpecific impor
 
 def configurePatTupleProductionTauIdEffMeasSpecific(process, patSequenceBuilder = buildGenericTauSequence,
                                                     hltProcess = "HLT",
-                                                    isMC = False, applyZrecoilCorrection = False, runSVfit = True):
+                                                    isMC = False, isEmbedded = False,
+                                                    applyZrecoilCorrection = False, runSVfit = True):
 
     # check that patSequenceBuilder and patTauCleanerPrototype are defined and non-null
     if patSequenceBuilder is None:
@@ -211,7 +212,7 @@ def configurePatTupleProductionTauIdEffMeasSpecific(process, patSequenceBuilder 
                                           'selectedPatMuonsForTauIdEffTrkIP',
                                           [ "PFTau", "FixedCone" ], patTupleConfig["pfTauCollectionFixedCone"],
                                           'patPFMETs',
-                                          isMC = isMC,
+                                          isMC = isMC, isEmbedded = isEmbedded,
                                           applyZrecoilCorrection = applyZrecoilCorrection, runSVfit = False)
     process.producePatTupleTauIdEffMeasSpecific += retVal_pfTauFixedCone["sequence"]
     retVal_pfTauShrinkingCone = \
@@ -219,7 +220,7 @@ def configurePatTupleProductionTauIdEffMeasSpecific(process, patSequenceBuilder 
                                           'selectedPatMuonsForTauIdEffTrkIP',
                                           [ "PFTau", "ShrinkingCone" ], patTupleConfig["pfTauCollectionShrinkingCone"],
                                           'patPFMETs',
-                                          isMC = isMC,
+                                          isMC = isMC, isEmbedded = isEmbedded,
                                           applyZrecoilCorrection = applyZrecoilCorrection, runSVfit = False)
     process.producePatTupleTauIdEffMeasSpecific += retVal_pfTauShrinkingCone["sequence"]
     retVal_pfTauHPS = \
@@ -227,7 +228,7 @@ def configurePatTupleProductionTauIdEffMeasSpecific(process, patSequenceBuilder 
                                           'selectedPatMuonsForTauIdEffTrkIP',
                                           [ "PFTau", "HPS" ], patTupleConfig["pfTauCollectionHPS"],
                                           'patPFMETs',
-                                          isMC = isMC,
+                                          isMC = isMC, isEmbedded = isEmbedded,
                                           applyZrecoilCorrection = applyZrecoilCorrection, runSVfit = False)
     process.producePatTupleTauIdEffMeasSpecific += retVal_pfTauHPS["sequence"]
     retVal_pfTauHPSpTaNC = \
@@ -235,7 +236,7 @@ def configurePatTupleProductionTauIdEffMeasSpecific(process, patSequenceBuilder 
                                           'selectedPatMuonsForTauIdEffTrkIP',
                                           [ "PFTau", "HPSpTaNC" ], patTupleConfig["pfTauCollectionHPSpTaNC"],
                                           'patPFMETs',
-                                          isMC = isMC,
+                                          isMC = isMC, isEmbedded = isEmbedded,
                                           applyZrecoilCorrection = applyZrecoilCorrection, runSVfit = False)
     process.producePatTupleTauIdEffMeasSpecific += retVal_pfTauHPSpTaNC["sequence"]
 

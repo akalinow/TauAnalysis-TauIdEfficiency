@@ -15,10 +15,10 @@ source_files = [ file_info['path'] for file_info in castor.nslsl(sourceFilePath)
 #print source_files
 
 #targetFilePath = "/tmp/veelken/"
-targetFilePath = "/data2/veelken/CMSSW_4_2_x/PATtuples/TauIdEffMeas/2011Jul01_mauro/"
+targetFilePath = "/data2/veelken/CMSSW_4_2_x/PATtuples/TauIdEffMeas/2011Jul06_mauro/V4/"
 
-jobId = "2011Jul01_mauro" # Christian's Ntuples
-version = "V2"
+jobId = "2011Jul06_mauro" # Christian's Ntuples
+version = "V4"
 #jobId = "2011Jun06" # Mauro's Ntuples
 #version = "V2"
 

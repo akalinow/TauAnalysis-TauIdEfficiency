@@ -15,10 +15,11 @@ SAMPLES_TO_ANALYZE = [
     'Ztautau_pythia',
     #'Ztautau_powheg',
     'Ztautau_embedded_part1',
-    'Ztautau_embedded_part2'
+    'Ztautau_embedded_part2',
     #'qqZll',
     #'DYmumuM10to20_pythia',
     'Zmumu_pythia',
+    'Zmumu_powheg',
     #'Zmumu_powheg',
     'PPmuXptGt20Mu15',
     'WplusJets_madgraph',
@@ -110,6 +111,13 @@ MERGE_SAMPLES = {
     'Ztautau' : {
         'samples' : [
             'Ztautau_pythia',
+        ],
+        'type' : plotter.process_Ztautau.config_dqmHistPlotter.type.value()
+    },
+    'Ztautau_embedded' : {
+        'samples' : [
+            'Ztautau_embedded_part1',
+            'Ztautau_embedded_part2'
         ],
         'type' : plotter.process_Ztautau.config_dqmHistPlotter.type.value()
     },

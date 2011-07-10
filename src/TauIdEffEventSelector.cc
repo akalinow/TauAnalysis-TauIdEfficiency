@@ -13,13 +13,13 @@ TauIdEffEventSelector::TauIdEffEventSelector(const edm::ParameterSet& cfg)
   tauIdDiscriminators_ = cfg.getParameter<vstring>("tauIdDiscriminators");
 
 //--- define default cuts for ABCD regions
-  muonPtMin_                =  18.0; 
+  muonPtMin_                =  20.0; 
   muonPtMax_                =  +1.e+3; 
   muonEtaMin_               =  -2.1;
   muonEtaMax_               =  +2.1; 
   muonRelIsoMin_            =  -1.e+3;
   muonRelIsoMax_            =   0.30;
-  tauPtMin_                 =  20.0;   // CV: cut is actually applied on PFJet Pt, not PFTau Pt
+  tauPtMin_                 =  20.0; // CV: cut is actually applied on PFJet Pt, not PFTau Pt
   tauPtMax_                 =  +1.e+3; 
   tauEtaMin_                =  -2.3;
   tauEtaMax_                =  +2.3;  

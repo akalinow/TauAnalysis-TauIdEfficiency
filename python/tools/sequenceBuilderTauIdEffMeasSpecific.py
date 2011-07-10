@@ -14,7 +14,8 @@ def buildSequenceTauIdEffMeasSpecific(process,
                                       patTauProducerPrototype = None,
                                       patTauCleanerPrototype = None,
                                       patTauTriggerMatcherProtoType = None,
-                                      isMC = False, applyZrecoilCorrection = False, runSVfit = False):
+                                      isMC = False, isEmbedded = False,
+                                      applyZrecoilCorrection = False, runSVfit = False):
 
     #print("<buildSequenceTauIdEffMeasSpecific>:")
     #print(" patTauCollectionName = %s" % patTauCollectionName)
@@ -114,7 +115,12 @@ def buildSequenceTauIdEffMeasSpecific(process,
 
     # for MC   apply L1Offset + L2 + L3 jet-energy corrections,
     # for Data apply L1Offset + L2 + L3 + L2/L3 residual corrections
-    if isMC:
+    #
+    # CV: Ztautau samples produced via MCEmbedding technique are technically "Data',
+    #     L2/L3 residual jet energy corrections **must not** be applied, however,
+    #     since the tau-jet response is taken from the Monte Carlo simulation
+    #
+    if isMC or isEmbedded:
         setattr(selectedPatPFTausForTauIdEff, "jetEnergyCorrection", cms.string('ak5PFL1L2L3'))
     else:
         setattr(selectedPatPFTausForTauIdEff, "jetEnergyCorrection", cms.string('ak5PFL1L2L3Residual'))

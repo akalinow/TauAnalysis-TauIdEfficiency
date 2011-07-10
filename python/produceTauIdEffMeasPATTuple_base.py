@@ -3,7 +3,7 @@ import FWCore.ParameterSet.Config as cms
 from TauAnalysis.TauIdEfficiency.tools.configurePrePatProduction import configurePrePatProduction
 from TauAnalysis.TauIdEfficiency.tools.configurePatTupleProductionTauIdEffMeasSpecific import *
  
-def produceTauIdEffMeasPATTuple_base(process, isMC, HLTprocessName, pfCandidateCollection, applyZrecoilCorrection):
+def produceTauIdEffMeasPATTuple_base(process, isMC, isEmbedded, HLTprocessName, pfCandidateCollection, applyZrecoilCorrection):
 
     # import of standard configurations for RECOnstruction
     # of electrons, muons and tau-jets with non-standard isolation cones
@@ -56,7 +56,7 @@ def produceTauIdEffMeasPATTuple_base(process, isMC, HLTprocessName, pfCandidateC
 
     process.hltMu.selector.src = cms.InputTag('TriggerResults::%s' % HLTprocessName)
 
-    if isMC:
+    if isMC or isEmbedded:
         process.dataQualityFilters.remove(process.hltPhysicsDeclared)
         process.dataQualityFilters.remove(process.dcsstatus)
     #--------------------------------------------------------------------------------
@@ -76,7 +76,7 @@ def produceTauIdEffMeasPATTuple_base(process, isMC, HLTprocessName, pfCandidateC
     # import utility function for configurating PAT-tuple production
    
     patTupleConfig = configurePatTupleProductionTauIdEffMeasSpecific(
-        process, hltProcess = HLTprocessName, isMC = isMC, applyZrecoilCorrection = applyZrecoilCorrection)
+        process, hltProcess = HLTprocessName, isMC = isMC, isEmbedded = isEmbedded, applyZrecoilCorrection = applyZrecoilCorrection)
     #--------------------------------------------------------------------------------
 
     #--------------------------------------------------------------------------------

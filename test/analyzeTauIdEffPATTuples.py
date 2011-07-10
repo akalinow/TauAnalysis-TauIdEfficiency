@@ -9,13 +9,22 @@ import subprocess
 
 channel = 'ZtoMuTau_tauIdEff'
 #jobId = getJobId(channel)
-jobId = '2011Jul06_mauroV3'
+jobId = '2011Jul06_mauroV4'
 
-inputFilePath = '/data2/veelken/CMSSW_4_2_x/PATtuples/TauIdEffMeas/2011Jul06_mauro/user/v/veelken/CMSSW_4_2_x/PATtuples/TauIdEffMeas/'
-outputFilePath = '/data1/veelken/tmp/'
+inputFilePath = '/data2/veelken/CMSSW_4_2_x/PATtuples/TauIdEffMeas/2011Jul06_mauro/V4/user/v/veelken/CMSSW_4_2_x/PATtuples/TauIdEffMeas/'
+outputFilePath = '/data1/veelken/tmp/muonPtGt20/V4/'
 
 samplesToAnalyze = [
     # modify in case you want to submit jobs for some of the samples only...
+    'data_SingleMu_Run2011A_PromptReco_v4',
+    'data_SingleMu_Run2011A_May10ReReco_v1',
+    'Ztautau_pythia',
+    'Ztautau_embedded_part1',
+    'Ztautau_embedded_part2',
+    'Zmumu_pythia',
+    'PPmuXptGt20Mu15',
+    'WplusJets_madgraph',
+    'TTplusJets_madgraph'
 ]
 
 sysUncertainties = [

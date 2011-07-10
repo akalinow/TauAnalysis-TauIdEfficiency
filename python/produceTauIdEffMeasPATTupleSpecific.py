@@ -3,10 +3,10 @@ import FWCore.ParameterSet.Config as cms
 from TauAnalysis.TauIdEfficiency.produceTauIdEffMeasPATTuple_base import produceTauIdEffMeasPATTuple_base
 from PhysicsTools.PatAlgos.patEventContent_cff import patTriggerEventContent
 
-def produceTauIdEffMeasPATTuple(process, isMC, HLTprocessName, pfCandidateCollection, applyZrecoilCorrection):
+def produceTauIdEffMeasPATTuple(process, isMC, isEmbedded, HLTprocessName, pfCandidateCollection, applyZrecoilCorrection):
 
     # produce PAT objects common between PAT-tuple and Ntuple production
-    produceTauIdEffMeasPATTuple_base(process, isMC, HLTprocessName, pfCandidateCollection, applyZrecoilCorrection)
+    produceTauIdEffMeasPATTuple_base(process, isEmbedded, isMC, HLTprocessName, pfCandidateCollection, applyZrecoilCorrection)
 
     #--------------------------------------------------------------------------------
     #
@@ -194,12 +194,56 @@ def produceTauIdEffMeasPATTuple(process, isMC, HLTprocessName, pfCandidateCollec
 
     process.o = cms.EndPath(process.patTupleOutputModule)
 
+    #--------------------------------------------------------------------------------  
+    #
+    # CV: keep Z --> tau+ tau- --> muon + tau-jet events
+    #     passing Pt and eta cuts on generator level
+    #    (for studying preselection efficiencies)
+    #
+    if isMC:
+        process.load('PhysicsTools.JetMCAlgos.TauGenJets_cfi')
+        process.load('TauAnalysis.GenSimTools.gen_decaysFromZs_cfi')
+
+        process.genMuonWithinAccFilter = cms.EDFilter("PATCandViewCountFilter",
+            src = cms.InputTag('genMuonsFromZtautauDecaysWithinAcceptance'),
+            minNumber = cms.uint32(1),
+            maxNumber = cms.uint32(1000)
+        )
+
+        process.genHadTauWithinAccFilter = cms.EDFilter("PATCandViewCountFilter",
+            src = cms.InputTag('genHadronsFromZtautauDecaysWithinAcceptance'),
+            minNumber = cms.uint32(1),
+            maxNumber = cms.uint32(1000)
+        )
+
+        process.genZtoMuTauWithinAccSkimPath = cms.Path(
+            process.tauGenJets
+           + process.produceGenDecayProductsFromZs
+           + process.genMuonWithinAccFilter + process.genHadTauWithinAccFilter
+        )
+    
+        extSkimPaths = process.patTupleOutputModule.SelectEvents.SelectEvents.value()
+        extSkimPaths.append('genZtoMuTauWithinAccSkimPath')
+        process.patTupleOutputModule.SelectEvents.SelectEvents = cms.vstring(extSkimPaths)
+    #-------------------------------------------------------------------------------- 
+
     # define order in which different paths are run
-    process.schedule = cms.Schedule(
-        process.p,
-        ##process.muonPFTauFixedConeSkimPath,
-        ##process.muonPFTauShrinkingConeSkimPath,
-        process.muonPFTauHPSskimPath,
-        process.muonPFTauHPSpTaNCskimPath,
-        process.o
-    )
+    if isMC:
+        process.schedule = cms.Schedule(
+            process.p,
+            ##process.muonPFTauFixedConeSkimPath,
+            ##process.muonPFTauShrinkingConeSkimPath,
+            process.muonPFTauHPSskimPath,
+            process.muonPFTauHPSpTaNCskimPath,
+            process.genZtoMuTauWithinAccSkimPath,
+            process.o
+        )
+    else:
+        process.schedule = cms.Schedule(
+            process.p,
+            ##process.muonPFTauFixedConeSkimPath,
+            ##process.muonPFTauShrinkingConeSkimPath,
+            process.muonPFTauHPSskimPath,
+            process.muonPFTauHPSpTaNCskimPath,
+            process.o
+        )

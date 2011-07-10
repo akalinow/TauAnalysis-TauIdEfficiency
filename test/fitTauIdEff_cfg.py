@@ -30,6 +30,7 @@ process.fitTauIdEff = cms.PSet(
     numPseudoExperiments = cms.uint32(10000),
 
     regions = cms.vstring(
+        'A1',  # needed to access QCD template obtained from Data
         'B1',  # needed to access QCD template obtained from Data
         'C1',
         'C1p',

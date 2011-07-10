@@ -115,25 +115,28 @@ TH1* normalize(const TH1* histogram, double norm = 1.)
 //-------------------------------------------------------------------------------
 //
 
-void applyStyleOption(TH1* histogram, const std::string& histogramTitle,
+template <typename T>
+void applyStyleOption(T* histogram, const std::string& histogramTitle,
 		      const std::string& xAxisTitle, const std::string& yAxisTitle = "Number of Events")
 {
   //std::cout << "<applyStyleOption>:" << std::endl;
-
-  histogram->SetStats(false);
+  //std::cout << " histogramName = " << histogram->GetName() << std::endl;
 
   histogram->SetTitle(histogramTitle.data());
-  histogram->SetTitle("");
-    
-  histogram->GetXaxis()->SetTitle(xAxisTitle.data());
-  histogram->GetXaxis()->SetTitleOffset(1.15);
-  //histogram->GetXaxis()->SetTitleSize(0.05); 
-  //histogram->GetXaxis()->SetLabelSize(0.05);
 
-  histogram->GetYaxis()->SetTitle(yAxisTitle.data());
-  histogram->GetYaxis()->SetTitleOffset(1.20);
-  //histogram->GetYaxis()->SetTitleSize(0.05); 
-  //histogram->GetYaxis()->SetLabelSize(0.05);
+  if ( histogram->GetXaxis() ) {
+    histogram->GetXaxis()->SetTitle(xAxisTitle.data());
+    histogram->GetXaxis()->SetTitleOffset(1.15);
+    //histogram->GetXaxis()->SetTitleSize(0.05); 
+    //histogram->GetXaxis()->SetLabelSize(0.05);
+  } else std::cerr << "Histogram = " << histogram->GetName() << " has no valid x-Axis !!" << std::endl;
+
+  if ( histogram->GetYaxis() ) {
+    histogram->GetYaxis()->SetTitle(yAxisTitle.data());
+    histogram->GetYaxis()->SetTitleOffset(1.20);
+    //histogram->GetYaxis()->SetTitleSize(0.05); 
+    //histogram->GetYaxis()->SetLabelSize(0.05);
+  } else std::cerr << "Histogram = " << histogram->GetName() << " has no valid y-Axis !!" << std::endl;
 }
 
 void drawHistograms(TH1* histogramZtautau, double normZtautau,
@@ -209,15 +212,15 @@ void drawHistograms(TH1* histogramZtautau, double normZtautau,
   smSum.Add(templateQCD);
   smSum.Add(templateZtautau);
 
-  smSum.SetTitle(templateZtautau->GetTitle());
   smSum.SetMaximum(1.4*TMath::Max(smSum.GetMaximum(), histogramData->GetMaximum()));
-
   smSum.Draw("hist");
+  applyStyleOption(&smSum, histogramTitle, xAxisTitle, "");
+  
   histogramData->SetStats(false);
   histogramData->Draw("ep1same");
-  //smSum.Draw("axissame");
+  //histogramData->Draw("axissame");
 
-  TLegend legend(0.64, 0.64, 0.89, 0.89, "", "brNDC"); 
+  TLegend legend(0.64, 0.59, 0.89, 0.89, "", "brNDC"); 
   legend.SetBorderSize(0);
   legend.SetFillColor(0);
   
@@ -238,7 +241,7 @@ void drawHistograms(TH1* histogramZtautau, double normZtautau,
   cmsPreliminaryLabel.Draw();
 
   TPaveText cmsLuminosityLabel(0.145, 0.8075, 0.460, 0.8475, "NDC");
-  cmsLuminosityLabel.AddText("#sqrt{s} = 7 TeV, L = 191 pb^{-1}");
+  cmsLuminosityLabel.AddText("#sqrt{s} = 7 TeV, L = 879.6 pb^{-1}");
   cmsLuminosityLabel.SetTextAlign(13);
   cmsLuminosityLabel.SetTextSize(0.045);
   cmsLuminosityLabel.SetFillStyle(0);
@@ -255,7 +258,7 @@ void drawHistograms(TH1* histogramZtautau, double normZtautau,
   templateSMbgSum->Add(templateQCD);
   templateSMbgSum->Add(templateWplusJets);
   templateSMbgSum->Add(templateTTplusJets);
-  applyStyleOption(templateSMbgSum, histogramTitle, xAxisTitle);
+  applyStyleOption(templateSMbgSum, histogramTitle, xAxisTitle, "");
   templateSMbgSum->SetFillStyle(1001);
   templateSMbgSum->SetFillColor(42);
 
@@ -266,14 +269,14 @@ void drawHistograms(TH1* histogramZtautau, double normZtautau,
   smSum2.Add(templateSMbgSum);
   smSum2.Add(templateZtautau);
 
-  smSum2.SetTitle(templateZtautau->GetTitle());
-  smSum2.SetMaximum(1.4*TMath::Max(smSum2.GetMaximum(), histogramData->GetMaximum()));
-	
+  smSum2.SetMaximum(1.4*TMath::Max(smSum2.GetMaximum(), histogramData->GetMaximum()));	
   smSum2.Draw("hist");
-  histogramData->Draw("ep1same");
-  //smSum2.Draw("axissame");
+  applyStyleOption(&smSum2, histogramTitle, xAxisTitle);
 
-  TLegend legend2(0.64, 0.74, 0.89, 0.89, "", "brNDC"); 
+  histogramData->Draw("ep1same");
+  //histogramData->Draw("axissame");
+
+  TLegend legend2(0.64, 0.71, 0.89, 0.89, "", "brNDC"); 
   legend2.SetBorderSize(0);
   legend2.SetFillColor(0);
   
@@ -294,21 +297,21 @@ void drawHistograms(TH1* histogramZtautau, double normZtautau,
 
 //--- draw histograms for all signal and background processes summed
   TH1* templateSMsum = (TH1*)templateSMbgSum->Clone();
-  templateSMsum->Add(templateZtautau);
-  applyStyleOption(templateSMsum, histogramTitle, xAxisTitle);
+  templateSMsum->Add(templateZtautau);  
   templateSMsum->SetFillStyle(1001);
   templateSMsum->SetFillColor(10);
   templateSMsum->SetLineColor(1);
   templateSMsum->SetLineWidth(2);
 
-  templateSMsum->SetTitle(templateZtautau->GetTitle());
   templateSMsum->SetMaximum(1.4*TMath::Max(templateSMsum->GetMaximum(), histogramData->GetMaximum()));
-	
   templateSMsum->Draw("hist");
+  applyStyleOption(templateSMsum, histogramTitle, xAxisTitle, "");
+  templateSMsum->SetStats(false);
+
   histogramData->Draw("ep1same");
   //templateSMsum->Draw("axissame");
 
-  TLegend legend3(0.64, 0.79, 0.89, 0.89, "", "brNDC"); 
+  TLegend legend3(0.64, 0.76, 0.89, 0.89, "", "brNDC"); 
   legend3.SetBorderSize(0);
   legend3.SetFillColor(0);
   
@@ -346,27 +349,6 @@ void drawHistograms(TH1* histogramZtautau, double normZtautau,
   delete templateSMsum;
 
   delete canvas;
-}
-
-void drawHistograms(std::map<std::string, std::map<std::string, TH1*> >& distributionsData, 
-		    std::map<std::string, std::map<std::string, std::map<std::string, TH1*> > >& templatesAll,    
-		    std::map<std::string, double> normFactors,                                           
-		    const std::string& region, const std::string& observable_key,
-		    const std::string& histogramTitle, const std::string& xAxisTitle, 
-		    const std::string& outputFileName,
-		    bool runStatTest = false)
-{
-  //std::cout << "<drawHistograms (wrapper)>:" << std::endl;
-
-  drawHistograms(templatesAll["Ztautau"][region][observable_key], normFactors["Ztautau"],
-		 templatesAll["Zmumu"][region][observable_key], normFactors["Zmumu"],
-		 templatesAll["QCD"][region][observable_key], normFactors["QCD"],
-		 templatesAll["WplusJets"][region][observable_key], normFactors["WplusJets"],
-		 templatesAll["TTplusJets"][region][observable_key], normFactors["TTplusJets"],
-		 distributionsData[region][observable_key],
-		 histogramTitle, xAxisTitle,
-		 outputFileName,
-		 runStatTest);
 }
 
 //
@@ -538,8 +520,6 @@ void compSysHistograms(std::map<std::string, std::map<std::string, std::map<std:
 	process != templatesAll.end(); ++process ) {
     for ( std::map<std::string, std::map<std::string, TH1*> >::iterator region = process->second.begin();
 	  region != process->second.end(); ++region ) {
-      TH1* sysHistogramUp   = 0;
-      TH1* sysHistogramDown = 0;
       for ( std::map<std::string, TH1*>::iterator keyUp = region->second.begin();
 	    keyUp != region->second.end(); ++keyUp ) {
 	if ( keyUp->first.find(sysUncertainty.sysNameUp_) != std::string::npos ) {

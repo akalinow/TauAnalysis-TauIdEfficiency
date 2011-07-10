@@ -12,22 +12,24 @@ channel = 'ZtoMuTau_tauIdEff'
 configFile = 'produceTauIdEffMeasPATTuple_cfg.py'
 analysisFilePath = getAnalysisFilePath(channel)
 #jobId = getJobId(channel)
-#jobId = '2011Jul06_mauro'
-jobId = '2011Jul06v2'
+jobId = '2011Jul06_mauro'
+#jobId = '2011Jul06v2'
 
-version = "V1"
+version = "V4"
 
 pfCandidateCollection = "particleFlow" # pile-up removal disabled
 #pfCandidateCollection = "pfNoPileUp"   # pile-up removal enabled
 
 samplesToAnalyze = [
-    #'data_SingleMu_Run2011A_May10ReReco_v1',
-    #'data_SingleMu_Run2011A_PromptReco_v4',
-    #'Ztautau_pythia',
+    'data_SingleMu_Run2011A_May10ReReco_v1',
+    'data_SingleMu_Run2011A_PromptReco_v4',
+    'Ztautau_pythia',
+    #'Ztautau_embedded_part1',
+    #'Ztautau_embedded_part2',
     #'Zmumu_pythia',
-    #'PPmuXptGt20Mu15',
-    #'WplusJets_madgraph',
-    'TTplusJets_madgraph'
+    'PPmuXptGt20Mu15',
+    'WplusJets_madgraph',
+    #'TTplusJets_madgraph'
 ]
 
 #outputFilePath = "/castor/cern.ch/user/m/mverzett/tagprobe/patTuples_v6"
@@ -57,8 +59,7 @@ def input_mapper(channel, sample, jobId):
 
 # Define what output ntuple file name a sample will have
 def output_mapper(channel, sample, jobId):
-    #output_file = "tauIdEffMeasPATTuple_%s_%s%s.root" % (sample, jobId, version)
-    output_file = "tauIdEffMeasPATTuple_%s_%s%s.root" % (sample, '2011Jul06_mauro', version)
+    output_file = "tauIdEffMeasPATTuple_%s_%s%s.root" % (sample, jobId, version)
     return output_file
 
 # Function to prepare customized config files specific to Tau(ED)Ntuple production
@@ -69,9 +70,14 @@ def customizeConfigFile(sampleName, cfgFileName_original, cfgFileName_modified =
 
     cfg_modified = cfg_original.replace("#__", "")
     isMC = "False"
-    if recoSampleDefinitionsTauIdEfficiency_7TeV['RECO_SAMPLES'][sampleName]['type'] != 'Data':
+    if recoSampleDefinitionsTauIdEfficiency_7TeV['RECO_SAMPLES'][sampleName]['type'] != 'Data' and \
+       recoSampleDefinitionsTauIdEfficiency_7TeV['RECO_SAMPLES'][sampleName]['type'] != 'embeddedData':
         isMC = "True"
     cfg_modified = cfg_modified.replace("#isMC#", isMC)
+    isEmbedded = "False"
+    if recoSampleDefinitionsTauIdEfficiency_7TeV['RECO_SAMPLES'][sampleName]['type'] == 'embeddedData':
+        isEmbedded = "True"
+    cfg_modified = cfg_modified.replace("#isEmbedded#", isEmbedded)
     HLTprocessName = 'HLT'
     if 'hlt' in recoSampleDefinitionsTauIdEfficiency_7TeV['RECO_SAMPLES'][sampleName].keys():
         HLTprocessName = recoSampleDefinitionsTauIdEfficiency_7TeV['RECO_SAMPLES'][sampleName]['hlt'].getProcessName()
