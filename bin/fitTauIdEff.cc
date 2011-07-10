@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.12 $
+ * \version $Revision: 1.13 $
  *
- * $Id: fitTauIdEff.cc,v 1.12 2011/07/07 15:52:09 veelken Exp $
+ * $Id: fitTauIdEff.cc,v 1.13 2011/07/10 15:47:27 veelken Exp $
  *
  */
 
@@ -617,13 +617,18 @@ int main(int argc, const char* argv[])
 	    std::string histogramTitle = std::string("Region ").append(region->first).append(": ").append(key->first);
 	    histogramTitle.append(" (scaled by normalization det. by fit)");
 	    std::string outputFileName = std::string("controlPlotsTauIdEff_").append(region->first).append("_").append(key->first);
-	    outputFileName.append("_fitted_").append(*fitVariable).append("_").append(*tauId).append(".png");
+	    outputFileName.append("_fitted_").append(*fitVariable).append(".png");
 	    drawHistograms(
-              templatesZtautau[region->first][key->first], normFactorsAll_fitted["Ztautau"][region->first][*tauId][*fitVariable],
-	      templatesZmumu[region->first][key->first], normFactorsAll_fitted["Zmumu"][region->first][*tauId][*fitVariable],
-	      templatesQCD[region->first][key->first], normFactorsAll_fitted["QCD"][region->first][*tauId][*fitVariable],
-	      templatesWplusJets[region->first][key->first], normFactorsAll_fitted["WplusJets"][region->first][*tauId][*fitVariable],
-	      templatesTTplusJets[region->first][key->first], normFactorsAll_fitted["TTplusJets"][region->first][*tauId][*fitVariable],
+	      templatesZtautau[region->first][key->first], 
+	      getTemplateNorm_fitted("Ztautau", region->first, *tauId, *fitVariable, normFactorsAll_fitted, fittedFractions),
+	      templatesZmumu[region->first][key->first], 
+	      getTemplateNorm_fitted("Zmumu", region->first, *tauId, *fitVariable, normFactorsAll_fitted, fittedFractions),
+	      templatesQCD[region->first][key->first], 
+	      getTemplateNorm_fitted("QCD", region->first, *tauId, *fitVariable, normFactorsAll_fitted, fittedFractions),
+	      templatesWplusJets[region->first][key->first], 
+	      getTemplateNorm_fitted("WplusJets", region->first, *tauId, *fitVariable, normFactorsAll_fitted, fittedFractions),
+	      templatesTTplusJets[region->first][key->first], 
+	      getTemplateNorm_fitted("TTplusJets", region->first, *tauId, *fitVariable, normFactorsAll_fitted, fittedFractions),
 	      distributionsData[region->first][key->first],
 	      histogramTitle, xAxisTitles[key->first],
 	      outputFileName);

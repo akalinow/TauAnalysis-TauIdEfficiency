@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.3 $
+ * \version $Revision: 1.4 $
  *
- * $Id: FWLiteTauIdEffPreselNumbers.cc,v 1.3 2011/07/06 16:18:10 veelken Exp $
+ * $Id: FWLiteTauIdEffPreselNumbers.cc,v 1.4 2011/07/10 15:47:27 veelken Exp $
  *
  */
 
@@ -185,10 +185,11 @@ struct regionEntryType
     cfgCutFlowTable.addParameter<vstring>("selectionNames", selectionNames_);
 
     selectionNamesReversed_.resize(selectionNames_.size());
+    selectionNamesReversed_[0] = selectionNames_[0];
     for ( int iTauIdDiscriminator = 0; iTauIdDiscriminator < numTauIdDiscriminators_; ++iTauIdDiscriminator ) {
-      selectionNamesReversed_[iTauIdDiscriminator] = selectionNames_[numPreselCuts_ + iTauIdDiscriminator];
+      selectionNamesReversed_[1 + iTauIdDiscriminator] = selectionNames_[numPreselCuts_ + iTauIdDiscriminator];
     }
-    for ( int iPreselCut = 0; iPreselCut < numPreselCuts_; ++iPreselCut ) {
+    for ( int iPreselCut = 1; iPreselCut < numPreselCuts_; ++iPreselCut ) {
       selectionNamesReversed_[numTauIdDiscriminators_ + iPreselCut] = selectionNames_[iPreselCut];
     }
     cfgCutFlowTable.addParameter<vstring>("selectionNamesReversed", selectionNamesReversed_);
@@ -272,11 +273,12 @@ struct regionEntryType
       }
       //std::cout << "tauIdFlags = " << format_vbool(tauIdFlags_) << std::endl;
 
+      tauIdFlagsReversed_[0] = tauIdFlags_[0];
       for ( int iTauIdDiscriminator = 0; iTauIdDiscriminator < numTauIdDiscriminators_; ++iTauIdDiscriminator ) {
-	tauIdFlagsReversed_[iTauIdDiscriminator] = tauIdFlags_[numPreselCuts_ + iTauIdDiscriminator];
+	tauIdFlagsReversed_[1 + iTauIdDiscriminator] = tauIdFlags_[numPreselCuts_ + iTauIdDiscriminator];
       }
-      for ( int iPreselCut = 0; iPreselCut < numPreselCuts_; ++iPreselCut ) {
-	tauIdFlagsReversed_[iPreselCut + numTauIdDiscriminators_] = tauIdFlags_[iPreselCut];
+      for ( int iPreselCut = 1; iPreselCut < numPreselCuts_; ++iPreselCut ) {
+	tauIdFlagsReversed_[numTauIdDiscriminators_ + iPreselCut] = tauIdFlags_[iPreselCut];
       }
       //std::cout << "tauIdFlagsReversed = " << format_vbool(tauIdFlagsReversed_) << std::endl;
 

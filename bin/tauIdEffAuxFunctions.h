@@ -115,6 +115,18 @@ TH1* normalize(const TH1* histogram, double norm = 1.)
 //-------------------------------------------------------------------------------
 //
 
+double getTemplateNorm_fitted(
+         const std::string& process, const std::string& region, const std::string& tauId, const std::string& observable,
+	 std::map<std::string, std::map<std::string, std::map<std::string, std::map<std::string, double> > > >& normFactorsAll_fitted,
+	 std::map<std::string, std::map<std::string, std::map<std::string, double> > >& fittedFractions)
+{
+  std::string tauIdValue = getTauIdValues(region)[0];
+
+  std::string key = getKey(observable, tauId, tauIdValue);
+
+  return normFactorsAll_fitted[process][region][tauId][observable]*fittedFractions[process][region][key];
+}
+
 template <typename T>
 void applyStyleOption(T* histogram, const std::string& histogramTitle,
 		      const std::string& xAxisTitle, const std::string& yAxisTitle = "Number of Events")

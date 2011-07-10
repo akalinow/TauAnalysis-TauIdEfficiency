@@ -60,14 +60,14 @@ process.fitTauIdEff_wConstraints = cms.PSet(
     
     tauIds = cms.vstring(
         'tauDiscrHPSloose', # "new" HPS implemented in HPS+TaNC combined algorithm
-        'tauDiscrHPSlooseDBcorr',
-        'tauDiscrHPScombLooseDBcorr',
-        'tauDiscrHPSmedium',
-        'tauDiscrHPSmediumDBcorr',
-        'tauDiscrHPScombMediumDBcorr',
-        'tauDiscrHPStight',
-        'tauDiscrHPStightDBcorr',
-        'tauDiscrHPScombTightDBcorr'
+        ##'tauDiscrHPSlooseDBcorr',
+        ##'tauDiscrHPScombLooseDBcorr',
+        ##'tauDiscrHPSmedium',
+        ##'tauDiscrHPSmediumDBcorr',
+        ##'tauDiscrHPScombMediumDBcorr',
+        ##'tauDiscrHPStight',
+        ##'tauDiscrHPStightDBcorr',
+        ##'tauDiscrHPScombTightDBcorr'
     ),
 
     fitVariables = cms.vstring(

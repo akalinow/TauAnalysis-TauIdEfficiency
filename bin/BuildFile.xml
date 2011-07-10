@@ -95,7 +95,7 @@
   <use   name="root"/>
   <use   name="rootgraphics"/>
 </bin>
-<bin   file="compTauIdEffNumbers.cc" name="compTauIdEffNumbers">
+<bin   file="compTauIdEffFinalNumbers.cc" name="compTauIdEffFinalNumbers">
   <use   name="FWCore/FWLite"/>
   <use   name="FWCore/ParameterSet"/>
   <use   name="FWCore/PythonParameterSet"/>
