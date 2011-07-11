@@ -59,6 +59,33 @@ std::string getKey(const std::string& observable, const std::string& tauId, cons
   return key;
 }
 
+std::string getObservable(const std::string& key)
+{
+  //std::cout << "<getObservable>:" << std::endl;
+  //std::cout << " key = " << key << std::endl;
+
+  std::string observable;
+
+  size_t idx = key.find("_");
+  if ( idx != std::string::npos ) observable = std::string(key, 0, idx);
+  else                            observable = key; 
+
+  //std::cout << "--> observable = " << observable << std::endl;
+
+  return observable;
+}
+
+std::vector<std::string> getTauIdValues(const std::string& region)
+{
+  std::vector<std::string> retVal;
+
+  if      ( region.find("p") != std::string::npos ) retVal.push_back(std::string("passed"));
+  else if ( region.find("f") != std::string::npos ) retVal.push_back(std::string("failed"));
+  else                                              retVal.push_back(std::string("all"));
+
+  return retVal;
+}
+
 //
 //-------------------------------------------------------------------------------
 //
@@ -120,16 +147,30 @@ double getTemplateNorm_fitted(
 	 std::map<std::string, std::map<std::string, std::map<std::string, std::map<std::string, double> > > >& normFactorsAll_fitted,
 	 std::map<std::string, std::map<std::string, std::map<std::string, double> > >& fittedFractions)
 {
+  //std::cout << "<getTemplateNorm_fitted>:" << std::endl;
+  //std::cout << " process = " << process << std::endl;
+  //std::cout << " region = " << region << std::endl;
+  //std::cout << " tauId = " << tauId << std::endl;
+  //std::cout << " observable = " << observable << std::endl;
+
   std::string tauIdValue = getTauIdValues(region)[0];
+  //std::cout << " tauIdValue = " << tauIdValue << std::endl;
 
   std::string key = getKey(observable, tauId, tauIdValue);
+  //std::cout << " key = " << key << std::endl;
 
-  return normFactorsAll_fitted[process][region][tauId][observable]*fittedFractions[process][region][key];
+  //std::cout << " normFactorsAll_fitted = " << normFactorsAll_fitted[process][region][tauId][observable] << std::endl;
+  //std::cout << " fittedFractions[process] = " << fittedFractions[process][region][key] << std::endl;
+
+  double retVal = normFactorsAll_fitted[process][region][tauId][observable]*fittedFractions[process][region][key];
+  //std::cout << "--> retVal = " << retVal << std::endl; 
+
+  return retVal;
 }
 
 template <typename T>
 void applyStyleOption(T* histogram, const std::string& histogramTitle,
-		      const std::string& xAxisTitle, const std::string& yAxisTitle = "Number of Events")
+		      const std::string& xAxisTitle, const std::string& yAxisTitle = "")
 {
   //std::cout << "<applyStyleOption>:" << std::endl;
   //std::cout << " histogramName = " << histogram->GetName() << std::endl;
@@ -141,14 +182,14 @@ void applyStyleOption(T* histogram, const std::string& histogramTitle,
     histogram->GetXaxis()->SetTitleOffset(1.15);
     //histogram->GetXaxis()->SetTitleSize(0.05); 
     //histogram->GetXaxis()->SetLabelSize(0.05);
-  } else std::cerr << "Histogram = " << histogram->GetName() << " has no valid x-Axis !!" << std::endl;
+  } //else std::cerr << "Histogram = " << histogram->GetName() << " has no valid x-Axis !!" << std::endl;
 
   if ( histogram->GetYaxis() ) {
     histogram->GetYaxis()->SetTitle(yAxisTitle.data());
     histogram->GetYaxis()->SetTitleOffset(1.20);
     //histogram->GetYaxis()->SetTitleSize(0.05); 
     //histogram->GetYaxis()->SetLabelSize(0.05);
-  } else std::cerr << "Histogram = " << histogram->GetName() << " has no valid y-Axis !!" << std::endl;
+  } //else std::cerr << "Histogram = " << histogram->GetName() << " has no valid y-Axis !!" << std::endl;
 }
 
 void drawHistograms(TH1* histogramZtautau, double normZtautau,
@@ -176,7 +217,11 @@ void drawHistograms(TH1* histogramZtautau, double normZtautau,
   //std::cout << " WplusJets:     histogram = " << histogramWplusJets     << ", norm = " << normWplusJets     << std::endl;
   //std::cout << " TTplusJets:    histogram = " << histogramTTplusJets    << ", norm = " << normTTplusJets    << std::endl;
   //std::cout << " Data:          histogram = " << histogramData          << std::endl;
-    
+  //std::cout << " Options: " << std::endl;
+  //std::cout << "  histogramTitle = " << histogramTitle << std::endl;
+  //std::cout << "  xAxisTitle     = " << xAxisTitle << std::endl;
+  //std::cout << "  outputFileName = " << outputFileName << std::endl;
+
   TCanvas* canvas = new TCanvas("canvas", "canvas", 800, 640);
   canvas->SetFillColor(10);
   canvas->SetBorderSize(2);
@@ -186,32 +231,32 @@ void drawHistograms(TH1* histogramZtautau, double normZtautau,
 
 //--- scale template histograms to given normalization factors
   TH1* templateZtautau    = ( normZtautau    > 0. ) ? normalize(histogramZtautau,    normZtautau)    : histogramZtautau;
-  applyStyleOption(templateZtautau, histogramTitle, xAxisTitle);
+  applyStyleOption(templateZtautau, histogramTitle, xAxisTitle, "");
   templateZtautau->SetFillStyle(1001);
   templateZtautau->SetFillColor(628);
   
 //--- sum Z/gamma* --> mu+ mu- contributions
   TH1* templateZmumu      = ( normZmumu      > 0. ) ? normalize(histogramZmumu,      normZmumu)      : histogramZmumu;
-  applyStyleOption(templateZmumu, histogramTitle, xAxisTitle);
+  applyStyleOption(templateZmumu, histogramTitle, xAxisTitle, "");
   templateZmumu->SetFillStyle(1001);
   templateZmumu->SetFillColor(596);
 
   TH1* templateQCD        = ( normQCD        > 0. ) ? normalize(histogramQCD,        normQCD)        : histogramQCD;
-  applyStyleOption(templateQCD, histogramTitle, xAxisTitle);
+  applyStyleOption(templateQCD, histogramTitle, xAxisTitle, "");
   templateQCD->SetFillStyle(1001);
   templateQCD->SetFillColor(797);
 
   TH1* templateWplusJets  = ( normWplusJets  > 0. ) ? normalize(histogramWplusJets,  normWplusJets)  : histogramWplusJets;
-  applyStyleOption(templateWplusJets, histogramTitle, xAxisTitle);
+  applyStyleOption(templateWplusJets, histogramTitle, xAxisTitle, "");
   templateWplusJets->SetFillStyle(1001);
   templateWplusJets->SetFillColor(856);
 
   TH1* templateTTplusJets = ( normTTplusJets > 0. ) ? normalize(histogramTTplusJets, normTTplusJets) : histogramTTplusJets;
-  applyStyleOption(templateTTplusJets, histogramTitle, xAxisTitle);
+  applyStyleOption(templateTTplusJets, histogramTitle, xAxisTitle, "");
   templateTTplusJets->SetFillStyle(1001);
   templateTTplusJets->SetFillColor(618);
   
-  applyStyleOption(histogramData, histogramTitle, xAxisTitle);
+  applyStyleOption(histogramData, histogramTitle, xAxisTitle, "");
   histogramData->SetLineColor(1);
   histogramData->SetMarkerColor(1);
   histogramData->SetMarkerStyle(20);
@@ -224,13 +269,12 @@ void drawHistograms(TH1* histogramZtautau, double normZtautau,
   smSum.Add(templateQCD);
   smSum.Add(templateZtautau);
 
-  smSum.SetMaximum(1.4*TMath::Max(smSum.GetMaximum(), histogramData->GetMaximum()));
+  smSum.SetMaximum(1.5*TMath::Max(smSum.GetMaximum(), histogramData->GetMaximum()));
   smSum.Draw("hist");
   applyStyleOption(&smSum, histogramTitle, xAxisTitle, "");
   
   histogramData->SetStats(false);
   histogramData->Draw("ep1same");
-  //histogramData->Draw("axissame");
 
   TLegend legend(0.64, 0.59, 0.89, 0.89, "", "brNDC"); 
   legend.SetBorderSize(0);
@@ -265,6 +309,49 @@ void drawHistograms(TH1* histogramZtautau, double normZtautau,
   gSystem->mkdir(outputFilePath.data(), true);
   canvas->Print(outputFilePath.append(outputFileName).data());
 
+//--- draw histograms for individual processes except Zmumu and W + jets:
+//    the visible mass shapes of Zmumu and W + jets are so similar 
+//    that the fit mostly constrains the sum of Zmumu and W + jets backgrounds, 
+//    not their individual contributions
+  TH1* templateEWKbgSum = (TH1*)templateZmumu->Clone();
+  templateEWKbgSum->Add(templateWplusJets);
+  applyStyleOption(templateEWKbgSum, histogramTitle, xAxisTitle, "");
+  templateEWKbgSum->SetFillStyle(1001);
+  templateEWKbgSum->SetFillColor(856);
+
+  THStack smSum2("smSum2", "smSum2");
+  smSum2.Add(templateTTplusJets);
+  smSum2.Add(templateEWKbgSum);  
+  smSum2.Add(templateQCD);
+  smSum2.Add(templateZtautau);
+
+  smSum2.SetMaximum(1.5*TMath::Max(smSum2.GetMaximum(), histogramData->GetMaximum()));
+  smSum2.Draw("hist");
+  applyStyleOption(&smSum2, histogramTitle, xAxisTitle, "");
+  
+  histogramData->Draw("ep1same");
+
+  TLegend legend2(0.64, 0.64, 0.89, 0.89, "", "brNDC"); 
+  legend2.SetBorderSize(0);
+  legend2.SetFillColor(0);
+  
+  legend2.AddEntry(histogramData,      "Data",                                       "p");
+  legend2.AddEntry(templateZtautau,    "Z/#gamma^{*} #rightarrow #tau^{+} #tau^{-}", "f");
+  legend2.AddEntry(templateQCD,        "QCD",                                        "f");
+  legend2.AddEntry(templateEWKbgSum,   "EWK Bgr.",                                   "f");
+  legend2.AddEntry(templateTTplusJets, "t#bar{t} + jets",                            "f");
+  legend2.Draw();
+
+  cmsPreliminaryLabel.Draw();
+  cmsLuminosityLabel.Draw();
+
+  canvas->Update();
+  std::string outputFilePath2 = std::string("./plots/");
+  gSystem->mkdir(outputFilePath2.data(), true);
+  TString outputFileName2 = outputFileName;
+  outputFileName2.ReplaceAll(".", "_ewkBgSum.");
+  canvas->Print(outputFilePath2.append(outputFileName2).data());
+
 //--- draw histograms for all background processes summed plus Ztautau signal 
   TH1* templateSMbgSum = (TH1*)templateZmumu->Clone();
   templateSMbgSum->Add(templateQCD);
@@ -277,35 +364,34 @@ void drawHistograms(TH1* histogramZtautau, double normZtautau,
   templateZtautau->SetFillStyle(1001);
   templateZtautau->SetFillColor(46);
 
-  THStack smSum2("smSum", "smSum");
-  smSum2.Add(templateSMbgSum);
-  smSum2.Add(templateZtautau);
+  THStack smSum3("smSum3", "smSum3");
+  smSum3.Add(templateSMbgSum);
+  smSum3.Add(templateZtautau);
 
-  smSum2.SetMaximum(1.4*TMath::Max(smSum2.GetMaximum(), histogramData->GetMaximum()));	
-  smSum2.Draw("hist");
-  applyStyleOption(&smSum2, histogramTitle, xAxisTitle);
+  smSum3.SetMaximum(1.5*TMath::Max(smSum3.GetMaximum(), histogramData->GetMaximum()));	
+  smSum3.Draw("hist");
+  applyStyleOption(&smSum3, histogramTitle, xAxisTitle, "");
 
   histogramData->Draw("ep1same");
-  //histogramData->Draw("axissame");
 
-  TLegend legend2(0.64, 0.71, 0.89, 0.89, "", "brNDC"); 
-  legend2.SetBorderSize(0);
-  legend2.SetFillColor(0);
+  TLegend legend3(0.64, 0.71, 0.89, 0.89, "", "brNDC"); 
+  legend3.SetBorderSize(0);
+  legend3.SetFillColor(0);
   
-  legend2.AddEntry(histogramData,   "Data",                            "p");
-  legend2.AddEntry(templateZtautau, "Z #rightarrow #tau^{+} #tau^{-}", "f");
-  legend2.AddEntry(templateSMbgSum, "#Sigma Backgrounds",              "f");
-  legend2.Draw();
+  legend3.AddEntry(histogramData,   "Data",                            "p");
+  legend3.AddEntry(templateZtautau, "Z #rightarrow #tau^{+} #tau^{-}", "f");
+  legend3.AddEntry(templateSMbgSum, "#Sigma Backgrounds",              "f");
+  legend3.Draw();
 
   cmsPreliminaryLabel.Draw();
   cmsLuminosityLabel.Draw();
 
   canvas->Update();
-  std::string outputFilePath2 = std::string("./plots/");
-  gSystem->mkdir(outputFilePath2.data(), true);
-  TString outputFileName2 = outputFileName;
-  outputFileName2.ReplaceAll(".", "_smBgSum.");
-  canvas->Print(outputFilePath2.append(outputFileName2).data());
+  std::string outputFilePath3 = std::string("./plots/");
+  gSystem->mkdir(outputFilePath3.data(), true);
+  TString outputFileName3 = outputFileName;
+  outputFileName3.ReplaceAll(".", "_smBgSum.");
+  canvas->Print(outputFilePath3.append(outputFileName3).data());
 
 //--- draw histograms for all signal and background processes summed
   TH1* templateSMsum = (TH1*)templateSMbgSum->Clone();
@@ -315,31 +401,30 @@ void drawHistograms(TH1* histogramZtautau, double normZtautau,
   templateSMsum->SetLineColor(1);
   templateSMsum->SetLineWidth(2);
 
-  templateSMsum->SetMaximum(1.4*TMath::Max(templateSMsum->GetMaximum(), histogramData->GetMaximum()));
-  templateSMsum->Draw("hist");
+  templateSMsum->SetMaximum(1.5*TMath::Max(templateSMsum->GetMaximum(), histogramData->GetMaximum()));
   applyStyleOption(templateSMsum, histogramTitle, xAxisTitle, "");
+  templateSMsum->Draw("hist");
   templateSMsum->SetStats(false);
 
   histogramData->Draw("ep1same");
-  //templateSMsum->Draw("axissame");
 
-  TLegend legend3(0.64, 0.76, 0.89, 0.89, "", "brNDC"); 
-  legend3.SetBorderSize(0);
-  legend3.SetFillColor(0);
+  TLegend legend4(0.74, 0.76, 0.89, 0.89, "", "brNDC"); 
+  legend4.SetBorderSize(0);
+  legend4.SetFillColor(0);
   
-  legend3.AddEntry(histogramData, "Data", "p");
-  legend3.AddEntry(templateSMsum, "MC",   "l");
-  legend3.Draw();
+  legend4.AddEntry(histogramData, "Data", "p");
+  legend4.AddEntry(templateSMsum, "MC",   "l");
+  legend4.Draw();
   
   cmsPreliminaryLabel.Draw();
   cmsLuminosityLabel.Draw();
 
   canvas->Update();
-  std::string outputFilePath3 = std::string("./plots/");
-  gSystem->mkdir(outputFilePath3.data(), true);
-  TString outputFileName3 = outputFileName;
-  outputFileName3.ReplaceAll(".", "_smSum.");
-  canvas->Print(outputFilePath3.append(outputFileName3).data());  
+  std::string outputFilePath4 = std::string("./plots/");
+  gSystem->mkdir(outputFilePath4.data(), true);
+  TString outputFileName4 = outputFileName;
+  outputFileName4.ReplaceAll(".", "_smSum.");
+  canvas->Print(outputFilePath4.append(outputFileName4).data());  
 
   if ( runStatTest ) {
     std::cout << "<runStatTest>:" << std::endl;
@@ -357,6 +442,7 @@ void drawHistograms(TH1* histogramZtautau, double normZtautau,
   if ( templateQCD           != histogramQCD           ) delete templateQCD;
   if ( templateWplusJets     != histogramWplusJets     ) delete templateWplusJets;
   if ( templateTTplusJets    != histogramTTplusJets    ) delete templateTTplusJets;
+  delete templateEWKbgSum;
   delete templateSMbgSum;
   delete templateSMsum;
 
@@ -419,17 +505,6 @@ std::vector<std::string> getObservables(const std::string& region, const std::ve
   } else {
     std::cout << "Error in <getObservables>: undefined region = " << region << " !!" << std::endl;
   }
-
-  return retVal;
-}
-
-std::vector<std::string> getTauIdValues(const std::string& region)
-{
-  std::vector<std::string> retVal;
-
-  if      ( region.find("p") != std::string::npos ) retVal.push_back(std::string("passed"));
-  else if ( region.find("f") != std::string::npos ) retVal.push_back(std::string("failed"));
-  else                                              retVal.push_back(std::string("all"));
 
   return retVal;
 }
@@ -502,6 +577,13 @@ void loadHistograms(
 	  if      ( (numBins % 3) == 0                  ) histogram->Rebin(3);
 	  else if ( (numBins % 4) == 0 && numBins >= 36 ) histogram->Rebin(4);
 	  else                                            histogram->Rebin(2);
+
+	  // CV: scale MC histograms by 0.80 to account for crab jobs lost when processing Data
+	  //    (temporary fix, 2011/07/11)
+	  if ( process != "Data" ) {
+	    if ( !histogram->GetSumw2N() ) histogram->Sumw2();	    
+	    histogram->Scale(0.80);
+	  }
 
 	  std::string key = getKey(*observable, *tauId, *tauIdValue, sysShift);	
 	  //std::cout << "--> key = " << key << std::endl;

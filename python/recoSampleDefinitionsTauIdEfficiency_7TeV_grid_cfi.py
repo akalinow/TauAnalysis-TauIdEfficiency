@@ -123,7 +123,8 @@ MERGE_SAMPLES = {
     },
     'Zmumu' : {
         'samples' : [
-            'Zmumu_pythia'
+            ##'Zmumu_pythia'
+            'Zmumu_powheg'
         ],
         'type' : plotter.process_Zmumu.config_dqmHistPlotter.type.value()
     },

@@ -27,7 +27,7 @@ void TauIdEffHistManager::bookHistograms(TFileDirectory& dir)
   histogramTauNumTracks_ = book1D(dir, "tauJetNumTracks", "Num. Tracks #tau-Jet",                  25,         -0.5,         24.5);
   
   histogramVisMass_      = book1D(dir, "diTauVisMass",    "M_{vis}(#mu + #tau_{had})",             36,         20.0,        200.0);
-  histogramMt_           = book1D(dir, "diTauMt",         "M_{T}(#mu + MET)",                      16,          0.0,         80.0);
+  histogramMt_           = book1D(dir, "diTauMt",         "M_{T}(#mu + MET)",                      24,          0.0,        120.0);
   histogramPzetaDiff_    = book1D(dir, "diTauPzetaDiff",  "P_{#zeta} - 1.5 #cdot P_{#zeta}^{vis}", 24,        -80.0,        +40.0);
 
   histogramSumEt_        = book1D(dir, "sumEt",           "#Sigma E_{T}^{PF}",                     50,          0.,         500.0);

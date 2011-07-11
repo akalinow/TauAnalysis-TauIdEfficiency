@@ -45,7 +45,7 @@ TauIdEffEventSelector::TauIdEffEventSelector(const edm::ParameterSet& cfg)
   visMassCutoffMin_         =  20.0;
   visMassCutoffMax_         = 200.0;
   MtCutoffMin_              =  -1.e+3;
-  MtCutoffMax_              =  80.0;
+  MtCutoffMax_              = 120.0;
 
   region_ = cfg.getParameter<std::string>("region");
   if        ( region_           == "ABCD"            ) {

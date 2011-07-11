@@ -18,11 +18,11 @@ process.fitTauIdEff = cms.PSet(
     #    (needs as many 'fitTauIdEff' jobs to be run in parallel as there are bins)
     directory = cms.string(''),
 
-    #runClosureTest = cms.bool(False),
-    runClosureTest = cms.bool(True),
+    runClosureTest = cms.bool(False),
+    #runClosureTest = cms.bool(True),
 
-    takeQCDfromData = cms.bool(False),
-    #takeQCDfromData = cms.bool(True),
+    #takeQCDfromData = cms.bool(False),
+    takeQCDfromData = cms.bool(True),
     
     runSysUncertainties = cms.bool(False),
     #runSysUncertainties = cms.bool(True),
@@ -39,8 +39,14 @@ process.fitTauIdEff = cms.PSet(
     
     tauIds = cms.vstring(
         'tauDiscrHPSloose', # "new" HPS implemented in HPS+TaNC combined algorithm
+        'tauDiscrHPSlooseDBcorr',
+        'tauDiscrHPScombLooseDBcorr',
         'tauDiscrHPSmedium',
-        'tauDiscrHPStight'
+        'tauDiscrHPSmediumDBcorr',
+        'tauDiscrHPScombMediumDBcorr',
+        'tauDiscrHPStight',
+        'tauDiscrHPStightDBcorr',
+        'tauDiscrHPScombTightDBcorr'
     ),
 
     fitVariables = cms.vstring(
@@ -49,8 +55,9 @@ process.fitTauIdEff = cms.PSet(
     ),
 
     sysUncertainties = cms.vstring(
-        "CENTRAL_VALUE",
         #"SysTauJetEn", # needed for diTauVisMass/diTauVisMassFromJet
         #"SysJetEnUp"   # needed for diTauMt
-    )
+    ),
+
+    makeControlPlots = cms.bool(True)
 )

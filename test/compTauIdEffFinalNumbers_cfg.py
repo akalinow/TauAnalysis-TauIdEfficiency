@@ -3,11 +3,11 @@ import FWCore.ParameterSet.Config as cms
 process = cms.PSet()
 
 process.fwliteInput = cms.PSet(
-    fileNames   = cms.vstring('/data1/veelken/tmp/muonPtGt20/V4/compTauIdEffFinalNumbers_input.root')
+    fileNames   = cms.vstring('/data1/veelken/tmp/muonPtGt20/V4b/compTauIdEffFinalNumbers_input.root')
 )
     
 process.fwliteOutput = cms.PSet(
-    fileName  = cms.string('/data1/veelken/tmp/muonPtGt20/V4/compTauIdEffFinalNumbers_output.root')
+    fileName  = cms.string('/data1/veelken/tmp/muonPtGt20/V4b/compTauIdEffFinalNumbers_output.root')
 )
 
 process.compTauIdEffFinalNumbers = cms.PSet(

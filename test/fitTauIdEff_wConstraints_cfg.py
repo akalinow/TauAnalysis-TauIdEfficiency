@@ -80,5 +80,6 @@ process.fitTauIdEff_wConstraints = cms.PSet(
         ##"sysJetEnUp"   # needed for diTauMt
     ),
 
-    makeControlPlots = cms.bool(True)
+    #makeControlPlots = cms.bool(True)
+    makeControlPlots = cms.bool(False)
 )

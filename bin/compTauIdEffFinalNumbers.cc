@@ -26,11 +26,13 @@
 #include <iostream>
 #include <iomanip>
 
-std::pair<double, double> getNumber(TDirectory* inputDirectory, const TString& auxHistogramName, int auxHistogramBin)
+std::pair<double, double> getNumber(TDirectory* inputDirectory, const TString& auxHistogramName, 
+				    int auxHistogramBin, int assertAuxHistogramNumBins = 1)
 {
   //std::cout << "<getNumber>:" << std::endl;
   //std::cout << " auxHistogramName = " << auxHistogramName << std::endl;
   //std::cout << " auxHistogramBin = " << auxHistogramBin << std::endl;
+  //std::cout << " assertAuxHistogramNumBins = " << assertAuxHistogramNumBins << std::endl;
 
   TH1* histogram = dynamic_cast<TH1*>(inputDirectory->Get(auxHistogramName.Data()));
   if ( !histogram ) 
@@ -38,7 +40,14 @@ std::pair<double, double> getNumber(TDirectory* inputDirectory, const TString& a
       << "Failed to find histogram = " << auxHistogramName << " in input file/directory = " << inputDirectory->GetName() << " !!\n";
   
   int numBins = histogram->GetNbinsX();
-  //std::cout << " numBins = " << numBins << std::endl;
+  // CV: check that histogram has the expected number of bins,
+  //     if it hasn't, FWLiteTauIdEffPreselNumbers/TauIdEffCutFlowTable has probably changed
+  //     and the auxHistogramBin parameter needs to be updated !!
+  //    (in particular if auxHistogramBin is negative)
+  if ( numBins != assertAuxHistogramNumBins ) 
+    throw cms::Exception("getNumber")  
+      << "Histogram = " << auxHistogramName << " has incompatible binning:" 
+      << " found = " << numBins << ", expected = " << assertAuxHistogramNumBins << " !!\n";
 
   int x;
   if   ( auxHistogramBin >= 0 ) x = auxHistogramBin;
@@ -136,17 +145,17 @@ int main(int argc, const char* argv[])
 //    and loose isolation requirement applied in preselection
       TString effPreselectionName = Form("presel/Ztautau_C1_%s_TauHadMatchedMinus05toPlus05", tauId->data());  
 
-      double numLeadTrackFindingEff = getNumber(inputDirectory, effPreselectionName, 1).first;
-      double denomLeadTrackFindingEff = getNumber(inputDirectory, effPreselectionName, 0).first;
+      double numLeadTrackFindingEff = getNumber(inputDirectory, effPreselectionName, 1, 9).first;
+      double denomLeadTrackFindingEff = getNumber(inputDirectory, effPreselectionName, 0, 9).first;
       double leadTrackFindingEff = numLeadTrackFindingEff/denomLeadTrackFindingEff;
       std::cout << " leadTrackFindingEff = " << leadTrackFindingEff  << " +/- " << leadTrackFindingEffErr << std::endl;
 
-      double numLeadTrackPtEff = getNumber(inputDirectory, effPreselectionName, 2).first;
+      double numLeadTrackPtEff = getNumber(inputDirectory, effPreselectionName, 2, 9).first;
       double denomLeadTrackPtEff = numLeadTrackFindingEff;
       double leadTrackPtEff = numLeadTrackPtEff/denomLeadTrackPtEff;
       std::cout << " leadTrackPtEff = " << leadTrackPtEff << " +/- " << leadTrackPtEffErr << std::endl;
 
-      double numPFLooseIsoEff = getNumber(inputDirectory, effPreselectionName, 3).first;
+      double numPFLooseIsoEff = getNumber(inputDirectory, effPreselectionName, 3, 9).first;
       double denomPFLooseIsoEff = numLeadTrackPtEff;
       double pfLooseIsoEff = numPFLooseIsoEff/denomPFLooseIsoEff;
       std::cout << " pfLooseIsoEff = " << pfLooseIsoEff << " +/- " << pfLooseIsoEffErr << std::endl;
@@ -174,13 +183,14 @@ int main(int argc, const char* argv[])
 //    but failing the loose isolation requirement
 //
       TString pfLooseIsoCorrFactorName = Form("presel/Ztautau_C1p_%s_TauHadMatchedReversedMinus05toPlus05", tauId->data());   
-      double numPFLooseIsoCorrFactor = getNumber(inputDirectory, pfLooseIsoCorrFactorName, -5).first;
+      double numPFLooseIsoCorrFactor = getNumber(inputDirectory, pfLooseIsoCorrFactorName, -5, 9).first;
       //std::cout << " numPFLooseIsoCorrFactor = " << numPFLooseIsoCorrFactor << std::endl;
-      double denomPFLooseIsoCorrFactor = getNumber(inputDirectory, pfLooseIsoCorrFactorName, -4).first;
+      double denomPFLooseIsoCorrFactor = getNumber(inputDirectory, pfLooseIsoCorrFactorName, -4, 9).first;
       //std::cout << " denomPFLooseIsoCorrFactor = " << denomPFLooseIsoCorrFactor << std::endl;
       double pfLooseIsoCorrFactor = numPFLooseIsoCorrFactor/denomPFLooseIsoCorrFactor;
       double pfLooseIsoCorrFactorErr = (1./pfLooseIsoCorrFactor  - 1.)*pfLooseIsoCorrRelErr;
-      std::cout << " pfLooseIsoCorrFactor = " << pfLooseIsoCorrFactor << " +/- " << pfLooseIsoCorrFactorErr << std::endl;
+      std::cout << " pfLooseIsoCorrFactor = " << pfLooseIsoCorrFactor << " +/- " << pfLooseIsoCorrFactorErr 
+		<< " (" << pfLooseIsoCorrFactorErr/pfLooseIsoCorrFactor << "%)" << std::endl;
 
 //--- compute correction factor (specific to HPS)
 //    for lead. track Pt cut applied in preselection, 
@@ -191,13 +201,14 @@ int main(int argc, const char* argv[])
 //                  tauIdEff(MC, leadTrackFinding && leadTrackPtCut && HPS discr. passed)
 //
       TString leadTrackPtCorrFactorName = pfLooseIsoCorrFactorName;
-      double numLeadTrackPtCorrFactor = getNumber(inputDirectory, pfLooseIsoCorrFactorName, -6).first;
+      double numLeadTrackPtCorrFactor = getNumber(inputDirectory, pfLooseIsoCorrFactorName, -6, 9).first;
       //std::cout << " numLeadTrackPtCorrFactor = " << numLeadTrackPtCorrFactor << std::endl;
-      double denomLeadTrackPtCorrFactor = getNumber(inputDirectory, pfLooseIsoCorrFactorName, -5).first;
+      double denomLeadTrackPtCorrFactor = getNumber(inputDirectory, pfLooseIsoCorrFactorName, -5, 9).first;
       //std::cout << " denomLeadTrackPtCorrFactor = " << denomLeadTrackPtCorrFactor << std::endl;
       double leadTrackPtCorrFactor = numLeadTrackPtCorrFactor/denomLeadTrackPtCorrFactor;
       double leadTrackPtCorrFactorErr = (1./leadTrackPtCorrFactor - 1.)*leadTrackPtCorrRelErr;
-      std::cout << " leadTrackPtCorrFactor = " << leadTrackPtCorrFactor << " +/- " << leadTrackPtCorrFactorErr << std::endl;
+      std::cout << " leadTrackPtCorrFactor = " << leadTrackPtCorrFactor << " +/- " << leadTrackPtCorrFactorErr 
+		<< " (" << leadTrackPtCorrFactorErr/leadTrackPtCorrFactor << "%)" << std::endl;
 
 //--- compute "purity" correction factor to account for contribution of jet --> tau fakes
 //    to Z --> tau+ tau- signal yield
@@ -212,31 +223,36 @@ int main(int argc, const char* argv[])
       double expNormC1f = expNormC1*(1. - mcExp);
 
       TString matchedTauHadC1pName = Form("presel/Ztautau_C1p_%s_TauHadMatchedMinus05toPlus05", tauId->data());  
-      double matchedTauHadC1p = getNumber(inputDirectory, matchedTauHadC1pName, 5).first;
+      double matchedTauHadC1p = getNumber(inputDirectory, matchedTauHadC1pName, 7, 9).first;
       TString matchedFakeTauC1pName = Form("presel/Ztautau_C1p_%s_FakeTauMatchedMinus05toPlus05", tauId->data());
-      double matchedFakeTauC1p = getNumber(inputDirectory, matchedFakeTauC1pName, 5).first;
+      double matchedFakeTauC1p = getNumber(inputDirectory, matchedFakeTauC1pName, 7, 9).first;
       double expPurityC1p = matchedTauHadC1p/(matchedTauHadC1p + matchedFakeTauC1p);
       std::cout << " expPurityC1p = " << expPurityC1p << std::endl;
       double expFakeC1p = expNormC1p*(1. - expPurityC1p);
 
       TString matchedTauHadC1fName = TString(matchedTauHadC1pName).ReplaceAll("_C1p_", "_C1f_");
-      double matchedTauHadC1f = getNumber(inputDirectory, matchedTauHadC1fName, 5).first;
+      double matchedTauHadC1f = getNumber(inputDirectory, matchedTauHadC1fName, 5, 9).first;
       TString matchedFakeTauC1fName = TString(matchedFakeTauC1pName).ReplaceAll("_C1p_", "_C1f_");
-      double matchedFakeTauC1f = getNumber(inputDirectory, matchedFakeTauC1fName, 5).first;
+      double matchedFakeTauC1f = getNumber(inputDirectory, matchedFakeTauC1fName, 5, 9).first;
       double expPurityC1f = matchedTauHadC1f/(matchedTauHadC1f + matchedFakeTauC1f);
       std::cout << " expPurityC1f = " << expPurityC1f << std::endl;
       double expFakeC1f = expNormC1f*(1. - expPurityC1f);
 
-      double purityCorrFactor = (fitNormC1p/((fitNormC1p - expFakeC1p) + (fitNormC1f - expFakeC1f)))/fitResult;
+      double numPurityCorrFactor = (fitNormC1p - expFakeC1p)/((fitNormC1p - expFakeC1p) + (fitNormC1f - expFakeC1f));
+      double denomPurityCorrFactor = fitNormC1p/fitNormC1;
+      double purityCorrFactor = numPurityCorrFactor/denomPurityCorrFactor;
       double purityCorrFactorErr = 
 	purityCorrFactor*((expFakeC1p + expFakeC1f)/((fitNormC1p - expFakeC1p) + (fitNormC1f - expFakeC1f)))*frRelErr;
-      std::cout << " purityCorrFactor = " << purityCorrFactor << " +/- " << purityCorrFactorErr << std::endl;
-
-      double expPurityCorrFactor = (expNormC1p/((expNormC1p - expFakeC1p) + (expNormC1f - expFakeC1f)))/mcExp;
+      std::cout << " purityCorrFactor = " << purityCorrFactor << " +/- " << purityCorrFactorErr 
+		<< " (" << purityCorrFactorErr/purityCorrFactor << "%)" << std::endl;
+      
+      double numExpPurityCorrFactor = (expNormC1p- expFakeC1p)/((expNormC1p - expFakeC1p) + (expNormC1f - expFakeC1f));
+      double denomExpPurityCorrFactor = expNormC1p/expNormC1;
+      double expPurityCorrFactor = numExpPurityCorrFactor/denomExpPurityCorrFactor;
       std::cout << " expPurityCorrFactor = " << expPurityCorrFactor << std::endl;
 
 //--- compute tau id. efficiency and uncertainty
-      std::cout << (*tauId) << ": stat. uncertainty = " << fitStatErr/fitResult << std::endl;
+      std::cout << "stat. uncertainty = " << fitStatErr/fitResult << std::endl;
 
       double totErr2 = square(leadTrackFindingEffErr)
 	              + square(pfLooseIsoEffErr) 
@@ -245,10 +261,7 @@ int main(int argc, const char* argv[])
  	              + square(purityCorrFactorErr/purityCorrFactor)
                       + square(tauJetEnScaleErr)
                       + square(fitStatErr/fitResult);
-      std::cout << (*tauId) << ": total uncertainty = " << TMath::Sqrt(totErr2) << std::endl;
-
-      std::cout << (*tauId) << ": loose iso. corr. factor = " << pfLooseIsoCorrFactor << std::endl;
-      std::cout << (*tauId) << ": lead. track Pt corr. factor = " << leadTrackPtCorrFactor << std::endl;
+      std::cout << "total uncertainty = " << TMath::Sqrt(totErr2) << std::endl;
 
       double totEff = 
 	leadTrackFindingEff
@@ -258,7 +271,7 @@ int main(int argc, const char* argv[])
        * leadTrackPtCorrFactor
        * purityCorrFactor
        * fitResult;
-      std::cout << (*tauId) << ": efficiency = " << totEff << " +/- " << totEff*TMath::Sqrt(totErr2) << std::endl;
+      std::cout << "--> efficiency = " << totEff << " +/- " << totEff*TMath::Sqrt(totErr2) << std::endl;
       double totEffExp = 
 	leadTrackFindingEff
        * leadTrackPtEff
@@ -267,18 +280,24 @@ int main(int argc, const char* argv[])
        * leadTrackPtCorrFactor
        * expPurityCorrFactor
        * mcExp;
-      std::cout << (*tauId) << ": MC exp. (1) = " << totEffExp << std::endl;
-      std::cout << (*tauId) << ": Data/MC = " << totEff/totEffExp << " +/- " << totEff/totEffExp*TMath::Sqrt(totErr2) << std::endl;
+      std::cout << " MC exp. (1) = " << totEffExp << std::endl;
+      std::cout << "--> Data/MC = " << totEff/totEffExp << " +/- " << totEff/totEffExp*TMath::Sqrt(totErr2) << std::endl;
 
 //--- CV: cross-check Monte Carlo expected tau id. efficiency
 //        with FWLiteTauIdEffPreselNumbers output
+//
+//    NOTE: quoted efficiencies are for "true" hadronic tau decays of Pt > 20 GeV, abs(eta) < 2.3
+//          which are reconstructed as PFJets of Pt > 20 GeV, abs(eta) < 2.3
+//         (in order to get "full" efficiencies, need to multiply the quoted efficiencies
+//          by the probability to reconstruct PFJet and to have Pt > 20 GeV on reconstruction level)
+//
       TString totEffExpName_control = Form("presel/Ztautau_C1_%s_TauHadMatchedReversedMinus05toPlus05", tauId->data()); 
-      double numTotEffExp_control = getNumber(inputDirectory, totEffExpName_control, -7).first;
+      double numTotEffExp_control = getNumber(inputDirectory, totEffExpName_control, -7, 9).first;
       //std::cout << " numTotEffExp_control = " << numTotEffExp_control << std::endl;
-      double denomTotEffExp_control = getNumber(inputDirectory, totEffExpName_control, 0).first;
+      double denomTotEffExp_control = getNumber(inputDirectory, totEffExpName_control, 0, 9).first;
       //std::cout << " denomTotEffExp_control = " << denomTotEffExp_control << std::endl;
       double totEffExp_control = numTotEffExp_control/denomTotEffExp_control;
-      std::cout << (*tauId) << ": MC exp. (2) = " << totEffExp_control << std::endl;
+      std::cout << " MC exp. (2) = " << totEffExp_control << std::endl;
 
       std::cout << std::endl;
     }

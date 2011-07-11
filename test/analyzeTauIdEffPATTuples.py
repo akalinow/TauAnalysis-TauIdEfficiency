@@ -12,7 +12,7 @@ channel = 'ZtoMuTau_tauIdEff'
 jobId = '2011Jul06_mauroV4'
 
 inputFilePath = '/data2/veelken/CMSSW_4_2_x/PATtuples/TauIdEffMeas/2011Jul06_mauro/V4/user/v/veelken/CMSSW_4_2_x/PATtuples/TauIdEffMeas/'
-outputFilePath = '/data1/veelken/tmp/muonPtGt20/V4/'
+outputFilePath = '/data1/veelken/tmp/muonPtGt20/V4b/'
 
 samplesToAnalyze = [
     # modify in case you want to submit jobs for some of the samples only...
@@ -21,7 +21,7 @@ samplesToAnalyze = [
     'Ztautau_pythia',
     'Ztautau_embedded_part1',
     'Ztautau_embedded_part2',
-    'Zmumu_pythia',
+    'Zmumu_powheg',
     'PPmuXptGt20Mu15',
     'WplusJets_madgraph',
     'TTplusJets_madgraph'
