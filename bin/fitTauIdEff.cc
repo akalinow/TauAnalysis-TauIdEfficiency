@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.14 $
+ * \version $Revision: 1.15 $
  *
- * $Id: fitTauIdEff.cc,v 1.14 2011/07/10 17:41:39 veelken Exp $
+ * $Id: fitTauIdEff.cc,v 1.15 2011/07/11 15:26:32 veelken Exp $
  *
  */
 
@@ -599,6 +599,7 @@ int main(int argc, const char* argv[])
 	    key != region->second.end(); ++key ) {
 	for ( std::vector<std::string>::const_iterator tauId = tauIds.begin();
 	      tauId != tauIds.end(); ++tauId ) {
+	  if ( !(key->first.find(*tauId) != std::string::npos) ) continue;
 	  for ( std::vector<std::string>::const_iterator fitVariable = fitVariables.begin();
 		fitVariable != fitVariables.end(); ++fitVariable ) {
 	    if ( !isSystematicShift(key->first) ) {
@@ -609,15 +610,15 @@ int main(int argc, const char* argv[])
 	      outputFileName.append("_fitted_").append(*fitVariable).append(".png");
 	      drawHistograms(
 	        templatesZtautau[region->first][key->first], 
-		getTemplateNorm_fitted("Ztautau", region->first, *tauId, *fitVariable, normFactorsAll_fitted, fittedFractions),
+		getTemplateNorm_fitted("Ztautau", region->first, key->first, *tauId, *fitVariable, normFactorsAll_fitted, fittedFractions),
 		templatesZmumu[region->first][key->first], 
-		getTemplateNorm_fitted("Zmumu", region->first, *tauId, *fitVariable, normFactorsAll_fitted, fittedFractions),
+		getTemplateNorm_fitted("Zmumu", region->first, key->first, *tauId, *fitVariable, normFactorsAll_fitted, fittedFractions),
 		templatesQCD[region->first][key->first], 
-		getTemplateNorm_fitted("QCD", region->first, *tauId, *fitVariable, normFactorsAll_fitted, fittedFractions),
+		getTemplateNorm_fitted("QCD", region->first, key->first, *tauId, *fitVariable, normFactorsAll_fitted, fittedFractions),
 		templatesWplusJets[region->first][key->first], 
-		getTemplateNorm_fitted("WplusJets", region->first, *tauId, *fitVariable, normFactorsAll_fitted, fittedFractions),
+		getTemplateNorm_fitted("WplusJets", region->first, key->first, *tauId, *fitVariable, normFactorsAll_fitted, fittedFractions),
 		templatesTTplusJets[region->first][key->first], 
-		getTemplateNorm_fitted("TTplusJets", region->first, *tauId, *fitVariable, normFactorsAll_fitted, fittedFractions),
+		getTemplateNorm_fitted("TTplusJets", region->first, key->first, *tauId, *fitVariable, normFactorsAll_fitted, fittedFractions),
 		distributionsData[region->first][key->first],
 		histogramTitle, xAxisTitles[getObservable(key->first)],
 		outputFileName, true);

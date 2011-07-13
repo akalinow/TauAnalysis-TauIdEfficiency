@@ -4,11 +4,11 @@ process = cms.PSet()
 
 process.fwliteInput = cms.PSet(
     #fileNames   = cms.vstring('fitTauIdEff_wConstraints_2011June30_matthew.root'),
-    fileNames   = cms.vstring('/data1/veelken/tmp/analyzeTauIdEffHistograms_all_2011Jul01_mauroV2.root'),
+    fileNames   = cms.vstring('/data1/veelken/tmp/muonPtGt20/V4b/analyzeTauIdEffHistograms_all_2011Jul06_mauroV4.root'),
 )
     
 process.fwliteOutput = cms.PSet(
-    fileName  = cms.string('/data1/veelken/tmp/fitTauIdEff.root')
+    fileName  = cms.string('/data1/veelken/tmp/muonPtGt20/V4b/fitTauIdEff.root')
 )
 
 process.fitTauIdEff = cms.PSet(
@@ -59,5 +59,6 @@ process.fitTauIdEff = cms.PSet(
         #"SysJetEnUp"   # needed for diTauMt
     ),
 
-    makeControlPlots = cms.bool(True)
+    #makeControlPlots = cms.bool(True)
+    makeControlPlots = cms.bool(False)
 )

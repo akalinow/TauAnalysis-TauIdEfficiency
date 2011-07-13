@@ -4,7 +4,7 @@ process = cms.PSet()
 
 process.fwliteInput = cms.PSet(
     #fileNames   = cms.vstring('fitTauIdEff_wConstraints_2011June30_matthew.root'),
-    fileNames   = cms.vstring('/data1/veelken/tmp/muonPtGt20/V4b/analyzeTauIdEffHistograms_all_2011Jul06_mauroV4.root'),
+    fileNames   = cms.vstring('/data1/veelken/tmp/muonPtGt20/V4b/analyzeTauIdEffHistograms_all_2011Jul06_mauroV4.root')
 )
     
 process.fwliteOutput = cms.PSet(
@@ -59,14 +59,14 @@ process.fitTauIdEff_wConstraints = cms.PSet(
     ),
     
     tauIds = cms.vstring(
-        'tauDiscrHPSloose', # "new" HPS implemented in HPS+TaNC combined algorithm
-        'tauDiscrHPSlooseDBcorr',
+        ##'tauDiscrHPSloose', # "new" HPS implemented in HPS+TaNC combined algorithm
+        ##'tauDiscrHPSlooseDBcorr',
         'tauDiscrHPScombLooseDBcorr',
-        'tauDiscrHPSmedium',
-        'tauDiscrHPSmediumDBcorr',
+        ##'tauDiscrHPSmedium',
+        ##'tauDiscrHPSmediumDBcorr',
         'tauDiscrHPScombMediumDBcorr',
-        'tauDiscrHPStight',
-        'tauDiscrHPStightDBcorr',
+        ##'tauDiscrHPStight',
+        ##'tauDiscrHPStightDBcorr',
         'tauDiscrHPScombTightDBcorr'
     ),
 
@@ -80,6 +80,6 @@ process.fitTauIdEff_wConstraints = cms.PSet(
         ##"sysJetEnUp"   # needed for diTauMt
     ),
 
-    #makeControlPlots = cms.bool(True)
-    makeControlPlots = cms.bool(False)
+    makeControlPlots = cms.bool(True)
+    #makeControlPlots = cms.bool(False)
 )

@@ -11,6 +11,7 @@
 #include "DataFormats/FWLite/interface/OutputFiles.h"
 
 #include "TauAnalysis/CandidateTools/interface/generalAuxFunctions.h"
+#include "TauAnalysis/TauIdEfficiency/bin/tauIdEffAuxFunctions.h"
 
 #include <TFile.h>
 #include <TSystem.h>
@@ -26,47 +27,6 @@
 #include <iostream>
 #include <iomanip>
 
-std::pair<double, double> getNumber(TDirectory* inputDirectory, const TString& auxHistogramName, 
-				    int auxHistogramBin, int assertAuxHistogramNumBins = 1)
-{
-  //std::cout << "<getNumber>:" << std::endl;
-  //std::cout << " auxHistogramName = " << auxHistogramName << std::endl;
-  //std::cout << " auxHistogramBin = " << auxHistogramBin << std::endl;
-  //std::cout << " assertAuxHistogramNumBins = " << assertAuxHistogramNumBins << std::endl;
-
-  TH1* histogram = dynamic_cast<TH1*>(inputDirectory->Get(auxHistogramName.Data()));
-  if ( !histogram ) 
-    throw cms::Exception("getNumber")  
-      << "Failed to find histogram = " << auxHistogramName << " in input file/directory = " << inputDirectory->GetName() << " !!\n";
-  
-  int numBins = histogram->GetNbinsX();
-  // CV: check that histogram has the expected number of bins,
-  //     if it hasn't, FWLiteTauIdEffPreselNumbers/TauIdEffCutFlowTable has probably changed
-  //     and the auxHistogramBin parameter needs to be updated !!
-  //    (in particular if auxHistogramBin is negative)
-  if ( numBins != assertAuxHistogramNumBins ) 
-    throw cms::Exception("getNumber")  
-      << "Histogram = " << auxHistogramName << " has incompatible binning:" 
-      << " found = " << numBins << ", expected = " << assertAuxHistogramNumBins << " !!\n";
-
-  int x;
-  if   ( auxHistogramBin >= 0 ) x = auxHistogramBin;
-  else                          x = numBins - TMath::Abs(auxHistogramBin);
-  if ( !(x >= 0 && x < numBins) ) 
-    throw cms::Exception("getNumber") 
-      << "Invalid auxHistogramBin = " << auxHistogramBin << ", expected range = " << (-numBins) << ".." << (numBins - 1) << " !!\n";
-
-  int bin = histogram->FindBin(x);
-
-  std::pair<double, double> retVal;
-  retVal.first = histogram->GetBinContent(bin);
-  retVal.second = histogram->GetBinError(bin);
-
-  //std::cout << "--> returning " << retVal.first << " +/- " << retVal.second << std::endl;
-
-  return retVal;
-}
-  
 double square(double x)
 {
   return x*x;
@@ -133,6 +93,10 @@ int main(int argc, const char* argv[])
   if ( !inputDirectory ) 
     throw cms::Exception("compTauIdEffFinalNumbers") 
       << "Directory = " << directory << " does not exists in input file = " << inputFileName << " !!\n";
+
+  std::map<std::string, std::map<std::string, double> > expTauIdEfficiency;     // key = (tauId, fitVariable)
+  std::map<std::string, std::map<std::string, double> > measTauIdEfficiency;    // key = (tauId, fitVariable)
+  std::map<std::string, std::map<std::string, double> > measTauIdEfficiencyErr; // key = (tauId, fitVariable)  
 
   for ( std::vector<std::string>::const_iterator tauId = tauIds.begin();
 	tauId != tauIds.end(); ++tauId ) {
@@ -283,6 +247,11 @@ int main(int argc, const char* argv[])
       std::cout << " MC exp. (1) = " << totEffExp << std::endl;
       std::cout << "--> Data/MC = " << totEff/totEffExp << " +/- " << totEff/totEffExp*TMath::Sqrt(totErr2) << std::endl;
 
+      expTauIdEfficiency[*tauId][*fitVariable] = totEffExp;
+
+      measTauIdEfficiency[*tauId][*fitVariable] = totEff;
+      measTauIdEfficiencyErr[*tauId][*fitVariable] = totEff*TMath::Sqrt(totErr2);
+
 //--- CV: cross-check Monte Carlo expected tau id. efficiency
 //        with FWLiteTauIdEffPreselNumbers output
 //
@@ -300,6 +269,33 @@ int main(int argc, const char* argv[])
       std::cout << " MC exp. (2) = " << totEffExp_control << std::endl;
 
       std::cout << std::endl;
+    }
+  }
+
+//-- save expected and measured tau id. efficiency values
+  fwlite::OutputFiles outputFile(cfg);
+  fwlite::TFileService fs = fwlite::TFileService(outputFile.file().data());
+
+  TFileDirectory outputDirectory = ( directory != "" ) ?
+    fs.mkdir(directory.data()) : fs;
+
+  for ( std::vector<std::string>::const_iterator tauId = tauIds.begin();
+	tauId != tauIds.end(); ++tauId ) {
+    for ( std::vector<std::string>::const_iterator fitVariable = fitVariables.begin();
+	  fitVariable != fitVariables.end(); ++fitVariable ) {
+      std::string expEffName = std::string("expEff_").append(*fitVariable).append("_").append(*tauId);
+      std::string expEffTitle = std::string("Expected efficiency of ").append(*tauId);
+      TH1* histogramExpEff = outputDirectory.make<TH1F>(expEffName.data(), expEffTitle.data(), 1, -0.5, +0.5);
+      int expEffBin = histogramExpEff->FindBin(0.);
+      histogramExpEff->SetBinContent(expEffBin, expTauIdEfficiency[*tauId][*fitVariable]);
+
+      std::string measEffName = std::string("measEff_").append(*fitVariable).append("_").append(*tauId);
+      std::string measEffTitle = std::string("Measured Efficiency of ").append(*tauId);
+      measEffTitle.append(", obtained by fitting ").append(*fitVariable);
+      TH1* histogramMeasEff = outputDirectory.make<TH1F>(measEffName.data(), measEffTitle.data(), 1, -0.5, +0.5);
+      int measEffBin = histogramMeasEff->FindBin(0.);
+      histogramMeasEff->SetBinContent(measEffBin, measTauIdEfficiency[*tauId][*fitVariable]);
+      histogramMeasEff->SetBinError(measEffBin, measTauIdEfficiencyErr[*tauId][*fitVariable]);
     }
   }
 

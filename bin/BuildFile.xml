@@ -101,5 +101,15 @@
   <use   name="FWCore/PythonParameterSet"/>
   <use   name="PhysicsTools/FWLite"/>
   <use   name="TauAnalysis/CandidateTools"/>
+  <use   name="TauAnalysis/DQMTools"/>
+  <use   name="root"/>
+</bin>
+<bin   file="makeTauIdEffFinalPlots.cc" name="makeTauIdEffFinalPlots">
+  <use   name="FWCore/FWLite"/>
+  <use   name="FWCore/ParameterSet"/>
+  <use   name="FWCore/PythonParameterSet"/>
+  <use   name="PhysicsTools/FWLite"/>
+  <use   name="TauAnalysis/CandidateTools"/>
+  <use   name="TauAnalysis/DQMTools"/>
   <use   name="root"/>
 </bin>

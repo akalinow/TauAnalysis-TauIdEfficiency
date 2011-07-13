@@ -3,6 +3,8 @@
 
 #include "TauAnalysis/DQMTools/interface/histogramAuxFunctions.h"
 
+#include "FWCore/Utilities/interface/Exception.h"
+
 #include "RooAddPdf.h"
 #include "RooCategory.h"
 #include "RooCmdArg.h"
@@ -143,26 +145,22 @@ TH1* normalize(const TH1* histogram, double norm = 1.)
 //
 
 double getTemplateNorm_fitted(
-         const std::string& process, const std::string& region, const std::string& tauId, const std::string& observable,
+         const std::string& process, const std::string& region, const std::string& key, 
+	 const std::string& tauId, const std::string& fitVariable,
 	 std::map<std::string, std::map<std::string, std::map<std::string, std::map<std::string, double> > > >& normFactorsAll_fitted,
 	 std::map<std::string, std::map<std::string, std::map<std::string, double> > >& fittedFractions)
 {
   //std::cout << "<getTemplateNorm_fitted>:" << std::endl;
   //std::cout << " process = " << process << std::endl;
   //std::cout << " region = " << region << std::endl;
-  //std::cout << " tauId = " << tauId << std::endl;
   //std::cout << " observable = " << observable << std::endl;
+  //std::cout << " tauId = " << tauId << std::endl;
+  //std::cout << " fitVariable = " << fitVariable << std::endl;
 
-  std::string tauIdValue = getTauIdValues(region)[0];
-  //std::cout << " tauIdValue = " << tauIdValue << std::endl;
-
-  std::string key = getKey(observable, tauId, tauIdValue);
-  //std::cout << " key = " << key << std::endl;
-
-  //std::cout << " normFactorsAll_fitted = " << normFactorsAll_fitted[process][region][tauId][observable] << std::endl;
+  //std::cout << " normFactorsAll_fitted = " << normFactorsAll_fitted[process][region][tauId][fitVariable] << std::endl;
   //std::cout << " fittedFractions[process] = " << fittedFractions[process][region][key] << std::endl;
 
-  double retVal = normFactorsAll_fitted[process][region][tauId][observable]*fittedFractions[process][region][key];
+  double retVal = normFactorsAll_fitted[process][region][tauId][fitVariable]*fittedFractions[process][region][key];
   //std::cout << "--> retVal = " << retVal << std::endl; 
 
   return retVal;
@@ -190,6 +188,31 @@ void applyStyleOption(T* histogram, const std::string& histogramTitle,
     //histogram->GetYaxis()->SetTitleSize(0.05); 
     //histogram->GetYaxis()->SetLabelSize(0.05);
   } //else std::cerr << "Histogram = " << histogram->GetName() << " has no valid y-Axis !!" << std::endl;
+}
+
+void drawCMSprelimaryLabels(double xOffset = 0.140, double yOffset = 0.8075)
+{
+  static TPaveText* cmsPreliminaryLabel = 0;
+  if ( !cmsPreliminaryLabel ) {
+    cmsPreliminaryLabel = new TPaveText(xOffset, yOffset + 0.0525, xOffset + 0.32, yOffset + 0.0925, "NDC");
+    cmsPreliminaryLabel->AddText("CMS Preliminary 2011");
+    cmsPreliminaryLabel->SetTextAlign(13);
+    cmsPreliminaryLabel->SetTextSize(0.045);
+    cmsPreliminaryLabel->SetFillStyle(0);
+    cmsPreliminaryLabel->SetBorderSize(0);
+  }
+  cmsPreliminaryLabel->Draw();
+
+  static TPaveText* cmsLuminosityLabel = 0;
+  if ( !cmsLuminosityLabel ) {
+    cmsLuminosityLabel = new TPaveText(xOffset + 0.005, yOffset, xOffset + 0.32, yOffset + 0.0400, "NDC");
+    cmsLuminosityLabel->AddText("#sqrt{s} = 7 TeV, L = 879.6 pb^{-1}");
+    cmsLuminosityLabel->SetTextAlign(13);
+    cmsLuminosityLabel->SetTextSize(0.045);
+    cmsLuminosityLabel->SetFillStyle(0);
+    cmsLuminosityLabel->SetBorderSize(0);
+  }
+  cmsLuminosityLabel->Draw();
 }
 
 void drawHistograms(TH1* histogramZtautau, double normZtautau,
@@ -288,21 +311,7 @@ void drawHistograms(TH1* histogramZtautau, double normZtautau,
   legend.AddEntry(templateTTplusJets, "t#bar{t} + jets",                            "f");
   legend.Draw();
 
-  TPaveText cmsPreliminaryLabel(0.140, 0.860, 0.46, 0.900, "NDC");
-  cmsPreliminaryLabel.AddText("CMS Preliminary 2011");
-  cmsPreliminaryLabel.SetTextAlign(13);
-  cmsPreliminaryLabel.SetTextSize(0.045);
-  cmsPreliminaryLabel.SetFillStyle(0);
-  cmsPreliminaryLabel.SetBorderSize(0);
-  cmsPreliminaryLabel.Draw();
-
-  TPaveText cmsLuminosityLabel(0.145, 0.8075, 0.460, 0.8475, "NDC");
-  cmsLuminosityLabel.AddText("#sqrt{s} = 7 TeV, L = 879.6 pb^{-1}");
-  cmsLuminosityLabel.SetTextAlign(13);
-  cmsLuminosityLabel.SetTextSize(0.045);
-  cmsLuminosityLabel.SetFillStyle(0);
-  cmsLuminosityLabel.SetBorderSize(0);
-  cmsLuminosityLabel.Draw();
+  drawCMSprelimaryLabels();
 
   canvas->Update();
   std::string outputFilePath = std::string("./plots/");
@@ -342,8 +351,7 @@ void drawHistograms(TH1* histogramZtautau, double normZtautau,
   legend2.AddEntry(templateTTplusJets, "t#bar{t} + jets",                            "f");
   legend2.Draw();
 
-  cmsPreliminaryLabel.Draw();
-  cmsLuminosityLabel.Draw();
+  drawCMSprelimaryLabels();
 
   canvas->Update();
   std::string outputFilePath2 = std::string("./plots/");
@@ -383,8 +391,7 @@ void drawHistograms(TH1* histogramZtautau, double normZtautau,
   legend3.AddEntry(templateSMbgSum, "#Sigma Backgrounds",              "f");
   legend3.Draw();
 
-  cmsPreliminaryLabel.Draw();
-  cmsLuminosityLabel.Draw();
+  drawCMSprelimaryLabels();
 
   canvas->Update();
   std::string outputFilePath3 = std::string("./plots/");
@@ -416,8 +423,7 @@ void drawHistograms(TH1* histogramZtautau, double normZtautau,
   legend4.AddEntry(templateSMsum, "MC",   "l");
   legend4.Draw();
   
-  cmsPreliminaryLabel.Draw();
-  cmsLuminosityLabel.Draw();
+  drawCMSprelimaryLabels();
 
   canvas->Update();
   std::string outputFilePath4 = std::string("./plots/");
@@ -869,6 +875,51 @@ void savePseudoExperimentHistograms(const std::map<std::string, std::map<std::st
   }
 
   delete canvas;
+}
+
+//
+//-------------------------------------------------------------------------------
+//
+
+std::pair<double, double> getNumber(TDirectory* inputDirectory, const TString& auxHistogramName, 
+				    int auxHistogramBin, int assertAuxHistogramNumBins = 1)
+{
+  //std::cout << "<getNumber>:" << std::endl;
+  //std::cout << " auxHistogramName = " << auxHistogramName << std::endl;
+  //std::cout << " auxHistogramBin = " << auxHistogramBin << std::endl;
+  //std::cout << " assertAuxHistogramNumBins = " << assertAuxHistogramNumBins << std::endl;
+
+  TH1* histogram = dynamic_cast<TH1*>(inputDirectory->Get(auxHistogramName.Data()));
+  if ( !histogram ) 
+    throw cms::Exception("getNumber")  
+      << "Failed to find histogram = " << auxHistogramName << " in input file/directory = " << inputDirectory->GetName() << " !!\n";
+  
+  int numBins = histogram->GetNbinsX();
+  // CV: check that histogram has the expected number of bins,
+  //     if it hasn't, FWLiteTauIdEffPreselNumbers/TauIdEffCutFlowTable has probably changed
+  //     and the auxHistogramBin parameter needs to be updated !!
+  //    (in particular if auxHistogramBin is negative)
+  if ( numBins != assertAuxHistogramNumBins ) 
+    throw cms::Exception("getNumber")  
+      << "Histogram = " << auxHistogramName << " has incompatible binning:" 
+      << " found = " << numBins << ", expected = " << assertAuxHistogramNumBins << " !!\n";
+
+  int x;
+  if   ( auxHistogramBin >= 0 ) x = auxHistogramBin;
+  else                          x = numBins - TMath::Abs(auxHistogramBin);
+  if ( !(x >= 0 && x < numBins) ) 
+    throw cms::Exception("getNumber") 
+      << "Invalid auxHistogramBin = " << auxHistogramBin << ", expected range = " << (-numBins) << ".." << (numBins - 1) << " !!\n";
+
+  int bin = histogram->FindBin(x);
+
+  std::pair<double, double> retVal;
+  retVal.first = histogram->GetBinContent(bin);
+  retVal.second = histogram->GetBinError(bin);
+
+  //std::cout << "--> returning " << retVal.first << " +/- " << retVal.second << std::endl;
+
+  return retVal;
 }
 
 #endif
