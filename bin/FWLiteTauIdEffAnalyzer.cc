@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.11 $
+ * \version $Revision: 1.12 $
  *
- * $Id: FWLiteTauIdEffAnalyzer.cc,v 1.11 2011/07/07 12:23:15 veelken Exp $
+ * $Id: FWLiteTauIdEffAnalyzer.cc,v 1.12 2011/07/10 15:47:27 veelken Exp $
  *
  */
 
@@ -64,7 +64,6 @@ struct regionEntryType
       sysShift_(sysShift),
       selector_(0),
       histManager_(0),
-/*
       histManagerTauEtaLt15_(0),
       histManagerTauEta15to19_(0),
       histManagerTauEta19to23_(0),
@@ -80,7 +79,6 @@ struct regionEntryType
       histManagerNumVertices5to6_(0),
       histManagerNumVertices7to8_(0),
       histManagerNumVerticesGt8_(0),
- */
       numMuTauPairs_selected_(0),
       numMuTauPairsWeighted_selected_(0.)
   {
@@ -101,7 +99,7 @@ struct regionEntryType
     cfgHistManager.addParameter<std::string>("label", label_);
 
     histManager_                = addHistManager(fs, "",                cfgHistManager);
-/*
+
     histManagerTauEtaLt15_      = addHistManager(fs, "tauEtaLt15",      cfgHistManager);
     histManagerTauEta15to19_    = addHistManager(fs, "tauEta15to19",    cfgHistManager);
     histManagerTauEta19to23_    = addHistManager(fs, "tauEta19to23",    cfgHistManager);
@@ -120,14 +118,13 @@ struct regionEntryType
     histManagerNumVertices5to6_ = addHistManager(fs, "numVertices5to6", cfgHistManager);
     histManagerNumVertices7to8_ = addHistManager(fs, "numVertices7to8", cfgHistManager);
     histManagerNumVerticesGt8_  = addHistManager(fs, "numVerticesGt8",  cfgHistManager);
- */
   }
   ~regionEntryType()
   {
     delete selector_;
 
     delete histManager_;
-/*
+
     delete histManagerTauEtaLt15_;
     delete histManagerTauEta15to19_;
     delete histManagerTauEta19to23_;
@@ -146,7 +143,6 @@ struct regionEntryType
     delete histManagerNumVertices5to6_;
     delete histManagerNumVertices7to8_;
     delete histManagerNumVerticesGt8_;
- */
   }
   TauIdEffHistManager* addHistManager(fwlite::TFileService& fs, const std::string& dirName, const edm::ParameterSet& cfg)
   {
@@ -167,7 +163,7 @@ struct regionEntryType
     if ( selector_->operator()(muTauPair, evtSelFlags) ) {
 //--- fill histograms for "inclusive" tau id. efficiency measurement
       histManager_->fillHistograms(muTauPair, numVertices, evtWeight);
-/*
+
 //--- fill histograms for tau id. efficiency measurement as function of tau-jet pseudo-rapidity
       double tauAbsEta = TMath::Abs(muTauPair.leg1()->eta());
       if      ( tauAbsEta < 1.5 ) histManagerTauEtaLt15_->fillHistograms(muTauPair, numVertices, evtWeight);
@@ -176,24 +172,24 @@ struct regionEntryType
 
 //--- fill histograms for tau id. efficiency measurement as function of tau-jet transverse momentum
       double tauPt = muTauPair.leg1()->pt();
-      if      ( tauPt > 20.0 && tauPt < 25.0 ) histManagerTauPtLt25_->fillHistograms(muTauPair, numVertices, evtWeight);
-      else if ( tauPt > 25.0 && tauPt < 30.0 ) histManagerTauPt25to30_->fillHistograms(muTauPair, numVertices, evtWeight);
-      else if ( tauPt > 30.0 && tauPt < 40.0 ) histManagerTauPt30to40_->fillHistograms(muTauPair, numVertices, evtWeight);
-      else if ( tauPt > 40.0 && tauPt < 80.0 ) histManagerTauPtGt40_->fillHistograms(muTauPair, numVertices, evtWeight);
+      if      ( tauPt > 20.0 && tauPt <  25.0 ) histManagerTauPtLt25_->fillHistograms(muTauPair, numVertices, evtWeight);
+      else if ( tauPt > 25.0 && tauPt <  30.0 ) histManagerTauPt25to30_->fillHistograms(muTauPair, numVertices, evtWeight);
+      else if ( tauPt > 30.0 && tauPt <  40.0 ) histManagerTauPt30to40_->fillHistograms(muTauPair, numVertices, evtWeight);
+      else if ( tauPt > 40.0 && tauPt < 100.0 ) histManagerTauPtGt40_->fillHistograms(muTauPair, numVertices, evtWeight);
       
 //--- fill histograms for tau id. efficiency measurement as function of sumEt
       double sumEt = muTauPair.met()->sumEt();
-      if      ( sumEt < 250.0 ) histManagerSumEtLt250_->fillHistograms(muTauPair, numVertices, evtWeight);
-      else if ( sumEt < 350.0 ) histManagerSumEt250to350_->fillHistograms(muTauPair, numVertices, evtWeight);
-      else if ( sumEt < 450.0 ) histManagerSumEt350to450_->fillHistograms(muTauPair, numVertices, evtWeight);
-      else                      histManagerSumEtGt450_->fillHistograms(muTauPair, numVertices, evtWeight);
+      if      ( sumEt <  250.0 ) histManagerSumEtLt250_->fillHistograms(muTauPair, numVertices, evtWeight);
+      else if ( sumEt <  350.0 ) histManagerSumEt250to350_->fillHistograms(muTauPair, numVertices, evtWeight);
+      else if ( sumEt <  450.0 ) histManagerSumEt350to450_->fillHistograms(muTauPair, numVertices, evtWeight);
+      else if ( sumEt < 1000.0 ) histManagerSumEtGt450_->fillHistograms(muTauPair, numVertices, evtWeight);
       
 //--- fill histograms for tau id. efficiency measurement as function of reconstructed vertex multiplicity
       if      ( numVertices <=  4 ) histManagerNumVerticesLeq4_->fillHistograms(muTauPair, numVertices, evtWeight);
       else if ( numVertices <=  6 ) histManagerNumVertices5to6_->fillHistograms(muTauPair, numVertices, evtWeight);
       else if ( numVertices <=  8 ) histManagerNumVertices7to8_->fillHistograms(muTauPair, numVertices, evtWeight);
       else if ( numVertices <= 20 ) histManagerNumVerticesGt8_->fillHistograms(muTauPair, numVertices, evtWeight);
- */
+ 
       ++numMuTauPairs_selected_;
       numMuTauPairsWeighted_selected_ += evtWeight;
     }
@@ -209,7 +205,7 @@ struct regionEntryType
   TauIdEffEventSelector* selector_;
 
   TauIdEffHistManager* histManager_;
-/*
+
   TauIdEffHistManager* histManagerTauEtaLt15_;
   TauIdEffHistManager* histManagerTauEta15to19_;
   TauIdEffHistManager* histManagerTauEta19to23_;
@@ -228,7 +224,7 @@ struct regionEntryType
   TauIdEffHistManager* histManagerNumVertices5to6_;
   TauIdEffHistManager* histManagerNumVertices7to8_;
   TauIdEffHistManager* histManagerNumVerticesGt8_;
- */
+
   int numMuTauPairs_selected_;
   double numMuTauPairsWeighted_selected_;
 };

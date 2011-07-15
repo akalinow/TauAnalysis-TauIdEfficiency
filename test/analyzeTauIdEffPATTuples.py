@@ -89,6 +89,8 @@ for sampleToAnalyze in samplesToAnalyze:
         inputFiles_string += inputFile_sample
     inputFiles_string += "'"
 
+    tauIds = []
+
     for sysUncertainty in sysUncertainties_expanded:
 
         outputFileName = None
