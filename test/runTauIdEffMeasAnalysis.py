@@ -38,7 +38,7 @@ fitVariables = [
 
 sysUncertainties = [
     "sysTauJetEn", # needed for diTauVisMass/diTauVisMassFromJet
-    "sysJetEnUp"   # needed for diTauMt
+    ##"sysJetEnUp"   # needed for diTauMt
 ]
 
 tauIds = {
@@ -228,6 +228,7 @@ executable_fitTauIdEff = fitMethod
 executable_FWLiteTauIdEffPreselNumbers = 'FWLiteTauIdEffPreselNumbers'
 executable_compTauIdEffFinalNumbers = 'compTauIdEffFinalNumbers'
 executable_makeTauIdEffFinalPlots = 'makeTauIdEffFinalPlots'
+executable_shell = '/bin/csh'
 
 if len(samplesToAnalyze) == 0:
     samplesToAnalyze = recoSampleDefinitionsTauIdEfficiency_7TeV['RECO_SAMPLES'].keys()
@@ -238,12 +239,14 @@ if len(samplesToAnalyze) == 0:
 #
 configFileNames_FWLiteTauIdEffAnalyzer = []
 outputFileNames_FWLiteTauIdEffAnalyzer = []
+logFileNames_FWLiteTauIdEffAnalyzer    = []
 for sampleToAnalyze in samplesToAnalyze:
     retVal_FWLiteTauIdEffAnalyzer = \
       buildConfigFile_FWLiteTauIdEffAnalyzer(sampleToAnalyze, jobId, inputFilePath, tauIds, sysUncertainties, outputFilePath,
                                              recoSampleDefinitionsTauIdEfficiency_7TeV)
     configFileNames_FWLiteTauIdEffAnalyzer.extend(retVal_FWLiteTauIdEffAnalyzer['configFileNames'])
     outputFileNames_FWLiteTauIdEffAnalyzer.extend(retVal_FWLiteTauIdEffAnalyzer['outputFileNames'])
+    logFileNames_FWLiteTauIdEffAnalyzer.extend(retVal_FWLiteTauIdEffAnalyzer['logFileNames'])
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
@@ -255,6 +258,7 @@ haddShellFileName_stage1 = os.path.join(outputFilePath, 'mergeTauIdEffHistograms
 haddOutputFileName_stage1 = os.path.join(outputFilePath, 'analyzeTauIdEffHistograms_all_%s.root' % jobId)
 retVal_hadd_stage1 = \
   buildConfigFile_hadd(haddShellFileName_stage1, outputFileNames_FWLiteTauIdEffAnalyzer, haddOutputFileName_stage1)
+haddLogFileName_stage1 = retVal_hadd_stage1['logFileName']
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
@@ -263,10 +267,12 @@ retVal_hadd_stage1 = \
 #
 configFileNames_fitTauIdEff = []
 outputFileNames_fitTauIdEff = []
+logFileNames_fitTauIdEff    = []
 retVal_fitTauIdEff = \
   buildConfigFile_fitTauIdEff(fitMethod, jobId, '', haddOutputFileName_stage1, tauIds.keys(), fitVariables, outputFilePath, True)
 configFileNames_fitTauIdEff.append(retVal_fitTauIdEff['configFileName'])
 outputFileNames_fitTauIdEff.append(retVal_fitTauIdEff['outputFileName'])
+logFileNames_fitTauIdEff.append(retVal_fitTauIdEff['logFileName'])
 for binVariable in binning.keys():
     for binName, binOptions in binning[binVariable].items():
         if isinstance(binOptions, dict) and binOptions.get('min') is not None and binOptions.get('max') is not None:
@@ -274,6 +280,7 @@ for binVariable in binning.keys():
               buildConfigFile_fitTauIdEff(fitMethod, jobId, binName, haddOutputFileName_stage1, tauIds.keys(), fitVariables, outputFilePath, False)
             configFileNames_fitTauIdEff.append(retVal_fitTauIdEff['configFileName'])
             outputFileNames_fitTauIdEff.append(retVal_fitTauIdEff['outputFileName'])
+            logFileNames_fitTauIdEff.append(retVal_fitTauIdEff['logFileName'])
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
@@ -284,6 +291,7 @@ retVal_FWLiteTauIdEffPreselNumbers = \
   buildConfigFile_FWLiteTauIdEffPreselNumbers(inputFilePath, sampleZtautau, jobId_noTauSel, tauIds, outputFilePath)
 configFileName_FWLiteTauIdEffPreselNumbers = retVal_FWLiteTauIdEffPreselNumbers['configFileName']
 outputFileName_FWLiteTauIdEffPreselNumbers = retVal_FWLiteTauIdEffPreselNumbers['outputFileName']
+logFileName_FWLiteTauIdEffPreselNumbers = retVal_FWLiteTauIdEffPreselNumbers['logFileName']
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
@@ -298,6 +306,7 @@ haddInputFileNames_stage2.append(outputFileName_FWLiteTauIdEffPreselNumbers)
 haddOutputFileName_stage2 = os.path.join(outputFilePath, 'compTauIdEffFinalNumbers_input_%s.root' % jobId)
 retVal_hadd_stage2 = \
   buildConfigFile_hadd(haddShellFileName_stage2, haddInputFileNames_stage2, haddOutputFileName_stage2)
+haddLogFileName_stage2 = retVal_hadd_stage2['logFileName']
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
@@ -306,10 +315,12 @@ retVal_hadd_stage2 = \
 #
 configFileNames_compTauIdEffFinalNumbers = []
 outputFileNames_compTauIdEffFinalNumbers = []
+logFileNames_compTauIdEffFinalNumbers = []
 retVal_compTauIdEffFinalNumbers = \
   buildConfigFile_compTauIdEffFinalNumbers(haddOutputFileName_stage2, '', jobId, tauIds.keys(), fitVariables, outputFilePath)
 configFileNames_compTauIdEffFinalNumbers.append(retVal_compTauIdEffFinalNumbers['configFileName'])
 outputFileNames_compTauIdEffFinalNumbers.append(retVal_compTauIdEffFinalNumbers['outputFileName'])
+logFileNames_compTauIdEffFinalNumbers.append(retVal_compTauIdEffFinalNumbers['logFileName'])
 for binVariable in binning.keys():
     for binName, binOptions in binning[binVariable].items():
         if isinstance(binOptions, dict) and binOptions.get('min') is not None and binOptions.get('max') is not None:
@@ -317,6 +328,7 @@ for binVariable in binning.keys():
               buildConfigFile_compTauIdEffFinalNumbers(haddOutputFileName_stage2, binName, jobId, tauIds.keys(), fitVariables, outputFilePath)
             configFileNames_compTauIdEffFinalNumbers.append(retVal_compTauIdEffFinalNumbers['configFileName'])
             outputFileNames_compTauIdEffFinalNumbers.append(retVal_compTauIdEffFinalNumbers['outputFileName'])
+            logFileNames_compTauIdEffFinalNumbers.append(retVal_compTauIdEffFinalNumbers['logFileName'])
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
@@ -329,6 +341,7 @@ haddInputFileNames_stage3 = outputFileNames_compTauIdEffFinalNumbers
 haddOutputFileName_stage3 = os.path.join(outputFilePath, 'compTauIdEffFinalNumbers_all_%s.root' % jobId)
 retVal_hadd_stage3 = \
   buildConfigFile_hadd(haddShellFileName_stage3, haddInputFileNames_stage3, haddOutputFileName_stage3)
+haddLogFileName_stage3 = retVal_hadd_stage3['logFileName']
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
@@ -337,6 +350,7 @@ retVal_hadd_stage3 = \
 #
 configFileNames_makeTauIdEffFinalPlots = []
 outputFileNames_makeTauIdEffFinalPlots = []
+logFileNames_makeTauIdEffFinalPlots    = []
 for binVariable in binning.keys():
 
     # make plots for HPS isolation with no deltaBeta corrections applied
@@ -350,6 +364,7 @@ for binVariable in binning.keys():
       buildConfigFile_makeTauIdEffFinalPlots(haddOutputFileName_stage3, tauIds, discriminators_HPS, binning[binVariable], fitVariables, outputFilePath, outputFileName_HPS)
     configFileNames_makeTauIdEffFinalPlots.append(retVal_makeTauIdEffFinalPlots['configFileName'])
     outputFileNames_makeTauIdEffFinalPlots.append(retVal_makeTauIdEffFinalPlots['outputFileName'])
+    logFileNames_makeTauIdEffFinalPlots.append(retVal_makeTauIdEffFinalPlots['logFileName'])
 
     # make plots for HPS isolation with no applied deltaBeta corrections
     discriminators_HPSdbCorr = [
@@ -362,6 +377,7 @@ for binVariable in binning.keys():
       buildConfigFile_makeTauIdEffFinalPlots(haddOutputFileName_stage3, tauIds, discriminators_HPSdbCorr, binning[binVariable], fitVariables, outputFilePath, outputFileName_HPSdbCorr)
     configFileNames_makeTauIdEffFinalPlots.append(retVal_makeTauIdEffFinalPlots['configFileName'])
     outputFileNames_makeTauIdEffFinalPlots.append(retVal_makeTauIdEffFinalPlots['outputFileName'])
+    logFileNames_makeTauIdEffFinalPlots.append(retVal_makeTauIdEffFinalPlots['logFileName'])
           
     # make plots for HPS combined isolation discriminators
     discriminators_HPScombined = [
@@ -374,47 +390,88 @@ for binVariable in binning.keys():
       buildConfigFile_makeTauIdEffFinalPlots(haddOutputFileName_stage3, tauIds, discriminators_HPScombined, binning[binVariable], fitVariables, outputFilePath, outputFileName_HPScombined)
     configFileNames_makeTauIdEffFinalPlots.append(retVal_makeTauIdEffFinalPlots['configFileName'])
     outputFileNames_makeTauIdEffFinalPlots.append(retVal_makeTauIdEffFinalPlots['outputFileName'])
+    logFileNames_makeTauIdEffFinalPlots.append(retVal_makeTauIdEffFinalPlots['logFileName'])
 #--------------------------------------------------------------------------------
+
+def make_MakeFile_vstring(list_of_strings):
+    retVal = ""
+    for i, string_i in enumerate(list_of_strings):
+        if i > 0:
+            retVal += " "
+        retVal += string_i
+    return retVal
 
 # done building config files, now build Makefile...
 makeFileName = "Makefile_TauIdEffMeasAnalysis_%s" % jobId
 makeFile = open(makeFileName, "w")
 makeFile.write("\n")
+makeFile.write("all: %s %s\n" % (haddOutputFileName_stage3,
+                                 make_MakeFile_vstring(outputFileNames_makeTauIdEffFinalPlots)))
+makeFile.write("\techo 'Finished running TauIdEffMeasAnalysis.'\n")
+makeFile.write("\n")
 for i, outputFileName in enumerate(outputFileNames_FWLiteTauIdEffAnalyzer):
     makeFile.write("%s:\n" % outputFileName)
-    makeFile.write("\t%s %s\n" % (executable_FWLiteTauIdEffAnalyzer, configFileNames_FWLiteTauIdEffAnalyzer[i]))
+    makeFile.write("\t%s %s >&! %s\n" % (executable_FWLiteTauIdEffAnalyzer,
+                                         configFileNames_FWLiteTauIdEffAnalyzer[i],
+                                         logFileNames_FWLiteTauIdEffAnalyzer[i]))
 makeFile.write("\n")
 makeFile.write("%s: %s\n" % (haddOutputFileName_stage1,
-                             make_inputFileNames_vstring(outputFileNames_FWLiteTauIdEffAnalyzer)))
-makeFile.write("\tsource %s\n" % haddShellFileName_stage1)
+                             make_MakeFile_vstring(outputFileNames_FWLiteTauIdEffAnalyzer)))
+makeFile.write("\t%s %s >&! %s\n" % (executable_shell,
+                                     haddShellFileName_stage1,
+                                     haddLogFileName_stage1))
 makeFile.write("\n")
 for i, outputFileName in enumerate(outputFileNames_fitTauIdEff):
     makeFile.write("%s: %s\n" % (outputFileName,
                                  haddOutputFileName_stage1))
-    makeFile.write("\t%s %s\n" % (executable_fitTauIdEff, configFileNames_fitTauIdEff[i]))
+    makeFile.write("\t%s %s >&! %s\n" % (executable_fitTauIdEff,
+                                         configFileNames_fitTauIdEff[i],
+                                         logFileNames_fitTauIdEff[i]))
 makeFile.write("\n")
 makeFile.write("%s:\n" % outputFileName_FWLiteTauIdEffPreselNumbers)
-makeFile.write("\t%s %s\n" % (executable_FWLiteTauIdEffPreselNumbers, configFileName_FWLiteTauIdEffPreselNumbers))
+makeFile.write("\t%s %s >&! %s\n" % (executable_FWLiteTauIdEffPreselNumbers,
+                                     configFileName_FWLiteTauIdEffPreselNumbers,
+                                     logFileName_FWLiteTauIdEffPreselNumbers))
 makeFile.write("\n")
 makeFile.write("%s: %s %s\n" % (haddOutputFileName_stage2,
-                                make_inputFileNames_vstring(outputFileNames_fitTauIdEff),
+                                make_MakeFile_vstring(outputFileNames_fitTauIdEff),
                                 outputFileName_FWLiteTauIdEffPreselNumbers))
-makeFile.write("\tsource %s\n" % haddShellFileName_stage2)
+makeFile.write("\t%s %s >&! %s\n" % (executable_shell,
+                                     haddShellFileName_stage2,
+                                     haddLogFileName_stage2))
 makeFile.write("\n")
 for i, outputFileName in enumerate(outputFileNames_compTauIdEffFinalNumbers):
     makeFile.write("%s: %s\n" % (outputFileName,
                                  haddOutputFileName_stage2))
-    makeFile.write("\t%s %s\n" % (executable_compTauIdEffFinalNumbers, configFileNames_compTauIdEffFinalNumbers[i]))
+    makeFile.write("\t%s %s >&! %s\n" % (executable_compTauIdEffFinalNumbers,
+                                         configFileNames_compTauIdEffFinalNumbers[i],
+                                         logFileNames_compTauIdEffFinalNumbers[i]))
 makeFile.write("\n")
 makeFile.write("%s: %s %s\n" % (haddOutputFileName_stage3,
-                                make_inputFileNames_vstring(outputFileNames_compTauIdEffFinalNumbers),
-                                make_inputFileNames_vstring(outputFileNames_compTauIdEffFinalNumbers)))
-makeFile.write("\tsource %s\n" % haddShellFileName_stage3)
+                                make_MakeFile_vstring(outputFileNames_compTauIdEffFinalNumbers),
+                                make_MakeFile_vstring(outputFileNames_compTauIdEffFinalNumbers)))
+makeFile.write("\t%s %s >&! %s\n" % (executable_shell,
+                                     haddShellFileName_stage3,
+                                     haddLogFileName_stage3))
 makeFile.write("\n")
 for i, outputFileName in enumerate(outputFileNames_makeTauIdEffFinalPlots):
     makeFile.write("%s: %s\n" % (outputFileName,
                                  haddOutputFileName_stage3))
-    makeFile.write("\t%s %s\n" % (executable_makeTauIdEffFinalPlots, configFileNames_makeTauIdEffFinalPlots[i]))
+    makeFile.write("\t%s %s >&! %s\n" % (executable_makeTauIdEffFinalPlots,
+                                         configFileNames_makeTauIdEffFinalPlots[i],
+                                         logFileNames_makeTauIdEffFinalPlots[i]))
+makeFile.write("\n")
+makeFile.write(".PHONY: clean\n")
+makeFile.write("clean:\n")
+makeFile.write("\trm -f %s\n" % make_MakeFile_vstring(outputFileNames_FWLiteTauIdEffAnalyzer))
+makeFile.write("\trm -f %s\n" % haddShellFileName_stage1)
+makeFile.write("\trm -f %s\n" % make_MakeFile_vstring(outputFileNames_fitTauIdEff))
+makeFile.write("\trm -f %s\n" % outputFileName_FWLiteTauIdEffPreselNumbers)
+makeFile.write("\trm -f %s\n" % haddShellFileName_stage2)
+makeFile.write("\trm -f %s\n" % make_MakeFile_vstring(outputFileNames_compTauIdEffFinalNumbers))
+makeFile.write("\trm -f %s\n" % haddShellFileName_stage3)
+makeFile.write("\trm -f %s\n" % make_MakeFile_vstring(outputFileNames_makeTauIdEffFinalPlots))
+makeFile.write("\techo 'Finished deleting old files.'\n")
 makeFile.write("\n")
 makeFile.close()
 

@@ -25,7 +25,9 @@ version = "V4"
 samplesToCopy = [
     # modify in case you want to submit jobs for some of the samples only...
     #'Zmumu_powheg'
-    'Ztautau_pythia_2011Jul06_mauroV4_noTauSel'
+    #'Ztautau_pythia_2011Jul06_mauroV4_noTauSel'
+    'Ztautau_embedded_part1',
+    'Ztautau_embedded_part2'
 ]
 
 files_to_copy = []

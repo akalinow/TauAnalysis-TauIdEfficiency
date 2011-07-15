@@ -23,7 +23,7 @@ def make_tauIds_string(tauIds):
         retVal += "        " + "cms.PSet(" + "\n"
         retVal += "        " + "    discriminators = cms.vstring(" + "\n"
         for discriminator in tauId['discriminators']:
-            retVal += "        " + "        " + "'" + discriminator + "'" + "\n"
+            retVal += "        " + "        " + "'" + discriminator + "'," + "\n"
         retVal += "        " + "    )," + "\n"
         retVal += "        " + "    name = cms.string('" + tauIdName + "')" + "\n"
         retVal += "        " + ")," + "\n"
@@ -83,7 +83,8 @@ def buildConfigFile_FWLiteTauIdEffAnalyzer(sampleToAnalyze, jobId, inputFilePath
     tauIds_string = make_tauIds_string(tauIds)
 
     configFileNames = []
-    outputFileNames = []        
+    outputFileNames = []
+    logFileNames    = []
 
     for sysUncertainty in sysUncertainties_expanded:
 
@@ -189,6 +190,8 @@ process.tauIdEffAnalyzer = cms.PSet(
 """ % (inputFileNames_string, outputFileName_full,
        process_matched, processType, tauIds_string, sysUncertainty, srcMuTauPairs, weights_string, allEvents_DBS, xSection, intLumiData)
 
+        outputFileNames.append(outputFileName_full)
+
         configFileName = None
         if sysUncertainty != "CENTRAL_VALUE":  
             configFileName = "analyzeTauIdEffPATtuple_%s_%s_%s_cfg.py" % (sampleToAnalyze, sysUncertainty, jobId)
@@ -200,11 +203,14 @@ process.tauIdEffAnalyzer = cms.PSet(
         configFile.close()
         configFileNames.append(configFileName_full)
 
-        outputFileNames.append(outputFileName_full)
+        logFileName = configFileName.replace('_cfg.py', '.log')
+        logFileName_full = os.path.join(outputFilePath, logFileName)
+        logFileNames.append(logFileName_full)
 
     retVal = {}
     retVal['configFileNames'] = configFileNames
     retVal['outputFileNames'] = outputFileNames
+    retVal['logFileNames']    = logFileNames
 
     return retVal
 
@@ -216,9 +222,10 @@ def buildConfigFile_fitTauIdEff(fitMethod, jobId, directory, inputFileName, tauI
 
     outputFileName = None
     if directory != '':
-        outputFileName = os.path.join(outputFilePath, '%s_%s_%s.root' % (fitMethod, jobId, directory))
+        outputFileName = '%s_%s_%s.root' % (fitMethod, jobId, directory)
     else:
-        outputFileName = os.path.join(outputFilePath, '%s_%s.root' % (fitMethod, jobId))
+        outputFileName = '%s_%s.root' % (fitMethod, jobId)
+    outputFileName_full = os.path.join(outputFilePath, outputFileName)
 
     makeControlPlots_string = None
     if makeControlPlots:
@@ -302,7 +309,7 @@ process.%s = cms.PSet(
 
     makeControlPlots = cms.bool(%s)
 )
-""" % (inputFileName, outputFileName,
+""" % (inputFileName, outputFileName_full,
        fitMethod, directory, tauIds, fitVariables, makeControlPlots_string)
 
     configFileName = outputFileName.replace('.root', '_cfg.py')
@@ -311,9 +318,13 @@ process.%s = cms.PSet(
     configFile.write(config)
     configFile.close()
 
+    logFileName = configFileName.replace('_cfg.py', '.log')
+    logFileName_full = os.path.join(outputFilePath, logFileName)  
+
     retVal = {}
-    retVal['configFileName'] = configFileName
-    retVal['outputFileName'] = outputFileName
+    retVal['configFileName'] = configFileName_full
+    retVal['outputFileName'] = outputFileName_full
+    retVal['logFileName']    = logFileName_full
 
     return retVal
 
@@ -331,8 +342,9 @@ def buildConfigFile_FWLiteTauIdEffPreselNumbers(inputFilePath, sampleZtautau, jo
 
     tauIds_string = make_tauIds_string(tauIds)
 
-    outputFileName = os.path.join(outputFilePath, 'compTauIdEffPreselNumbers_%s_%s.root' % (sampleZtautau, jobId))
-
+    outputFileName = 'compTauIdEffPreselNumbers_%s_%s.root' % (sampleZtautau, jobId)
+    outputFileName_full = os.path.join(outputFilePath, outputFileName)
+    
     config = \
 """
 import FWCore.ParameterSet.Config as cms
@@ -380,7 +392,7 @@ process.tauIdEffPreselNumbers = cms.PSet(
 
     weights = cms.VInputTag('ntupleProducer:tauIdEffNtuple#addPileupInfo#vtxMultReweight')
 )
-""" % (inputFileNames_string, outputFileName, tauIds_string)
+""" % (inputFileNames_string, outputFileName_full, tauIds_string)
 
     configFileName = outputFileName.replace('.root', '_cfg.py')
     configFileName_full = os.path.join(outputFilePath, configFileName)    
@@ -388,9 +400,13 @@ process.tauIdEffPreselNumbers = cms.PSet(
     configFile.write(config)
     configFile.close()
 
+    logFileName = configFileName.replace('_cfg.py', '.log')
+    logFileName_full = os.path.join(outputFilePath, logFileName)
+
     retVal = {}
-    retVal['configFileName'] = configFileName
-    retVal['outputFileName'] = outputFileName
+    retVal['configFileName'] = configFileName_full
+    retVal['outputFileName'] = outputFileName_full
+    retVal['logFileName']    = logFileName_full
 
     return retVal
 
@@ -400,9 +416,10 @@ def buildConfigFile_compTauIdEffFinalNumbers(inputFileName, directory, jobId, ta
 
     outputFileName = None
     if directory != '':
-        outputFileName = os.path.join(outputFilePath, 'compTauIdEffFinalNumbers_%s_%s.root' % (directory, jobId))
+        outputFileName = 'compTauIdEffFinalNumbers_%s_%s.root' % (directory, jobId)
     else:
-        outputFileName = os.path.join(outputFilePath, 'compTauIdEffFinalNumbers_%s_%s.root' % (directory, jobId))
+        outputFileName = 'compTauIdEffFinalNumbers_%s.root' % jobId
+    outputFileName_full = os.path.join(outputFilePath, outputFileName)
 
     config = \
 """
@@ -423,7 +440,7 @@ process.compTauIdEffFinalNumbers = cms.PSet(
     # CV: set to '' if determining tau id. efficiency for whole Tag & Probe sample,
     #     set to name of one individual bin in case you want to measure the tau id. efficiency as function of tauPt, tauEta,...
     #    (needs as many 'fitTauIdEff' jobs to be run in parallel as there are bins)
-    directory = cms.string(%s),
+    directory = cms.string('%s'),
     
     tauIds = cms.vstring(
 %s
@@ -433,7 +450,7 @@ process.compTauIdEffFinalNumbers = cms.PSet(
 %s
     )
 )
-""" % (inputFileName, outputFileName,
+""" % (inputFileName, outputFileName_full,
        directory, tauIds, fitVariables)
 
     configFileName = outputFileName.replace('.root', '_cfg.py')
@@ -442,9 +459,13 @@ process.compTauIdEffFinalNumbers = cms.PSet(
     configFile.write(config)
     configFile.close()
 
+    logFileName = configFileName.replace('_cfg.py', '.log')
+    logFileName_full = os.path.join(outputFilePath, logFileName) 
+
     retVal = {}
-    retVal['configFileName'] = configFileName
-    retVal['outputFileName'] = outputFileName
+    retVal['configFileName'] = configFileName_full
+    retVal['outputFileName'] = outputFileName_full
+    retVal['logFileName']    = logFileName_full
 
     return retVal
 
@@ -514,33 +535,44 @@ process.makeTauIdEffFinalPlots = cms.PSet(
 )
 """ % (inputFileName, tauIds_string, fitVariables, xAxisBinning_string, binning['xAxisTitle'], values_string, outputFileName_full)
 
-    configFileName = outputFileName.replace('.root', '_cfg.py')
+    configFileName = outputFileName;
+    configFileName = configFileName.replace('.eps', '_cfg.py')
+    configFileName = configFileName.replace('.pdf', '_cfg.py')
+    configFileName = configFileName.replace('.png', '_cfg.py')
     configFileName_full = os.path.join(outputFilePath, configFileName)    
     configFile = open(configFileName_full, "w")
     configFile.write(config)
     configFile.close()
 
+    logFileName = configFileName.replace('_cfg.py', '.log')
+    logFileName_full = os.path.join(outputFilePath, logFileName)  
+
     retVal = {}
-    retVal['configFileName'] = configFileName
-    retVal['outputFileName'] = outputFileName
+    retVal['configFileName'] = configFileName_full
+    retVal['outputFileName'] = outputFileName_full
+    retVal['logFileName']    = logFileName_full
 
     return retVal
 
-def buildConfigFile_hadd(shellFileName, inputFileNames, outputFileName):
+def buildConfigFile_hadd(shellFileName_full, inputFileNames, outputFileName_full):
 
     """Build shell script to run 'hadd' command in order to add all histograms
        in files specified by inputFileNames argument and write the sum to file outputFileName"""
 
-    shellFile = open(shellFileName, "w")
+    shellFile = open(shellFileName_full, "w")
     shellFile.write("#!/bin/csh -f\n")
     shellFile.write("\n")
-    haddCommandLine = "hadd %s" % outputFileName
+    haddCommandLine = "hadd %s" % outputFileName_full
     for inputFileName in inputFileNames:
         haddCommandLine += " %s" % inputFileName
     shellFile.write("%s\n" % haddCommandLine)
     shellFile.close()
 
+    logFileName_full = shellFileName_full.replace('.csh', '.log')
+
     retVal = {}
-    retVal['shellFileName'] = shellFileName
-    retVal['outputFileName'] = outputFileName
-        
+    retVal['shellFileName']  = shellFileName_full
+    retVal['outputFileName'] = outputFileName_full
+    retVal['logFileName']    = logFileName_full
+
+    return retVal
