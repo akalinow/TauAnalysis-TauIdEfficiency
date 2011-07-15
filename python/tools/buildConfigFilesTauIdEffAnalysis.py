@@ -1,5 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 
+from TauAnalysis.CandidateTools.tools.composeModuleName import composeModuleName
+
 import os
 
 #--------------------------------------------------------------------------------
@@ -20,7 +22,7 @@ def make_tauIds_string(tauIds):
     for tauIdName, tauId in tauIds.items():
         retVal += "        " + "cms.PSet(" + "\n"
         retVal += "        " + "    discriminators = cms.vstring(" + "\n"
-        for discriminator in tauId.discriminators:
+        for discriminator in tauId['discriminators']:
             retVal += "        " + "        " + "'" + discriminator + "'" + "\n"
         retVal += "        " + "    )," + "\n"
         retVal += "        " + "    name = cms.string('" + tauIdName + "')" + "\n"
@@ -58,7 +60,7 @@ def buildConfigFile_FWLiteTauIdEffAnalyzer(sampleToAnalyze, jobId, inputFilePath
 
     if len(inputFileNames_sample) == 0:
         print("Sample %s has not input files --> skipping !!" % sampleToAnalyze)
-        continue
+        return
 
     # find name of associated "process"
     process_matched = None
@@ -70,13 +72,13 @@ def buildConfigFile_FWLiteTauIdEffAnalyzer(sampleToAnalyze, jobId, inputFilePath
 
     if not process_matched:
         print("No process associated to sample %s --> skipping !!" % sampleToAnalyze)
-        continue
+        return
 
     print("building config file for sample %s..." % sampleToAnalyze)
 
     processType = recoSampleDefinitions['RECO_SAMPLES'][sampleToAnalyze]['type']
 
-    inputFileNames_string = make_vstring(inputFileNames_sample)
+    inputFileNames_string = make_inputFileNames_vstring(inputFileNames_sample)
 
     tauIds_string = make_tauIds_string(tauIds)
 
@@ -315,7 +317,7 @@ process.%s = cms.PSet(
 
     return retVal
 
-def buildConfigFile_FWLiteTauIdEffPreselNumbers(inputFilePath, sampleZtautau, jobId, tauIds, outputFilePath)
+def buildConfigFile_FWLiteTauIdEffPreselNumbers(inputFilePath, sampleZtautau, jobId, tauIds, outputFilePath):
 
     """Compute preselection efficiencies and purities in regions C1p, C1f"""
 
@@ -325,7 +327,7 @@ def buildConfigFile_FWLiteTauIdEffPreselNumbers(inputFilePath, sampleZtautau, jo
         if inputFileName.find(sampleZtautau) != -1 and inputFileName.find(jobId) != -1:
             inputFileNames_Ztautau.append(os.path.join(inputFilePath, inputFileName))
 
-    inputFileNames_string = make_vstring(inputFileNames_Ztautau)        
+    inputFileNames_string = make_inputFileNames_vstring(inputFileNames_Ztautau)        
 
     tauIds_string = make_tauIds_string(tauIds)
 
@@ -346,7 +348,7 @@ process.fwliteInput = cms.PSet(
 )
     
 process.fwliteOutput = cms.PSet(
-    fileName  = cms.string('%s')os.path.join(outputFilePath, 'compTauIdEffPreselNumbers_%s_%s.root' % (sampleZtautau, jobId)))
+    fileName  = cms.string('%s')
 )
 
 process.tauIdEffPreselNumbers = cms.PSet(
@@ -362,7 +364,7 @@ process.tauIdEffPreselNumbers = cms.PSet(
 %s
     ),
 
-    sysShift = cms.string("CENTRAL_VALUE"),
+    sysShift = cms.string('CENTRAL_VALUE'),
 
     srcTrigger = cms.InputTag('patTriggerEvent'),
     hltPaths = cms.vstring(
@@ -446,7 +448,7 @@ process.compTauIdEffFinalNumbers = cms.PSet(
 
     return retVal
 
-def buildConfigFile_makeTauIdEffFinalPlots(inputFileName, tauIds, tauIdNamesToPlot, binning, fitVariables, outputFileName):
+def buildConfigFile_makeTauIdEffFinalPlots(inputFileName, tauIds, tauIdNamesToPlot, binning, fitVariables, outputFilePath, outputFileName):
 
     """Make plots of tau id. efficiency as function of tauPt, tauEta,..."""
 
@@ -460,18 +462,26 @@ def buildConfigFile_makeTauIdEffFinalPlots(inputFileName, tauIds, tauIdNamesToPl
         tauIds_string += "        " + "    color = cms.uint32(%u)\n" % tauIds[tauIdNameToPlot]['color']
         tauIds_string += "        " + ")," + "\n"
 
-    xAxisBinning_string = ""
+    xAxisBinning_set = set()
     for binName, binOptions in binning.items():
-        xAxisBinning_string += "%f," % binOptions['min']
-        if binName == binning.keys().last():
-            xAxisBinning_string += "%f" % binOptions['max']
-
+        if isinstance(binOptions, dict) and binOptions.get('min') is not None and binOptions.get('max') is not None:
+            xAxisBinning_set.add(binOptions['min'])
+            xAxisBinning_set.add(binOptions['max'])
+    xAxisBinning_list = list(xAxisBinning_set)
+    xAxisBinning_list.sort()
+    xAxisBinning_string = ""
+    for xAxisBin in xAxisBinning_list:
+        xAxisBinning_string += "%f," % xAxisBin
+    
     values_string = ""
     for binName, binOptions in binning.items():
-        values_string += "        " + "cms.PSet(" + "\n"
-        values_string += "        " + "    directory = cms.string('%s'),\n" % binName
-        values_string += "        " + "    xBinCenter = cms.double(%f),\n" % 0.5*(binOptions['min'] + binOptions['max'])
-        values_string += "        " + ")," + "\n"
+        if isinstance(binOptions, dict) and binOptions.get('min') is not None and binOptions.get('max') is not None:
+            values_string += "        " + "cms.PSet(" + "\n"
+            values_string += "        " + "    directory = cms.string('%s'),\n" % binName
+            values_string += "        " + "    xBinCenter = cms.double(%f),\n" % (0.5*(binOptions['min'] + binOptions['max']))
+            values_string += "        " + ")," + "\n"
+
+    outputFileName_full = os.path.join(outputFilePath, outputFileName)        
 
     config = \
 """
@@ -502,7 +512,19 @@ process.makeTauIdEffFinalPlots = cms.PSet(
 
     outputFileName = cms.string('%s')
 )
-""" % (tauIds_string, fitVariables, xAxisBinning_string, binning['xAxisTitle'], values_string, outputFileName)
+""" % (inputFileName, tauIds_string, fitVariables, xAxisBinning_string, binning['xAxisTitle'], values_string, outputFileName_full)
+
+    configFileName = outputFileName.replace('.root', '_cfg.py')
+    configFileName_full = os.path.join(outputFilePath, configFileName)    
+    configFile = open(configFileName_full, "w")
+    configFile.write(config)
+    configFile.close()
+
+    retVal = {}
+    retVal['configFileName'] = configFileName
+    retVal['outputFileName'] = outputFileName
+
+    return retVal
 
 def buildConfigFile_hadd(shellFileName, inputFileNames, outputFileName):
 
