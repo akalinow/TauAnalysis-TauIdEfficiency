@@ -251,32 +251,32 @@ int main(int argc, const char* argv[])
     topPad->cd();
     for ( std::vector<tauIdEntryType>::iterator tauId = tauIds.begin();
 	  tauId != tauIds.end(); ++tauId ) {
-      TAxis* xAxis = expEffGraphs[tauId->name_]->GetXaxis();
+      TAxis* xAxis = measEffGraphs[tauId->name_]->GetXaxis();
       xAxis->SetLimits(xAxisMin, xAxisMax);
       xAxis->SetLabelColor(10);
       xAxis->SetTitleColor(10);
 
-      TAxis* yAxis = expEffGraphs[tauId->name_]->GetYaxis();
+      TAxis* yAxis = measEffGraphs[tauId->name_]->GetYaxis();
       yAxis->SetTitle("Efficiency");
       yAxis->SetTitleOffset(1.15);
       yAxis->SetTitleSize(0.06);
 
-      expEffGraphs[tauId->name_]->SetTitle("");
-      expEffGraphs[tauId->name_]->SetMaximum(1.4);
-      expEffGraphs[tauId->name_]->SetMinimum(0.0);
-
-      expEffGraphs[tauId->name_]->SetMarkerStyle(tauId->expMarkerStyle_);
-      expEffGraphs[tauId->name_]->SetMarkerColor(tauId->color_);
-      expEffGraphs[tauId->name_]->SetLineColor(tauId->color_);
-      std::string drawOption = ( tauId == tauIds.begin() ) ? "A" : "";
-      expEffGraphs[tauId->name_]->Draw(drawOption.append("P").data());      
-      legend->AddEntry(expEffGraphs[tauId->name_], std::string(tauId->legendEntry_).append(" Simulation").data(), "p");
+      measEffGraphs[tauId->name_]->SetTitle("");
+      measEffGraphs[tauId->name_]->SetMaximum(1.4);
+      measEffGraphs[tauId->name_]->SetMinimum(0.0);
 
       measEffGraphs[tauId->name_]->SetMarkerStyle(tauId->measMarkerStyle_);
       measEffGraphs[tauId->name_]->SetMarkerColor(tauId->color_);
       measEffGraphs[tauId->name_]->SetLineColor(tauId->color_);
-      measEffGraphs[tauId->name_]->Draw("P");      
+      std::string drawOption = ( tauId == tauIds.begin() ) ? "A" : "";
+      measEffGraphs[tauId->name_]->Draw(drawOption.append("P").data());      
       legend->AddEntry(measEffGraphs[tauId->name_], std::string(tauId->legendEntry_).append(" Data").data(), "p");
+
+      expEffGraphs[tauId->name_]->SetMarkerStyle(tauId->expMarkerStyle_);
+      expEffGraphs[tauId->name_]->SetMarkerColor(tauId->color_);
+      expEffGraphs[tauId->name_]->SetLineColor(tauId->color_);
+      expEffGraphs[tauId->name_]->Draw("P");      
+      legend->AddEntry(expEffGraphs[tauId->name_], std::string(tauId->legendEntry_).append(" Simulation").data(), "p");
     }
     legend->Draw();
 
