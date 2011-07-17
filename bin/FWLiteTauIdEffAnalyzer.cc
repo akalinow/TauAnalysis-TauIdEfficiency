@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.12 $
+ * \version $Revision: 1.13 $
  *
- * $Id: FWLiteTauIdEffAnalyzer.cc,v 1.12 2011/07/10 15:47:27 veelken Exp $
+ * $Id: FWLiteTauIdEffAnalyzer.cc,v 1.13 2011/07/15 09:29:51 veelken Exp $
  *
  */
 
@@ -52,33 +52,50 @@
 
 typedef std::vector<std::string> vstring;
 
+struct histManagerEntryType
+{
+  histManagerEntryType(const edm::ParameterSet& cfg, 
+		       const std::string& binVariable = "", double min = -0.5, double max = +0.5)
+    : binVariable_(binVariable),
+      min_(min),
+      max_(max)
+  {
+    histManager_ = new TauIdEffHistManager(cfg);
+  }
+  ~histManagerEntryType() {}
+  void bookHistograms(TFileDirectory& dir)
+  {
+    histManager_->bookHistograms(dir);
+  }
+  void fillHistograms(double x, const PATMuTauPair& muTauPair, size_t numVertices, double weight)
+  {
+    if ( x > min_ && x <= max_ ) {
+      histManager_->fillHistograms(muTauPair, numVertices, weight);
+    }
+  }
+
+  std::string binVariable_;
+
+  double min_;
+  double max_;
+
+  TauIdEffHistManager* histManager_;
+};
+
+
 struct regionEntryType
 {
   regionEntryType(fwlite::TFileService& fs,
 		  const std::string& process, const std::string& region, 
-		  const vstring& tauIdDiscriminators, const std::string& tauIdName, const std::string& sysShift)
+		  const vstring& tauIdDiscriminators, const std::string& tauIdName, const std::string& sysShift,
+		  const edm::ParameterSet& cfgBinning)
     : process_(process),
       region_(region),
       tauIdDiscriminators_(tauIdDiscriminators),
       tauIdName_(tauIdName),
       sysShift_(sysShift),
       selector_(0),
-      histManager_(0),
-      histManagerTauEtaLt15_(0),
-      histManagerTauEta15to19_(0),
-      histManagerTauEta19to23_(0),
-      histManagerTauPtLt25_(0),
-      histManagerTauPt25to30_(0),
-      histManagerTauPt30to40_(0),
-      histManagerTauPtGt40_(0),
-      histManagerSumEtLt250_(0),
-      histManagerSumEt250to350_(0),
-      histManagerSumEt350to450_(0),
-      histManagerSumEtGt450_(0),
-      histManagerNumVerticesLeq4_(0),
-      histManagerNumVertices5to6_(0),
-      histManagerNumVertices7to8_(0),
-      histManagerNumVerticesGt8_(0),
+      histogramsUnbinned_(0),
       numMuTauPairs_selected_(0),
       numMuTauPairsWeighted_selected_(0.)
   {
@@ -98,97 +115,61 @@ struct regionEntryType
     if ( sysShift_ != "CENTRAL_VALUE" ) label_.append("_").append(sysShift_);
     cfgHistManager.addParameter<std::string>("label", label_);
 
-    histManager_                = addHistManager(fs, "",                cfgHistManager);
+    histogramsUnbinned_ = new histManagerEntryType(cfgHistManager);
+    histogramsUnbinned_->bookHistograms(fs);
 
-    histManagerTauEtaLt15_      = addHistManager(fs, "tauEtaLt15",      cfgHistManager);
-    histManagerTauEta15to19_    = addHistManager(fs, "tauEta15to19",    cfgHistManager);
-    histManagerTauEta19to23_    = addHistManager(fs, "tauEta19to23",    cfgHistManager);
-
-    histManagerTauPtLt25_       = addHistManager(fs, "tauPtLt25",       cfgHistManager);
-    histManagerTauPt25to30_     = addHistManager(fs, "tauPt25to30",     cfgHistManager);
-    histManagerTauPt30to40_     = addHistManager(fs, "tauPt30to40",     cfgHistManager);
-    histManagerTauPtGt40_       = addHistManager(fs, "tauPtGt40",       cfgHistManager);
-
-    histManagerSumEtLt250_      = addHistManager(fs, "sumEtLt250",      cfgHistManager);
-    histManagerSumEt250to350_   = addHistManager(fs, "sumEt250to350",   cfgHistManager);
-    histManagerSumEt350to450_   = addHistManager(fs, "sumEt350to450",   cfgHistManager);
-    histManagerSumEtGt450_      = addHistManager(fs, "sumEtGt450",      cfgHistManager);
-
-    histManagerNumVerticesLeq4_ = addHistManager(fs, "numVerticesLeq4", cfgHistManager);
-    histManagerNumVertices5to6_ = addHistManager(fs, "numVertices5to6", cfgHistManager);
-    histManagerNumVertices7to8_ = addHistManager(fs, "numVertices7to8", cfgHistManager);
-    histManagerNumVerticesGt8_  = addHistManager(fs, "numVerticesGt8",  cfgHistManager);
+    typedef std::vector<edm::ParameterSet> vParameterSet;
+    vstring binVariableNames = cfgBinning.getParameterNamesForType<vParameterSet>();
+    for ( vstring::const_iterator binVariableName = binVariableNames.begin();
+	  binVariableName != binVariableNames.end(); ++binVariableName ) {
+      vParameterSet cfgBinVariableBins = cfgBinning.getParameter<vParameterSet>(*binVariableName);
+      for ( vParameterSet::const_iterator cfgBinVariableBin = cfgBinVariableBins.begin();
+	    cfgBinVariableBin != cfgBinVariableBins.end(); ++cfgBinVariableBin ) {
+	double min = cfgBinVariableBin->getParameter<double>("min");
+	double max = cfgBinVariableBin->getParameter<double>("max");
+	histManagerEntryType* histManagerEntry = new histManagerEntryType(cfgHistManager, *binVariableName, min, max);
+	std::string dir_string = cfgBinVariableBin->getParameter<std::string>("subdir");
+	TFileDirectory dir = fs.mkdir(dir_string);
+	histManagerEntry->bookHistograms(dir);
+	histogramEntriesBinned_.push_back(histManagerEntry);
+      }
+    }
   }
   ~regionEntryType()
   {
     delete selector_;
 
-    delete histManager_;
+    delete histogramsUnbinned_;
 
-    delete histManagerTauEtaLt15_;
-    delete histManagerTauEta15to19_;
-    delete histManagerTauEta19to23_;
-
-    delete histManagerTauPtLt25_;
-    delete histManagerTauPt25to30_;
-    delete histManagerTauPt30to40_;
-    delete histManagerTauPtGt40_;
-
-    delete histManagerSumEtLt250_;
-    delete histManagerSumEt250to350_;
-    delete histManagerSumEt350to450_;
-    delete histManagerSumEtGt450_;
-
-    delete histManagerNumVerticesLeq4_;
-    delete histManagerNumVertices5to6_;
-    delete histManagerNumVertices7to8_;
-    delete histManagerNumVerticesGt8_;
-  }
-  TauIdEffHistManager* addHistManager(fwlite::TFileService& fs, const std::string& dirName, const edm::ParameterSet& cfg)
-  {
-    TauIdEffHistManager* retVal = new TauIdEffHistManager(cfg);
-
-    if ( dirName != "" ) {
-      TFileDirectory dir = fs.mkdir(dirName.data());
-      retVal->bookHistograms(dir);
-    } else {
-      retVal->bookHistograms(fs);
+    for ( std::vector<histManagerEntryType*>::iterator it = histogramEntriesBinned_.begin();
+	  it != histogramEntriesBinned_.end(); ++it ) {
+      delete (*it);
     }
-
-    return retVal;
   }
   void analyze(const PATMuTauPair& muTauPair, size_t numVertices, double evtWeight)
   {
     pat::strbitset evtSelFlags;
     if ( selector_->operator()(muTauPair, evtSelFlags) ) {
 //--- fill histograms for "inclusive" tau id. efficiency measurement
-      histManager_->fillHistograms(muTauPair, numVertices, evtWeight);
+      histogramsUnbinned_->fillHistograms(0., muTauPair, numVertices, evtWeight);
 
-//--- fill histograms for tau id. efficiency measurement as function of tau-jet pseudo-rapidity
-      double tauAbsEta = TMath::Abs(muTauPair.leg1()->eta());
-      if      ( tauAbsEta < 1.5 ) histManagerTauEtaLt15_->fillHistograms(muTauPair, numVertices, evtWeight);
-      else if ( tauAbsEta < 1.9 ) histManagerTauEta15to19_->fillHistograms(muTauPair, numVertices, evtWeight);
-      else if ( tauAbsEta < 2.3 ) histManagerTauEta19to23_->fillHistograms(muTauPair, numVertices, evtWeight);
-
-//--- fill histograms for tau id. efficiency measurement as function of tau-jet transverse momentum
-      double tauPt = muTauPair.leg1()->pt();
-      if      ( tauPt > 20.0 && tauPt <  25.0 ) histManagerTauPtLt25_->fillHistograms(muTauPair, numVertices, evtWeight);
-      else if ( tauPt > 25.0 && tauPt <  30.0 ) histManagerTauPt25to30_->fillHistograms(muTauPair, numVertices, evtWeight);
-      else if ( tauPt > 30.0 && tauPt <  40.0 ) histManagerTauPt30to40_->fillHistograms(muTauPair, numVertices, evtWeight);
-      else if ( tauPt > 40.0 && tauPt < 100.0 ) histManagerTauPtGt40_->fillHistograms(muTauPair, numVertices, evtWeight);
-      
-//--- fill histograms for tau id. efficiency measurement as function of sumEt
-      double sumEt = muTauPair.met()->sumEt();
-      if      ( sumEt <  250.0 ) histManagerSumEtLt250_->fillHistograms(muTauPair, numVertices, evtWeight);
-      else if ( sumEt <  350.0 ) histManagerSumEt250to350_->fillHistograms(muTauPair, numVertices, evtWeight);
-      else if ( sumEt <  450.0 ) histManagerSumEt350to450_->fillHistograms(muTauPair, numVertices, evtWeight);
-      else if ( sumEt < 1000.0 ) histManagerSumEtGt450_->fillHistograms(muTauPair, numVertices, evtWeight);
-      
-//--- fill histograms for tau id. efficiency measurement as function of reconstructed vertex multiplicity
-      if      ( numVertices <=  4 ) histManagerNumVerticesLeq4_->fillHistograms(muTauPair, numVertices, evtWeight);
-      else if ( numVertices <=  6 ) histManagerNumVertices5to6_->fillHistograms(muTauPair, numVertices, evtWeight);
-      else if ( numVertices <=  8 ) histManagerNumVertices7to8_->fillHistograms(muTauPair, numVertices, evtWeight);
-      else if ( numVertices <= 20 ) histManagerNumVerticesGt8_->fillHistograms(muTauPair, numVertices, evtWeight);
+//--- fill histograms for tau id. efficiency measurement as function of 
+//   o tau-jet transverse momentum
+//   o tau-jet pseudo-rapidity
+//   o reconstructed vertex multiplicity
+//   o sumEt
+//   o ...
+      for ( std::vector<histManagerEntryType*>::iterator histManagerEntry = histogramEntriesBinned_.begin();
+	    histManagerEntry != histogramEntriesBinned_.end(); ++histManagerEntry ) {
+	double x = 0.;
+	if      ( (*histManagerEntry)->binVariable_ == "tauPt"       ) x = muTauPair.leg2()->pt();
+	else if ( (*histManagerEntry)->binVariable_ == "tauAbsEta"   ) x = TMath::Abs(muTauPair.leg2()->eta());
+	else if ( (*histManagerEntry)->binVariable_ == "numVertices" ) x = numVertices;
+	else if ( (*histManagerEntry)->binVariable_ == "sumEt"       ) x = muTauPair.met()->sumEt();
+	else throw cms::Exception("regionEntryType::analyze")
+	  << "Invalid binVariable = " << (*histManagerEntry)->binVariable_ << " !!\n";
+	(*histManagerEntry)->fillHistograms(x, muTauPair, numVertices, evtWeight);
+      }
  
       ++numMuTauPairs_selected_;
       numMuTauPairsWeighted_selected_ += evtWeight;
@@ -204,26 +185,8 @@ struct regionEntryType
 
   TauIdEffEventSelector* selector_;
 
-  TauIdEffHistManager* histManager_;
-
-  TauIdEffHistManager* histManagerTauEtaLt15_;
-  TauIdEffHistManager* histManagerTauEta15to19_;
-  TauIdEffHistManager* histManagerTauEta19to23_;
-
-  TauIdEffHistManager* histManagerTauPtLt25_;
-  TauIdEffHistManager* histManagerTauPt25to30_;
-  TauIdEffHistManager* histManagerTauPt30to40_;
-  TauIdEffHistManager* histManagerTauPtGt40_;
-
-  TauIdEffHistManager* histManagerSumEtLt250_;
-  TauIdEffHistManager* histManagerSumEt250to350_;
-  TauIdEffHistManager* histManagerSumEt350to450_;
-  TauIdEffHistManager* histManagerSumEtGt450_;
-
-  TauIdEffHistManager* histManagerNumVerticesLeq4_;
-  TauIdEffHistManager* histManagerNumVertices5to6_;
-  TauIdEffHistManager* histManagerNumVertices7to8_;
-  TauIdEffHistManager* histManagerNumVerticesGt8_;
+  histManagerEntryType* histogramsUnbinned_;
+  std::vector<histManagerEntryType*> histogramEntriesBinned_;
 
   int numMuTauPairs_selected_;
   double numMuTauPairsWeighted_selected_;
@@ -283,6 +246,7 @@ int main(int argc, char* argv[])
   std::cout << " type = " << processType << std::endl;
   bool isData = (processType == "Data");
   vstring regions = cfgTauIdEffAnalyzer.getParameter<vstring>("regions");
+  edm::ParameterSet cfgBinning = cfgTauIdEffAnalyzer.getParameter<edm::ParameterSet>("binning");
   typedef std::vector<edm::ParameterSet> vParameterSet;
   vParameterSet cfgTauIdDiscriminators = cfgTauIdEffAnalyzer.getParameter<vParameterSet>("tauIds");
   for ( vParameterSet::const_iterator cfgTauIdDiscriminator = cfgTauIdDiscriminators.begin();
@@ -291,7 +255,7 @@ int main(int argc, char* argv[])
 	  region != regions.end(); ++region ) {
       vstring tauIdDiscriminators = cfgTauIdDiscriminator->getParameter<vstring>("discriminators");
       std::string tauIdName = cfgTauIdDiscriminator->getParameter<std::string>("name");
-      regionEntryType* regionEntry = new regionEntryType(fs, process, *region, tauIdDiscriminators, tauIdName, sysShift);
+      regionEntryType* regionEntry = new regionEntryType(fs, process, *region, tauIdDiscriminators, tauIdName, sysShift, cfgBinning);
       regionEntries.push_back(regionEntry);
     }
   }
@@ -478,8 +442,12 @@ int main(int argc, char* argv[])
     }
 
     for ( std::vector<regionEntryType*>::iterator regionEntry = regionEntries.begin();
-	  regionEntry != regionEntries.end(); ++regionEntry ) {
-      (*regionEntry)->histManager_->scaleHistograms(mcScaleFactor*lostStatCorrFactor);
+	  regionEntry != regionEntries.end(); ++regionEntry ) {  
+      (*regionEntry)->histogramsUnbinned_->histManager_->scaleHistograms(mcScaleFactor*lostStatCorrFactor);
+      for ( std::vector<histManagerEntryType*>::iterator histManagerEntry = (*regionEntry)->histogramEntriesBinned_.begin();
+	    histManagerEntry != (*regionEntry)->histogramEntriesBinned_.end(); ++histManagerEntry ) {
+	(*histManagerEntry)->histManager_->scaleHistograms(mcScaleFactor*lostStatCorrFactor);
+      }
     }
   }
 

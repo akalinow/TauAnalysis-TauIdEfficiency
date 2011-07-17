@@ -37,7 +37,7 @@ fitVariables = [
 ]    
 
 sysUncertainties = [
-    "sysTauJetEn", # needed for diTauVisMass/diTauVisMassFromJet
+    ##"sysTauJetEn", # needed for diTauVisMass/diTauVisMassFromJet
     ##"sysJetEnUp"   # needed for diTauMt
 ]
 
@@ -164,20 +164,20 @@ binning = {
         },
         'xAxisTitle' : "P_{T}^{#tau}"
     },
-    'tauEta' : {
-        'tauEtaLt15' : {
+    'tauAbsEta' : {
+        'tauAbsEtaLt15' : {
             'min' :  0.0,
             'max' :  1.5
         },
-        'tauEta15to19' : {
+        'tauAbsEta15to19' : {
             'min' :  1.5,
             'max' :  1.9
         },
-        'tauEta19to23' : {
+        'tauAbsEta19to23' : {
             'min' :  1.9,
             'max' :  2.3
         },
-        'xAxisTitle' : "#eta_{#tau}"
+        'xAxisTitle' : "|#eta_{#tau}|"
     },
     'numVertices' : {
         'numVerticesLeq4' : {
@@ -222,12 +222,14 @@ binning = {
 fitMethod = 'fitTauIdEff_wConstraints'
 #fitMethod = 'fitTauIdEff'
 
-executable_FWLiteTauIdEffAnalyzer = 'FWLiteTauIdEffAnalyzer'
+execDir = "../../../../bin/%s/" % os.environ['SCRAM_ARCH'] 
+
+executable_FWLiteTauIdEffAnalyzer = execDir + 'FWLiteTauIdEffAnalyzer'
 executable_hadd = 'hadd'
-executable_fitTauIdEff = fitMethod
-executable_FWLiteTauIdEffPreselNumbers = 'FWLiteTauIdEffPreselNumbers'
-executable_compTauIdEffFinalNumbers = 'compTauIdEffFinalNumbers'
-executable_makeTauIdEffFinalPlots = 'makeTauIdEffFinalPlots'
+executable_fitTauIdEff = execDir + fitMethod
+executable_FWLiteTauIdEffPreselNumbers = execDir + 'FWLiteTauIdEffPreselNumbers'
+executable_compTauIdEffFinalNumbers = execDir + 'compTauIdEffFinalNumbers'
+executable_makeTauIdEffFinalPlots = execDir + 'makeTauIdEffFinalPlots'
 executable_shell = '/bin/csh'
 
 if len(samplesToAnalyze) == 0:
@@ -242,7 +244,7 @@ outputFileNames_FWLiteTauIdEffAnalyzer = []
 logFileNames_FWLiteTauIdEffAnalyzer    = []
 for sampleToAnalyze in samplesToAnalyze:
     retVal_FWLiteTauIdEffAnalyzer = \
-      buildConfigFile_FWLiteTauIdEffAnalyzer(sampleToAnalyze, jobId, inputFilePath, tauIds, sysUncertainties, outputFilePath,
+      buildConfigFile_FWLiteTauIdEffAnalyzer(sampleToAnalyze, jobId, inputFilePath, tauIds, binning, sysUncertainties, outputFilePath,
                                              recoSampleDefinitionsTauIdEfficiency_7TeV)
     configFileNames_FWLiteTauIdEffAnalyzer.extend(retVal_FWLiteTauIdEffAnalyzer['configFileNames'])
     outputFileNames_FWLiteTauIdEffAnalyzer.extend(retVal_FWLiteTauIdEffAnalyzer['outputFileNames'])
@@ -288,7 +290,7 @@ for binVariable in binning.keys():
 # build config files for running FWLiteTauIdEffPreselNumbers macro
 #
 retVal_FWLiteTauIdEffPreselNumbers = \
-  buildConfigFile_FWLiteTauIdEffPreselNumbers(inputFilePath, sampleZtautau, jobId_noTauSel, tauIds, outputFilePath)
+  buildConfigFile_FWLiteTauIdEffPreselNumbers(inputFilePath, sampleZtautau, jobId_noTauSel, tauIds, binning, outputFilePath)
 configFileName_FWLiteTauIdEffPreselNumbers = retVal_FWLiteTauIdEffPreselNumbers['configFileName']
 outputFileName_FWLiteTauIdEffPreselNumbers = retVal_FWLiteTauIdEffPreselNumbers['outputFileName']
 logFileName_FWLiteTauIdEffPreselNumbers = retVal_FWLiteTauIdEffPreselNumbers['logFileName']
@@ -410,7 +412,8 @@ makeFile.write("all: %s %s\n" % (haddOutputFileName_stage3,
 makeFile.write("\techo 'Finished running TauIdEffMeasAnalysis.'\n")
 makeFile.write("\n")
 for i, outputFileName in enumerate(outputFileNames_FWLiteTauIdEffAnalyzer):
-    makeFile.write("%s:\n" % outputFileName)
+    makeFile.write("%s: %s\n" % (outputFileName,
+                                 executable_FWLiteTauIdEffAnalyzer))
     makeFile.write("\t%s %s >&! %s\n" % (executable_FWLiteTauIdEffAnalyzer,
                                          configFileNames_FWLiteTauIdEffAnalyzer[i],
                                          logFileNames_FWLiteTauIdEffAnalyzer[i]))
@@ -422,27 +425,30 @@ makeFile.write("\t%s %s >&! %s\n" % (executable_shell,
                                      haddLogFileName_stage1))
 makeFile.write("\n")
 for i, outputFileName in enumerate(outputFileNames_fitTauIdEff):
-    makeFile.write("%s: %s\n" % (outputFileName,
-                                 haddOutputFileName_stage1))
+    makeFile.write("%s: %s %s\n" % (outputFileName,
+                                    executable_fitTauIdEff,
+                                    haddOutputFileName_stage1))
     makeFile.write("\t%s %s >&! %s\n" % (executable_fitTauIdEff,
                                          configFileNames_fitTauIdEff[i],
                                          logFileNames_fitTauIdEff[i]))
 makeFile.write("\n")
-makeFile.write("%s:\n" % outputFileName_FWLiteTauIdEffPreselNumbers)
+makeFile.write("%s: %s\n" % (outputFileName_FWLiteTauIdEffPreselNumbers,
+                             executable_FWLiteTauIdEffPreselNumbers))
 makeFile.write("\t%s %s >&! %s\n" % (executable_FWLiteTauIdEffPreselNumbers,
                                      configFileName_FWLiteTauIdEffPreselNumbers,
                                      logFileName_FWLiteTauIdEffPreselNumbers))
 makeFile.write("\n")
-makeFile.write("%s: %s %s\n" % (haddOutputFileName_stage2,
-                                make_MakeFile_vstring(outputFileNames_fitTauIdEff),
-                                outputFileName_FWLiteTauIdEffPreselNumbers))
+makeFile.write("%s:  %s %s\n" % (haddOutputFileName_stage2,
+                                 make_MakeFile_vstring(outputFileNames_fitTauIdEff),
+                                 outputFileName_FWLiteTauIdEffPreselNumbers))
 makeFile.write("\t%s %s >&! %s\n" % (executable_shell,
                                      haddShellFileName_stage2,
                                      haddLogFileName_stage2))
 makeFile.write("\n")
 for i, outputFileName in enumerate(outputFileNames_compTauIdEffFinalNumbers):
-    makeFile.write("%s: %s\n" % (outputFileName,
-                                 haddOutputFileName_stage2))
+    makeFile.write("%s: %s %s\n" % (outputFileName,
+                                    executable_compTauIdEffFinalNumbers,
+                                    haddOutputFileName_stage2))
     makeFile.write("\t%s %s >&! %s\n" % (executable_compTauIdEffFinalNumbers,
                                          configFileNames_compTauIdEffFinalNumbers[i],
                                          logFileNames_compTauIdEffFinalNumbers[i]))
@@ -455,8 +461,9 @@ makeFile.write("\t%s %s >&! %s\n" % (executable_shell,
                                      haddLogFileName_stage3))
 makeFile.write("\n")
 for i, outputFileName in enumerate(outputFileNames_makeTauIdEffFinalPlots):
-    makeFile.write("%s: %s\n" % (outputFileName,
-                                 haddOutputFileName_stage3))
+    makeFile.write("%s: %s %s\n" % (outputFileName,
+                                    executable_makeTauIdEffFinalPlots,
+                                    haddOutputFileName_stage3))
     makeFile.write("\t%s %s >&! %s\n" % (executable_makeTauIdEffFinalPlots,
                                          configFileNames_makeTauIdEffFinalPlots[i],
                                          logFileNames_makeTauIdEffFinalPlots[i]))

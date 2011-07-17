@@ -63,10 +63,7 @@ struct binEntryType
   binEntryType(const std::string& directory, double xBinCenter)
     : directory_(directory),
       xBinCenter_(xBinCenter)
-  {
-//--- add trailing '/'
-    if ( directory_.find_last_of("/") != (directory_.length() - 1) ) directory_.append("/");
-  }
+  {}
   ~binEntryType() {}
   std::string directory_;
   double xBinCenter_;
@@ -265,7 +262,7 @@ int main(int argc, const char* argv[])
       yAxis->SetTitleSize(0.06);
 
       expEffGraphs[tauId->name_]->SetTitle("");
-      expEffGraphs[tauId->name_]->SetMaximum(1.0);
+      expEffGraphs[tauId->name_]->SetMaximum(1.4);
       expEffGraphs[tauId->name_]->SetMinimum(0.0);
 
       expEffGraphs[tauId->name_]->SetMarkerStyle(tauId->expMarkerStyle_);
@@ -273,13 +270,13 @@ int main(int argc, const char* argv[])
       expEffGraphs[tauId->name_]->SetLineColor(tauId->color_);
       std::string drawOption = ( tauId == tauIds.begin() ) ? "A" : "";
       expEffGraphs[tauId->name_]->Draw(drawOption.append("P").data());      
-      legend->AddEntry(expEffGraphs[tauId->name_], std::string(tauId->legendEntry_).append(" Data").data(), "p");
+      legend->AddEntry(expEffGraphs[tauId->name_], std::string(tauId->legendEntry_).append(" Simulation").data(), "p");
 
       measEffGraphs[tauId->name_]->SetMarkerStyle(tauId->measMarkerStyle_);
       measEffGraphs[tauId->name_]->SetMarkerColor(tauId->color_);
       measEffGraphs[tauId->name_]->SetLineColor(tauId->color_);
       measEffGraphs[tauId->name_]->Draw("P");      
-      legend->AddEntry(measEffGraphs[tauId->name_], std::string(tauId->legendEntry_).append(" Simulation").data(), "p");
+      legend->AddEntry(measEffGraphs[tauId->name_], std::string(tauId->legendEntry_).append(" Data").data(), "p");
     }
     legend->Draw();
 

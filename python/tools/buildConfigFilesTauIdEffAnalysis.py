@@ -28,9 +28,23 @@ def make_tauIds_string(tauIds):
         retVal += "        " + "    name = cms.string('" + tauIdName + "')" + "\n"
         retVal += "        " + ")," + "\n"
     return retVal
+
+def make_binning_string(binning):
+    retVal = ""
+    for binVariable in binning.keys():
+        retVal += "        " + binVariable + " = cms.VPSet(" + "\n"
+        for binName, binOptions in binning[binVariable].items():
+            if isinstance(binOptions, dict) and binOptions.get('min') is not None and binOptions.get('max') is not None:
+                retVal += "            " + "cms.PSet(" + "\n"
+                retVal += "                " + "subdir = cms.string('%s'),\n" % binName
+                retVal += "                " + "min = cms.double(%f),\n" % binOptions['min']
+                retVal += "                " + "max = cms.double(%f)\n" % binOptions['max']
+                retVal += "            " + ")," + "\n"
+        retVal += "        " + ")," + "\n"
+    return retVal;
 #--------------------------------------------------------------------------------
 
-def buildConfigFile_FWLiteTauIdEffAnalyzer(sampleToAnalyze, jobId, inputFilePath, tauIds, sysUncertainties, outputFilePath,
+def buildConfigFile_FWLiteTauIdEffAnalyzer(sampleToAnalyze, jobId, inputFilePath, tauIds, binning, sysUncertainties, outputFilePath,
                                            recoSampleDefinitions):
 
     """Build cfg.py file to run FWLiteTauIdEffAnalyzer macro to run on PAT-tuples,
@@ -81,6 +95,8 @@ def buildConfigFile_FWLiteTauIdEffAnalyzer(sampleToAnalyze, jobId, inputFilePath
     inputFileNames_string = make_inputFileNames_vstring(inputFileNames_sample)
 
     tauIds_string = make_tauIds_string(tauIds)
+
+    binning_string = make_binning_string(binning)
 
     configFileNames = []
     outputFileNames = []
@@ -161,7 +177,11 @@ process.tauIdEffAnalyzer = cms.PSet(
     tauIds = cms.VPSet(
 %s
     ),
-
+    
+    binning = cms.PSet(
+%s
+    ),
+    
     sysShift = cms.string('%s'),
 
     srcTrigger = cms.InputTag('patTriggerEvent'),
@@ -188,7 +208,8 @@ process.tauIdEffAnalyzer = cms.PSet(
     srcLumiProducer = cms.InputTag('lumiProducer')
 )
 """ % (inputFileNames_string, outputFileName_full,
-       process_matched, processType, tauIds_string, sysUncertainty, srcMuTauPairs, weights_string, allEvents_DBS, xSection, intLumiData)
+       process_matched, processType, tauIds_string, binning_string,
+       sysUncertainty, srcMuTauPairs, weights_string, allEvents_DBS, xSection, intLumiData)
 
         outputFileNames.append(outputFileName_full)
 
@@ -328,7 +349,7 @@ process.%s = cms.PSet(
 
     return retVal
 
-def buildConfigFile_FWLiteTauIdEffPreselNumbers(inputFilePath, sampleZtautau, jobId, tauIds, outputFilePath):
+def buildConfigFile_FWLiteTauIdEffPreselNumbers(inputFilePath, sampleZtautau, jobId, tauIds, binning, outputFilePath):
 
     """Compute preselection efficiencies and purities in regions C1p, C1f"""
 
@@ -341,6 +362,8 @@ def buildConfigFile_FWLiteTauIdEffPreselNumbers(inputFilePath, sampleZtautau, jo
     inputFileNames_string = make_inputFileNames_vstring(inputFileNames_Ztautau)        
 
     tauIds_string = make_tauIds_string(tauIds)
+
+    binning_string = make_binning_string(binning)
 
     outputFileName = 'compTauIdEffPreselNumbers_%s_%s.root' % (sampleZtautau, jobId)
     outputFileName_full = os.path.join(outputFilePath, outputFileName)
@@ -376,6 +399,10 @@ process.tauIdEffPreselNumbers = cms.PSet(
 %s
     ),
 
+    binning = cms.PSet(
+%s
+    ),
+
     sysShift = cms.string('CENTRAL_VALUE'),
 
     srcTrigger = cms.InputTag('patTriggerEvent'),
@@ -392,7 +419,7 @@ process.tauIdEffPreselNumbers = cms.PSet(
 
     weights = cms.VInputTag('ntupleProducer:tauIdEffNtuple#addPileupInfo#vtxMultReweight')
 )
-""" % (inputFileNames_string, outputFileName_full, tauIds_string)
+""" % (inputFileNames_string, outputFileName_full, tauIds_string, binning_string)
 
     configFileName = outputFileName.replace('.root', '_cfg.py')
     configFileName_full = os.path.join(outputFilePath, configFileName)    
@@ -483,19 +510,25 @@ def buildConfigFile_makeTauIdEffFinalPlots(inputFileName, tauIds, tauIdNamesToPl
         tauIds_string += "        " + "    color = cms.uint32(%u)\n" % tauIds[tauIdNameToPlot]['color']
         tauIds_string += "        " + ")," + "\n"
 
+    def xAxisBinValue(binning_item):
+        # CV: index [1] refers to binOptions
+        #    (index [0] refers to binName)
+        if isinstance(binning_item[1], dict):
+            return binning_item[1]['min']
+        else:
+            return -1
+    
     xAxisBinning_set = set()
-    for binName, binOptions in binning.items():
+    for binName, binOptions in sorted(binning.items(), key = xAxisBinValue):
         if isinstance(binOptions, dict) and binOptions.get('min') is not None and binOptions.get('max') is not None:
             xAxisBinning_set.add(binOptions['min'])
             xAxisBinning_set.add(binOptions['max'])
-    xAxisBinning_list = list(xAxisBinning_set)
-    xAxisBinning_list.sort()
     xAxisBinning_string = ""
-    for xAxisBin in xAxisBinning_list:
+    for xAxisBin in sorted(xAxisBinning_set):
         xAxisBinning_string += "%f," % xAxisBin
     
     values_string = ""
-    for binName, binOptions in binning.items():
+    for binName, binOptions in sorted(binning.items(), key = xAxisBinValue):
         if isinstance(binOptions, dict) and binOptions.get('min') is not None and binOptions.get('max') is not None:
             values_string += "        " + "cms.PSet(" + "\n"
             values_string += "        " + "    directory = cms.string('%s'),\n" % binName
