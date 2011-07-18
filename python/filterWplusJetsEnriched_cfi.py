@@ -17,7 +17,17 @@ hltMu = cms.EDFilter("EventSelPluginFilter",
         pluginName = cms.string('hltMu'),             
         pluginType = cms.string('TriggerResultEventSelector'),
         src = cms.InputTag('TriggerResults::HLT'),
-        triggerPaths = cms.vstring('HLT_Mu15_v1', 'HLT_Mu15_v2', 'HLT_IsoMu15_v5', 'HLT_IsoMu17_v5', 'HLT_Mu24_v2')
+        triggerPaths = cms.vstring(
+            'HLT_IsoMu17_v5',
+            'HLT_IsoMu17_v6',
+            'HLT_IsoMu17_v7',
+            'HLT_IsoMu17_v8',
+            'HLT_IsoMu17_v9',
+            'HLT_IsoMu17_v10',
+            'HLT_IsoMu17_v11',
+            'HLT_IsoMu17_v12',
+            'HLT_IsoMu17_v13'                             
+        )
     )
 )
 #--------------------------------------------------------------------------------
@@ -42,7 +52,7 @@ diMuonVeto = cms.EDFilter("PATCandViewCountFilter",
 #
 selectedMuons = cms.EDFilter("PATMuonSelector",
     src = cms.InputTag('patMuons'),
-    cut = cms.string("isGlobalMuon & pt > 15. & abs(eta) < 2.1"),
+    cut = cms.string("isGlobalMuon & pt > 20. & abs(eta) < 2.1"),
     filter = cms.bool(False)
 )
 
@@ -166,7 +176,7 @@ muonPFTauSkimPath = cms.Path(
 wPlusJetsEnrichedEventSelection = cms.untracked.PSet(
     SelectEvents = cms.untracked.PSet(
         SelectEvents = cms.vstring(
-            'muonCaloTauSkimPath',
+            ##'muonCaloTauSkimPath',
             'muonPFTauSkimPath'
         )
     )

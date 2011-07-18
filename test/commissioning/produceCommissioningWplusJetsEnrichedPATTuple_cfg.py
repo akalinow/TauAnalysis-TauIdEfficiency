@@ -1,6 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 
-process = cms.Process("prodCommissioningQDCmuEnrichedPATtuple")
+process = cms.Process("prodCommissioningWplusJetsEnrichedPATtuple")
 
 # import of standard configurations for RECOnstruction
 # of electrons, muons and tau-jets with non-standard isolation cones
@@ -60,9 +60,9 @@ else:
 #--------------------------------------------------------------------------------
 # define skimming criteria
 # (in order to be able to produce Tau Ntuple directly from unskimmed Monte Carlo/datasets;
-#  HLT muon trigger passed && global muon of Pt > 3 GeV within |eta| < 2.5
+#  HLT muon trigger passed && global muon of Pt > 15 GeV within |eta| < 2.1
 #                          && either CaloJet or PFJet of Pt > 10 GeV within |eta| < 2.5)
-process.load('TauAnalysis.TauIdEfficiency.filterQCDmuEnriched_cfi')
+process.load('TauAnalysis.TauIdEfficiency.filterWplusJetsEnriched_cfi')
 if isMC:
     process.dataQualityFilters.remove(process.hltPhysicsDeclared)
     process.dataQualityFilters.remove(process.dcsstatus)
@@ -83,7 +83,6 @@ configurePrePatProduction(process, pfCandidateCollection = pfCandidateCollection
 # produce PAT objects
 #
 from TauAnalysis.TauIdEfficiency.tools.configurePatTupleProduction import configurePatTupleProduction
-from TauAnalysis.TauIdEfficiency.tools.sequenceBuilder import buildGenericTauSequence
 
 # add muon isolation variables
 process.load("CommonTools.ParticleFlow.Isolation.pfMuonIsolation_cff")
@@ -209,14 +208,14 @@ process.patTupleOutputModule = cms.OutputModule("PoolOutputModule",
             'keep *_offlinePrimaryVerticesWithBS_*_*',
             'keep *_selectedPrimaryVertexHighestPtTrackSum_*_*',                                         
             'keep *_patPFMETs_*_*',
-            ##'keep *_patMETs_*_*',                                             
+            ##'keep *_patMETs_*_*',                                            
             'keep patJets_patJetsAK5PF_*_*',
             ##'keep patJets_patJetsAK5Calo_*_*',                                            
             'keep *_*ntupleProducer*_*_*'
         )
     ),
-    process.qcdMuEnrichedEventSelection, # comment-out to disable filtering of events written to PAT-tuple
-    fileName = cms.untracked.string("tauCommissioningQCDmuEnrichedPATtuple.root")
+    process.wPlusJetsEnrichedEventSelection, # comment-out to disable filtering of events written to PAT-tuple
+    fileName = cms.untracked.string("tauCommissioningWplusJetsEnrichedPATtuple.root")
 )
 
 from PhysicsTools.PatAlgos.patEventContent_cff import patTriggerEventContent
@@ -266,5 +265,5 @@ else:
         process.o
     )
 
-processDumpFile = open('produceCommissioningQCDmuEnrichedPATTuple.dump' , 'w')
+processDumpFile = open('produceCommissioningWplusJetsEnrichedPATTuple.dump' , 'w')
 print >> processDumpFile, process.dumpPython()

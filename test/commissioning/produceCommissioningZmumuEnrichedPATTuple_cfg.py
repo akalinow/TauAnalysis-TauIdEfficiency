@@ -1,6 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 
-process = cms.Process("prodCommissioningQDCmuEnrichedPATtuple")
+process = cms.Process("prodCommissioningZmumuEnrichedPATtuple")
 
 # import of standard configurations for RECOnstruction
 # of electrons, muons and tau-jets with non-standard isolation cones
@@ -60,9 +60,9 @@ else:
 #--------------------------------------------------------------------------------
 # define skimming criteria
 # (in order to be able to produce Tau Ntuple directly from unskimmed Monte Carlo/datasets;
-#  HLT muon trigger passed && global muon of Pt > 3 GeV within |eta| < 2.5
+#  HLT muon trigger passed && two global muons passing VBTF selection && within Z mass-window
 #                          && either CaloJet or PFJet of Pt > 10 GeV within |eta| < 2.5)
-process.load('TauAnalysis.TauIdEfficiency.filterQCDmuEnriched_cfi')
+process.load('TauAnalysis.TauIdEfficiency.filterZmumuEnriched_cfi')
 if isMC:
     process.dataQualityFilters.remove(process.hltPhysicsDeclared)
     process.dataQualityFilters.remove(process.dcsstatus)
@@ -195,28 +195,24 @@ process.patTupleOutputModule = cms.OutputModule("PoolOutputModule",
             'keep LumiSummary_*_*_*',                       
             'keep edmMergeableCounter_*_*_*',
             ##'keep *_%s_*_*' % retVal['caloTauCollection'],
-            ##'keep *_%s_*_*' % retVal['muonCaloTauCollection'],                                            
             ##'keep *_%s_*_*' % retVal['pfTauCollectionFixedCone'],
-            ##'keep *_%s_*_*' % retVal['muonPFTauCollectionFixedCone'],                                            
             ##'keep *_%s_*_*' % retVal['pfTauCollectionShrinkingCone'],
-            ##'keep *_%s_*_*' % retVal['muonPFTauCollectionShrinkingCone'],                                            
             'keep *_%s_*_*' % retVal['pfTauCollectionHPS'],
-            'keep *_%s_*_*' % retVal['muonPFTauCollectionHPS'],                                             
             'keep *_%s_*_*' % retVal['pfTauCollectionHPSpTaNC'],
-            'keep *_%s_*_*' % retVal['muonPFTauCollectionHPSpTaNC'],
-            'keep *_patMuonsLoosePFIsoEmbedded06_*_*',                                         
+            'keep *_goodIsoMuons_*_*',
+            'keep *_goldenZmumuCandidatesGe2IsoMuons_*_*',                                      
             'keep *_offlinePrimaryVertices_*_*',
             'keep *_offlinePrimaryVerticesWithBS_*_*',
             'keep *_selectedPrimaryVertexHighestPtTrackSum_*_*',                                         
             'keep *_patPFMETs_*_*',
-            ##'keep *_patMETs_*_*',                                             
+            ##'keep *_patMETs_*_*',                                            
             'keep patJets_patJetsAK5PF_*_*',
             ##'keep patJets_patJetsAK5Calo_*_*',                                            
             'keep *_*ntupleProducer*_*_*'
         )
     ),
-    process.qcdMuEnrichedEventSelection, # comment-out to disable filtering of events written to PAT-tuple
-    fileName = cms.untracked.string("tauCommissioningQCDmuEnrichedPATtuple.root")
+    process.zMuMuEnrichedEventSelection, # comment-out to disable filtering of events written to PAT-tuple
+    fileName = cms.untracked.string("tauCommissioningZmumuEnrichedPATtuple.root")
 )
 
 from PhysicsTools.PatAlgos.patEventContent_cff import patTriggerEventContent
@@ -254,8 +250,8 @@ if applyEventSelection:
     process.schedule = cms.Schedule(
         process.eventCounterPath,
         process.p,
-        ##process.muonCaloTauSkimPath,
-        process.muonPFTauSkimPath,
+        ##process.diMuonCaloTauSkimPath,
+        process.diMuonPFTauSkimPath,
         process.o
     )
 else:

@@ -18,11 +18,11 @@ hltSingleJet = cms.EDFilter("EventSelPluginFilter",
         pluginType = cms.string('TriggerResultEventSelector'),
         src = cms.InputTag('TriggerResults::HLT'),
         triggerPaths = cms.vstring(
-            'HLT_Jet30_v1',
-            'HLT_Jet60_v1',
-            'HLT_Jet80_v1',
-            'HLT_Jet110_v1',
-            'HLT_Jet150_v1'
+            'HLT_Jet30_v1',  'HLT_Jet30_v2',  'HLT_Jet30_v3',  'HLT_Jet30_v4',  'HLT_Jet30_v5',  'HLT_Jet30_v6', 
+            'HLT_Jet60_v1',  'HLT_Jet60_v2',  'HLT_Jet60_v3',  'HLT_Jet60_v4',  'HLT_Jet60_v5',  'HLT_Jet60_v6',
+            'HLT_Jet80_v1',  'HLT_Jet80_v2',  'HLT_Jet80_v3',  'HLT_Jet80_v4',  'HLT_Jet80_v5',  'HLT_Jet80_v6', 
+            'HLT_Jet110_v1', 'HLT_Jet110_v2', 'HLT_Jet110_v3', 'HLT_Jet110_v4', 'HLT_Jet110_v5', 'HLT_Jet110_v6',
+            'HLT_Jet150_v1', 'HLT_Jet150_v2', 'HLT_Jet150_v3', 'HLT_Jet150_v4', 'HLT_Jet150_v5', 'HLT_Jet150_v6'
         )
     )
 )

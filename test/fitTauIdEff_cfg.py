@@ -4,7 +4,7 @@ process = cms.PSet()
 
 process.fwliteInput = cms.PSet(
     #fileNames   = cms.vstring('fitTauIdEff_wConstraints_2011June30_matthew.root'),
-    fileNames   = cms.vstring('/data1/veelken/tmp/muonPtGt20/V4b/analyzeTauIdEffHistograms_all_2011Jul06_mauroV4.root'),
+    fileNames   = cms.vstring('/data1/veelken/tmp/muonPtGt20/V4d/analyzeTauIdEffHistograms_all_2011Jul06_mauroV4.root'),
 )
     
 process.fwliteOutput = cms.PSet(
@@ -32,6 +32,8 @@ process.fitTauIdEff = cms.PSet(
     regions = cms.vstring(
         'A1',  # needed to access QCD template obtained from Data
         'B1',  # needed to access QCD template obtained from Data
+        'B1p',
+        'B1f',
         'C1',
         'C1p',
         'C1f'

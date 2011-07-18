@@ -9,8 +9,17 @@ from TauAnalysis.Skimming.goldenZmmSelectionVBTFnoMuonIsolation_cfi import *
 # from which to determine tau fake-rates
 #--------------------------------------------------------------------------------
 
-zmmHLTFilter.HLTPaths = [ 'HLT_Mu15_v1', 'HLT_Mu15_v2', 'HLT_IsoMu15_v5', 'HLT_IsoMu17_v5', 'HLT_Mu24_v2',
-                          'HLT_DoubleMu6_v1', 'HLT_DoubleMu6_v2', 'HLT_DoubleMu7_v1', 'HLT_DoubleMu7_v2' ]
+zmmHLTFilter.HLTPaths = [
+    'HLT_IsoMu17_v5',
+    'HLT_IsoMu17_v6',
+    'HLT_IsoMu17_v7',
+    'HLT_IsoMu17_v8',
+    'HLT_IsoMu17_v9',
+    'HLT_IsoMu17_v10',
+    'HLT_IsoMu17_v11',
+    'HLT_IsoMu17_v12',
+    'HLT_IsoMu17_v13'   
+]
 
 goldenZmumuCandidateFilter = cms.EDFilter("CandViewCountFilter",
     src = cms.InputTag('goldenZmumuCandidatesGe2IsoMuons'),
@@ -82,7 +91,7 @@ diMuonPFTauSkimPath = cms.Path(
 zMuMuEnrichedEventSelection = cms.untracked.PSet(
     SelectEvents = cms.untracked.PSet(
         SelectEvents = cms.vstring(
-            'diMuonCaloTauSkimPath',
+            ##'diMuonCaloTauSkimPath',
             'diMuonPFTauSkimPath'
         )
     )

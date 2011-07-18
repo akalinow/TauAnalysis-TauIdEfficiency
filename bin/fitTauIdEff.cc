@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.15 $
+ * \version $Revision: 1.16 $
  *
- * $Id: fitTauIdEff.cc,v 1.15 2011/07/11 15:26:32 veelken Exp $
+ * $Id: fitTauIdEff.cc,v 1.16 2011/07/13 16:54:31 veelken Exp $
  *
  */
 
@@ -495,12 +495,12 @@ int main(int argc, const char* argv[])
 	
 	std::string histogramNameQCD_C1p = templatesQCD["C1p"][key_passed]->GetName();
 	double normQCD_C1p = getIntegral(templatesQCD["C1p"][key_passed], true, true);	
-	templatesQCD["C1p"][key_passed] = normalize(distributionsData["B1"][key_all], normQCD_C1p);
+	templatesQCD["C1p"][key_passed] = normalize(distributionsData["B1p"][key_passed], normQCD_C1p);
 	templatesQCD["C1p"][key_passed]->SetName(histogramNameQCD_C1p.data());
 	
 	std::string histogramNameQCD_C1f = templatesQCD["C1f"][key_failed]->GetName();
 	double normQCD_C1f = getIntegral(templatesQCD["C1f"][key_failed], true, true);
-	templatesQCD["C1f"][key_failed] = normalize(distributionsData["B1"][key_all], normQCD_C1f);
+	templatesQCD["C1f"][key_failed] = normalize(distributionsData["B1f"][key_failed], normQCD_C1f);
 	templatesQCD["C1f"][key_failed]->SetName(histogramNameQCD_C1f.data());
       }
     }

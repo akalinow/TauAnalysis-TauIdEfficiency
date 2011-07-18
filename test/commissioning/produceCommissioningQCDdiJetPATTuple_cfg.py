@@ -181,8 +181,9 @@ process.patTupleOutputModule = cms.OutputModule("PoolOutputModule",
             'keep *_offlinePrimaryVerticesWithBS_*_*',
             'keep *_selectedPrimaryVertexHighestPtTrackSum_*_*',                                         
             'keep *_patPFMETs_*_*',
+            ##'keep *_patMETs_*_*',                                             
             'keep patJets_patJetsAK5PF_*_*',
-            'keep patJets_patJetsAK5Calo_*_*',                                            
+            ##'keep patJets_patJetsAK5Calo_*_*',                                            
             'keep *_*ntupleProducer*_*_*'
         )
     ),
