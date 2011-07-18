@@ -1,0 +1,269 @@
+import FWCore.ParameterSet.Config as cms
+
+process = cms.Process("prodCommissioningQDCmuEnrichedPATtuple")
+
+# import of standard configurations for RECOnstruction
+# of electrons, muons and tau-jets with non-standard isolation cones
+process.load('Configuration/StandardSequences/Services_cff')
+process.load('FWCore/MessageService/MessageLogger_cfi')
+process.MessageLogger.cerr.FwkReport.reportEvery = 100
+#process.MessageLogger.cerr.threshold = cms.untracked.string('INFO')
+#process.MessageLogger.suppressInfo = cms.untracked.vstring()
+process.MessageLogger.suppressWarning = cms.untracked.vstring("PATTriggerProducer",)
+process.load('Configuration/StandardSequences/GeometryIdeal_cff')
+process.load('Configuration/StandardSequences/MagneticField_cff')
+process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
+
+#--------------------------------------------------------------------------------
+process.source = cms.Source("PoolSource",
+    fileNames = cms.untracked.vstring(
+        'file:/data2/friis/CMSSW_4_2_X/skims/06-27-MatthewsZTTEvents/crab_0_110627_082505/ZTTCands_merged_v1.root'
+    ),
+    skipEvents = cms.untracked.uint32(0)            
+)
+
+process.maxEvents = cms.untracked.PSet(
+    input = cms.untracked.int32(1000)
+)
+
+#--------------------------------------------------------------------------------
+# define configuration parameter default values
+
+isMC = True # use for MC
+##isMC = False # use for Data
+##HLTprocessName = "HLT" # use for 2011 Data
+HLTprocessName = "HLT" # use for Summer'11 MC
+pfCandidateCollection = "particleFlow" # pile-up removal disabled
+##pfCandidateCollection = "pfNoPileUp" # pile-up removal enabled
+applyEventSelection = True 
+#--------------------------------------------------------------------------------
+
+#--------------------------------------------------------------------------------
+# define "hooks" for replacing configuration parameters
+# in case running jobs on the CERN batch system/grid
+#
+#__isMC = #isMC#
+#__HLTprocessName = #HLTprocessName#
+#__pfCandidateCollection = #pfCandidateCollection#
+#__applyEventSelection = #applyEventSelection#
+#
+#--------------------------------------------------------------------------------
+
+#--------------------------------------------------------------------------------
+# define GlobalTag to be used for event reconstruction
+if isMC:
+    process.GlobalTag.globaltag = cms.string('START42_V12::All')
+else:
+    process.GlobalTag.globaltag = cms.string('GR_R_42_V14::All')
+#--------------------------------------------------------------------------------    
+
+#--------------------------------------------------------------------------------
+# define skimming criteria
+# (in order to be able to produce Tau Ntuple directly from unskimmed Monte Carlo/datasets;
+#  HLT muon trigger passed && global muon of Pt > 3 GeV within |eta| < 2.5
+#                          && either CaloJet or PFJet of Pt > 10 GeV within |eta| < 2.5)
+process.load('TauAnalysis.TauIdEfficiency.filterQCDmuEnriched_cfi')
+if isMC:
+    process.dataQualityFilters.remove(process.hltPhysicsDeclared)
+    process.dataQualityFilters.remove(process.dcsstatus)
+#--------------------------------------------------------------------------------
+
+#--------------------------------------------------------------------------------
+#
+# produce collections of objects needed as input for PAT-tuple production
+# (e.g. rerun reco::Tau identification algorithms with latest tags)
+#
+from TauAnalysis.TauIdEfficiency.tools.configurePrePatProduction import configurePrePatProduction
+
+configurePrePatProduction(process, pfCandidateCollection = pfCandidateCollection, addGenInfo = isMC)
+#--------------------------------------------------------------------------------
+
+#--------------------------------------------------------------------------------
+#
+# produce PAT objects
+#
+from TauAnalysis.TauIdEfficiency.tools.configurePatTupleProduction import configurePatTupleProduction
+from TauAnalysis.TauIdEfficiency.tools.sequenceBuilder import buildGenericTauSequence
+
+# add muon isolation variables
+process.load("CommonTools.ParticleFlow.Isolation.pfMuonIsolation_cff")
+from CommonTools.ParticleFlow.Isolation.tools_cfi import *
+process.pfmuIsoDepositPFCandidates = isoDepositReplace("muons", pfCandidateCollection)
+process.prePatProductionSequence._seq = process.prePatProductionSequence._seq * process.pfmuIsoDepositPFCandidates
+
+process.load("PhysicsTools.PatAlgos.producersLayer1.muonProducer_cfi")
+process.patMuons.userIsolation.pfAllParticles = cms.PSet( 
+    src = cms.InputTag("pfmuIsoDepositPFCandidates"),
+    deltaR = cms.double(0.4)
+)
+
+# "clean" CaloTau/PFTau collections
+# (i.e. remove CaloTaus/PFTaus overlapping with muons)
+process.load("PhysicsTools.PatAlgos.cleaningLayer1.tauCleaner_cfi")
+
+# remove jets outside kinematic range Pt > 10 GeV && |eta| < 2.5 from Tau Ntuple
+# (in order to speed-up plotting macros)
+patCaloTauCleanerPrototype = process.cleanPatTaus.clone(
+    preselection = cms.string(''),
+    checkOverlaps = cms.PSet(
+        muons = cms.PSet(
+           src                 = cms.InputTag("selectedPatMuons"),
+           algorithm           = cms.string("byDeltaR"),
+           preselection        = cms.string("isGlobalMuon"),
+           deltaR              = cms.double(0.7),
+           checkRecoComponents = cms.bool(False),
+           pairCut             = cms.string(""),
+           requireNoOverlaps   = cms.bool(True)
+        )
+    ),        
+    finalCut = cms.string(
+        'caloTauTagInfoRef().jetRef().pt() > 8.0 & abs(caloTauTagInfoRef().jetRef().eta()) < 2.5'
+    )
+)
+
+patPFTauCleanerPrototype = patCaloTauCleanerPrototype.clone(
+    finalCut = cms.string(
+        'pfJetRef().pt() > 8.0 & abs(pfJetRef().eta()) < 2.5'
+    )
+)
+
+retVal = configurePatTupleProduction(
+    process,
+    patPFTauCleanerPrototype = patPFTauCleanerPrototype,
+    patCaloTauCleanerPrototype = patCaloTauCleanerPrototype,
+    hltProcess = HLTprocessName,
+    isMC = isMC
+)
+
+# add event counter for Mauro's "self baby-sitting" technology
+process.totalEventsProcessed = cms.EDProducer("EventCountProducer")
+process.eventCounterPath = cms.Path(process.totalEventsProcessed)
+#--------------------------------------------------------------------------------
+
+#--------------------------------------------------------------------------------
+#
+# produce Ntuple
+#
+process.load("TauAnalysis.TauIdEfficiency.ntupleConfigVertex_cfi")
+process.load("TauAnalysis.TauIdEfficiency.ntupleConfigGenPhaseSpaceEventInfo_cfi")
+process.load("TauAnalysis.TauIdEfficiency.ntupleConfigGenPileUpEventInfo_cfi")
+
+process.ntupleProducer = cms.EDProducer("ObjValEDNtupleProducer",
+
+    ntupleName = cms.string("tauIdEffNtuple"),
+
+    sources = cms.PSet(
+        # number of reconstructed primary event vertices
+        # with sum(trackPt) exceeding different thresholds
+        vertexMultiplicity = process.vertexMultiplicity_template,
+    )
+)
+
+if isMC:
+    setattr(process.ntupleProducer.sources, "genPhaseSpaceEventInfo", process.genPhaseSpaceEventInfo_template)
+    setattr(process.ntupleProducer.sources, "genPileUpEventInfo", process.genPileUpEventInfo_template)
+    # add reweighting factors to be applied to Monte Carlo simulated events
+    # in order to match vertex multiplicity distribution in Data                                             
+    setattr(process.ntupleProducer.sources, "vertexMultReweight", process.vertexMultReweight_template)    
+#--------------------------------------------------------------------------------
+
+#--------------------------------------------------------------------------------
+#
+# update InputTags for HLT trigger result object
+# in case running on reprocessed Monte Carlo samples
+#
+if HLTprocessName != "HLT":
+    process.hltMu.selector.src = cms.InputTag('TriggerResults::' + HLTprocessName)
+    process.patTrigger.processName = HLTprocessName
+    process.patTriggerEvent.processName = HLTprocessName
+    process.patCaloTausTriggerEvent.processName = cms.string(HLTprocessName)
+    process.patPFTausTriggerEventFixedCone.processName = cms.string(HLTprocessName)
+    process.patPFTausTriggerEventShrinkingCone.processName = cms.string(HLTprocessName)
+    process.patPFTausTriggerEventHPS.processName = cms.string(HLTprocessName)
+    process.patPFTausTriggerEventHPSpTaNC.processName = cms.string(HLTprocessName)
+#--------------------------------------------------------------------------------    
+
+#--------------------------------------------------------------------------------
+#
+# Save PAT-tuple
+#
+process.patTupleOutputModule = cms.OutputModule("PoolOutputModule",
+    cms.PSet(
+        outputCommands = cms.untracked.vstring(
+            'drop *',
+            'keep EventAux_*_*_*',
+            'keep LumiSummary_*_*_*',                       
+            'keep edmMergeableCounter_*_*_*',
+            ##'keep *_%s_*_*' % retVal['caloTauCollection'],
+            ##'keep *_%s_*_*' % retVal['muonCaloTauCollection'],                                            
+            ##'keep *_%s_*_*' % retVal['pfTauCollectionFixedCone'],
+            ##'keep *_%s_*_*' % retVal['muonPFTauCollectionFixedCone'],                                            
+            ##'keep *_%s_*_*' % retVal['pfTauCollectionShrinkingCone'],
+            ##'keep *_%s_*_*' % retVal['muonPFTauCollectionShrinkingCone'],                                            
+            'keep *_%s_*_*' % retVal['pfTauCollectionHPS'],
+            'keep *_%s_*_*' % retVal['muonPFTauCollectionHPS'],                                             
+            'keep *_%s_*_*' % retVal['pfTauCollectionHPSpTaNC'],
+            'keep *_%s_*_*' % retVal['muonPFTauCollectionHPSpTaNC'],
+            'keep *_patMuonsLoosePFIsoEmbedded06_*_*',                                         
+            'keep *_offlinePrimaryVertices_*_*',
+            'keep *_offlinePrimaryVerticesWithBS_*_*',
+            'keep *_selectedPrimaryVertexHighestPtTrackSum_*_*',                                         
+            'keep *_patPFMETs_*_*',
+            'keep patJets_patJetsAK5PF_*_*',
+            'keep patJets_patJetsAK5Calo_*_*',                                            
+            'keep *_*ntupleProducer*_*_*'
+        )
+    ),
+    process.qcdMuEnrichedEventSelection, # comment-out to disable filtering of events written to PAT-tuple
+    fileName = cms.untracked.string("tauCommissioningQCDmuEnrichedPATtuple.root")
+)
+
+from PhysicsTools.PatAlgos.patEventContent_cff import patTriggerEventContent
+process.patTupleOutputModule.outputCommands.extend(patTriggerEventContent)
+
+if isMC:
+    process.patTupleOutputModule.outputCommands.extend(
+        cms.untracked.vstring(
+            'keep *_addPileupInfo_*_*',
+            'keep *_*_*vtxMultReweight*_*',
+            'keep *_vertexMultiplicityReweight_*_*',
+            'keep *_genPhaseSpaceEventInfo_*_*',
+            'keep *_genParticles_*_*'
+        )
+    )
+#--------------------------------------------------------------------------------
+
+process.printEventContent = cms.EDAnalyzer("EventContentAnalyzer")
+
+process.p = cms.Path(
+    process.prePatProductionSequence
+   + process.patTupleProductionSequence
+   + process.ntupleProducer
+   ##+ process.printEventContent
+)
+
+process.options = cms.untracked.PSet(
+    wantSummary = cms.untracked.bool(True)
+)
+
+process.o = cms.EndPath(process.patTupleOutputModule)
+
+# define order in which different paths are run
+if applyEventSelection:
+    process.schedule = cms.Schedule(
+        process.eventCounterPath,
+        process.p,
+        ##process.muonCaloTauSkimPath,
+        process.muonPFTauSkimPath,
+        process.o
+    )
+else:
+    delattr(process.patTupleOutputModule, "SelectEvents")
+    process.schedule = cms.Schedule(
+        process.eventCounterPath,
+        process.p,
+        process.o
+    )
+
+processDumpFile = open('produceCommissioningQCDmuEnrichedPATTuple.dump' , 'w')
+print >> processDumpFile, process.dumpPython()

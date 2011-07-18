@@ -120,7 +120,7 @@ muonPFTauSkimPath = cms.Path(
 qcdMuEnrichedEventSelection = cms.untracked.PSet(
     SelectEvents = cms.untracked.PSet(
         SelectEvents = cms.vstring(
-            'muonCaloTauSkimPath',
+            ##'muonCaloTauSkimPath',
             'muonPFTauSkimPath'
         )
     )

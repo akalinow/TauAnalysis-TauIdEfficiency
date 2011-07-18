@@ -20,8 +20,8 @@ def produceTauIdEffMeasPATTuple_base(process, isMC, isEmbedded, HLTprocessName, 
     #--------------------------------------------------------------------------------
     process.source = cms.Source("PoolSource",
         fileNames = cms.untracked.vstring(
-            #'file:/data2/friis/CMSSW_4_2_X/skims/06-27-MatthewsZTTEvents/crab_0_110627_082505/ZTTCands_merged_v1.root'
-            'file:/data1/veelken/tmp/tauIdEffSample_data_SingleMu_Run2011A_PromptReco_v4_2011Jul06_RECO_995_1_hYS.root'
+            'file:/data2/friis/CMSSW_4_2_X/skims/06-27-MatthewsZTTEvents/crab_0_110627_082505/ZTTCands_merged_v1.root'
+            #'file:/data1/veelken/tmp/tauIdEffSample_data_SingleMu_Run2011A_PromptReco_v4_2011Jul06_RECO_995_1_hYS.root'
         )
     )
 

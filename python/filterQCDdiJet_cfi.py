@@ -17,7 +17,13 @@ hltSingleJet = cms.EDFilter("EventSelPluginFilter",
         pluginName = cms.string('hltSingleJet'),             
         pluginType = cms.string('TriggerResultEventSelector'),
         src = cms.InputTag('TriggerResults::HLT'),
-        triggerPaths = cms.vstring('HLT_Jet30_v1', 'HLT_Jet60_v1', 'HLT_Jet80_v1', 'HLT_Jet110_v1', 'HLT_Jet150_v1')
+        triggerPaths = cms.vstring(
+            'HLT_Jet30_v1',
+            'HLT_Jet60_v1',
+            'HLT_Jet80_v1',
+            'HLT_Jet110_v1',
+            'HLT_Jet150_v1'
+        )
     )
 )
 #--------------------------------------------------------------------------------
@@ -50,7 +56,6 @@ selectedCaloTauPairs = cms.EDFilter("DiCandidatePairSelector",
 )
 
 caloTauSkimPath = cms.Path(
-    #hltJet15U
     selectedCaloTaus + caloTauPairs + selectedCaloTauPairs
    + dataQualityFilters
 )
@@ -84,7 +89,6 @@ selectedPFTauPairs = cms.EDFilter("DiCandidatePairSelector",
 )
 
 pfTauSkimPath = cms.Path(    
-    #hltSingleJet
     selectedPFTaus + pfTauPairs + selectedPFTauPairs
    + dataQualityFilters
 )
@@ -93,7 +97,7 @@ pfTauSkimPath = cms.Path(
 qcdDiJetEventSelection = cms.untracked.PSet(
     SelectEvents = cms.untracked.PSet(
         SelectEvents = cms.vstring(
-            'caloTauSkimPath',
+            ##'caloTauSkimPath',
             'pfTauSkimPath'
         )
     )
