@@ -1,6 +1,6 @@
 #include "TauAnalysis/TauIdEfficiency/interface/TauIdEffHistManager.h"
 
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
+#include <TMath.h>
 
 TauIdEffHistManager::TauIdEffHistManager(const edm::ParameterSet& cfg)
 {

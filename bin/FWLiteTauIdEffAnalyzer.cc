@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.13 $
+ * \version $Revision: 1.14 $
  *
- * $Id: FWLiteTauIdEffAnalyzer.cc,v 1.13 2011/07/15 09:29:51 veelken Exp $
+ * $Id: FWLiteTauIdEffAnalyzer.cc,v 1.14 2011/07/17 15:59:50 veelken Exp $
  *
  */
 
@@ -473,7 +473,9 @@ int main(int argc, char* argv[])
   
   if ( isData ) {
     std::cout << " intLumiData (recorded, IsoMu17 prescale corr.) = " << intLumiData << " pb" << std::endl;
-    std::cout << " intLumiData_analyzed (recorded) = " << intLumiData_analyzed*1.e-6 << " pb" << std::endl;
+    // CV: luminosity is recorded in some 'weird' units,
+    //     needs to be multiplied by factor 0.10 in order to be in units of pb^-1
+    std::cout << " intLumiData_analyzed (recorded) = " << intLumiData_analyzed*1.e-6*0.10 << " pb" << std::endl;
   }
 
   clock.Show("FWLiteTauIdEffAnalyzer");

@@ -5,6 +5,7 @@ import subprocess
 import time
 
 from TauAnalysis.TauIdEfficiency.recoSampleDefinitionsTauIdCommissioning_7TeV_grid_cfi import *
+from TauAnalysis.Configuration.submitToGrid2.py import submitToGrid
 
 print("<submitCommissioningPATTtupleProductionJobs_grid>:")
 
@@ -113,7 +114,7 @@ for sampleName in SAMPLES_TO_RUN:
                else:
                     crabConfig = crabConfig.replace("total_number_of_lumis = -1", "")
                     crabConfig = crabConfig.replace("lumis_per_job = LUMIS_PER_JOB", "")
-               ui_working_dir = os.path.join(crabFilePath, "crabdirProduceEDNtuple_%s_%s_%s" % (sampleName, jobType, version))
+               ui_working_dir = os.path.join(crabFilePath, "crabdirProduceFakeRatePATtuple_%s_%s_%s" % (sampleName, jobType, version))
                crabConfig = setOption(crabConfig, RECO_SAMPLES[sampleName], "UI_WORKING_DIR", 'ui_working_dir', ui_working_dir)
                user_remote_dir = os.path.join(castorFilePath, jobType) + '/' + version + '/' + sampleName
                crabConfig = setOption(crabConfig, RECO_SAMPLES[sampleName], "USER_REMOTE_DIR", 'user_remote_dir', user_remote_dir.replace("/castor/cern.ch", ""))
@@ -121,26 +122,15 @@ for sampleName in SAMPLES_TO_RUN:
                crabFile = open(crabFileName, "w")
                crabFile.write(crabConfig)
                crabFile.close()
+               
+               # create directory structure for output files
+               def createDir(outputFilePath):
+                    subprocess.call("rfmkdir %s"     % outputFilePath, shell = True)
+                    subprocess.call("rfchmod 777 %s" % outputFilePath, shell = True)
+               
+               createDir(os.path.join(castorFilePath, jobType))
+               createDir(os.path.join(castorFilePath, jobType) + '/' + version)
+               createDir(os.path.join(castorFilePath, jobType) + '/' + version + '/' + sampleName)
 
-               shFile.write("#-------------------- %s, %s --------------------\n" % (sampleName, jobType))
-               shFile.write("rfmkdir %s\n" % (os.path.join(castorFilePath, jobType)))
-               shFile.write("rfchmod 777 %s\n" % (os.path.join(castorFilePath, jobType)))
-               shFile.write("rfmkdir %s\n" % (os.path.join(castorFilePath, jobType) + '/' + version))
-               shFile.write("rfchmod 777 %s\n" % (os.path.join(castorFilePath, jobType) + '/' + version))
-               shFile.write("rfmkdir %s\n" % (os.path.join(castorFilePath, jobType) + '/' + version + '/' + sampleName))
-               shFile.write("rfchmod 777 %s\n" % (os.path.join(castorFilePath, jobType) + '/' + version + '/' + sampleName))
-               shFile.write("\n")
-               shFile.write("mkdir -p %s\n" % ui_working_dir)
-               shFile.write("crab -create -cfg %s\n" % crabFileName)
-               shFile.write("crab -submit -c %s\n" % ui_working_dir)
-               shFile.write("\n")
-
-shFile.close()
-
-subprocess.call("chmod +x %s" % shFileName, shell = True)
-
-# need to wait until config files have finished writing...
-time.sleep(1)
-
-print("Finished building config files. Now execute 'source %s'." % shFileName)
-#subprocess.call("source %s" % shFileName, shell = True)
+               submitToGrid(configFile = None, jobInfo = None, crabOptions = None,
+                            crabFileName = crabFileName, ui_working_dir = ui_working_dir)
