@@ -34,15 +34,9 @@ void TauFakeRateHistManager::bookHistograms(TFileDirectory& dir)
 
 void TauFakeRateHistManager::fillHistograms(const pat::Tau& tauJetCand, size_t numVertices, double sumEt, double weight)
 {
-  reco::Candidate::LorentzVector p4Jet;
-  if      ( tauJetCand.isCaloTau() ) p4Jet = tauJetCand.caloTauTagInfoRef()->jetRef()->p4();
-  else if ( tauJetCand.isPFTau()   ) p4Jet = tauJetCand.pfJetRef()->p4();
-  else throw cms::Exception("TauFakeRateHistManager::fillHistograms") 
-    << "Tau-jet candidate passed as function argument is neither PFTau nor CaloTau !!";
-  
-  histogramJetPt_->Fill(p4Jet.pt(), weight);
-  histogramJetEta_->Fill(p4Jet.eta(), weight);
-  histogramJetPhi_->Fill(p4Jet.phi(), weight);
+  histogramJetPt_->Fill(tauJetCand.p4Jet().pt(), weight);
+  histogramJetEta_->Fill(tauJetCand.p4Jet().eta(), weight);
+  histogramJetPhi_->Fill(tauJetCand.p4Jet().phi(), weight);
   
   histogramTauPt_->Fill(tauJetCand.pt(), weight);
   histogramTauEta_->Fill(tauJetCand.eta(), weight);

@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.14 $
+ * \version $Revision: 1.15 $
  *
- * $Id: FWLiteTauIdEffAnalyzer.cc,v 1.14 2011/07/17 15:59:50 veelken Exp $
+ * $Id: FWLiteTauIdEffAnalyzer.cc,v 1.15 2011/07/18 16:40:45 veelken Exp $
  *
  */
 
@@ -88,7 +88,7 @@ struct regionEntryType
   regionEntryType(fwlite::TFileService& fs,
 		  const std::string& process, const std::string& region, 
 		  const vstring& tauIdDiscriminators, const std::string& tauIdName, const std::string& sysShift,
-		  const edm::ParameterSet& cfgBinning)
+		  const edm::ParameterSet& cfgBinning, const std::string& svFitMassHypothesis, const std::string& tauChargeMode)
     : process_(process),
       region_(region),
       tauIdDiscriminators_(tauIdDiscriminators),
@@ -102,6 +102,7 @@ struct regionEntryType
     edm::ParameterSet cfgSelector;
     cfgSelector.addParameter<vstring>("tauIdDiscriminators", tauIdDiscriminators_);
     cfgSelector.addParameter<std::string>("region", region_);
+    cfgSelector.addParameter<std::string>("tauChargeMode", tauChargeMode);
 
     selector_ = new TauIdEffEventSelector(cfgSelector);
 
@@ -114,6 +115,7 @@ struct regionEntryType
     else                                              label_ = "all";
     if ( sysShift_ != "CENTRAL_VALUE" ) label_.append("_").append(sysShift_);
     cfgHistManager.addParameter<std::string>("label", label_);
+    cfgHistManager.addParameter<std::string>("svFitMassHypothesis", svFitMassHypothesis);
 
     histogramsUnbinned_ = new histManagerEntryType(cfgHistManager);
     histogramsUnbinned_->bookHistograms(fs);
@@ -220,6 +222,8 @@ int main(int argc, char* argv[])
   edm::ParameterSet cfgTauIdEffAnalyzer = cfg.getParameter<edm::ParameterSet>("tauIdEffAnalyzer");
 
   edm::InputTag srcMuTauPairs = cfgTauIdEffAnalyzer.getParameter<edm::InputTag>("srcMuTauPairs");
+  std::string svFitMassHypothesis = cfgTauIdEffAnalyzer.getParameter<std::string>("svFitMassHypothesis");
+  std::string tauChargeMode = cfgTauIdEffAnalyzer.getParameter<std::string>("tauChargeMode");
   edm::InputTag srcTrigger = cfgTauIdEffAnalyzer.getParameter<edm::InputTag>("srcTrigger");
   vstring hltPaths = cfgTauIdEffAnalyzer.getParameter<vstring>("hltPaths");
   edm::InputTag srcGoodMuons = cfgTauIdEffAnalyzer.getParameter<edm::InputTag>("srcGoodMuons");
@@ -255,7 +259,9 @@ int main(int argc, char* argv[])
 	  region != regions.end(); ++region ) {
       vstring tauIdDiscriminators = cfgTauIdDiscriminator->getParameter<vstring>("discriminators");
       std::string tauIdName = cfgTauIdDiscriminator->getParameter<std::string>("name");
-      regionEntryType* regionEntry = new regionEntryType(fs, process, *region, tauIdDiscriminators, tauIdName, sysShift, cfgBinning);
+      regionEntryType* regionEntry = 
+	new regionEntryType(fs, process, *region, tauIdDiscriminators, tauIdName, 
+			    sysShift, cfgBinning, svFitMassHypothesis, tauChargeMode);
       regionEntries.push_back(regionEntry);
     }
   }

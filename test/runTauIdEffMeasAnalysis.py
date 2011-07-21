@@ -36,9 +36,13 @@ fitVariables = [
     #'diTauVisMassFromJet' # CV: diTauVisMass always computed from PFJet momenta if using PAT-tuple workflow
 ]    
 
+mode = 'tauIdEfficiency'
+#mode = 'tauChargeMisIdRate'
+
 sysUncertainties = [
-    ##"sysTauJetEn", # needed for diTauVisMass/diTauVisMassFromJet
-    ##"sysJetEnUp"   # needed for diTauMt
+    "sysTauJetEn",     # needed for diTauVisMass/diTauVisMassFromJet
+    "sysJetEnUp",      # needed for diTauMt
+    "sysAddPUsmearing" # additional MET smearing, not correlated with nay particles reconstructed in the event
 ]
 
 tauIds = {
@@ -219,10 +223,24 @@ binning = {
     }
 }
 
-fitMethod = 'fitTauIdEff_wConstraints'
-#fitMethod = 'fitTauIdEff'
+passed_region = None
+failed_region = None
+fitMethod     = None
+tauChargeMode = None
+if mode == 'tauIdEfficiency':
+    passed_region = 'C1p'
+    failed_region = 'C1f'
+    fitMethod     = 'fitTauIdEff_wConstraints'
+    tauChargeMode = 'tauLeadTrackCharge'
+elif mode == 'tauChargeMisIdRate':
+    passed_region = 'C1p'
+    failed_region = 'D1p'
+    fitMethod     = 'fitTauIdEff'
+    tauChargeMode = 'tauSignalChargedHadronSum'
+else:
+    raise ValueError("Invalid mode = %s !!" % mode)
 
-execDir = "../../../../bin/%s/" % os.environ['SCRAM_ARCH'] 
+execDir = "%s/bin/%s/" % (os.environ['CMSSW_BASE'], os.environ['SCRAM_ARCH'])
 
 executable_FWLiteTauIdEffAnalyzer = execDir + 'FWLiteTauIdEffAnalyzer'
 executable_hadd = 'hadd'
@@ -245,7 +263,8 @@ logFileNames_FWLiteTauIdEffAnalyzer    = []
 for sampleToAnalyze in samplesToAnalyze:
     retVal_FWLiteTauIdEffAnalyzer = \
       buildConfigFile_FWLiteTauIdEffAnalyzer(sampleToAnalyze, jobId, inputFilePath, tauIds, binning, sysUncertainties, outputFilePath,
-                                             recoSampleDefinitionsTauIdEfficiency_7TeV)
+                                             recoSampleDefinitionsTauIdEfficiency_7TeV, passed_region, failed_region, tauChargeMode)
+    
     configFileNames_FWLiteTauIdEffAnalyzer.extend(retVal_FWLiteTauIdEffAnalyzer['configFileNames'])
     outputFileNames_FWLiteTauIdEffAnalyzer.extend(retVal_FWLiteTauIdEffAnalyzer['outputFileNames'])
     logFileNames_FWLiteTauIdEffAnalyzer.extend(retVal_FWLiteTauIdEffAnalyzer['logFileNames'])
@@ -256,7 +275,7 @@ for sampleToAnalyze in samplesToAnalyze:
 # build shell script for running 'hadd' in order to "harvest" histograms
 # produced by FWLiteTauIdEffAnalyzer macro
 #
-haddShellFileName_stage1 = os.path.join(outputFilePath, 'mergeTauIdEffHistograms_stage1_%s.csh' % jobId)
+haddShellFileName_stage1 = os.path.join(outputFilePath, 'harvestTauIdEffHistograms_stage1_%s.csh' % jobId)
 haddOutputFileName_stage1 = os.path.join(outputFilePath, 'analyzeTauIdEffHistograms_all_%s.root' % jobId)
 retVal_hadd_stage1 = \
   buildConfigFile_hadd(haddShellFileName_stage1, outputFileNames_FWLiteTauIdEffAnalyzer, haddOutputFileName_stage1)
@@ -298,10 +317,10 @@ logFileName_FWLiteTauIdEffPreselNumbers = retVal_FWLiteTauIdEffPreselNumbers['lo
 
 #--------------------------------------------------------------------------------
 #
-# build shell script for running 'hadd' in order to "merge" fit results
+# build shell script for running 'hadd' in order to "harvest" fit results
 # with preselection efficiencies and purities in regions C1p/C1f
 #
-haddShellFileName_stage2 = os.path.join(outputFilePath, 'mergeTauIdEffHistograms_stage2_%s.csh' % jobId)
+haddShellFileName_stage2 = os.path.join(outputFilePath, 'harvestTauIdEffHistograms_stage2_%s.csh' % jobId)
 haddInputFileNames_stage2 = []
 haddInputFileNames_stage2.extend(outputFileNames_fitTauIdEff)
 haddInputFileNames_stage2.append(outputFileName_FWLiteTauIdEffPreselNumbers)
@@ -335,10 +354,10 @@ for binVariable in binning.keys():
 
 #--------------------------------------------------------------------------------
 #
-# build shell script for running 'hadd' in order to "merge" final tau id. efficiency numbers
+# build shell script for running 'hadd' in order to "harvest" final tau id. efficiency numbers
 # for different tauPt, tauEta,... bins
 #
-haddShellFileName_stage3 = os.path.join(outputFilePath, 'mergeTauIdEffHistograms_stage3_%s.csh' % jobId)
+haddShellFileName_stage3 = os.path.join(outputFilePath, 'harvestTauIdEffHistograms_stage3_%s.csh' % jobId)
 haddInputFileNames_stage3 = outputFileNames_compTauIdEffFinalNumbers
 haddOutputFileName_stage3 = os.path.join(outputFilePath, 'compTauIdEffFinalNumbers_all_%s.root' % jobId)
 retVal_hadd_stage3 = \
@@ -471,12 +490,18 @@ makeFile.write("\n")
 makeFile.write(".PHONY: clean\n")
 makeFile.write("clean:\n")
 makeFile.write("\trm -f %s\n" % make_MakeFile_vstring(outputFileNames_FWLiteTauIdEffAnalyzer))
+makeFile.write("\trm -f %s\n" % make_MakeFile_vstring(haddInputFileNames_stage1))
 makeFile.write("\trm -f %s\n" % haddShellFileName_stage1)
+makeFile.write("\trm -f %s\n" % haddOutputFileName_stage1)
 makeFile.write("\trm -f %s\n" % make_MakeFile_vstring(outputFileNames_fitTauIdEff))
 makeFile.write("\trm -f %s\n" % outputFileName_FWLiteTauIdEffPreselNumbers)
+makeFile.write("\trm -f %s\n" % make_MakeFile_vstring(haddInputFileNames_stage2))
 makeFile.write("\trm -f %s\n" % haddShellFileName_stage2)
+makeFile.write("\trm -f %s\n" % haddOutputFileName_stage2)
 makeFile.write("\trm -f %s\n" % make_MakeFile_vstring(outputFileNames_compTauIdEffFinalNumbers))
+makeFile.write("\trm -f %s\n" % make_MakeFile_vstring(haddInputFileNames_stage3))
 makeFile.write("\trm -f %s\n" % haddShellFileName_stage3)
+makeFile.write("\trm -f %s\n" % haddOutputFileName_stage3)
 makeFile.write("\trm -f %s\n" % make_MakeFile_vstring(outputFileNames_makeTauIdEffFinalPlots))
 makeFile.write("\techo 'Finished deleting old files.'\n")
 makeFile.write("\n")

@@ -38,6 +38,10 @@ process.fitTauIdEff = cms.PSet(
         'C1p',
         'C1f'
     ),
+
+    # option for measurement of tau charge misidentification rate
+    passed_region = cms.string('C1p'),
+    failed_region = cms.string('D1p'),
     
     tauIds = cms.vstring(
         'tauDiscrHPSloose', # "new" HPS implemented in HPS+TaNC combined algorithm

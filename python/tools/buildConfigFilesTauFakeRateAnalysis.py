@@ -54,7 +54,9 @@ def buildConfigFile_FWLiteTauFakeRateAnalyzer(sampleToAnalyze, evtSel, version, 
         if inputFileName.find("chunk") != -1 and \
            inputFileName.find("".join(['_', sampleToAnalyze, '_'])) != -1:
             if inputFilePath.find('/castor/') != -1:
-                inputFileNames_sample.append(os.path.join("rfio:" + inputFilePath, inputFileName))
+                # CV: assume that input file gets copied to local directory before FWLiteTauFakeRateAnalyzer macro gets started
+                #inputFileNames_sample.append(os.path.join("rfio:" + inputFilePath, inputFileName))
+                inputFileNames_sample.append(inputFileName)
             else:
                 inputFileNames_sample.append(os.path.join(inputFilePath, inputFileName))
 
@@ -117,7 +119,7 @@ import FWCore.ParameterSet.Config as cms
 process = cms.PSet()
 
 process.fwliteInput = cms.PSet(
-    fileNames   = cms.vstring(%s),
+    fileNames   = cms.vstring('%s'),
     
     maxEvents   = cms.int32(-1),
     
@@ -131,6 +133,8 @@ process.fwliteOutput = cms.PSet(
 process.tauFakeRateAnalyzer = cms.PSet(
     process = cms.string('%s'),
     type = cms.string('%s'),
+
+    evtSel = cms.string('%s'),
 
     regions = cms.vstring(
         'P',
@@ -160,7 +164,8 @@ process.tauFakeRateAnalyzer = cms.PSet(
     srcLumiProducer = cms.InputTag('lumiProducer')
 )
 """ % (inputFileName_sample, outputFileName_full,
-       process_matched, processType, srcTauJetCandidates, srcMET, tauIds_string, weights_string, allEvents_DBS, xSection, intLumiData)
+       process_matched, processType, evtSel,
+       tauIds_string, srcTauJetCandidates, srcMET, weights_string, allEvents_DBS, xSection, intLumiData)
 
         outputFileNames.append(outputFileName_full)
 

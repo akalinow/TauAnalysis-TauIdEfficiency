@@ -168,7 +168,7 @@ double getTemplateNorm_fitted(
 
 template <typename T>
 void applyStyleOption(T* histogram, const std::string& histogramTitle,
-		      const std::string& xAxisTitle, const std::string& yAxisTitle = "")
+		      const std::string& xAxisTitle, const std::string& yAxisTitle = "Events")
 {
   //std::cout << "<applyStyleOption>:" << std::endl;
   //std::cout << " histogramName = " << histogram->GetName() << std::endl;
@@ -184,13 +184,13 @@ void applyStyleOption(T* histogram, const std::string& histogramTitle,
 
   if ( histogram->GetYaxis() ) {
     histogram->GetYaxis()->SetTitle(yAxisTitle.data());
-    histogram->GetYaxis()->SetTitleOffset(1.20);
+    histogram->GetYaxis()->SetTitleOffset(1.65);
     //histogram->GetYaxis()->SetTitleSize(0.05); 
     //histogram->GetYaxis()->SetLabelSize(0.05);
   } //else std::cerr << "Histogram = " << histogram->GetName() << " has no valid y-Axis !!" << std::endl;
 }
 
-void drawCMSprelimaryLabels(double xOffset = 0.140, double yOffset = 0.8075)
+void drawCMSprelimaryLabels(double xOffset = 0.150, double yOffset = 0.8075)
 {
   static TPaveText* cmsPreliminaryLabel = 0;
   if ( !cmsPreliminaryLabel ) {
@@ -249,37 +249,37 @@ void drawHistograms(TH1* histogramZtautau, double normZtautau,
   canvas->SetFillColor(10);
   canvas->SetBorderSize(2);
 
-  canvas->SetLeftMargin(0.12);
+  canvas->SetLeftMargin(0.14);
   canvas->SetBottomMargin(0.12);
 
 //--- scale template histograms to given normalization factors
   TH1* templateZtautau    = ( normZtautau    > 0. ) ? normalize(histogramZtautau,    normZtautau)    : histogramZtautau;
-  applyStyleOption(templateZtautau, histogramTitle, xAxisTitle, "");
+  applyStyleOption(templateZtautau, histogramTitle, xAxisTitle);
   templateZtautau->SetFillStyle(1001);
   templateZtautau->SetFillColor(628);
   
 //--- sum Z/gamma* --> mu+ mu- contributions
   TH1* templateZmumu      = ( normZmumu      > 0. ) ? normalize(histogramZmumu,      normZmumu)      : histogramZmumu;
-  applyStyleOption(templateZmumu, histogramTitle, xAxisTitle, "");
+  applyStyleOption(templateZmumu, histogramTitle, xAxisTitle);
   templateZmumu->SetFillStyle(1001);
   templateZmumu->SetFillColor(596);
 
   TH1* templateQCD        = ( normQCD        > 0. ) ? normalize(histogramQCD,        normQCD)        : histogramQCD;
-  applyStyleOption(templateQCD, histogramTitle, xAxisTitle, "");
+  applyStyleOption(templateQCD, histogramTitle, xAxisTitle);
   templateQCD->SetFillStyle(1001);
   templateQCD->SetFillColor(797);
 
   TH1* templateWplusJets  = ( normWplusJets  > 0. ) ? normalize(histogramWplusJets,  normWplusJets)  : histogramWplusJets;
-  applyStyleOption(templateWplusJets, histogramTitle, xAxisTitle, "");
+  applyStyleOption(templateWplusJets, histogramTitle, xAxisTitle);
   templateWplusJets->SetFillStyle(1001);
   templateWplusJets->SetFillColor(856);
 
   TH1* templateTTplusJets = ( normTTplusJets > 0. ) ? normalize(histogramTTplusJets, normTTplusJets) : histogramTTplusJets;
-  applyStyleOption(templateTTplusJets, histogramTitle, xAxisTitle, "");
+  applyStyleOption(templateTTplusJets, histogramTitle, xAxisTitle);
   templateTTplusJets->SetFillStyle(1001);
   templateTTplusJets->SetFillColor(618);
   
-  applyStyleOption(histogramData, histogramTitle, xAxisTitle, "");
+  applyStyleOption(histogramData, histogramTitle, xAxisTitle);
   histogramData->SetLineColor(1);
   histogramData->SetMarkerColor(1);
   histogramData->SetMarkerStyle(20);
@@ -294,7 +294,7 @@ void drawHistograms(TH1* histogramZtautau, double normZtautau,
 
   smSum.SetMaximum(1.5*TMath::Max(smSum.GetMaximum(), histogramData->GetMaximum()));
   smSum.Draw("hist");
-  applyStyleOption(&smSum, histogramTitle, xAxisTitle, "");
+  applyStyleOption(&smSum, histogramTitle, xAxisTitle);
   
   histogramData->SetStats(false);
   histogramData->Draw("ep1same");
@@ -324,7 +324,7 @@ void drawHistograms(TH1* histogramZtautau, double normZtautau,
 //    not their individual contributions
   TH1* templateEWKbgSum = (TH1*)templateZmumu->Clone();
   templateEWKbgSum->Add(templateWplusJets);
-  applyStyleOption(templateEWKbgSum, histogramTitle, xAxisTitle, "");
+  applyStyleOption(templateEWKbgSum, histogramTitle, xAxisTitle);
   templateEWKbgSum->SetFillStyle(1001);
   templateEWKbgSum->SetFillColor(856);
 
@@ -336,7 +336,7 @@ void drawHistograms(TH1* histogramZtautau, double normZtautau,
 
   smSum2.SetMaximum(1.5*TMath::Max(smSum2.GetMaximum(), histogramData->GetMaximum()));
   smSum2.Draw("hist");
-  applyStyleOption(&smSum2, histogramTitle, xAxisTitle, "");
+  applyStyleOption(&smSum2, histogramTitle, xAxisTitle);
   
   histogramData->Draw("ep1same");
 
@@ -365,7 +365,7 @@ void drawHistograms(TH1* histogramZtautau, double normZtautau,
   templateSMbgSum->Add(templateQCD);
   templateSMbgSum->Add(templateWplusJets);
   templateSMbgSum->Add(templateTTplusJets);
-  applyStyleOption(templateSMbgSum, histogramTitle, xAxisTitle, "");
+  applyStyleOption(templateSMbgSum, histogramTitle, xAxisTitle);
   templateSMbgSum->SetFillStyle(1001);
   templateSMbgSum->SetFillColor(42);
 
@@ -378,7 +378,7 @@ void drawHistograms(TH1* histogramZtautau, double normZtautau,
 
   smSum3.SetMaximum(1.5*TMath::Max(smSum3.GetMaximum(), histogramData->GetMaximum()));	
   smSum3.Draw("hist");
-  applyStyleOption(&smSum3, histogramTitle, xAxisTitle, "");
+  applyStyleOption(&smSum3, histogramTitle, xAxisTitle);
 
   histogramData->Draw("ep1same");
 
@@ -409,7 +409,7 @@ void drawHistograms(TH1* histogramZtautau, double normZtautau,
   templateSMsum->SetLineWidth(2);
 
   templateSMsum->SetMaximum(1.5*TMath::Max(templateSMsum->GetMaximum(), histogramData->GetMaximum()));
-  applyStyleOption(templateSMsum, histogramTitle, xAxisTitle, "");
+  applyStyleOption(templateSMsum, histogramTitle, xAxisTitle);
   templateSMsum->Draw("hist");
   templateSMsum->SetStats(false);
 

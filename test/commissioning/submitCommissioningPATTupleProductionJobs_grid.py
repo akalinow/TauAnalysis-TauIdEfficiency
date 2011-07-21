@@ -5,7 +5,7 @@ import subprocess
 import time
 
 from TauAnalysis.TauIdEfficiency.recoSampleDefinitionsTauIdCommissioning_7TeV_grid_cfi import *
-from TauAnalysis.Configuration.submitToGrid2.py import submitToGrid
+from TauAnalysis.Configuration.submitToGrid2 import submitToGrid
 
 print("<submitCommissioningPATTtupleProductionJobs_grid>:")
 
@@ -16,7 +16,7 @@ crabFilePath = "/data1/veelken/CMSSW_4_2_x/crab/TauIdEfficiency/"
 pfCandidateCollection = "particleFlow" # pile-up removal disabled
 #pfCandidateCollection = "pfNoPileUp"   # pile-up removal enabled
 
-version = "v1_0"
+version = "patV1_1"
 
 crab_template = """
 [CRAB]
@@ -133,4 +133,4 @@ for sampleName in SAMPLES_TO_RUN:
                createDir(os.path.join(castorFilePath, jobType) + '/' + version + '/' + sampleName)
 
                submitToGrid(configFile = None, jobInfo = None, crabOptions = None,
-                            crabFileName = crabFileName, ui_working_dir = ui_working_dir)
+                            crabFileName_full = crabFileName, ui_working_dir = ui_working_dir)

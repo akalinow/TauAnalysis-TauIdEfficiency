@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.15 $
+ * \version $Revision: 1.16 $
  *
- * $Id: fitTauIdEff_wConstraints.cc,v 1.15 2011/07/11 15:26:32 veelken Exp $
+ * $Id: fitTauIdEff_wConstraints.cc,v 1.16 2011/07/13 16:54:31 veelken Exp $
  *
  */
 
@@ -700,6 +700,10 @@ int main(int argc, const char* argv[])
 
   typedef std::vector<std::string> vstring;
   vstring regions = cfgFitTauIdEff_wConstraints.getParameter<vstring>("regions");
+  std::string regionQCDtemplateFromData_passed = 
+    cfgFitTauIdEff_wConstraints.getParameter<std::string>("regionQCDtemplateFromData_passed");
+  std::string regionQCDtemplateFromData_failed = 
+    cfgFitTauIdEff_wConstraints.getParameter<std::string>("regionQCDtemplateFromData_failed");
   vstring tauIds = cfgFitTauIdEff_wConstraints.getParameter<vstring>("tauIds");
   vstring fitVariables = cfgFitTauIdEff_wConstraints.getParameter<vstring>("fitVariables");
   std::vector<sysUncertaintyEntry> sysUncertainties;
@@ -806,28 +810,41 @@ int main(int argc, const char* argv[])
 	  tauId != tauIds.end(); ++tauId ) {
       for ( std::vector<std::string>::const_iterator fitVariable = fitVariables.begin();
 	    fitVariable != fitVariables.end(); ++fitVariable ) {
-	std::string key_all = getKey(*fitVariable, *tauId);
+	std::string key_all    = getKey(*fitVariable, *tauId);
 	std::string key_passed = getKey(*fitVariable, *tauId, "passed");
 	std::string key_failed = getKey(*fitVariable, *tauId, "failed");
 	
-	std::cout << "templatesQCD['C1'][" << key_all << "] = " << templatesQCD["C1"][key_all] << std::endl;
-	std::cout << "templatesQCD['C1p'][" << key_passed << "] = " << templatesQCD["C1p"][key_passed] << std::endl;
-	std::cout << "templatesQCD['C1f'][" << key_failed << "] = " << templatesQCD["C1f"][key_failed] << std::endl;
-	std::cout << "distributionsData['B1'][" << key_all << "] = " << distributionsData["B1"][key_all] << std::endl;
+	std::string keyQCDtemplateFromData_passed = key_all;
+	if ( regionQCDtemplateFromData_passed.find("p") != std::string::npos ) keyQCDtemplateFromData_passed = key_passed;
+	std::string keyQCDtemplateFromData_failed = key_all;
+	if ( regionQCDtemplateFromData_failed.find("f") != std::string::npos ) keyQCDtemplateFromData_failed = key_failed;
+
+	std::cout << "templatesQCD['C1']["  << key_all    << "] = " << templatesQCD["C1"][key_all]      << std::endl;
+	std::cout << "templatesQCD['C1p'][" << key_passed << "] = " << templatesQCD["C1p"][key_passed]  << std::endl;
+	std::cout << "templatesQCD['C1f'][" << key_failed << "] = " << templatesQCD["C1f"][key_failed]  << std::endl;
+	std::cout << "distributionsData" 
+		  << "['" << regionQCDtemplateFromData_passed << "'][" << keyQCDtemplateFromData_passed << "] = " 
+		  << distributionsData[regionQCDtemplateFromData_passed][keyQCDtemplateFromData_passed] << std::endl;
+	std::cout << "distributionsData" 
+		  << "['" << regionQCDtemplateFromData_failed << "'][" << keyQCDtemplateFromData_failed << "] = " 
+		  << distributionsData[regionQCDtemplateFromData_failed][keyQCDtemplateFromData_failed] << std::endl;
 	
 	std::string histogramNameQCD_C1 = templatesQCD["C1"][key_all]->GetName();
 	double normQCD_C1 = getIntegral(templatesQCD["C1"][key_all], true, true);
-	templatesQCD["C1"][key_all] = normalize(distributionsData["B1"][key_all], normQCD_C1);
+	templatesQCD["C1"][key_all] = 
+	  normalize(distributionsData[regionQCDtemplateFromData_failed][keyQCDtemplateFromData_failed], normQCD_C1);
 	templatesQCD["C1"][key_all]->SetName(histogramNameQCD_C1.data());
 	
 	std::string histogramNameQCD_C1p = templatesQCD["C1p"][key_passed]->GetName();
 	double normQCD_C1p = getIntegral(templatesQCD["C1p"][key_passed], true, true);	
-	templatesQCD["C1p"][key_passed] = normalize(distributionsData["B1"][key_all], normQCD_C1p);
+	templatesQCD["C1p"][key_passed] = 
+	  normalize(distributionsData[regionQCDtemplateFromData_passed][keyQCDtemplateFromData_passed], normQCD_C1p);
 	templatesQCD["C1p"][key_passed]->SetName(histogramNameQCD_C1p.data());
 	
 	std::string histogramNameQCD_C1f = templatesQCD["C1f"][key_failed]->GetName();
 	double normQCD_C1f = getIntegral(templatesQCD["C1f"][key_failed], true, true);
-	templatesQCD["C1f"][key_failed] = normalize(distributionsData["B1"][key_all], normQCD_C1f);
+	templatesQCD["C1f"][key_failed] = 
+	  normalize(distributionsData[regionQCDtemplateFromData_failed][keyQCDtemplateFromData_failed], normQCD_C1f);
 	templatesQCD["C1f"][key_failed]->SetName(histogramNameQCD_C1f.data());
       }
     }

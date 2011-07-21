@@ -4,10 +4,12 @@
 
 TauIdEffHistManager::TauIdEffHistManager(const edm::ParameterSet& cfg)
 {
-  process_            = cfg.getParameter<std::string>("process");
-  region_             = cfg.getParameter<std::string>("region");
-  tauIdDiscriminator_ = cfg.getParameter<std::string>("tauIdDiscriminator");
-  label_              = cfg.getParameter<std::string>("label");
+  process_              = cfg.getParameter<std::string>("process");
+  region_               = cfg.getParameter<std::string>("region");
+  tauIdDiscriminator_   = cfg.getParameter<std::string>("tauIdDiscriminator");
+  label_                = cfg.getParameter<std::string>("label");
+  svFitMassHypothesis_  = cfg.exists("svFitMassHypothesis") ?
+    cfg.getParameter<std::string>("svFitMassHypothesis") : "";
 }
 
 TauIdEffHistManager::~TauIdEffHistManager()
@@ -27,6 +29,8 @@ void TauIdEffHistManager::bookHistograms(TFileDirectory& dir)
   histogramTauNumTracks_ = book1D(dir, "tauJetNumTracks", "Num. Tracks #tau-Jet",                  25,         -0.5,         24.5);
   
   histogramVisMass_      = book1D(dir, "diTauVisMass",    "M_{vis}(#mu + #tau_{had})",             36,         20.0,        200.0);
+  if ( svFitMassHypothesis_ != "" )
+    histogramSVfitMass_  = book1D(dir, "diTauSVfitMass",  "SVfit Mass",                            42,         40.0,        250.0);
   histogramMt_           = book1D(dir, "diTauMt",         "M_{T}(#mu + MET)",                      24,          0.0,        120.0);
   histogramPzetaDiff_    = book1D(dir, "diTauPzetaDiff",  "P_{#zeta} - 1.5 #cdot P_{#zeta}^{vis}", 24,        -80.0,        +40.0);
 
@@ -46,6 +50,11 @@ void TauIdEffHistManager::fillHistograms(const PATMuTauPair& muTauPair, size_t n
   histogramTauNumTracks_->Fill(muTauPair.leg2()->userFloat("numTracks"), weight);
   
   histogramVisMass_->Fill((muTauPair.leg1()->p4() + muTauPair.leg2()->p4()).mass(), weight); 
+  if ( svFitMassHypothesis_ != "" ) {
+    int errorFlag;
+    const NSVfitResonanceHypothesisSummary* svFitSolution = muTauPair.nSVfitSolution(svFitMassHypothesis_, &errorFlag);
+    if ( svFitSolution ) histogramSVfitMass_->Fill(svFitSolution->mass(), weight); 
+  }
   histogramMt_->Fill(muTauPair.mt1MET(), weight);
   histogramPzetaDiff_->Fill(muTauPair.pZeta() - 1.5*muTauPair.pZetaVis(), weight);
 

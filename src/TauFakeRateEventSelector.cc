@@ -11,7 +11,10 @@ enum { kNotApplied, kSignalLike, kBackgroundLike };
 TauFakeRateEventSelector::TauFakeRateEventSelector(const edm::ParameterSet& cfg)
 {
 //--- get tau id. discriminators for which the fake-rate is to be determined
+//    and whether to fill histograms for jets passing or the tau id. discriminators
   tauIdDiscriminators_ = cfg.getParameter<vstring>("tauIdDiscriminators");
+
+  region_ = cfg.getParameter<std::string>("region");
 
 //--- define default preselection criteria for tau-jet candidates
   vstring tauJetCandPreselCriteria_string;
@@ -68,14 +71,8 @@ bool TauFakeRateEventSelector::operator()(const pat::Tau& tauJetCand, pat::strbi
 {
   //std::cout << "<TauFakeRateEventSelector::operator()>:" << std::endl;
 
-  reco::Candidate::LorentzVector p4Jet;
-  if      ( tauJetCand.isCaloTau() ) p4Jet = tauJetCand.caloTauTagInfoRef()->jetRef()->p4();
-  else if ( tauJetCand.isPFTau()   ) p4Jet = tauJetCand.pfJetRef()->p4();
-  else throw cms::Exception("TauFakeRateHistManager::fillHistograms") 
-    << "Tau-jet candidate passed as function argument is neither PFTau nor CaloTau !!";
-
-  double jetPt  = p4Jet.pt();
-  double jetEta = p4Jet.eta();
+  double jetPt  = tauJetCand.p4Jet().pt();
+  double jetEta = tauJetCand.p4Jet().eta();
 
 //--- check if tau-jet candidates passes Pt and eta cuts
   if ( jetPt  > jetPtMin_  && jetPt  < jetPtMax_  &&

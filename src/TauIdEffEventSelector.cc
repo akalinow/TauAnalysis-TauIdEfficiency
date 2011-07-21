@@ -8,9 +8,19 @@
 // and tau id. discriminators      (no tau id. discriminators applied, all discriminators passed, at least one discriminator failed)
 enum { kNotApplied, kSignalLike, kBackgroundLike };
 
+// define flag indicating whether to take charge of tau-jet candidate 
+// from "leading track" or from all "signal" charged hadrons
+enum { kLeadTrackCharge, kSignalChargedHadronSum };
+
 TauIdEffEventSelector::TauIdEffEventSelector(const edm::ParameterSet& cfg)
 {
   tauIdDiscriminators_ = cfg.getParameter<vstring>("tauIdDiscriminators");
+
+  std::string tauChargeMode_string = cfg.getParameter<std::string>("tauChargeMode");
+  if      ( tauChargeMode_string == "tauLeadTrackCharge"        ) tauChargeMode_ = kLeadTrackCharge;
+  else if ( tauChargeMode_string == "tauSignalChargedHadronSum" ) tauChargeMode_ = kSignalChargedHadronSum;
+  else throw cms::Exception("TauIdEffEventSelector") 
+    << "Invalid configuration parameter 'tauChargeMode' = " << tauChargeMode_string << " !!\n";
 
 //--- define default cuts for ABCD regions
   muonPtMin_                =  20.0; 
@@ -113,7 +123,10 @@ bool TauIdEffEventSelector::operator()(const PATMuTauPair& muTauPair, pat::strbi
   double tauLeadTrackPt      = muTauPair.leg2()->userFloat("leadTrackPt");
   double tauIso              = muTauPair.leg2()->userFloat("preselLoosePFIsoPt");
   double muTauPairAbsDz      = TMath::Abs(muTauPair.leg1()->vertex().z() - muTauPair.leg2()->vertex().z());
-  double muTauPairChargeProd = muTauPair.leg1()->charge()*muTauPair.leg2()->userFloat("leadTrackCharge");
+  double muTauPairChargeProd = muTauPair.leg1()->charge();
+  if      ( tauChargeMode_ == kLeadTrackCharge        ) muTauPairChargeProd *= muTauPair.leg2()->userFloat("leadTrackCharge");
+  else if ( tauChargeMode_ == kSignalChargedHadronSum ) muTauPairChargeProd *= muTauPair.leg2()->charge();
+  else assert(0);
   double visMass             = (muTauPair.leg1()->p4() + muTauPair.leg2()->p4()).mass();
   double Mt                  = muTauPair.mt1MET();
   double PzetaDiff           = muTauPair.pZeta() - 1.5*muTauPair.pZetaVis();

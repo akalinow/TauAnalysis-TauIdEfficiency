@@ -4,14 +4,9 @@
 
 #include "FWCore/Utilities/interface/Exception.h"
 
+#include "DataFormats/PatCandidates/interface/TriggerObjectStandAlone.h"
 
-
-
-#include "DataFormats/Common/interface/TriggerResults.h"
-#include "FWCore/Common/interface/TriggerNames.h"
-
-
-
+typedef std::vector<std::string> vstring;
 typedef std::vector<pat::Tau> vPatTaus;
 
 TauIdTagAndProbeProducer::TauIdTagAndProbeProducer(const edm::ParameterSet& cfg)
@@ -22,11 +17,26 @@ TauIdTagAndProbeProducer::TauIdTagAndProbeProducer(const edm::ParameterSet& cfg)
   vstring triggerPathsNames = cfgTriggerPaths.getParameterNamesForType<vstring>();
   for ( vstring::const_iterator triggerPathsName = triggerPathsNames.begin();
 	triggerPathsName != triggerPathsNames.end(); ++triggerPathsName ) {
-    triggerPaths_[*triggerPathsName] = cfgTriggerPaths.getParameter<vstring>(*triggerPathsName);
+    vstring triggerPathSelections = cfgTriggerPaths.getParameter<vstring>(*triggerPathsName);
+    for ( vstring::const_iterator triggerPathSelection = triggerPathSelections.begin();
+	  triggerPathSelection != triggerPathSelections.end(); ++triggerPathSelection ) {
+      triggerPaths_[*triggerPathsName].push_back(new StringCutTriggerObjectSelector(*triggerPathSelection));
+    }
   }
   
   // register products
   produces<vPatTaus>();
+}
+
+TauIdTagAndProbeProducer::~TauIdTagAndProbeProducer()
+{
+  for ( std::map<std::string, vStringCutTriggerObjectSelector>::iterator it1 = triggerPaths_.begin();
+	it1 != triggerPaths_.end(); ++it1) {
+    for ( vStringCutTriggerObjectSelector::iterator it2 = it1->second.begin();
+	  it2 != it1->second.end(); ++it2 ) {
+      delete (*it2);
+    }
+  }
 }
 
 namespace {
@@ -65,52 +75,6 @@ namespace {
 
 void TauIdTagAndProbeProducer::produce(edm::Event& evt, const edm::EventSetup& es)
 {
-
-  edm::InputTag hltResultsSource("TriggerResults", "", "HLT");
-  if ( hltResultsSource.label() != "" ) {
-    edm::Handle<edm::TriggerResults> hltResults;
-    evt.getByLabel(hltResultsSource, hltResults);
-    if ( hltResults.isValid() ) {    
-      const edm::TriggerNames& triggerNames = evt.triggerNames(*hltResults);
-      for ( edm::TriggerNames::Strings::const_iterator triggerName = triggerNames.triggerNames().begin();
-            triggerName != triggerNames.triggerNames().end(); ++triggerName ) {
-        unsigned int index = triggerNames.triggerIndex(*triggerName);
-        if ( index < triggerNames.size() ) {
-          std::string triggerDecision = ( hltResults->accept(index) ) ? "passed" : "failed";
-     
-          std::cout << " triggerName = " << (*triggerName) << " " << triggerDecision << std::endl;
-        }
-      }
-
-      std::cout << "HLT Decisions:" << std::endl;
-    
-      vstring hltPathsToPrint;
-      hltPathsToPrint.push_back("HLT_Jet30_v1");
-      hltPathsToPrint.push_back("HLT_Jet30_v2");
-      hltPathsToPrint.push_back("HLT_Jet30_v3");
-      hltPathsToPrint.push_back("HLT_Jet30_v4");
-      hltPathsToPrint.push_back("HLT_Jet30_v5");
-      hltPathsToPrint.push_back("HLT_Jet30_v6");
-      
-      for ( std::vector<std::string>::const_iterator hltPath = hltPathsToPrint.begin();
-	    hltPath != hltPathsToPrint.end(); ++hltPath ) {
-        unsigned int index = triggerNames.triggerIndex(*hltPath);
-        if ( index < triggerNames.size() ) {
-  	  std::string hltDecision = ( hltResults->accept(index) ) ? "passed" : "failed";	
-	  std::cout << " " << (*hltPath) << " " << hltDecision << std::endl;
-        } else {
-	  edm::LogError ("printEventTriggerInfo") << " Undefined trigger Path = " << (*hltPath) << " --> skipping !!";
-	  continue;
-        }
-      }
-    }
-    
-    std::cout << std::endl;
-  }
-
-
-
-
   // output products
   std::auto_ptr<vPatTaus> output(new vPatTaus());
   
@@ -126,31 +90,40 @@ void TauIdTagAndProbeProducer::produce(edm::Event& evt, const edm::EventSetup& e
     // get tau and check if it matches trigger
     const pat::Tau& tau = sourceView->at(iTau);
 
-    std::cout << "matched Trigger paths: " << std::endl;
-    std::cout << tau.triggerObjectMatches().size() << std::endl;
-    for ( pat::TriggerObjectStandAloneCollection::const_iterator matchedTrigger = tau.triggerObjectMatches().begin();
-	  matchedTrigger != tau.triggerObjectMatches().end(); ++matchedTrigger ) {
-      std::cout << "break-point 1 reached" << std::endl;
-      std::cout << "pt = " << matchedTrigger->pt() << std::endl;
-      vstring matchedTriggerPaths = matchedTrigger->pathNames();
-      for ( vstring::const_iterator matchedTriggerPath = matchedTriggerPaths.begin();
-	    matchedTriggerPath != matchedTriggerPaths.end(); ++matchedTriggerPath ) {
-	std::cout << " " << (*matchedTriggerPath) << std::endl;
-      }
-    }
-
     TauInfo myTauInfo(tau);
 
-    for ( std::map<std::string, vstring>::const_iterator triggerPath = triggerPaths_.begin();
+    for ( std::map<std::string, vStringCutTriggerObjectSelector>::const_iterator triggerPath = triggerPaths_.begin();
 	  triggerPath != triggerPaths_.end(); ++triggerPath ) {
-      bool matchesTriggerObject = false;
-      for ( vstring::const_iterator triggerPath_version = triggerPath->second.begin();
-	    triggerPath_version != triggerPath->second.end(); ++triggerPath_version ) {
-	if ( tau.triggerObjectMatchesByPath(*triggerPath_version).size() >= 1 ) matchesTriggerObject = true;
+      bool matchesSelTriggerObject = false;
+      const pat::TriggerObjectStandAlone* matchedTriggerObjectStandAlone = 0;
+      for ( pat::TriggerObjectStandAloneCollection::const_iterator matchedTrigger = tau.triggerObjectMatches().begin();
+	    matchedTrigger != tau.triggerObjectMatches().end(); ++matchedTrigger ) {
+	bool passesSelection = true;
+	for ( vStringCutTriggerObjectSelector::const_iterator triggerPathSelection = triggerPath->second.begin();
+	      triggerPathSelection != triggerPath->second.end(); ++triggerPathSelection ) {
+	  if ( !(**triggerPathSelection)(*matchedTrigger) ) passesSelection = false;
+	}
+
+	if ( passesSelection ) {
+	  matchesSelTriggerObject = true;
+	  if ( matchedTriggerObjectStandAlone == 0                         || 
+	       matchedTriggerObjectStandAlone->pt() < matchedTrigger->pt() ) matchedTriggerObjectStandAlone = &(*matchedTrigger);	  
+	}
       }
 
-      myTauInfo.matchesTriggerObject_[triggerPath->first] = matchesTriggerObject;
-      if ( matchesTriggerObject ) ++nTriggers[triggerPath->first];
+      myTauInfo.matchesTriggerObject_[triggerPath->first] = matchesSelTriggerObject;
+
+      //std::cout << "tau: pt = " << tau.pt() << ", eta = " << tau.eta() << ", phi = " << tau.phi();
+      //if ( matchesSelTriggerObject ) 
+      //  std::cout << " --> matches " << triggerPath->first << " "
+      //	    << "(pt = " << matchedTriggerObjectStandAlone->pt() << "," 
+      //	    << " eta = " << matchedTriggerObjectStandAlone->eta() << ","
+      //	    << " phi = " << matchedTriggerObjectStandAlone->phi() << ")";
+      //else 
+      //  std::cout << " --> does not match " << triggerPath->first;
+      //std::cout << std::endl;
+
+      if ( matchesSelTriggerObject ) ++nTriggers[triggerPath->first];
     }
 
     tauInfos[iTau] = myTauInfo;
@@ -166,10 +139,10 @@ void TauIdTagAndProbeProducer::produce(edm::Event& evt, const edm::EventSetup& e
     // store pt-ordered index
     newTau.addUserFloat("pt_index", iTau);
     
-    for ( std::map<std::string, vstring>::const_iterator triggerPath = triggerPaths_.begin();
+    for ( std::map<std::string, vStringCutTriggerObjectSelector>::const_iterator triggerPath = triggerPaths_.begin();
 	  triggerPath != triggerPaths_.end(); ++triggerPath ) {
 
-      std::cout << "triggerPath = " << triggerPath->first << std::endl;
+      //std::cout << "triggerPath = " << triggerPath->first << std::endl;
 
       // set probe flag
       bool isProbeTau = false;
@@ -187,12 +160,12 @@ void TauIdTagAndProbeProducer::produce(edm::Event& evt, const edm::EventSetup& e
       else triggerLabel = std::string(triggerPath->first, triggerPath->first.rfind("_") + 1);
       
       std::string probeLabel = std::string("probe").append(triggerLabel);
-      std::cout << "probeLabel = " << probeLabel << ": " << isProbeTau << std::endl;
+      //std::cout << "probeLabel = " << probeLabel << ": " << isProbeTau << std::endl;
       newTau.addUserFloat(probeLabel.data(), isProbeTau);
       
       // set tag flag
       std::string tagLabel = std::string("tag").append(triggerLabel);
-      std::cout << "tagLabel = " << tagLabel << ": " << tauInfos[iTau].matchesTriggerObject_[triggerPath->first] << std::endl;
+      //std::cout << "tagLabel = " << tagLabel << ": " << tauInfos[iTau].matchesTriggerObject_[triggerPath->first] << std::endl;
       newTau.addUserFloat(tagLabel.data(), tauInfos[iTau].matchesTriggerObject_[triggerPath->first]);      
     }
 

@@ -266,7 +266,8 @@ def buildSequenceTauIdEffMeasSpecific(process,
     smearedMETmoduleName = composeModuleName(["smearedMET", "".join(tauIdAlgorithmName)])
     smearedMETmodule = cms.EDProducer("SmearedMETProducer",
         src = cms.InputTag(patMEtCollectionName),
-        smearedParticles = cms.PSet()
+        smearedParticles = cms.PSet(),
+        addPUsmearing = cms.double(0.)                          
     )
     setattr(process, smearedMETmoduleName, smearedMETmodule)
     smearedMETconfigurator = objProdConfigurator(
@@ -318,6 +319,9 @@ def buildSequenceTauIdEffMeasSpecific(process,
                 "smearedParticles.jetsTypeII.srcSmeared"  : \
                     cms.InputTag(selectedPatJetsForMEtTypeIIcorrSysJetEnDownModuleName),
                 "smearedParticles.jetsTypeII.smearByResolutionUncertainty" : smearMEtUnclustedEnergyResolution
+            },
+            "sysAddPUsmearing" : {
+                "addPUsmearing" : cms.double(10.) 
             }
         }
     )
@@ -350,6 +354,10 @@ def buildSequenceTauIdEffMeasSpecific(process,
             delattr(allMuTauPairsModule, "nSVfit")
         if hasattr(allMuTauPairsModule, "pfMEtSign"):
             delattr(allMuTauPairsModule, "pfMEtSign")
+    else:
+        # CV: for speed reasons, run NSVfit algorithm in "fit" mode only, not in "integration" mode
+        if hasattr(allMuTauPairsModule, "nSVfit") and hasattr(allMuTauPairsModule.nSVfit, "psKine_MEt_logM_int"):
+            delattr(allMuTauPairsModule.nSVfit, "psKine_MEt_logM_int")
     
     if isMC:
         setattr(allMuTauPairsModule, "srcGenParticles", cms.InputTag('genParticles'))
@@ -383,6 +391,9 @@ def buildSequenceTauIdEffMeasSpecific(process,
         },
         "sysJetEnDown" : {
             "srcMET"  : cms.InputTag(composeModuleName([smearedMETmoduleName,  "sysJetEnDown"]))
+        },
+        "sysAddPUsmearing" : {
+            "srcMET"  : cms.InputTag(composeModuleName([smearedMETmoduleName,  "sysAddPUsmearing"]))
         }
     })
     prodMuTauPairSequenceName = composeModuleName(["prodMu", "".join(tauIdAlgorithmName), "PairsForTauIdEff"])
@@ -391,12 +402,13 @@ def buildSequenceTauIdEffMeasSpecific(process,
     sequence += prodMuTauPairSequence
 
     muTauPairSystematicsForTauIdEff = {
-        "sysMuonPtUp"     : cms.InputTag(composeModuleName([allMuTauPairsModuleName, "sysMuonPtUp"])),
-        "sysMuonPtDown"   : cms.InputTag(composeModuleName([allMuTauPairsModuleName, "sysMuonPtDown"])),
-        "sysTauJetEnUp"   : cms.InputTag(composeModuleName([allMuTauPairsModuleName, "sysTauJetEnUp"])),
-        "sysTauJetEnDown" : cms.InputTag(composeModuleName([allMuTauPairsModuleName, "sysTauJetEnDown"])),
-        "sysJetEnUp"      : cms.InputTag(composeModuleName([allMuTauPairsModuleName, "sysJetEnUp"])),
-        "sysJetEnDown"    : cms.InputTag(composeModuleName([allMuTauPairsModuleName, "sysJetEnDown"]))
+        "sysMuonPtUp"      : cms.InputTag(composeModuleName([allMuTauPairsModuleName, "sysMuonPtUp"])),
+        "sysMuonPtDown"    : cms.InputTag(composeModuleName([allMuTauPairsModuleName, "sysMuonPtDown"])),
+        "sysTauJetEnUp"    : cms.InputTag(composeModuleName([allMuTauPairsModuleName, "sysTauJetEnUp"])),
+        "sysTauJetEnDown"  : cms.InputTag(composeModuleName([allMuTauPairsModuleName, "sysTauJetEnDown"])),
+        "sysJetEnUp"       : cms.InputTag(composeModuleName([allMuTauPairsModuleName, "sysJetEnUp"])),
+        "sysJetEnDown"     : cms.InputTag(composeModuleName([allMuTauPairsModuleName, "sysJetEnDown"])),
+        "sysAddPUsmearing" : cms.InputTag(composeModuleName([allMuTauPairsModuleName, "sysAddPUsmearing"]))
     }
 
     #print("muTauPairSystematicsForTauIdEff:", muTauPairSystematicsForTauIdEff)
@@ -508,7 +520,8 @@ def buildSequenceTauIdEffMeasSpecific(process,
         composeModuleName([selectedMuTauPairsDzModuleName,                       "sysTauJetEnUp",              "cumulative"]),
         composeModuleName([selectedMuTauPairsDzModuleName,                       "sysTauJetEnDown",            "cumulative"]),
         composeModuleName([selectedMuTauPairsDzModuleName,                       "sysJetEnUp",                 "cumulative"]),
-        composeModuleName([selectedMuTauPairsDzModuleName,                       "sysJetEnDown",               "cumulative"])
+        composeModuleName([selectedMuTauPairsDzModuleName,                       "sysJetEnDown",               "cumulative"]),
+        composeModuleName([selectedMuTauPairsDzModuleName,                       "sysAddPUsmearing",           "cumulative"])
     ]
     if applyZrecoilCorrection:
         retVal["muTauPairCollections"].extend([
@@ -520,7 +533,8 @@ def buildSequenceTauIdEffMeasSpecific(process,
             composeModuleName([selectedMuTauPairsDzZllRecoilCorrectedModuleName, "sysJetEnUp",                 "cumulative"]),
             composeModuleName([selectedMuTauPairsDzZllRecoilCorrectedModuleName, "sysJetEnDown",               "cumulative"]),
             composeModuleName([selectedMuTauPairsDzZllRecoilCorrectedModuleName, "sysZllRecoilCorrectionUp",   "cumulative"]),
-            composeModuleName([selectedMuTauPairsDzZllRecoilCorrectedModuleName, "sysZllRecoilCorrectionDown", "cumulative"])
+            composeModuleName([selectedMuTauPairsDzZllRecoilCorrectedModuleName, "sysZllRecoilCorrectionDown", "cumulative"]),
+            composeModuleName([selectedMuTauPairsDzZllRecoilCorrectedModuleName, "sysAddPUsmearing",           "cumulative"])
         ])
     retVal["patJetCollections"] = [
         composeModuleName([selectedPatJetsEt20ModuleName,                                                      "cumulative"]),

@@ -70,11 +70,12 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
     process.patTauTriggerMatchHLTprotoType = cms.EDProducer("PATTriggerMatcherDRLessByR",
         src                   = cms.InputTag("cleanLayer1Taus"),
         matched               = cms.InputTag("patTrigger"),
-        matchedCuts           = cms.string('path("HLT_Jet30*")'),
+        matchedCuts           = cms.string('path("HLT_Jet30_v*")'),
+        maxDPtRel             = cms.double(1.e+3),                                                    
         maxDeltaR             = cms.double(0.5),
         resolveAmbiguities    = cms.bool(True),
-        resolveByMatchQuality = cms.bool(False)
-    )   
+        resolveByMatchQuality = cms.bool(True)
+    )
     #--------------------------------------------------------------------------------
 
     #--------------------------------------------------------------------------------

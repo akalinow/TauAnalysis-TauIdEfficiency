@@ -10,9 +10,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.14 $
+ * \version $Revision: 1.1 $
  *
- * $Id: FWLiteTauFakeRateAnalyzer.cc,v 1.14 2011/07/17 15:59:50 veelken Exp $
+ * $Id: FWLiteTauFakeRateAnalyzer.cc,v 1.1 2011/07/18 16:40:45 veelken Exp $
  *
  */
 
@@ -55,7 +55,7 @@ typedef std::vector<std::string> vstring;
 
 struct regionEntryType
 {
-  regionEntryType(fwlite::TFileService& fs,
+  regionEntryType(TFileDirectory& dir,
 		  const std::string& process, const std::string& region, 
 		  const vstring& tauIdDiscriminators, const std::string& tauIdName)
     : process_(process),
@@ -69,6 +69,9 @@ struct regionEntryType
       numTauJetCands_selected_(0),
       numTauJetCandsWeighted_selected_(0.)
   {
+    std::cout << "<regionEntryType>:" << std::endl;
+    std::cout << " region = " << region << std::endl;
+
     edm::ParameterSet cfgSelector;
     cfgSelector.addParameter<vstring>("tauIdDiscriminators", tauIdDiscriminators_);
     cfgSelector.addParameter<std::string>("region", region_);
@@ -81,7 +84,7 @@ struct regionEntryType
     cfgHistManager.addParameter<std::string>("tauIdDiscriminator", tauIdName_);
 
     histograms_ = new TauFakeRateHistManager(cfgHistManager);
-    histograms_->bookHistograms(fs);
+    histograms_->bookHistograms(dir);
   }
   ~regionEntryType()
   {
@@ -146,8 +149,6 @@ int main(int argc, char* argv[])
   edm::ParameterSet cfgTauFakeRateAnalyzer = cfg.getParameter<edm::ParameterSet>("tauFakeRateAnalyzer");
 
   edm::InputTag srcTauJetCandidates = cfgTauFakeRateAnalyzer.getParameter<edm::InputTag>("srcTauJetCandidates");
-  edm::InputTag srcTrigger = cfgTauFakeRateAnalyzer.getParameter<edm::InputTag>("srcTrigger");
-  vstring hltPaths = cfgTauFakeRateAnalyzer.getParameter<vstring>("hltPaths");
   edm::InputTag srcVertices = cfgTauFakeRateAnalyzer.getParameter<edm::InputTag>("srcVertices");
   edm::InputTag srcMET = cfgTauFakeRateAnalyzer.getParameter<edm::InputTag>("srcMET");
   typedef std::vector<edm::InputTag> vInputTag;
@@ -169,6 +170,8 @@ int main(int argc, char* argv[])
   std::string processType = cfgTauFakeRateAnalyzer.getParameter<std::string>("type");
   std::cout << " type = " << processType << std::endl;
   bool isData = (processType == "Data");
+  std::string evtSel = cfgTauFakeRateAnalyzer.getParameter<std::string>("evtSel");
+  TFileDirectory dir = fs.mkdir(evtSel);
   vstring regions = cfgTauFakeRateAnalyzer.getParameter<vstring>("regions");
   typedef std::vector<edm::ParameterSet> vParameterSet;
   vParameterSet cfgTauIdDiscriminators = cfgTauFakeRateAnalyzer.getParameter<vParameterSet>("tauIds");
@@ -178,7 +181,7 @@ int main(int argc, char* argv[])
 	  region != regions.end(); ++region ) {
       vstring tauIdDiscriminators = cfgTauIdDiscriminator->getParameter<vstring>("discriminators");
       std::string tauIdName = cfgTauIdDiscriminator->getParameter<std::string>("name");
-      regionEntryType* regionEntry = new regionEntryType(fs, process, *region, tauIdDiscriminators, tauIdName);
+      regionEntryType* regionEntry = new regionEntryType(dir, process, *region, tauIdDiscriminators, tauIdName);
       regionEntries.push_back(regionEntry);
     }
   }

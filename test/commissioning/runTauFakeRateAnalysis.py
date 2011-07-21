@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os
+import time
 
 from TauAnalysis.TauIdEfficiency.recoSampleDefinitionsTauIdCommissioning_7TeV_grid_cfi import recoSampleDefinitionsTauIdCommissioning_7TeV
 import TauAnalysis.Configuration.plotterProcessDefinitions_cfi as plotter
@@ -226,7 +227,7 @@ if not os.path.exists(logFilePath):
 
 execDir = "%s/bin/%s/" % (os.environ['CMSSW_BASE'], os.environ['SCRAM_ARCH'])
 
-executable_FWLiteTauFakeRateAnalyzer = execDir + 'FWLiteTauIdEffAnalyzer'
+executable_FWLiteTauFakeRateAnalyzer = execDir + 'FWLiteTauFakeRateAnalyzer'
 executable_bsub = 'bsub'
 executable_waitForLXBatchJobs = 'python %s/src/TauAnalysis/Configuration/python/tools/waitForLXBatchJobs.py' % os.environ['CMSSW_BASE']
 executable_rfcp = 'rfcp'
@@ -334,12 +335,25 @@ for sampleToAnalyze in samplesToAnalyze:
               outputFilePath,
               'analyzeTauFakeRateHistograms_%s_%s_%s_harvested.root' % (eventSelectionToAnalyze, sampleToAnalyze, version))
 
+        inputFileInfos = []
+        for inputFileName in fileNames_FWLiteTauFakeRateAnalyzer[sampleToAnalyze][eventSelectionToAnalyze]['outputFileNames']:
+            inputFileInfo = {
+                'path'        : inputFileName,
+                'size'        : 1,           # dummy
+                'time'        : time.localtime(),
+                'file'        : os.path.basename(inputFileName),
+                'permissions' : 'mrw-r--r--' # "ordinary" file access permissions
+            }
+            print "inputFileInfo = %s" % inputFileInfo
+            inputFileInfos.append(inputFileInfo)
+
         retVal_make_harvest_scripts = make_harvest_scripts(
             plot_regex,
             skim_regex,
             sample = sampleToAnalyze,
             job_id = "_".join([eventSelectionToAnalyze, version]),
-            input_source = matches_either(castor_source(harvestingFilePath)),
+            #input_source = matches_either(castor_source(harvestingFilePath)),
+            input_files_info = inputFileInfos, 
             castor_output_directory = harvestingFilePath,
             script_directory = configFilePath,
             merge_script_name = \
@@ -373,7 +387,9 @@ haddInputFileNames = []
 for sampleToAnalyze in samplesToAnalyze:
     for eventSelectionToAnalyze in eventSelectionsToAnalyze:
         for final_harvest_file in bsubFileNames_harvesting[sampleToAnalyze][eventSelectionToAnalyze]['final_harvest_files']:
-            haddInputFileNames.append(os.path.join(outputFilePath, final_harvest_file))
+            # CV: file name of final harvesting output file is stored at index[1] in final_harvest_file-tuple
+            #    (cf. TauAnalysis/Configuration/python/tools/harvestingLXBatch.py)
+            haddInputFileNames.append(os.path.join(outputFilePath, final_harvest_file[1]))
 haddShellFileName = os.path.join(configFilePath, 'harvestTauFakeRateHistograms_stage1_%s.csh' % version)
 haddOutputFileName = os.path.join(outputFilePath, 'analyzeTauFakeRateHistograms_all_%s.root' % version)
 retVal_hadd = \
@@ -531,9 +547,11 @@ for sampleToAnalyze in samplesToAnalyze:
               (executable_rfrm,
                os.path.join(harvestingFilePath, outputFileName)))
         for final_harvest_file in bsubFileNames_harvesting[sampleToAnalyze][eventSelectionToAnalyze]['final_harvest_files']:
+            # CV: file name of final harvesting output file is stored at index[1] in final_harvest_file-tuple
+            #    (cf. TauAnalysis/Configuration/python/tools/harvestingLXBatch.py)    
             makeFile.write("\t%s -f %s\n" %
               (executable_rfrm,
-               os.path.join(harvestingFilePath, final_harvest_file)))
+               os.path.join(harvestingFilePath, final_harvest_file[1])))
 makeFile.write("\trm -f %s\n" % make_MakeFile_vstring(haddInputFileNames))            
 makeFile.write("\trm -f %s\n" % haddShellFileName)
 makeFile.write("\trm -f %s\n" % haddOutputFileName)

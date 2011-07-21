@@ -7,9 +7,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.3 $
+ * \version $Revision: 1.4 $
  *
- * $Id: TauIdEffHistManager.h,v 1.3 2011/07/03 10:15:56 veelken Exp $
+ * $Id: TauIdEffHistManager.h,v 1.4 2011/07/04 09:51:23 veelken Exp $
  *
  */
 
@@ -52,6 +52,10 @@ class TauIdEffHistManager
   std::string region_;
   std::string tauIdDiscriminator_; 
   std::string label_;
+
+  /// specify name of SVfit mass hypothesis to be used
+  /// as template variable
+  std::string svFitMassHypothesis_;
  
   TH1* histogramMuonPt_;
   TH1* histogramMuonEta_;
@@ -63,6 +67,7 @@ class TauIdEffHistManager
   TH1* histogramTauNumTracks_;
 
   TH1* histogramVisMass_;
+  TH1* histogramSVfitMass_;
   TH1* histogramMt_;
   TH1* histogramPzetaDiff_;
 

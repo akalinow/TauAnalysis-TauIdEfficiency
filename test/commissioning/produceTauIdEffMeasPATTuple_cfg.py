@@ -5,8 +5,8 @@ process = cms.Process("prodTauIdEffMeasPATTuple")
 #--------------------------------------------------------------------------------
 # define configuration parameter default values
 
-##isMC = True # use for MC
-isMC = False # use for Data
+isMC = True # use for MC
+##isMC = False # use for Data
 isEmbedded = False # use for everything except for Ztautau samples produced via MCEmbedding technique
 #isEmbedded = True # use for Ztautau samples produced via MCEmbedding technique
 ##HLTprocessName = "HLT" # use for 2011 Data

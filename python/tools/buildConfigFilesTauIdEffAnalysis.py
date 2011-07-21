@@ -45,10 +45,15 @@ def make_binning_string(binning):
 #--------------------------------------------------------------------------------
 
 def buildConfigFile_FWLiteTauIdEffAnalyzer(sampleToAnalyze, jobId, inputFilePath, tauIds, binning, sysUncertainties, outputFilePath,
-                                           recoSampleDefinitions):
+                                           recoSampleDefinitions, passed_region, failed_region, tauChargeMode):
 
     """Build cfg.py file to run FWLiteTauIdEffAnalyzer macro to run on PAT-tuples,
        apply event selections and fill histograms for A/B/C/D regions"""
+
+    # CV: check that tauChargeMode parameter matches either of the modes 
+    #     define in TauAnalysis/TauIdEfficiency/src/TauIdEffEventSelector.cc
+    if not tauChargeMode == "tauLeadTrackCharge" or tauChargeMode == "tauSignalChargedHadronSum":
+        raise ValueError("Invalid configuration parameter 'tauChargeMode' = %s !!" % tauChargeMode)
 
     inputFileNames = os.listdir(inputFilePath)
     #print(inputFileNames)
@@ -57,8 +62,6 @@ def buildConfigFile_FWLiteTauIdEffAnalyzer(sampleToAnalyze, jobId, inputFilePath
     for sysUncertainty in sysUncertainties:
         sysUncertainties_expanded.append(sysUncertainty + "Up")
         sysUncertainties_expanded.append(sysUncertainty + "Down")
-
-    isMC = False
 
     # check if inputFile is PAT-tuple and
     # matches sampleToAnalyze, jobId
@@ -73,7 +76,7 @@ def buildConfigFile_FWLiteTauIdEffAnalyzer(sampleToAnalyze, jobId, inputFilePath
     #print(inputFiles_sample)
 
     if len(inputFileNames_sample) == 0:
-        print("Sample %s has not input files --> skipping !!" % sampleToAnalyze)
+        print("Sample %s has no input files --> skipping !!" % sampleToAnalyze)
         return
 
     # find name of associated "process"
@@ -173,6 +176,12 @@ process.tauIdEffAnalyzer = cms.PSet(
         'D1p',
         'D1f'
     ),
+
+    passed_region = cms.string('%s'),
+    failed_region = cms.string('%s'),
+
+    regionQCDtemplateFromData_passed = cms.string('B1p'),
+    regionQCDtemplateFromData_failed = cms.string('B1f'),
     
     tauIds = cms.VPSet(
 %s
@@ -192,6 +201,8 @@ process.tauIdEffAnalyzer = cms.PSet(
     srcGoodMuons = cms.InputTag('patGoodMuons'),
     
     srcMuTauPairs = cms.InputTag('%s'),
+    svFitMassHypothesis = cms.string('psKine_MEt_logM_fit'),
+    tauChargeMode = cms.string('%s'),
 
     srcVertices = cms.InputTag('offlinePrimaryVertices'),
 
@@ -208,8 +219,8 @@ process.tauIdEffAnalyzer = cms.PSet(
     srcLumiProducer = cms.InputTag('lumiProducer')
 )
 """ % (inputFileNames_string, outputFileName_full,
-       process_matched, processType, tauIds_string, binning_string,
-       sysUncertainty, srcMuTauPairs, weights_string, allEvents_DBS, xSection, intLumiData)
+       process_matched, processType, passed_region, failed_region, tauIds_string, binning_string,
+       sysUncertainty, srcMuTauPairs, tauChargeMode, weights_string, allEvents_DBS, xSection, intLumiData)
 
         outputFileNames.append(outputFileName_full)
 

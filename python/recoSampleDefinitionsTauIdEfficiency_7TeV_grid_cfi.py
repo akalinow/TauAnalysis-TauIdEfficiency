@@ -110,7 +110,7 @@ MERGE_SAMPLES = {
     },
     'Ztautau' : {
         'samples' : [
-            'Ztautau_pythia',
+            'Ztautau_pythia'
         ],
         'type' : plotter.process_Ztautau.config_dqmHistPlotter.type.value()
     },
@@ -161,9 +161,9 @@ for sample in RECO_SAMPLES.keys():
 
 recoSampleDefinitionsTauIdEfficiency_7TeV = {
     'SAMPLES_TO_ANALYZE' : SAMPLES_TO_ANALYZE,
-    'SAMPLE_DEFAULTS' : ZtoMuTau.SAMPLE_DEFAULTS,
-    'TARGET_LUMI' : TARGET_LUMI,
-    'RECO_SAMPLES' : RECO_SAMPLES,
-    'MERGE_SAMPLES' : MERGE_SAMPLES,
-    'ALL_SAMPLES' : ALL_SAMPLES
+    'SAMPLE_DEFAULTS'    : ZtoMuTau.SAMPLE_DEFAULTS,
+    'TARGET_LUMI'        : TARGET_LUMI,
+    'RECO_SAMPLES'       : RECO_SAMPLES,
+    'MERGE_SAMPLES'      : MERGE_SAMPLES,
+    'ALL_SAMPLES'        : ALL_SAMPLES
 }

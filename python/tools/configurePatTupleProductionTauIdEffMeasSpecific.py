@@ -229,7 +229,7 @@ def configurePatTupleProductionTauIdEffMeasSpecific(process, patSequenceBuilder 
                                           [ "PFTau", "HPS" ], patTupleConfig["pfTauCollectionHPS"],
                                           'patPFMETs',
                                           isMC = isMC, isEmbedded = isEmbedded,
-                                          applyZrecoilCorrection = applyZrecoilCorrection, runSVfit = False)
+                                          applyZrecoilCorrection = applyZrecoilCorrection, runSVfit = runSVfit)
     process.producePatTupleTauIdEffMeasSpecific += retVal_pfTauHPS["sequence"]
     retVal_pfTauHPSpTaNC = \
         buildSequenceTauIdEffMeasSpecific(process,
@@ -237,7 +237,7 @@ def configurePatTupleProductionTauIdEffMeasSpecific(process, patSequenceBuilder 
                                           [ "PFTau", "HPSpTaNC" ], patTupleConfig["pfTauCollectionHPSpTaNC"],
                                           'patPFMETs',
                                           isMC = isMC, isEmbedded = isEmbedded,
-                                          applyZrecoilCorrection = applyZrecoilCorrection, runSVfit = False)
+                                          applyZrecoilCorrection = applyZrecoilCorrection, runSVfit = runSVfit)
     process.producePatTupleTauIdEffMeasSpecific += retVal_pfTauHPSpTaNC["sequence"]
 
     retVal = {}

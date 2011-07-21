@@ -8,9 +8,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.3 $
+ * \version $Revision: 1.4 $
  *
- * $Id: TauIdEffEventSelector.h,v 1.3 2011/07/02 14:55:18 veelken Exp $
+ * $Id: TauIdEffEventSelector.h,v 1.4 2011/07/05 17:07:22 veelken Exp $
  *
  */
 
@@ -45,6 +45,10 @@ class TauIdEffEventSelector : public EventSelector
   /// (e.g. 'decayModeFinding' && 'byLooseCombinedIsolationDeltaBetaCorr')
   typedef std::vector<std::string> vstring;
   vstring tauIdDiscriminators_;
+
+  /// flag indicating whether to take charge of tau-jet candidate 
+  /// from "leading track" or from all "signal" charged hadrons
+  int tauChargeMode_;
 
   /// cuts applied in specified region
   double muonPtMin_;
