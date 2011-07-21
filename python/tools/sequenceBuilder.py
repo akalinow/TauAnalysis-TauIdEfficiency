@@ -74,29 +74,27 @@ def buildTauSequence(
     # configure matching of basic pat::Tau collection
     # to trigger primitives;
     # produce new collection of pat::Taus with trigger primitives embedded
-    patTauTriggerMatch = triggerMatcherProtoType.clone(
-        src = cms.InputTag(patTauProducerName),
-        filterLabels = cms.vstring(
-            'hltSingleJet30',
-            'hltSingleJet60Regional',
-            'hltSingleJet80Regional',
-            'hltSingleJet110Regional',
-            'hltSingleJet150Regional'
-        ),
-        pathNames    = cms.vstring(
-            'HLT_Jet30_v1',
-            'HLT_Jet60_v1',
-            'HLT_Jet80_v1',
-            'HLT_Jet110_v1',
-            'HLT_Jet150_v1'
+    jetTriggerPaths = [
+        'Jet30',
+        'Jet60',
+        'Jet80',
+        'Jet110',
+        'Jet150'
+    ]
+    patTauTriggerMatchNames = []
+    for jetTriggerPath in jetTriggerPaths:
+        patTauTriggerMatch = triggerMatcherProtoType.clone(
+            src = cms.InputTag(patTauProducerName),
+            ##matchedCuts = cms.string('path("HLT_%s_v1")' % jetTriggerPath)
+            matchedCuts = cms.string('type("TriggerJet")')
         )
-    )
-    patTauTriggerMatchName = collectionName[0]  + "TriggerMatched" + collectionName[1]
-    setattr(process, patTauTriggerMatchName, patTauTriggerMatch)
-    outputSequence += getattr(process, patTauTriggerMatchName)
+        patTauTriggerMatchName = collectionName[0] + "TriggerMatched" + collectionName[1] + jetTriggerPath
+        patTauTriggerMatchNames.append(patTauTriggerMatchName)
+        setattr(process, patTauTriggerMatchName, patTauTriggerMatch)
+        outputSequence += getattr(process, patTauTriggerMatchName)
 
     patTauTriggerEvent = process.patTriggerEvent.clone(
-        patTriggerMatches = cms.VInputTag(patTauTriggerMatchName)
+        patTriggerMatches = cms.VInputTag(patTauTriggerMatchNames)
     )
     patTauTriggerEventName = collectionName[0] + "TriggerEvent" + collectionName[1]
     setattr(process, patTauTriggerEventName, patTauTriggerEvent)
@@ -104,11 +102,32 @@ def buildTauSequence(
 
     patTauTriggerEmbedder = cms.EDProducer("PATTriggerMatchTauEmbedder",
         src     = cms.InputTag(patTauProducerName),
-        matches = cms.VInputTag(patTauTriggerMatchName)
+        matches = cms.VInputTag(patTauTriggerMatchNames)
     )
     patTauTriggerEmbedderName = collectionName[0] + "TriggerEmbedder" + collectionName[1]
     setattr(process, patTauTriggerEmbedderName, patTauTriggerEmbedder)
     outputSequence += getattr(process, patTauTriggerEmbedderName)
+
+    ## CV: only for testing !!!
+    patTauDijetTagAndProbeDEBUG = cms.EDProducer("TauIdTagAndProbeProducer",
+        source = cms.InputTag(patTauTriggerEmbedderName),
+        triggerPaths = cms.PSet(
+            HLT_Jet30 = cms.vstring(collectionName[0] + "TriggerMatched" + collectionName[1] + 'Jet30'),
+              #'HLT_Jet30_v1',  'HLT_Jet30_v2',  'HLT_Jet30_v3',  'HLT_Jet30_v4',  'HLT_Jet30_v5',  'HLT_Jet30_v6'),
+            HLT_Jet60  = cms.vstring('HLT_Jet60',
+              'HLT_Jet60_v1',  'HLT_Jet60_v2',  'HLT_Jet60_v3',  'HLT_Jet60_v4',  'HLT_Jet60_v5',  'HLT_Jet60_v6'),
+            HLT_Jet80  = cms.vstring(
+              'HLT_Jet80_v1',  'HLT_Jet80_v2',  'HLT_Jet80_v3',  'HLT_Jet80_v4',  'HLT_Jet80_v5',  'HLT_Jet80_v6'),
+            HLT_Jet110 = cms.vstring(#'HLT_Jet110'),
+              'HLT_Jet110_v1', 'HLT_Jet110_v2', 'HLT_Jet110_v3', 'HLT_Jet110_v4', 'HLT_Jet110_v5', 'HLT_Jet110_v6'),
+            HLT_Jet150 = cms.vstring(#'HLT_Jet150'),
+              'HLT_Jet150_v1', 'HLT_Jet150_v2', 'HLT_Jet150_v3', 'HLT_Jet150_v4', 'HLT_Jet150_v5', 'HLT_Jet150_v6')
+       )
+    )
+    patTauDijetTagAndProbeDEBUGName = collectionName[0] + "DijetTagAndProbeDEBUG" + collectionName[1]
+    setattr(process, patTauDijetTagAndProbeDEBUGName, patTauDijetTagAndProbeDEBUG)
+    outputSequence += getattr(process, patTauDijetTagAndProbeDEBUGName)
+    ## CV: only for testing !!!
 
     # configure PATTauCleaner module
     # for removal of tau-jet candidates "overlapping" with electrons or muons
@@ -221,7 +240,18 @@ def buildQCDdiJetTauSequence(
     #  o indicate whether tau-jet candidate is tag/probe
     patTauDijetTagAndProbe = cms.EDProducer("TauIdTagAndProbeProducer",
         source = cms.InputTag(retVal_tau["collection"]),
-        triggerPaths = cms.vstring('HLT_Jet15U', 'HLT_Jet30U', 'HLT_Jet50U', 'HLT_Jet70U', 'HLT_Jet100U')
+        triggerPaths = cms.PSet(
+            HLT_Jet30 = cms.vstring(collectionName[0] + "TriggerMatched" + collectionName[1] + 'Jet30'),
+              #'HLT_Jet30_v1',  'HLT_Jet30_v2',  'HLT_Jet30_v3',  'HLT_Jet30_v4',  'HLT_Jet30_v5',  'HLT_Jet30_v6'),
+            HLT_Jet60  = cms.vstring('HLT_Jet60',
+              'HLT_Jet60_v1',  'HLT_Jet60_v2',  'HLT_Jet60_v3',  'HLT_Jet60_v4',  'HLT_Jet60_v5',  'HLT_Jet60_v6'),
+            HLT_Jet80  = cms.vstring(
+              'HLT_Jet80_v1',  'HLT_Jet80_v2',  'HLT_Jet80_v3',  'HLT_Jet80_v4',  'HLT_Jet80_v5',  'HLT_Jet80_v6'),
+            HLT_Jet110 = cms.vstring(#'HLT_Jet110'),
+              'HLT_Jet110_v1', 'HLT_Jet110_v2', 'HLT_Jet110_v3', 'HLT_Jet110_v4', 'HLT_Jet110_v5', 'HLT_Jet110_v6'),
+            HLT_Jet150 = cms.vstring(#'HLT_Jet150'),
+              'HLT_Jet150_v1', 'HLT_Jet150_v2', 'HLT_Jet150_v3', 'HLT_Jet150_v4', 'HLT_Jet150_v5', 'HLT_Jet150_v6')
+       )
     )
     patTauDijetTagAndProbeName = collectionName[0] + "DijetTagAndProbe" + collectionName[1]
     setattr(process, patTauDijetTagAndProbeName, patTauDijetTagAndProbe)
