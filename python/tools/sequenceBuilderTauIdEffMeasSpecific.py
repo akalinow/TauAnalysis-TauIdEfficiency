@@ -53,6 +53,11 @@ def buildSequenceTauIdEffMeasSpecific(process,
         "sysTauJetEnDown" : cms.InputTag(patTausJECshiftDownModuleName)
     }
 
+    # CV: shift Tau-jet energy by 3 standard-deviations,
+    #     so that template morphing remains an interpolation and no extrapolation is needed
+    setattr(patTausJECshiftUpModule,   "varyByNsigmas", cms.double(3.0))
+    setattr(patTausJECshiftDownModule, "varyByNsigmas", cms.double(3.0))
+
     #--------------------------------------------------------------------------------
     # define loose Tau-jet candidate selection
     #--------------------------------------------------------------------------------
@@ -156,6 +161,10 @@ def buildSequenceTauIdEffMeasSpecific(process,
     #--------------------------------------------------------------------------------
 
     process.load("TauAnalysis.RecoTools.patJetSystematics_cff")
+    # CV: shift jet energy by 3 standard-deviations,
+    #     so that template morphing remains an interpolation and no extrapolation is needed
+    setattr(process.patJetsJECshiftUp,   "varyByNsigmas", cms.double(3.0))
+    setattr(process.patJetsJECshiftDown, "varyByNsigmas", cms.double(3.0))
     sequence += process.prodSmearedJets 
 
     #--------------------------------------------------------------------------------

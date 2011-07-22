@@ -21,14 +21,6 @@ process.fitTauIdEff = cms.PSet(
     runClosureTest = cms.bool(False),
     #runClosureTest = cms.bool(True),
 
-    #takeQCDfromData = cms.bool(False),
-    takeQCDfromData = cms.bool(True),
-    
-    runSysUncertainties = cms.bool(False),
-    #runSysUncertainties = cms.bool(True),
-
-    numPseudoExperiments = cms.uint32(10000),
-
     regions = cms.vstring(
         'A1',  # needed to access QCD template obtained from Data
         'B1',  # needed to access QCD template obtained from Data
@@ -36,12 +28,22 @@ process.fitTauIdEff = cms.PSet(
         'B1f',
         'C1',
         'C1p',
-        'C1f'
+        'C1f',
+        'D1',  # needed to measure tau charge misidentification rate
+        'D1p',
+        'D1f'
     ),
 
-    # option for measurement of tau charge misidentification rate
+    # regions (in Data) from which templates for QCD background are taken
+    regionTakeQCDtemplateFromData_passed = cms.string('B1p'),
+    regionTakeQCDtemplateFromData_failed = cms.string('B1f'),
+    #takeQCDfromData = cms.bool(False),
+    takeQCDfromData = cms.bool(True),
+
+    # define "passed" and "failed" regions
     passed_region = cms.string('C1p'),
-    failed_region = cms.string('D1p'),
+    failed_region = cms.string('C1f'), # use for tau id. efficiency measurement
+    #failed_region = cms.string('D1p'), # use for measurement of tau charge misidentification efficiency
     
     tauIds = cms.vstring(
         'tauDiscrHPSloose', # "new" HPS implemented in HPS+TaNC combined algorithm
@@ -58,11 +60,23 @@ process.fitTauIdEff = cms.PSet(
     fitVariables = cms.vstring(
         'diTauVisMass',
         #'diTauVisMassFromJet' # CV: diTauVisMass always computed from PFJet momenta if using PAT-tuple workflow
+        #diTauSVfitMass
     ),
 
-    sysUncertainties = cms.vstring(
-        #"SysTauJetEn", # needed for diTauVisMass/diTauVisMassFromJet
-        #"SysJetEnUp"   # needed for diTauMt
+    allowTemplateMorphing = cms.bool(True),
+    morphSysUncertainty = cms.string(
+        "sysTauJetEn"
+    ),
+    
+    loadSysUncertainties = cms.vstring(
+        "sysTauJetEn"
+    ),
+
+    runPseudoExperiments = cms.bool(False),
+    #runPseudoExperiments = cms.bool(True),
+    numPseudoExperiments = cms.uint32(10000),
+    varySysUncertainties = cms.vstring(
+        "sysTauJetEn"
     ),
 
     #makeControlPlots = cms.bool(True)

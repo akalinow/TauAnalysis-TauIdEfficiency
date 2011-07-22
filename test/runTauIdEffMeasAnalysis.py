@@ -8,15 +8,15 @@ import os
 
 channel = 'ZtoMuTau_tauIdEff'
 #jobId = getJobId(channel)
-jobId = '2011Jul06_mauroV4'
+jobId = '2011Jul06_mauroV5'
 
-inputFilePath = '/data2/veelken/CMSSW_4_2_x/PATtuples/TauIdEffMeas/2011Jul06_mauro/V4/user/v/veelken/CMSSW_4_2_x/PATtuples/TauIdEffMeas/'
-outputFilePath = '/data1/veelken/tmp/muonPtGt20/V4d/'
+inputFilePath = '/data2/veelken/CMSSW_4_2_x/PATtuples/TauIdEffMeas/2011Jul06_mauro/V5/user/v/veelken/CMSSW_4_2_x/PATtuples/TauIdEffMeas/'
+outputFilePath = '/data1/veelken/tmp/muonPtGt20/V5/'
 
 samplesToAnalyze = [
     # modify in case you want to submit jobs for some of the samples only...
-    'data_SingleMu_Run2011A_PromptReco_v4',
     'data_SingleMu_Run2011A_May10ReReco_v1',
+    'data_SingleMu_Run2011A_PromptReco_v4',
     'Ztautau_pythia',
     'Ztautau_embedded_part1',
     'Ztautau_embedded_part2',
@@ -29,7 +29,7 @@ samplesToAnalyze = [
 # define sample name and jobId of Ztautau sample
 # used to compute preselection efficiencies and purities in C1p and C1f regions
 sampleZtautau = 'Ztautau_pythia'
-jobId_noTauSel = '2011Jul06_mauroV4_noTauSel'
+jobId_noTauSel = jobId + '_noTauSel'
 
 fitVariables = [
     'diTauVisMass',
@@ -41,7 +41,7 @@ mode = 'tauIdEfficiency'
 
 sysUncertainties = [
     "sysTauJetEn",     # needed for diTauVisMass/diTauVisMassFromJet
-    "sysJetEnUp",      # needed for diTauMt
+    "sysJetEn",        # needed for diTauMt
     "sysAddPUsmearing" # additional MET smearing, not correlated with nay particles reconstructed in the event
 ]
 
@@ -276,9 +276,10 @@ for sampleToAnalyze in samplesToAnalyze:
 # produced by FWLiteTauIdEffAnalyzer macro
 #
 haddShellFileName_stage1 = os.path.join(outputFilePath, 'harvestTauIdEffHistograms_stage1_%s.csh' % jobId)
+haddInputFileNames_stage1 = outputFileNames_FWLiteTauIdEffAnalyzer
 haddOutputFileName_stage1 = os.path.join(outputFilePath, 'analyzeTauIdEffHistograms_all_%s.root' % jobId)
 retVal_hadd_stage1 = \
-  buildConfigFile_hadd(haddShellFileName_stage1, outputFileNames_FWLiteTauIdEffAnalyzer, haddOutputFileName_stage1)
+  buildConfigFile_hadd(haddShellFileName_stage1, haddInputFileNames_stage1, haddOutputFileName_stage1)
 haddLogFileName_stage1 = retVal_hadd_stage1['logFileName']
 #--------------------------------------------------------------------------------
 
@@ -309,7 +310,7 @@ for binVariable in binning.keys():
 # build config files for running FWLiteTauIdEffPreselNumbers macro
 #
 retVal_FWLiteTauIdEffPreselNumbers = \
-  buildConfigFile_FWLiteTauIdEffPreselNumbers(inputFilePath, sampleZtautau, jobId_noTauSel, tauIds, binning, outputFilePath)
+  buildConfigFile_FWLiteTauIdEffPreselNumbers(inputFilePath, sampleZtautau, jobId_noTauSel, tauIds, binning, outputFilePath, tauChargeMode)
 configFileName_FWLiteTauIdEffPreselNumbers = retVal_FWLiteTauIdEffPreselNumbers['configFileName']
 outputFileName_FWLiteTauIdEffPreselNumbers = retVal_FWLiteTauIdEffPreselNumbers['outputFileName']
 logFileName_FWLiteTauIdEffPreselNumbers = retVal_FWLiteTauIdEffPreselNumbers['logFileName']

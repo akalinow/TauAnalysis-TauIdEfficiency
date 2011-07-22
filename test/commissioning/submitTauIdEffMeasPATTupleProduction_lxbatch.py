@@ -17,6 +17,8 @@ jobId = '2011Jul06_mauro'
 
 version = "V5"
 
+lxbatch_queue = '1nw'
+
 pfCandidateCollection = "particleFlow" # pile-up removal disabled
 #pfCandidateCollection = "pfNoPileUp"   # pile-up removal enabled
 
@@ -118,6 +120,7 @@ for sampleToAnalyze in samplesToAnalyze:
                               inputFileMap = input_mapper,
                               outputFileMap = output_mapper,
                               outputDirectory = outputFilePath,
+                              queue = lxbatch_queue,
                               processName = 'lxbatch',
                               saveFinalEvents = False,
                               jobExtention = "_PATTuple")

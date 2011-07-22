@@ -50,6 +50,9 @@ def buildConfigFile_FWLiteTauIdEffAnalyzer(sampleToAnalyze, jobId, inputFilePath
     """Build cfg.py file to run FWLiteTauIdEffAnalyzer macro to run on PAT-tuples,
        apply event selections and fill histograms for A/B/C/D regions"""
 
+    print "<buildConfigFile_FWLiteTauIdEffAnalyzer>:"
+    print " processing sample %s" % sampleToAnalyze
+
     # CV: check that tauChargeMode parameter matches either of the modes 
     #     define in TauAnalysis/TauIdEfficiency/src/TauIdEffEventSelector.cc
     if not tauChargeMode == "tauLeadTrackCharge" or tauChargeMode == "tauSignalChargedHadronSum":
@@ -57,11 +60,6 @@ def buildConfigFile_FWLiteTauIdEffAnalyzer(sampleToAnalyze, jobId, inputFilePath
 
     inputFileNames = os.listdir(inputFilePath)
     #print(inputFileNames)
-
-    sysUncertainties_expanded = [ "CENTRAL_VALUE" ]
-    for sysUncertainty in sysUncertainties:
-        sysUncertainties_expanded.append(sysUncertainty + "Up")
-        sysUncertainties_expanded.append(sysUncertainty + "Down")
 
     # check if inputFile is PAT-tuple and
     # matches sampleToAnalyze, jobId
@@ -73,8 +71,9 @@ def buildConfigFile_FWLiteTauIdEffAnalyzer(sampleToAnalyze, jobId, inputFilePath
             inputFileNames_sample.append(os.path.join(inputFilePath, inputFileName))
 
     #print(sampleToAnalyze)
-    #print(inputFiles_sample)
-
+    #print(inputFileNames_sample)
+    print " found %i input files." % len(inputFileNames_sample)
+    
     if len(inputFileNames_sample) == 0:
         print("Sample %s has no input files --> skipping !!" % sampleToAnalyze)
         return
@@ -91,9 +90,19 @@ def buildConfigFile_FWLiteTauIdEffAnalyzer(sampleToAnalyze, jobId, inputFilePath
         print("No process associated to sample %s --> skipping !!" % sampleToAnalyze)
         return
 
-    print("building config file for sample %s..." % sampleToAnalyze)
+    print(" building config file...")
 
     processType = recoSampleDefinitions['RECO_SAMPLES'][sampleToAnalyze]['type']
+
+    sysUncertainties_expanded = [ "CENTRAL_VALUE" ]
+    if processType != 'Data':
+        for sysUncertainty in sysUncertainties:
+            if sysUncertainty != "sysAddPUsmearing":
+                sysUncertainties_expanded.append(sysUncertainty + "Up")
+                sysUncertainties_expanded.append(sysUncertainty + "Down")
+            else:
+                sysUncertainties_expanded.append(sysUncertainty)
+    print " sysUncertainties = %s" %  sysUncertainties_expanded     
 
     inputFileNames_string = make_inputFileNames_vstring(inputFileNames_sample)
 
@@ -360,9 +369,15 @@ process.%s = cms.PSet(
 
     return retVal
 
-def buildConfigFile_FWLiteTauIdEffPreselNumbers(inputFilePath, sampleZtautau, jobId, tauIds, binning, outputFilePath):
+def buildConfigFile_FWLiteTauIdEffPreselNumbers(inputFilePath, sampleZtautau, jobId, tauIds, binning, outputFilePath,
+                                                tauChargeMode):
 
     """Compute preselection efficiencies and purities in regions C1p, C1f"""
+
+    # CV: check that tauChargeMode parameter matches either of the modes 
+    #     define in TauAnalysis/TauIdEfficiency/src/TauIdEffEventSelector.cc
+    if not tauChargeMode == "tauLeadTrackCharge" or tauChargeMode == "tauSignalChargedHadronSum":
+        raise ValueError("Invalid configuration parameter 'tauChargeMode' = %s !!" % tauChargeMode)
 
     inputFileNames_Ztautau = []
     inputFileNames = os.listdir(inputFilePath)
@@ -424,13 +439,15 @@ process.tauIdEffPreselNumbers = cms.PSet(
     srcGoodMuons = cms.InputTag('patGoodMuons'),
     
     srcMuTauPairs = cms.InputTag('selectedMuPFTauHPSpairsDzForTauIdEffCumulative'),
+    tauChargeMode = cms.string('%s'),
+    
     srcGenParticles = cms.InputTag('genParticles'),
 
     srcVertices = cms.InputTag('offlinePrimaryVertices'),
 
     weights = cms.VInputTag('ntupleProducer:tauIdEffNtuple#addPileupInfo#vtxMultReweight')
 )
-""" % (inputFileNames_string, outputFileName_full, tauIds_string, binning_string)
+""" % (inputFileNames_string, outputFileName_full, tauIds_string, binning_string, tauChargeMode)
 
     configFileName = outputFileName.replace('.root', '_cfg.py')
     configFileName_full = os.path.join(outputFilePath, configFileName)    

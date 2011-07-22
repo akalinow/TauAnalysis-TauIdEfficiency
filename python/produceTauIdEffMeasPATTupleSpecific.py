@@ -160,9 +160,9 @@ def produceTauIdEffMeasPATTuple(process, isMC, isEmbedded, HLTprocessName, pfCan
                 'keep *_smearedMETpFTauHPSpTaNCsysTauJetEnDown_*_*',
                 'keep *_smearedMETpFTauHPSpTaNCsysAddPUsmearing_*_*',                                            
                 # CV: additional collections needed to run nSVfit algorithm                                                        
-                'keep recoTracks_generalTracks_*_*',                                             
-                'keep *_ak5PFJets_*_*',
-                'keep *_particleFlow_*_*'
+                #'keep recoTracks_generalTracks_*_*',                                             
+                #'keep *_ak5PFJets_*_*',
+                #'keep *_particleFlow_*_*'
             )               
         ),
         process.tauIdEffSampleEventSelection,

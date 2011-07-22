@@ -199,6 +199,10 @@ def configurePatTupleProductionTauIdEffMeasSpecific(process, patSequenceBuilder 
     #--------------------------------------------------------------------------------
 
     process.load("TauAnalysis.RecoTools.patJetSystematics_cff")
+    # CV: shift jet energy by 3 standard-deviations,
+    #     so that template morphing remains an interpolation and no extrapolation is needed
+    setattr(process.patJetsJECshiftUp,   "varyByNsigmas", cms.double(3.0))
+    setattr(process.patJetsJECshiftDown, "varyByNsigmas", cms.double(3.0))
     process.producePatTupleTauIdEffMeasSpecific += process.prodSmearedJets 
 
     #--------------------------------------------------------------------------------
