@@ -67,6 +67,7 @@ process.fitTauIdEff = cms.PSet(
     morphSysUncertainty = cms.string(
         "sysTauJetEn"
     ),
+    sysVariedByNsigma = cms.double(3.0),
     
     loadSysUncertainties = cms.vstring(
         "sysTauJetEn"

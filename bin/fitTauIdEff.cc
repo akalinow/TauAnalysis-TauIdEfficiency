@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.19 $
+ * \version $Revision: 1.20 $
  *
- * $Id: fitTauIdEff.cc,v 1.19 2011/07/22 15:20:24 veelken Exp $
+ * $Id: fitTauIdEff.cc,v 1.20 2011/07/22 17:24:56 veelken Exp $
  *
  */
 
@@ -114,7 +114,7 @@ void fitUsingRooFit(std::map<std::string, std::map<std::string, TH1*> >& distrib
 		    std::map<std::string, std::map<std::string, std::map<std::string, double> > >& fittedFractions, // key = (process, region, observable)
 		    const std::vector<std::string>& processes,
 		    const std::string& tauId, const std::string& fitVariable, 		    
-		    const std::string& morphSysUncertaintyUp, const std::string& morphSysUncertaintyDown, 
+		    const std::string& morphSysUncertaintyUp, const std::string& morphSysUncertaintyDown, double sysVariedByNsigma,
 		    double& effValue, double& effError, 
 		    std::map<std::string, std::map<std::string, double> >& normFactors_fitted, bool& hasFitConverged,
 		    int verbosity = 0)
@@ -280,7 +280,7 @@ void fitUsingRooFit(std::map<std::string, std::map<std::string, TH1*> >& distrib
   //					 pTauId_passed_failed["TTplusJets"]->getVal(), 1.0*pTauId_passed_failed["TTplusJets"]->getVal()));
   for ( std::vector<RooRealVar*>::iterator alpha = alphas.begin();
 	alpha != alphas.end(); ++alpha ) {
-    fitConstraints.Add(makeFitConstraint(*alpha, 0.5, 0.5));
+    fitConstraints.Add(makeFitConstraint(*alpha, 0.5, 0.5/sysVariedByNsigma));
   }
 
   RooLinkedList fitOptions;
@@ -441,6 +441,7 @@ int main(int argc, const char* argv[])
     cfgFitTauIdEff.getParameter<std::string>("regionTakeQCDtemplateFromData_failed");
   
   bool allowTemplateMorphing = cfgFitTauIdEff.getParameter<bool>("allowTemplateMorphing");
+  double sysVariedByNsigma = cfgFitTauIdEff.getParameter<double>("sysVariedByNsigma");
   std::string morphSysUncertaintyUp = "CENTRAL_VALUE";
   std::string morphSysUncertaintyDown = "CENTRAL_VALUE";
   if ( allowTemplateMorphing ) {
@@ -696,7 +697,7 @@ int main(int argc, const char* argv[])
       fitUsingRooFit(distributionsData, templatesAll, numEventsAll, fittedFractions,
 		     processes,
 		     *tauId, *fitVariable, 
-		     morphSysUncertaintyUp, morphSysUncertaintyDown,
+		     morphSysUncertaintyUp, morphSysUncertaintyDown, sysVariedByNsigma,
 		     effValue, effError, normFactors_fitted, hasFitConverged,	       
 		     1);
       effValues[*tauId][*fitVariable] = effValue;
@@ -812,7 +813,7 @@ int main(int argc, const char* argv[])
 		TH1* sysHistogram = templatesAll_fluctuated[*process][*region][key_sys];
 		assert(sysHistogram);
 		
-		sampleHistogram_sys(fluctHistogram, sysHistogram, 1.0, -3.0, +3.0, kCoherent);
+		sampleHistogram_sys(fluctHistogram, sysHistogram, 1.0/sysVariedByNsigma, -1.0, +1.0, kCoherent);
 	      }
 	    }
 	  }
@@ -833,7 +834,7 @@ int main(int argc, const char* argv[])
 	  fitUsingRooFit(distributionsData, templatesAll_fluctuated, numEventsAll_fluctuated, fittedFractions_fluctuated,
 			 processes,
 			 *tauId, *fitVariable, 
-			 morphSysUncertaintyUp, morphSysUncertaintyDown,
+			 morphSysUncertaintyUp, morphSysUncertaintyDown, sysVariedByNsigma,
 			 effValue, effError, normFactors_fitted, hasFitConverged,	       
 			 0);
 
