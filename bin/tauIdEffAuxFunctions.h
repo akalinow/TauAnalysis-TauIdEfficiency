@@ -14,6 +14,7 @@
 #include "RooFormulaVar.h"
 #include "RooGaussian.h"
 #include "RooHistPdf.h"
+#include "RooIntegralMorph.h"
 #include "RooProduct.h"
 #include "RooRealVar.h"
 #include "RooSimultaneous.h"
@@ -165,6 +166,32 @@ double getTemplateNorm_fitted(
 
   return retVal;
 }
+
+TH1* compFittedTemplateShape(const TH1* histogram, const RooAbsPdf* pdf)
+{
+  const RooIntegralMorph* pdf_morph = dynamic_cast<const RooIntegralMorph*>(pdf);
+  if ( pdf_morph ) {
+    std::string histogramFittedShapeName = std::string(histogram->GetName()).append("_fittedShape");
+    TH1* histogramFittedShape = (TH1*)histogram->Clone(histogramFittedShapeName.data());
+    TAxis* xAxis = histogram->GetXaxis();
+    RooRealVar x("x", "x", xAxis->GetXmin(), xAxis->GetXmax());
+    for ( int iBin = 1; iBin <= (histogramFittedShape->GetNbinsX() + 1); ++iBin ) {
+      double xMin = xAxis->GetBinLowEdge(iBin);
+      double xMax = xAxis->GetBinUpEdge(iBin);
+      TString binLabel = Form("bin%i", iBin);
+      x.setRange(binLabel.Data(), xMin, xMax);
+      RooAbsReal* pdfIntegral_bin = pdf->createIntegral(x, RooFit::NormSet(x), RooFit::Range(binLabel.Data()));
+      histogramFittedShape->SetBinContent(iBin, pdfIntegral_bin->getVal());
+      delete pdfIntegral_bin;
+    }
+    return histogramFittedShape;
+  } else throw cms::Exception("getNumber")  
+      << "PDF object passed as function argument is not of type RooIntegralMorph !!\n";
+}
+
+//
+//-------------------------------------------------------------------------------
+//
 
 template <typename T>
 void applyStyleOption(T* histogram, const std::string& histogramTitle,

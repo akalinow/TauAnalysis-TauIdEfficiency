@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.17 $
+ * \version $Revision: 1.18 $
  *
- * $Id: fitTauIdEff.cc,v 1.17 2011/07/18 12:41:17 veelken Exp $
+ * $Id: fitTauIdEff.cc,v 1.18 2011/07/21 16:37:13 veelken Exp $
  *
  */
 
@@ -34,6 +34,7 @@
 #include "RooFormulaVar.h"
 #include "RooGaussian.h"
 #include "RooHistPdf.h"
+#include "RooIntegralMorph.h"
 #include "RooProduct.h"
 #include "RooRealVar.h"
 #include "RooSimultaneous.h"
@@ -113,7 +114,8 @@ void fitUsingRooFit(std::map<std::string, std::map<std::string, TH1*> >& distrib
 		    std::map<std::string, std::map<std::string, std::map<std::string, double> > >& numEventsAll,    // key = (process/"sum", region, observable)
 		    std::map<std::string, std::map<std::string, std::map<std::string, double> > >& fittedFractions, // key = (process, region, observable)
 		    const std::vector<std::string>& processes,
-		    const std::string& tauId, const std::string& fitVariable, 
+		    const std::string& tauId, const std::string& fitVariable, 		    
+		    const std::string& sysUncertaintyUp, const std::string& sysUncertaintyDown, 
 		    double& effValue, double& effError, 
 		    std::map<std::string, std::map<std::string, double> >& normFactors_fitted, bool& hasFitConverged,
 		    int verbosity = 0)
@@ -140,7 +142,8 @@ void fitUsingRooFit(std::map<std::string, std::map<std::string, TH1*> >& distrib
   std::map<std::string, RooAbsReal*> normC1p;                     // key = process
   std::map<std::string, RooAbsReal*> normC1f;                     // key = process
 
-  std::map<std::string, std::map<std::string, RooHistPdf*> > pdf; // key = (process/"sum", region)
+  std::map<std::string, std::map<std::string, RooAbsPdf*> > pdf;  // key = (process/"sum", region)
+  std::vector<RooRealVar*> alphas;
 
   TObjArray pdfsC1p;
   TObjArray pdfsC1f;
@@ -179,18 +182,46 @@ void fitUsingRooFit(std::map<std::string, std::map<std::string, TH1*> >& distrib
     //std::cout << " normC1initial = " << normC1initial << std::endl;
     normC1[*process]       = new RooRealVar(nameNormC1.data(), nameNormC1.data(), normC1initial, 0., 2.*numEventsDataC1);
     
-    TH1* templateC1p   = templatesAll[*process]["C1p"][getKey(fitVariable, tauId, "passed")];
+    TH1* templateC1p = templatesAll[*process]["C1p"][getKey(fitVariable, tauId, "passed")];
     //std::cout << "C1p: numBins = " << templateC1p->GetNbinsX() << "," 
     //          << " integral = " << templateC1p->Integral() << std::endl;
-    RooHistPdf* pdfC1p = makeRooHistPdf(templateC1p, fitVarC1);
-    TH1* templateC1f   = templatesAll[*process]["C1f"][getKey(fitVariable, tauId, "failed")];
+    RooAbsPdf* pdfC1p = 0;
+    if ( sysUncertaintyUp != sysUncertaintyDown ) {
+      TH1* templateC1pUp = templatesAll[*process]["C1p"][getKey(fitVariable, tauId, "passed", sysUncertaintyUp)];
+      RooHistPdf* pdfC1pUp = makeRooHistPdf(templateC1pUp, fitVarC1);
+      TH1* templateC1pDown = templatesAll[*process]["C1p"][getKey(fitVariable, tauId, "passed", sysUncertaintyDown)];
+      RooHistPdf* pdfC1pDown = makeRooHistPdf(templateC1pDown, fitVarC1);
+      std::string alphaC1pName = std::string(templateC1p->GetName()).append("_alpha");
+      RooRealVar* alphaC1p = new RooRealVar(alphaC1pName.data(), alphaC1pName.data(), 0.5, 0., 1.);
+      alphas.push_back(alphaC1p);
+      std::string pdfC1pName = std::string(templateC1p->GetName()).append("_pdf");
+      pdfC1p = new RooIntegralMorph(pdfC1pName.data(), pdfC1pName.data(), *pdfC1pUp, *pdfC1pDown, *fitVarC1, *alphaC1p, true);
+    } else {
+      pdfC1p = makeRooHistPdf(templateC1p, fitVarC1);
+    }
+    TH1* templateC1f = templatesAll[*process]["C1f"][getKey(fitVariable, tauId, "failed")];
     //std::cout << "C1f: numBins = " << templateC1f->GetNbinsX() << "," 
     //	        << " integral = " << templateC1f->Integral() << std::endl;
-    RooHistPdf* pdfC1f = makeRooHistPdf(templateC1f, fitVarC1);    
+    RooAbsPdf* pdfC1f = 0;
+    if ( sysUncertaintyUp != sysUncertaintyDown ) {
+      TH1* templateC1fUp = templatesAll[*process]["C1f"][getKey(fitVariable, tauId, "failed", sysUncertaintyUp)];
+      RooHistPdf* pdfC1fUp = makeRooHistPdf(templateC1fUp, fitVarC1);
+      TH1* templateC1fDown = templatesAll[*process]["C1f"][getKey(fitVariable, tauId, "failed", sysUncertaintyDown)];
+      RooHistPdf* pdfC1fDown = makeRooHistPdf(templateC1fDown, fitVarC1);
+      std::string alphaC1fName = std::string(templateC1f->GetName()).append("_alpha");
+      RooRealVar* alphaC1f = new RooRealVar(alphaC1fName.data(), alphaC1fName.data(), 0.5, 0., 1.);
+      alphas.push_back(alphaC1f);
+      std::string pdfC1fName = std::string(templateC1f->GetName()).append("_pdf");
+      pdfC1f = new RooIntegralMorph(pdfC1fName.data(), pdfC1fName.data(), *pdfC1fUp, *pdfC1fDown, *fitVarC1, *alphaC1f, true);
+    } else {
+      pdfC1f = makeRooHistPdf(templateC1f, fitVarC1);
+    }
     
+    pdf[*process]["C1p"] = pdfC1p;
     pdfsC1p.Add(pdfC1p);
+    pdf[*process]["C1f"] = pdfC1f;
     pdfsC1f.Add(pdfC1f);
-    
+
     normC1p[*process] = makeRooFormulaVar(*process, "C1p", normC1[*process], fittedFractionC1p, pTauId_passed_failed[*process]);
     normC1f[*process] = makeRooFormulaVar(*process, "C1f", normC1[*process], fittedFractionC1f, pTauId_passed_failed[*process]);
     
@@ -242,11 +273,16 @@ void fitUsingRooFit(std::map<std::string, std::map<std::string, TH1*> >& distrib
   //					   pTauId_passed_failed["WplusJets"]->getVal(),    1.0*pTauId_passed_failed["WplusJets"]->getVal()));
   //fitConstraintsC1.Add(makeFitConstraint(pTauId_passed_failed["TTplusJets"], 
   //					   pTauId_passed_failed["TTplusJets"]->getVal(),   1.0*pTauId_passed_failed["TTplusJets"]->getVal()));
+  for ( std::vector<RooRealVar*>::iterator alpha = alphas.begin();
+	alpha != alphas.end(); ++alpha ) {
+    fitConstraintsC1.Add(makeFitConstraint(*alpha, 0.5, 0.5));
+  }
 
   RooLinkedList fitOptionsC1;
   fitOptionsC1.Add(new RooCmdArg(RooFit::Extended()));
   fitOptionsC1.Add(new RooCmdArg(RooFit::SumW2Error(kTRUE)));
-  //fitOptionsC1.Add(new RooCmdArg(RooFit::ExternalConstraints(RooArgSet(fitConstraintsC1))));
+  if ( fitConstraintsC1.GetEntries() > 0 ) 
+    fitOptionsC1.Add(new RooCmdArg(RooFit::ExternalConstraints(RooArgSet(fitConstraintsC1))));
   //fitOptionsC1.Add(new RooCmdArg(RooFit::PrintEvalErrors(10)));
   fitOptionsC1.Add(new RooCmdArg(RooFit::PrintEvalErrors(-1)));
   fitOptionsC1.Add(new RooCmdArg(RooFit::Save(true)));
@@ -278,6 +314,19 @@ void fitUsingRooFit(std::map<std::string, std::map<std::string, TH1*> >& distrib
     normFactors_fitted[*process]["C1f"] = getNormInRegion(normC1, pTauId_passed_failed, *process, "C1f");
   }
   hasFitConverged = (fitResult->status() == 0) ? true : false;
+
+//--- store fitted/morphed template shapes
+  for ( std::vector<std::string>::const_iterator process = processes.begin();
+	process != processes.end(); ++process ) {
+    TH1* templateC1p = templatesAll[*process]["C1p"][getKey(fitVariable, tauId, "passed")];
+    TH1* templateC1pFittedShape = ( sysUncertaintyUp != sysUncertaintyDown ) ?
+      compFittedTemplateShape(templateC1p, pdf[*process]["C1p"]) : templateC1p;
+    templatesAll[*process]["C1p"][getKey(fitVariable, tauId, "passed").append("_fittedShape")] = templateC1pFittedShape;
+    TH1* templateC1f = templatesAll[*process]["C1f"][getKey(fitVariable, tauId, "failed")];
+    TH1* templateC1fFittedShape = ( sysUncertaintyUp != sysUncertaintyDown ) ?
+      compFittedTemplateShape(templateC1f, pdf[*process]["C1f"]) : templateC1f;
+    templatesAll[*process]["C1f"][getKey(fitVariable, tauId, "passed").append("_fittedShape")] = templateC1fFittedShape;
+  }
 
   if ( verbosity ) {
     std::cout << tauId << ":";
@@ -384,10 +433,20 @@ int main(int argc, const char* argv[])
   vstring sysUncertaintyNames = cfgFitTauIdEff.getParameter<vstring>("sysUncertainties");
   for ( vstring::const_iterator sysUncertaintyName = sysUncertaintyNames.begin();
 	sysUncertaintyName != sysUncertaintyNames.end(); ++sysUncertaintyName ) {
-    sysUncertainties.push_back(sysUncertaintyEntry(std::string(*sysUncertaintyName).append("Up"),
-						   std::string(*sysUncertaintyName).append("Down"),
-						   std::string(*sysUncertaintyName).append("Diff")));
+    if ( (*sysUncertaintyName) == "sysAddPUsmearing" )
+      sysUncertainties.push_back(sysUncertaintyEntry("CENTRAL_VALUE",
+						     std::string(*sysUncertaintyName),
+						     std::string(*sysUncertaintyName).append("Diff")));
+    else
+      sysUncertainties.push_back(sysUncertaintyEntry(std::string(*sysUncertaintyName).append("Up"),
+						     std::string(*sysUncertaintyName).append("Down"),
+						     std::string(*sysUncertaintyName).append("Diff")));
   }
+  std::string sysUncertaintyUp   = ( cfgFitTauIdEff.exists("sysUncertaintyUp")   ) ?
+    cfgFitTauIdEff.getParameter<std::string>("sysUncertaintyUp")   : "CENTRAL_VALUE";
+  std::string sysUncertaintyDown = ( cfgFitTauIdEff.exists("sysUncertaintyDown") ) ?
+    cfgFitTauIdEff.getParameter<std::string>("sysUncertaintyDown") : "CENTRAL_VALUE";
+
   bool runClosureTest = cfgFitTauIdEff.getParameter<bool>("runClosureTest");
   bool takeQCDfromData = cfgFitTauIdEff.getParameter<bool>("takeQCDfromData");
   bool runSysUncertainties = cfgFitTauIdEff.getParameter<bool>("runSysUncertainties");
@@ -592,6 +651,7 @@ int main(int argc, const char* argv[])
       fitUsingRooFit(distributionsData, templatesAll, numEventsAll, fittedFractions,
 		     processes,
 		     *tauId, *fitVariable, 
+		     sysUncertaintyUp, sysUncertaintyDown, 
 		     effValue, effError, normFactors_fitted, hasFitConverged,	       
 		     1);
       effValues[*tauId][*fitVariable] = effValue;
@@ -625,16 +685,17 @@ int main(int argc, const char* argv[])
 	      std::string histogramTitle = "";
 	      std::string outputFileName = std::string("controlPlotsTauIdEff_").append(region->first).append("_").append(key->first);
 	      outputFileName.append("_fitted_").append(*fitVariable).append(".png");
+	      std::string key_mc = std::string(key->first).append("_fittedShape");
 	      drawHistograms(
-	        templatesZtautau[region->first][key->first], 
+	        templatesZtautau[region->first][key_mc], 
 		getTemplateNorm_fitted("Ztautau", region->first, key->first, *tauId, *fitVariable, normFactorsAll_fitted, fittedFractions),
-		templatesZmumu[region->first][key->first], 
+		templatesZmumu[region->first][key_mc], 
 		getTemplateNorm_fitted("Zmumu", region->first, key->first, *tauId, *fitVariable, normFactorsAll_fitted, fittedFractions),
-		templatesQCD[region->first][key->first], 
+		templatesQCD[region->first][key_mc], 
 		getTemplateNorm_fitted("QCD", region->first, key->first, *tauId, *fitVariable, normFactorsAll_fitted, fittedFractions),
-		templatesWplusJets[region->first][key->first], 
+		templatesWplusJets[region->first][key_mc], 
 		getTemplateNorm_fitted("WplusJets", region->first, key->first, *tauId, *fitVariable, normFactorsAll_fitted, fittedFractions),
-		templatesTTplusJets[region->first][key->first], 
+		templatesTTplusJets[region->first][key_mc], 
 		getTemplateNorm_fitted("TTplusJets", region->first, key->first, *tauId, *fitVariable, normFactorsAll_fitted, fittedFractions),
 		distributionsData[region->first][key->first],
 		histogramTitle, xAxisTitles[getObservable(key->first)],
@@ -721,6 +782,7 @@ int main(int argc, const char* argv[])
 	  fitUsingRooFit(distributionsData, templatesAll_fluctuated, numEventsAll_fluctuated, fittedFractions_fluctuated,
 			 processes,
 			 *tauId, *fitVariable, 
+			 sysUncertaintyUp, sysUncertaintyDown, 
 			 effValue, effError, normFactors_fitted, hasFitConverged,	       
 			 0);
 

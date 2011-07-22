@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.15 $
+ * \version $Revision: 1.16 $
  *
- * $Id: FWLiteTauIdEffAnalyzer.cc,v 1.15 2011/07/18 16:40:45 veelken Exp $
+ * $Id: FWLiteTauIdEffAnalyzer.cc,v 1.16 2011/07/21 16:37:13 veelken Exp $
  *
  */
 
@@ -269,6 +269,7 @@ int main(int argc, char* argv[])
   edm::ParameterSet cfgSelectorABCD;
   cfgSelectorABCD.addParameter<vstring>("tauIdDiscriminators", vstring());
   cfgSelectorABCD.addParameter<std::string>("region", "ABCD");
+  cfgSelectorABCD.addParameter<std::string>("tauChargeMode", tauChargeMode);
   TauIdEffEventSelector* selectorABCD = new TauIdEffEventSelector(cfgSelectorABCD);
 
 //--- book "dummy" histogram counting number of processed events

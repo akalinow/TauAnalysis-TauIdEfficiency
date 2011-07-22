@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.5 $
+ * \version $Revision: 1.6 $
  *
- * $Id: FWLiteTauIdEffPreselNumbers.cc,v 1.5 2011/07/10 17:41:39 veelken Exp $
+ * $Id: FWLiteTauIdEffPreselNumbers.cc,v 1.6 2011/07/17 15:59:51 veelken Exp $
  *
  */
 
@@ -142,7 +142,7 @@ struct regionEntryType
   regionEntryType(fwlite::TFileService& fs,
 		  const std::string& process, const std::string& region, 
 		  const vstring& tauIdDiscriminators, const std::string& tauIdName, const std::string& sysShift,
-                  const edm::ParameterSet& cfgBinning)
+                  const edm::ParameterSet& cfgBinning, const std::string& tauChargeMode)
     : process_(process),
       region_(region),
       tauIdDiscriminators_(tauIdDiscriminators),
@@ -156,6 +156,7 @@ struct regionEntryType
     edm::ParameterSet cfgSelector;
     cfgSelector.addParameter<vstring>("tauIdDiscriminators", tauIdDiscriminators_);
     cfgSelector.addParameter<std::string>("region", region_);
+    cfgSelector.addParameter<std::string>("tauChargeMode", tauChargeMode);
 
     selector_ = new TauIdEffEventSelector(cfgSelector);
 
@@ -377,6 +378,7 @@ int main(int argc, char* argv[])
   edm::ParameterSet cfgTauIdEffPreselNumbers = cfg.getParameter<edm::ParameterSet>("tauIdEffPreselNumbers");
 
   edm::InputTag srcMuTauPairs = cfgTauIdEffPreselNumbers.getParameter<edm::InputTag>("srcMuTauPairs");
+  std::string tauChargeMode = cfgTauIdEffPreselNumbers.getParameter<std::string>("tauChargeMode");
   edm::InputTag srcGenParticles = cfgTauIdEffPreselNumbers.getParameter<edm::InputTag>("srcGenParticles");
   edm::InputTag srcTrigger = cfgTauIdEffPreselNumbers.getParameter<edm::InputTag>("srcTrigger");
   vstring hltPaths = cfgTauIdEffPreselNumbers.getParameter<vstring>("hltPaths");
@@ -408,7 +410,8 @@ int main(int argc, char* argv[])
 	  region != regions.end(); ++region ) {
       vstring tauIdDiscriminators = cfgTauIdDiscriminator->getParameter<vstring>("discriminators");
       std::string tauIdName = cfgTauIdDiscriminator->getParameter<std::string>("name");
-      regionEntryType* regionEntry = new regionEntryType(fs, process, *region, tauIdDiscriminators, tauIdName, sysShift, cfgBinning);
+      regionEntryType* regionEntry = 
+	new regionEntryType(fs, process, *region, tauIdDiscriminators, tauIdName, sysShift, cfgBinning, tauChargeMode);
       regionEntries.push_back(regionEntry);
     }
   }
@@ -416,6 +419,7 @@ int main(int argc, char* argv[])
   edm::ParameterSet cfgSelectorABCD;
   cfgSelectorABCD.addParameter<vstring>("tauIdDiscriminators", vstring());
   cfgSelectorABCD.addParameter<std::string>("region", "ABCD");
+  cfgSelectorABCD.addParameter<std::string>("tauChargeMode", tauChargeMode);
   TauIdEffEventSelector* selectorABCD = new TauIdEffEventSelector(cfgSelectorABCD);
 
   int    numEvents_processed                     = 0; 
