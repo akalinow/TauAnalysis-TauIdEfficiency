@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.16 $
+ * \version $Revision: 1.17 $
  *
- * $Id: FWLiteTauIdEffAnalyzer.cc,v 1.16 2011/07/21 16:37:13 veelken Exp $
+ * $Id: FWLiteTauIdEffAnalyzer.cc,v 1.17 2011/07/22 15:20:24 veelken Exp $
  *
  */
 
@@ -88,7 +88,8 @@ struct regionEntryType
   regionEntryType(fwlite::TFileService& fs,
 		  const std::string& process, const std::string& region, 
 		  const vstring& tauIdDiscriminators, const std::string& tauIdName, const std::string& sysShift,
-		  const edm::ParameterSet& cfgBinning, const std::string& svFitMassHypothesis, const std::string& tauChargeMode)
+		  const edm::ParameterSet& cfgBinning, const std::string& svFitMassHypothesis, 
+		  const std::string& tauChargeMode, bool disableTauCandPreselCuts)
     : process_(process),
       region_(region),
       tauIdDiscriminators_(tauIdDiscriminators),
@@ -103,6 +104,7 @@ struct regionEntryType
     cfgSelector.addParameter<vstring>("tauIdDiscriminators", tauIdDiscriminators_);
     cfgSelector.addParameter<std::string>("region", region_);
     cfgSelector.addParameter<std::string>("tauChargeMode", tauChargeMode);
+    cfgSelector.addParameter<bool>("disableTauCandPreselCuts", disableTauCandPreselCuts);
 
     selector_ = new TauIdEffEventSelector(cfgSelector);
 
@@ -224,6 +226,7 @@ int main(int argc, char* argv[])
   edm::InputTag srcMuTauPairs = cfgTauIdEffAnalyzer.getParameter<edm::InputTag>("srcMuTauPairs");
   std::string svFitMassHypothesis = cfgTauIdEffAnalyzer.getParameter<std::string>("svFitMassHypothesis");
   std::string tauChargeMode = cfgTauIdEffAnalyzer.getParameter<std::string>("tauChargeMode");
+  bool disableTauCandPreselCuts = cfgTauIdEffAnalyzer.getParameter<bool>("disableTauCandPreselCuts");
   edm::InputTag srcTrigger = cfgTauIdEffAnalyzer.getParameter<edm::InputTag>("srcTrigger");
   vstring hltPaths = cfgTauIdEffAnalyzer.getParameter<vstring>("hltPaths");
   edm::InputTag srcGoodMuons = cfgTauIdEffAnalyzer.getParameter<edm::InputTag>("srcGoodMuons");
@@ -261,7 +264,7 @@ int main(int argc, char* argv[])
       std::string tauIdName = cfgTauIdDiscriminator->getParameter<std::string>("name");
       regionEntryType* regionEntry = 
 	new regionEntryType(fs, process, *region, tauIdDiscriminators, tauIdName, 
-			    sysShift, cfgBinning, svFitMassHypothesis, tauChargeMode);
+			    sysShift, cfgBinning, svFitMassHypothesis, tauChargeMode, disableTauCandPreselCuts);
       regionEntries.push_back(regionEntry);
     }
   }
@@ -270,6 +273,7 @@ int main(int argc, char* argv[])
   cfgSelectorABCD.addParameter<vstring>("tauIdDiscriminators", vstring());
   cfgSelectorABCD.addParameter<std::string>("region", "ABCD");
   cfgSelectorABCD.addParameter<std::string>("tauChargeMode", tauChargeMode);
+  cfgSelectorABCD.addParameter<bool>("disableTauCandPreselCuts", disableTauCandPreselCuts);
   TauIdEffEventSelector* selectorABCD = new TauIdEffEventSelector(cfgSelectorABCD);
 
 //--- book "dummy" histogram counting number of processed events

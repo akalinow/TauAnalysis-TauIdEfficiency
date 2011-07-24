@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.16 $
+ * \version $Revision: 1.17 $
  *
- * $Id: fitTauIdEff_wConstraints.cc,v 1.16 2011/07/13 16:54:31 veelken Exp $
+ * $Id: fitTauIdEff_wConstraints.cc,v 1.17 2011/07/21 16:37:13 veelken Exp $
  *
  */
 
@@ -1152,11 +1152,11 @@ int main(int argc, const char* argv[])
       histogramFitResult->SetBinContent(fitResultBin, effValues[*tauId][*fitVariable]);
       histogramFitResult->SetBinError(fitResultBin, effErrors[*tauId][*fitVariable]);
 
-      std::string fitNormC1Name  = std::string("fitNormC1_").append(*fitVariable).append("_").append(*tauId);
-      std::string fitNormC1Title = std::string("Fitted Number of Z #rightarrow #tau^{+} #tau^{-} Events in region C1");
-      TH1* histogramFitNormC1 = fitResultOutputDirectory.make<TH1F>(fitNormC1Name.data(), fitNormC1Title.data(), 1, -0.5, +0.5);
-      int fitNormC1Bin = histogramFitNormC1->FindBin(0.);
-      histogramFitNormC1->SetBinContent(fitNormC1Bin, normFactorsAll_fitted["Ztautau"]["C1"][*tauId][*fitVariable]);
+      std::string fitNormName  = std::string("fitNorm_").append(*fitVariable).append("_").append(*tauId);
+      std::string fitNormTitle = std::string("Fitted Number of Z #rightarrow #tau^{+} #tau^{-} Events in 'passed' + 'failed' regions");
+      TH1* histogramFitNorm = fitResultOutputDirectory.make<TH1F>(fitNormName.data(), fitNormTitle.data(), 1, -0.5, +0.5);
+      int fitNormBin = histogramFitNorm->FindBin(0.);
+      histogramFitNorm->SetBinContent(fitNormBin, normFactorsAll_fitted["Ztautau"]["C1"][*tauId][*fitVariable]);
 
       std::string expResultName  = std::string("expResult_").append(*fitVariable).append("_").append(*tauId);
       std::string expResultTitle = std::string("Expected ").append(*tauId).append(" Efficiency");
@@ -1164,11 +1164,11 @@ int main(int argc, const char* argv[])
       int expResultBin = histogramExpResult->FindBin(0.);
       histogramExpResult->SetBinContent(expResultBin, tauIdEffMCexp[*tauId][*fitVariable]);
 
-      std::string expNormC1Name  = std::string("expNormC1_").append(*fitVariable).append("_").append(*tauId);
-      std::string expNormC1Title = std::string("Expected Number of Z #rightarrow #tau^{+} #tau^{-} Events in region C1");
-      TH1* histogramExpNormC1 = fitResultOutputDirectory.make<TH1F>(expNormC1Name.data(), expNormC1Title.data(), 1, -0.5, +0.5);
-      int expNormC1Bin = histogramExpNormC1->FindBin(0.);
-      histogramExpNormC1->SetBinContent(expNormC1Bin, numEventsAll["Ztautau"]["C1"][getKey("diTauMt", *tauId)]);
+      std::string expNormName  = std::string("expNorm_").append(*fitVariable).append("_").append(*tauId);
+      std::string expNormTitle = std::string("Expected Number of Z #rightarrow #tau^{+} #tau^{-} Events in 'passed' + 'failed' regions");
+      TH1* histogramExpNorm = fitResultOutputDirectory.make<TH1F>(expNormName.data(), expNormTitle.data(), 1, -0.5, +0.5);
+      int expNormBin = histogramExpNorm->FindBin(0.);
+      histogramExpNorm->SetBinContent(expNormBin, numEventsAll["Ztautau"]["C1"][getKey("diTauMt", *tauId)]);
     }
   }
  

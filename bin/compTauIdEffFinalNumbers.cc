@@ -74,6 +74,9 @@ int main(int argc, const char* argv[])
   vstring tauIds = cfgCompTauIdEffNumbers.getParameter<vstring>("tauIds");
   vstring fitVariables = cfgCompTauIdEffNumbers.getParameter<vstring>("fitVariables");
 
+  std::string region_passed = cfgCompTauIdEffNumbers.getParameter<std::string>("passed_region");
+  std::string region_failed = cfgCompTauIdEffNumbers.getParameter<std::string>("failed_region");
+
   std::string directory = cfgCompTauIdEffNumbers.getParameter<std::string>("directory");
   
   fwlite::InputSource inputFiles(cfg); 
@@ -115,19 +118,30 @@ int main(int argc, const char* argv[])
 
 //--- compute efficiencies and uncertainties of lead. track finding, track Pt cut 
 //    and loose isolation requirement applied in preselection
-      TString effPreselectionName = Form("Ztautau_C1_%s_TauHadMatched", tauId->data());  
-
-      double numLeadTrackFindingEff = getNumber(inputDirectory_presel, effPreselectionName, 1, 9).first;
-      double denomLeadTrackFindingEff = getNumber(inputDirectory_presel, effPreselectionName, 0, 9).first;
+      TString effPreselectionName_passed = Form("Ztautau_%s_%s_TauHadMatched", region_passed.data(), tauId->data());  
+      TString key_passed = Form("_%s_", region_passed.data());
+      TString key_failed = Form("_%s_", region_failed.data());
+      TString effPreselectionName_failed = TString(effPreselectionName_passed).ReplaceAll(key_passed, key_failed);
+      
+      double numLeadTrackFindingEff = 
+	getNumber(inputDirectory_presel, effPreselectionName_passed, 1, 9).first
+       + getNumber(inputDirectory_presel, effPreselectionName_failed, 1, 9).first;
+      double denomLeadTrackFindingEff = 
+        getNumber(inputDirectory_presel, effPreselectionName_passed, 0, 9).first
+       + getNumber(inputDirectory_presel, effPreselectionName_failed, 0, 9).first;
       double leadTrackFindingEff = numLeadTrackFindingEff/denomLeadTrackFindingEff;
       std::cout << " leadTrackFindingEff = " << leadTrackFindingEff  << " +/- " << leadTrackFindingEffErr << std::endl;
 
-      double numLeadTrackPtEff = getNumber(inputDirectory_presel, effPreselectionName, 2, 9).first;
+      double numLeadTrackPtEff = 
+	getNumber(inputDirectory_presel, effPreselectionName_passed, 2, 9).first
+       + getNumber(inputDirectory_presel, effPreselectionName_failed, 2, 9).first;
       double denomLeadTrackPtEff = numLeadTrackFindingEff;
       double leadTrackPtEff = numLeadTrackPtEff/denomLeadTrackPtEff;
       std::cout << " leadTrackPtEff = " << leadTrackPtEff << " +/- " << leadTrackPtEffErr << std::endl;
 
-      double numPFLooseIsoEff = getNumber(inputDirectory_presel, effPreselectionName, 3, 9).first;
+      double numPFLooseIsoEff = 
+	getNumber(inputDirectory_presel, effPreselectionName_passed, 3, 9).first;
+       + getNumber(inputDirectory_presel, effPreselectionName_failed, 3, 9).first;
       double denomPFLooseIsoEff = numLeadTrackPtEff;
       double pfLooseIsoEff = numPFLooseIsoEff/denomPFLooseIsoEff;
       std::cout << " pfLooseIsoEff = " << pfLooseIsoEff << " +/- " << pfLooseIsoEffErr << std::endl;
@@ -154,7 +168,7 @@ int main(int argc, const char* argv[])
 //    accounting for the fraction of tau-jets passing the TaNC/HPS discriminators,
 //    but failing the loose isolation requirement
 //
-      TString pfLooseIsoCorrFactorName = Form("Ztautau_C1p_%s_TauHadMatchedReversed", tauId->data());   
+      TString pfLooseIsoCorrFactorName = Form("Ztautau_%s_%s_TauHadMatchedReversed", region_passed.data(), tauId->data());   
       double numPFLooseIsoCorrFactor = getNumber(inputDirectory_presel, pfLooseIsoCorrFactorName, -5, 9).first;
       //std::cout << " numPFLooseIsoCorrFactor = " << numPFLooseIsoCorrFactor << std::endl;
       double denomPFLooseIsoCorrFactor = getNumber(inputDirectory_presel, pfLooseIsoCorrFactorName, -4, 9).first;
@@ -184,42 +198,46 @@ int main(int argc, const char* argv[])
 
 //--- compute "purity" correction factor to account for contribution of jet --> tau fakes
 //    to Z --> tau+ tau- signal yield
-      TString fitNormC1Name = Form("fitNormC1_%s_%s", fitVariable->data(), tauId->data());   
-      double fitNormC1 = getNumber(inputDirectory_fit, fitNormC1Name, 0).first;
-      double fitNormC1p = fitNormC1*fitResult;
-      double fitNormC1f = fitNormC1*(1. - fitResult);
+      TString fitNormName = Form("fitNorm_%s_%s", fitVariable->data(), tauId->data());   
+      double fitNorm = getNumber(inputDirectory_fit, fitNormName, 0).first;
+      double fitNorm_passed = fitNorm*fitResult;
+      double fitNorm_failed = fitNorm*(1. - fitResult);
 
-      TString expNormC1Name = Form("expNormC1_%s_%s", fitVariable->data(), tauId->data()); 
-      double expNormC1 = getNumber(inputDirectory_fit, expNormC1Name, 0).first;
-      double expNormC1p = expNormC1*mcExp;
-      double expNormC1f = expNormC1*(1. - mcExp);
+      TString expNormName = Form("expNorm_%s_%s", fitVariable->data(), tauId->data()); 
+      double expNorm = getNumber(inputDirectory_fit, expNormName, 0).first;
+      double expNorm_passed = expNorm*mcExp;
+      double expNorm_failed = expNorm*(1. - mcExp);
 
-      TString matchedTauHadC1pName = Form("Ztautau_C1p_%s_TauHadMatched", tauId->data());  
-      double matchedTauHadC1p = getNumber(inputDirectory_presel, matchedTauHadC1pName, 7, 9).first;
-      TString matchedFakeTauC1pName = Form("Ztautau_C1p_%s_FakeTauMatched", tauId->data());
-      double matchedFakeTauC1p = getNumber(inputDirectory_presel, matchedFakeTauC1pName, 7, 9).first;
-      double expPurityC1p = matchedTauHadC1p/(matchedTauHadC1p + matchedFakeTauC1p);
-      std::cout << " expPurityC1p = " << expPurityC1p << std::endl;
-      double expFakeC1p = expNormC1p*(1. - expPurityC1p);
+      TString matchedTauHadName_passed = Form("Ztautau_%s_%s_TauHadMatched", region_passed.data(), tauId->data());  
+      double matchedTauHad_passed = getNumber(inputDirectory_presel, matchedTauHadName_passed, 7, 9).first;
+      TString matchedFakeTauName_passed = Form("Ztautau_%s_%s_FakeTauMatched", region_passed.data(), tauId->data());
+      double matchedFakeTau_passed = getNumber(inputDirectory_presel, matchedFakeTauName_passed, 7, 9).first;
+      double expPurity_passed = matchedTauHad_passed/(matchedTauHad_passed + matchedFakeTau_passed);
+      std::cout << " expPurity_passed = " << expPurity_passed << std::endl;
+      double expFake_passed = expNorm_passed*(1. - expPurity_passed);
 
-      TString matchedTauHadC1fName = TString(matchedTauHadC1pName).ReplaceAll("_C1p_", "_C1f_");
-      double matchedTauHadC1f = getNumber(inputDirectory_presel, matchedTauHadC1fName, 5, 9).first;
-      TString matchedFakeTauC1fName = TString(matchedFakeTauC1pName).ReplaceAll("_C1p_", "_C1f_");
-      double matchedFakeTauC1f = getNumber(inputDirectory_presel, matchedFakeTauC1fName, 5, 9).first;
-      double expPurityC1f = matchedTauHadC1f/(matchedTauHadC1f + matchedFakeTauC1f);
-      std::cout << " expPurityC1f = " << expPurityC1f << std::endl;
-      double expFakeC1f = expNormC1f*(1. - expPurityC1f);
+      TString matchedTauHadName_failed = TString(matchedTauHadName_passed).ReplaceAll(key_passed, key_failed);
+      double matchedTauHad_failed = getNumber(inputDirectory_presel, matchedTauHadName_failed, 5, 9).first;
+      TString matchedFakeTauName_failed = TString(matchedFakeTauName_passed).ReplaceAll(key_passed, key_failed);
+      double matchedFakeTau_failed = getNumber(inputDirectory_presel, matchedFakeTauName_failed, 5, 9).first;
+      double expPurity_failed = matchedTauHad_failed/(matchedTauHad_failed + matchedFakeTau_failed);
+      std::cout << " expPurity_failed = " << expPurity_failed << std::endl;
+      double expFake_failed = expNorm_failed*(1. - expPurity_failed);
 
-      double numPurityCorrFactor = (fitNormC1p - expFakeC1p)/((fitNormC1p - expFakeC1p) + (fitNormC1f - expFakeC1f));
-      double denomPurityCorrFactor = fitNormC1p/fitNormC1;
+      double numPurityCorrFactor = 
+	(fitNorm_passed - expFake_passed)/((fitNorm_passed - expFake_passed) + (fitNorm_failed - expFake_failed));
+      double denomPurityCorrFactor = fitNorm_passed/fitNorm;
       double purityCorrFactor = numPurityCorrFactor/denomPurityCorrFactor;
       double purityCorrFactorErr = 
-	purityCorrFactor*((expFakeC1p + expFakeC1f)/((fitNormC1p - expFakeC1p) + (fitNormC1f - expFakeC1f)))*frRelErr;
+	purityCorrFactor
+       *((expFake_passed + expFake_failed)/((fitNorm_passed - expFake_passed) + (fitNorm_failed - expFake_failed)))
+       *frRelErr;
       std::cout << " purityCorrFactor = " << purityCorrFactor << " +/- " << purityCorrFactorErr 
 		<< " (" << purityCorrFactorErr/purityCorrFactor << "%)" << std::endl;
       
-      double numExpPurityCorrFactor = (expNormC1p- expFakeC1p)/((expNormC1p - expFakeC1p) + (expNormC1f - expFakeC1f));
-      double denomExpPurityCorrFactor = expNormC1p/expNormC1;
+      double numExpPurityCorrFactor = 
+	(expNorm_passed - expFake_passed)/((expNorm_passed - expFake_passed) + (expNorm_failed - expFake_failed));
+      double denomExpPurityCorrFactor = expNorm_passed/expNorm;
       double expPurityCorrFactor = numExpPurityCorrFactor/denomExpPurityCorrFactor;
       std::cout << " expPurityCorrFactor = " << expPurityCorrFactor << std::endl;
 
@@ -269,10 +287,15 @@ int main(int argc, const char* argv[])
 //         (in order to get "full" efficiencies, need to multiply the quoted efficiencies
 //          by the probability to reconstruct PFJet and to have Pt > 20 GeV on reconstruction level)
 //
-      TString totEffExpName_control = Form("Ztautau_C1_%s_TauHadMatchedReversed", tauId->data()); 
-      double numTotEffExp_control = getNumber(inputDirectory_presel, totEffExpName_control, -7, 9).first;
+      TString totEffExpName_control_passed = Form("Ztautau_%s_%s_TauHadMatchedReversed", region_passed.data(), tauId->data()); 
+      TString totEffExpName_control_failed = TString(totEffExpName_control_passed).ReplaceAll(key_passed, key_failed);
+      double numTotEffExp_control = 
+	getNumber(inputDirectory_presel, totEffExpName_control_passed, -7, 9).first
+       + getNumber(inputDirectory_presel, totEffExpName_control_failed, -7, 9).first;
       //std::cout << " numTotEffExp_control = " << numTotEffExp_control << std::endl;
-      double denomTotEffExp_control = getNumber(inputDirectory_presel, totEffExpName_control, 0, 9).first;
+      double denomTotEffExp_control = 
+	getNumber(inputDirectory_presel, totEffExpName_control_passed, 0, 9).first
+       + getNumber(inputDirectory_presel, totEffExpName_control_failed, 0, 9).first;
       //std::cout << " denomTotEffExp_control = " << denomTotEffExp_control << std::endl;
       double totEffExp_control = numTotEffExp_control/denomTotEffExp_control;
       std::cout << " MC exp. (2) = " << totEffExp_control << std::endl;

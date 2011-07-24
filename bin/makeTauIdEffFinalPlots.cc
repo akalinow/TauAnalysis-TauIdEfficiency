@@ -6,9 +6,7 @@
 
 #include "FWCore/Utilities/interface/Exception.h"
 
-#include "PhysicsTools/FWLite/interface/TFileService.h"
 #include "DataFormats/FWLite/interface/InputSource.h"
-#include "DataFormats/FWLite/interface/OutputFiles.h"
 
 #include "TauAnalysis/CandidateTools/interface/generalAuxFunctions.h"
 #include "TauAnalysis/TauIdEfficiency/bin/tauIdEffAuxFunctions.h"
@@ -92,7 +90,7 @@ int main(int argc, const char* argv[])
 
 //--- read python configuration parameters
   if ( !edm::readPSetsFrom(argv[1])->existsAs<edm::ParameterSet>("process") ) 
-    throw cms::Exception("compTauIdEffFinalNumbers") 
+    throw cms::Exception("makeTauIdEffFinalPlots") 
       << "No ParameterSet 'process' found in configuration file = " << argv[1] << " !!\n";
 
   edm::ParameterSet cfg = edm::readPSetsFrom(argv[1])->getParameter<edm::ParameterSet>("process");
