@@ -8,9 +8,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.4 $
+ * \version $Revision: 1.1 $
  *
- * $Id: TauFakeRateEventSelector.h,v 1.4 2011/07/05 17:07:22 veelken Exp $
+ * $Id: TauFakeRateEventSelector.h,v 1.1 2011/07/18 16:40:45 veelken Exp $
  *
  */
 
@@ -56,7 +56,17 @@ class TauFakeRateEventSelector : public EventSelector
   /// to enter fake-rate measurement
   /// (e.g. jetId, discriminators against electrons/muons)
   typedef StringCutObjectSelector<pat::Tau> StringCutTauSelector;
-  std::vector<StringCutTauSelector*> tauJetCandPreselCriteria_;
+  struct StringCutTauSelectorType
+  {
+    StringCutTauSelectorType(const std::string& cut)
+      : cut_(cut),
+	selector_(new StringCutTauSelector(cut))
+    {}
+    ~StringCutTauSelectorType() { delete selector_; }
+    std::string cut_;
+    StringCutTauSelector* selector_;
+  };
+  std::vector<StringCutTauSelectorType*> tauJetCandPreselCriteria_;
 
   /// Pt and eta cuts
   double jetPtMin_;

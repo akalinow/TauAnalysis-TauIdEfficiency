@@ -12,10 +12,10 @@ channel = 'ZtoMuTau_tauIdEff'
 configFile = 'produceTauIdEffMeasPATTuple_cfg.py'
 analysisFilePath = getAnalysisFilePath(channel)
 #jobId = getJobId(channel)
-jobId = '2011Jul06_mauro'
-#jobId = '2011Jul06v2'
+jobId = '2011Jul23'
+#jobId = '2011Jul06_mauro'
 
-version = "V5"
+version = "V6"
 
 lxbatch_queue = '1nw'
 
@@ -25,13 +25,13 @@ pfCandidateCollection = "particleFlow" # pile-up removal disabled
 samplesToAnalyze = [
     'data_SingleMu_Run2011A_May10ReReco_v1',
     'data_SingleMu_Run2011A_PromptReco_v4',
-    'Ztautau_pythia',
-    #'Ztautau_embedded_part1',
-    #'Ztautau_embedded_part2',
-    #'Zmumu_pythia',
+    'Ztautau_powheg',
+    'Ztautau_embedded_part1',
+    'Ztautau_embedded_part2',
+    'Zmumu_powheg',
     'PPmuXptGt20Mu15',
     'WplusJets_madgraph',
-    #'TTplusJets_madgraph'
+    'TTplusJets_madgraph'
 ]
 
 #outputFilePath = "/castor/cern.ch/user/m/mverzett/tagprobe/patTuples_v6"

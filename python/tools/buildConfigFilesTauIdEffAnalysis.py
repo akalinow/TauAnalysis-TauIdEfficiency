@@ -42,10 +42,18 @@ def make_binning_string(binning):
                 retVal += "            " + ")," + "\n"
         retVal += "        " + ")," + "\n"
     return retVal;
+
+def getStringRep_bool(flag):
+    retVal = None
+    if flag:
+        retVal = "True"
+    else:
+        retVal = "False"
+    return retVal
 #--------------------------------------------------------------------------------
 
 def buildConfigFile_FWLiteTauIdEffAnalyzer(sampleToAnalyze, jobId, inputFilePath, tauIds, binning, sysUncertainties, outputFilePath,
-                                           recoSampleDefinitions, passed_region, failed_region, tauChargeMode):
+                                           recoSampleDefinitions, passed_region, failed_region, tauChargeMode, disableTauCandPreselCuts):
 
     """Build cfg.py file to run FWLiteTauIdEffAnalyzer macro to run on PAT-tuples,
        apply event selections and fill histograms for A/B/C/D regions"""
@@ -58,6 +66,8 @@ def buildConfigFile_FWLiteTauIdEffAnalyzer(sampleToAnalyze, jobId, inputFilePath
     if not tauChargeMode == "tauLeadTrackCharge" or tauChargeMode == "tauSignalChargedHadronSum":
         raise ValueError("Invalid configuration parameter 'tauChargeMode' = %s !!" % tauChargeMode)
 
+    disableTauCandPreselCuts_string = getStringRep_bool(disableTauCandPreselCuts)
+    
     inputFileNames = os.listdir(inputFilePath)
     #print(inputFileNames)
 
@@ -212,6 +222,7 @@ process.tauIdEffAnalyzer = cms.PSet(
     srcMuTauPairs = cms.InputTag('%s'),
     svFitMassHypothesis = cms.string('psKine_MEt_logM_fit'),
     tauChargeMode = cms.string('%s'),
+    disableTauCandPreselCuts = cms.bool(%s),
 
     srcVertices = cms.InputTag('offlinePrimaryVertices'),
 
@@ -228,8 +239,8 @@ process.tauIdEffAnalyzer = cms.PSet(
     srcLumiProducer = cms.InputTag('lumiProducer')
 )
 """ % (inputFileNames_string, outputFileName_full,
-       process_matched, processType, passed_region, failed_region, tauIds_string, binning_string,
-       sysUncertainty, srcMuTauPairs, tauChargeMode, weights_string, allEvents_DBS, xSection, intLumiData)
+       process_matched, processType, passed_region, failed_region, tauIds_string, binning_string, sysUncertainty,
+       srcMuTauPairs, tauChargeMode, disableTauCandPreselCuts_string, weights_string, allEvents_DBS, xSection, intLumiData)
 
         outputFileNames.append(outputFileName_full)
 
@@ -255,7 +266,8 @@ process.tauIdEffAnalyzer = cms.PSet(
 
     return retVal
 
-def buildConfigFile_fitTauIdEff(fitMethod, jobId, directory, inputFileName, tauIds, fitVariables, outputFilePath, makeControlPlots):
+def buildConfigFile_fitTauIdEff(fitMethod, jobId, directory, inputFileName, tauIds, fitVariables, outputFilePath,
+                                regionQCDtemplateFromData_passed, regionQCDtemplateFromData_failed, makeControlPlots):
 
     """Fit Ztautau signal plus background templates to Mt and visMass distributions
        observed in regions A/B/C/D, in order to determined Ztautau signal contribution
@@ -268,11 +280,7 @@ def buildConfigFile_fitTauIdEff(fitMethod, jobId, directory, inputFileName, tauI
         outputFileName = '%s_%s.root' % (fitMethod, jobId)
     outputFileName_full = os.path.join(outputFilePath, outputFileName)
 
-    makeControlPlots_string = None
-    if makeControlPlots:
-        makeControlPlots_string = "True"
-    else:
-        makeControlPlots_string = "False"
+    makeControlPlots_string = getStringRep_bool(makeControlPlots)
 
     config = \
 """
@@ -334,6 +342,8 @@ process.%s = cms.PSet(
         #'D2p',
         #'D2f'
     ),
+    regionQCDtemplateFromData_passed = cms.string('%s'),
+    regionQCDtemplateFromData_failed = cms.string('%s'),
     
     tauIds = cms.vstring(
 %s
@@ -351,7 +361,8 @@ process.%s = cms.PSet(
     makeControlPlots = cms.bool(%s)
 )
 """ % (inputFileName, outputFileName_full,
-       fitMethod, directory, tauIds, fitVariables, makeControlPlots_string)
+       fitMethod, directory, regionQCDtemplateFromData_passed, regionQCDtemplateFromData_failed,
+       tauIds, fitVariables, makeControlPlots_string)
 
     configFileName = outputFileName.replace('.root', '_cfg.py')
     configFileName_full = os.path.join(outputFilePath, configFileName)    
@@ -370,7 +381,7 @@ process.%s = cms.PSet(
     return retVal
 
 def buildConfigFile_FWLiteTauIdEffPreselNumbers(inputFilePath, sampleZtautau, jobId, tauIds, binning, outputFilePath,
-                                                tauChargeMode):
+                                                tauChargeMode, disableTauCandPreselCuts):
 
     """Compute preselection efficiencies and purities in regions C1p, C1f"""
 
@@ -378,6 +389,8 @@ def buildConfigFile_FWLiteTauIdEffPreselNumbers(inputFilePath, sampleZtautau, jo
     #     define in TauAnalysis/TauIdEfficiency/src/TauIdEffEventSelector.cc
     if not tauChargeMode == "tauLeadTrackCharge" or tauChargeMode == "tauSignalChargedHadronSum":
         raise ValueError("Invalid configuration parameter 'tauChargeMode' = %s !!" % tauChargeMode)
+
+    disableTauCandPreselCuts_string = getStringRep_bool(disableTauCandPreselCuts)
 
     inputFileNames_Ztautau = []
     inputFileNames = os.listdir(inputFilePath)
@@ -418,7 +431,8 @@ process.tauIdEffPreselNumbers = cms.PSet(
     regions = cms.vstring(
         'C1',
         'C1p',
-        'C1f'
+        'C1f', # for tau id. efficiency measurement
+        'D1p'  # for measurement of tau charge misidentification rate
     ),
     
     tauIds = cms.VPSet(
@@ -440,6 +454,7 @@ process.tauIdEffPreselNumbers = cms.PSet(
     
     srcMuTauPairs = cms.InputTag('selectedMuPFTauHPSpairsDzForTauIdEffCumulative'),
     tauChargeMode = cms.string('%s'),
+    disableTauCandPreselCuts = cms.bool(%s),
     
     srcGenParticles = cms.InputTag('genParticles'),
 
@@ -447,7 +462,8 @@ process.tauIdEffPreselNumbers = cms.PSet(
 
     weights = cms.VInputTag('ntupleProducer:tauIdEffNtuple#addPileupInfo#vtxMultReweight')
 )
-""" % (inputFileNames_string, outputFileName_full, tauIds_string, binning_string, tauChargeMode)
+""" % (inputFileNames_string, outputFileName_full,
+       tauIds_string, binning_string, tauChargeMode, disableTauCandPreselCuts_string)
 
     configFileName = outputFileName.replace('.root', '_cfg.py')
     configFileName_full = os.path.join(outputFilePath, configFileName)    
@@ -465,7 +481,8 @@ process.tauIdEffPreselNumbers = cms.PSet(
 
     return retVal
 
-def buildConfigFile_compTauIdEffFinalNumbers(inputFileName, directory, jobId, tauIds, fitVariables, outputFilePath):
+def buildConfigFile_compTauIdEffFinalNumbers(inputFileName, directory, jobId, tauIds, fitVariables, outputFilePath,
+                                             passed_region, failed_region):
 
     """Compute final tau id. efficiency values and uncertainties"""
 
@@ -504,9 +521,12 @@ process.compTauIdEffFinalNumbers = cms.PSet(
     fitVariables = cms.vstring(
 %s
     )
+
+    passed_region = cms.string('%s'),
+    failed_region = cms.string('%s')
 )
 """ % (inputFileName, outputFileName_full,
-       directory, tauIds, fitVariables)
+       directory, tauIds, fitVariables, passed_region, failed_region)
 
     configFileName = outputFileName.replace('.root', '_cfg.py')
     configFileName_full = os.path.join(outputFilePath, configFileName)    
@@ -615,7 +635,7 @@ process.makeTauIdEffFinalPlots = cms.PSet(
 
     return retVal
 
-def buildConfigFile_hadd(shellFileName_full, inputFileNames, outputFileName_full):
+def buildConfigFile_hadd(haddCommand, shellFileName_full, inputFileNames, outputFileName_full):
 
     """Build shell script to run 'hadd' command in order to add all histograms
        in files specified by inputFileNames argument and write the sum to file outputFileName"""
@@ -623,7 +643,7 @@ def buildConfigFile_hadd(shellFileName_full, inputFileNames, outputFileName_full
     shellFile = open(shellFileName_full, "w")
     shellFile.write("#!/bin/csh -f\n")
     shellFile.write("\n")
-    haddCommandLine = "hadd %s" % outputFileName_full
+    haddCommandLine = "%s %s" % (haddCommand, outputFileName_full)
     for inputFileName in inputFileNames:
         haddCommandLine += " %s" % inputFileName
     shellFile.write("%s\n" % haddCommandLine)

@@ -12,9 +12,9 @@
  * 
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.2 $
+ * \version $Revision: 1.3 $
  *
- * $Id: PATPFTauSelectorForTauIdEff.h,v 1.2 2011/06/30 13:31:35 veelken Exp $
+ * $Id: PATPFTauSelectorForTauIdEff.h,v 1.3 2011/07/01 14:22:58 veelken Exp $
  *
  */
 
@@ -71,6 +71,11 @@ private:
   edm::InputTag srcBeamSpot_;
   edm::InputTag srcVertex_;
   edm::InputTag srcRhoFastJet_;
+
+  // special flag to save pat::Taus failing selection cuts,
+  // but passing tau id. discriminators
+  // (for measurement of tau charge misidentification rate)
+  StringCutObjectSelector<pat::Tau>* save_;
 
   // special flag to add userFloats to all pat::Taus
   // without applying any selection cuts

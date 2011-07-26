@@ -215,6 +215,7 @@ def configurePatTupleProductionTauIdEffMeasSpecific(process, patSequenceBuilder 
         buildSequenceTauIdEffMeasSpecific(process,
                                           'selectedPatMuonsForTauIdEffTrkIP',
                                           [ "PFTau", "FixedCone" ], patTupleConfig["pfTauCollectionFixedCone"],
+                                          None,
                                           'patPFMETs',
                                           isMC = isMC, isEmbedded = isEmbedded,
                                           applyZrecoilCorrection = applyZrecoilCorrection, runSVfit = False)
@@ -223,22 +224,43 @@ def configurePatTupleProductionTauIdEffMeasSpecific(process, patSequenceBuilder 
         buildSequenceTauIdEffMeasSpecific(process,
                                           'selectedPatMuonsForTauIdEffTrkIP',
                                           [ "PFTau", "ShrinkingCone" ], patTupleConfig["pfTauCollectionShrinkingCone"],
+                                          None,
                                           'patPFMETs',
                                           isMC = isMC, isEmbedded = isEmbedded,
                                           applyZrecoilCorrection = applyZrecoilCorrection, runSVfit = False)
     process.producePatTupleTauIdEffMeasSpecific += retVal_pfTauShrinkingCone["sequence"]
+    # CV: save HPS taus passing the following tau id. discriminators
+    #     for measurement of tau charge misidentification rate
+    savePFTauHPS = \
+        "pt > 15.0 & abs(eta) < 2.5 & " \
+       + "tauID('decayModeFinding') > 0.5 & " \
+       + "(tauID('byLooseIsolation') > 0.5 |" \
+       + " tauID('byLooseIsolationDeltaBetaCorr') > 0.5 |" \
+       + " tauID('byLooseCombinedIsolationDeltaBetaCorr') > 0.5) & " \
+       + "tauID('againstElectronLoose') > 0.5 & " \
+       + "tauID('againstMuonTight') > 0.5"                 
     retVal_pfTauHPS = \
         buildSequenceTauIdEffMeasSpecific(process,
                                           'selectedPatMuonsForTauIdEffTrkIP',
                                           [ "PFTau", "HPS" ], patTupleConfig["pfTauCollectionHPS"],
+                                          savePFTauHPS,
                                           'patPFMETs',
                                           isMC = isMC, isEmbedded = isEmbedded,
                                           applyZrecoilCorrection = applyZrecoilCorrection, runSVfit = runSVfit)
     process.producePatTupleTauIdEffMeasSpecific += retVal_pfTauHPS["sequence"]
+    # CV: save HPS+TaNC taus passing the following tau id. discriminators
+    #     for measurement of tau charge misidentification rate
+    savePFTauHPSpTaNC = \
+        "pt > 15.0 & abs(eta) < 2.5 & " \
+       + "tauID('leadingTrackFinding') > 0.5 & " \
+       + "tauID('byTaNCloose') > 0.5 & " \
+       + "tauID('againstElectronLoose') > 0.5 & " \
+       + "tauID('againstMuonTight') > 0.5"
     retVal_pfTauHPSpTaNC = \
         buildSequenceTauIdEffMeasSpecific(process,
                                           'selectedPatMuonsForTauIdEffTrkIP',
                                           [ "PFTau", "HPSpTaNC" ], patTupleConfig["pfTauCollectionHPSpTaNC"],
+                                          savePFTauHPSpTaNC,
                                           'patPFMETs',
                                           isMC = isMC, isEmbedded = isEmbedded,
                                           applyZrecoilCorrection = applyZrecoilCorrection, runSVfit = runSVfit)

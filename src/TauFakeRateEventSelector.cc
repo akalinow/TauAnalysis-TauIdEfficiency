@@ -18,7 +18,7 @@ TauFakeRateEventSelector::TauFakeRateEventSelector(const edm::ParameterSet& cfg)
 
 //--- define default preselection criteria for tau-jet candidates
   vstring tauJetCandPreselCriteria_string;
-  tauJetCandPreselCriteria_string.push_back("userFloat('jetIdLoose') > 0.5");
+  //tauJetCandPreselCriteria_string.push_back("userFloat('jetIdLoose') > 0.5");
   tauJetCandPreselCriteria_string.push_back("tauID('againstElectronLoose') > 0.5");
   tauJetCandPreselCriteria_string.push_back("tauID('againstMuonTight') > 0.5");
 
@@ -33,7 +33,7 @@ TauFakeRateEventSelector::TauFakeRateEventSelector(const edm::ParameterSet& cfg)
 //--- create CutString objects for all preselection criteria
   for ( vstring::const_iterator tauJetCandPreselCriterion = tauJetCandPreselCriteria_string.begin();
 	tauJetCandPreselCriterion != tauJetCandPreselCriteria_string.end(); ++tauJetCandPreselCriterion ) {
-    tauJetCandPreselCriteria_.push_back(new StringCutTauSelector(*tauJetCandPreselCriterion)); 
+    tauJetCandPreselCriteria_.push_back(new StringCutTauSelectorType(*tauJetCandPreselCriterion)); 
   }
   
 //--- define default Pt and eta cuts for tau-jet candidates
@@ -60,9 +60,9 @@ TauFakeRateEventSelector::TauFakeRateEventSelector(const edm::ParameterSet& cfg)
 }
 
 TauFakeRateEventSelector::~TauFakeRateEventSelector()
-{ 
-  for ( std::vector<StringCutTauSelector*>::iterator it = tauJetCandPreselCriteria_.begin();
-	it != tauJetCandPreselCriteria_.end(); ++it ) {
+{
+  for ( std::vector<StringCutTauSelectorType*>::iterator it = tauJetCandPreselCriteria_.begin();
+	it != tauJetCandPreselCriteria_.end(); ++ it ) {
     delete (*it);
   }
 }
@@ -77,12 +77,15 @@ bool TauFakeRateEventSelector::operator()(const pat::Tau& tauJetCand, pat::strbi
 //--- check if tau-jet candidates passes Pt and eta cuts
   if ( jetPt  > jetPtMin_  && jetPt  < jetPtMax_  &&
        jetEta > jetEtaMin_ && jetEta < jetEtaMax_ ) {
+    //std::cout << "passed Pt and eta cuts." << std::endl;
 
 //--- check if tau-jet candidates passes preselection criteria
     bool preselCriteria_passed = true;
-    for ( std::vector<StringCutTauSelector*>::iterator tauJetCandPreselCriterion = tauJetCandPreselCriteria_.begin();
+    for ( std::vector<StringCutTauSelectorType*>::iterator tauJetCandPreselCriterion = tauJetCandPreselCriteria_.begin();
 	  tauJetCandPreselCriterion != tauJetCandPreselCriteria_.end(); ++tauJetCandPreselCriterion ) {
-      if ( !(**tauJetCandPreselCriterion)(tauJetCand) ) {
+      //std::cout << "checking " << (*tauJetCandPreselCriterion)->cut_ << std::endl;
+      if ( !(*(*tauJetCandPreselCriterion)->selector_)(tauJetCand) ) {
+	//std::cout << " failed." << std::endl;
 	preselCriteria_passed = false;
 	break;
       }
@@ -93,11 +96,22 @@ bool TauFakeRateEventSelector::operator()(const pat::Tau& tauJetCand, pat::strbi
       for ( vstring::const_iterator tauIdDiscriminator = tauIdDiscriminators_.begin();
 	    tauIdDiscriminator != tauIdDiscriminators_.end(); ++tauIdDiscriminator ) {
 	double tauIdDiscriminator_value = tauJetCand.tauID(*tauIdDiscriminator);
-	//std::cout << " " << (*tauIdDiscriminator) << ": " << tauIdDiscriminator_value << std::endl;
+	//std::cout << "checking " << (*tauIdDiscriminator) << ": " << tauIdDiscriminator_value << std::endl;
 	if ( !(tauIdDiscriminator_value > tauIdDiscriminatorMin_  && 
-	       tauIdDiscriminator_value < tauIdDiscriminatorMax_) ) tauIdDiscriminators_passed = false;
+	       tauIdDiscriminator_value < tauIdDiscriminatorMax_) ) {
+	  tauIdDiscriminators_passed = false;
+	  break;
+	}
+	//std::cout << " passed." << std::endl;
       }
-      
+
+      //std::cout << "tauIdDiscriminatorCut = ";
+      //if      ( tauIdDiscriminatorCut_ == kNotApplied     ) std::cout << "not applied.";
+      //else if ( tauIdDiscriminatorCut_ == kSignalLike     ) std::cout << "signal-like.";
+      //else if ( tauIdDiscriminatorCut_ == kBackgroundLike ) std::cout << "background-like.";
+      //else std::cout << "undefined.";
+      //std::cout << std::endl;
+
       if ( tauIdDiscriminatorCut_ == kNotApplied                                     ||
 	  (tauIdDiscriminatorCut_ == kSignalLike     &&  tauIdDiscriminators_passed) ||
 	  (tauIdDiscriminatorCut_ == kBackgroundLike && !tauIdDiscriminators_passed) ) return true;

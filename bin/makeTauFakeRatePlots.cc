@@ -61,6 +61,11 @@ int main(int argc, const char* argv[])
 
   typedef std::vector<std::string> vstring;
   vstring processesToPlot       = cfgMakeTauFakeRatePlots.getParameter<vstring>("processesToPlot");
+  // !!! only for testing 
+  processesToPlot.clear();
+  processesToPlot.push_back("Data");
+  processesToPlot.push_back("ZplusJets");
+  //     for testing only !!!
   vstring tauIdsToPlot          = cfgMakeTauFakeRatePlots.getParameter<vstring>("tauIdsToPlot");
   vstring eventSelectionsToPlot = cfgMakeTauFakeRatePlots.getParameter<vstring>("eventSelectionsToPlot");
 
@@ -74,6 +79,15 @@ int main(int argc, const char* argv[])
   for ( vParameterSet::const_iterator cfgProcess = cfgProcesses.begin();
 	cfgProcess != cfgProcesses.end(); ++cfgProcess ) {
     std::string processName = cfgProcess->getParameter<std::string>("name");
+    bool isProcessToPlot = false;
+    for ( vstring::const_iterator processToPlot = processesToPlot.begin();
+	  processToPlot != processesToPlot.end(); ++processToPlot ) {
+      if ( processName == (*processToPlot) ) isProcessToPlot = true;
+    }
+    if ( !isProcessToPlot ) {
+      std::cout << "process = " << processName << " is not selected for plotting --> skipping !!" << std::endl;
+      continue;
+    }
     std::string type = cfgProcess->getParameter<std::string>("type");
     if ( type == "Data" || type == "embeddedData" ) processNameData = processName;
     else processNamesSim.push_back(processName);

@@ -245,6 +245,9 @@ executable_shell = '/bin/csh'
 
 bsubQueue = "1nd"
 
+skipFWLiteTauFakeRateAnalyzer = False
+#skipFWLiteTauFakeRateAnalyzer = True
+
 if len(samplesToAnalyze) == 0:
     samplesToAnalyze = recoSampleDefinitionsTauIdCommissioning_7TeV['SAMPLES_TO_RUN']
 if len(eventSelectionsToAnalyze) == 0:
@@ -333,28 +336,64 @@ for sampleToAnalyze in samplesToAnalyze:
 # build shell script for running 'hadd' in order to collect histograms
 # for single sample and single event selection into single .root file
 #
-haddShellFileName_stage1  = {}
-haddInputFileNames_stage1 = {}
-haddOutputFileName_stage1 = {}
-haddLogFileName_stage1    = {}
+bsubFileNames_harvesting    = {}
+bsubJobNames_harvesting     = {}
+bsubJobNames_harvesting_all = []
 for sampleToAnalyze in samplesToAnalyze:
-    haddInputFileNames_stage1[sampleToAnalyze] = {}
+    bsubFileNames_harvesting[sampleToAnalyze] = {}
+    bsubJobNames_harvesting[sampleToAnalyze]  = {}
     for eventSelectionToAnalyze in eventSelectionsToAnalyze:
-        haddInputFileNames_stage1[sampleToAnalyze][eventSelectionToAnalyze] = {}
+
+        plot_regex = r"[a-zA-Z0-9._]+"
+        skim_regex = r"dont match anything"
+        
+        def local_copy_mapper(sample):
+            return os.path.join(
+              outputFilePath,
+              'analyzeTauFakeRateHistograms_%s_%s_%s_harvested.root' % (eventSelectionToAnalyze, sampleToAnalyze, version))
+
+        inputFileInfos = []
         for inputFileName in fileNames_FWLiteTauFakeRateAnalyzer[sampleToAnalyze][eventSelectionToAnalyze]['outputFileNames']:
-            haddInputFileNames_stage1[sampleToAnalyze][eventSelectionToAnalyze].append(os.path.join(os.path.basename(inputFileName)))
-        haddShellFileName[sampleToAnalyze][eventSelectionToAnalyze] = \
-          os.path.join(configFilePath, 'harvestTauFakeRateHistograms_stage1_%s_%s_%s.csh' % \
-                       (sampleToAnalyze, eventSelectionToAnalyze, version))
-        haddOutputFileName[sampleToAnalyze][eventSelectionToAnalyze] = \
-          os.path.join(outputFilePath, 'analyzeTauFakeRateHistograms_%s_%s_%s.root' % \
-                       (sampleToAnalyze, eventSelectionToAnalyze, version))
-        retVal_hadd = \
-          buildConfigFile_hadd(executable_hadd,
-                               haddShellFileName[sampleToAnalyze][eventSelectionToAnalyze],
-                               haddInputFileNames[sampleToAnalyze][eventSelectionToAnalyze],
-                               haddOutputFileName[sampleToAnalyze][eventSelectionToAnalyze])
-        haddLogFileName[sampleToAnalyze][eventSelectionToAnalyze] = retVal_hadd['logFileName']
+            inputFileInfo = {
+                'path'        : os.path.join(harvestingFilePath, inputFileName),
+                'size'        : 1,           # dummy
+                'time'        : time.localtime(),
+                'file'        : inputFileName,
+                'permissions' : 'mrw-r--r--' # "ordinary" file access permissions
+            }
+            #print "inputFileInfo = %s" % inputFileInfo
+            inputFileInfos.append(inputFileInfo)
+
+        retVal_make_harvest_scripts = make_harvest_scripts(
+            plot_regex,
+            skim_regex,
+            sampleToAnalyze = sampleToAnalyze,
+            job_id = "_".join([eventSelectionToAnalyze, sampleToAnalyze, version]),
+            input_files_info = inputFileInfos,
+            harvester_command = executable_hadd,
+            castor_output_directory = harvestingFilePath,
+            script_directory = configFilePath,
+            merge_script_name = \
+              os.path.join(configFilePath, "_".join(['submit', sampleToAnalyze, eventSelectionToAnalyze, 'merge']) + '.sh'),
+            local_copy_mapper = local_copy_mapper,
+            chunk_size = 2.e+9, # 3 GB
+            verbosity = 0
+        )
+
+        bsubFileNames_harvesting[sampleToAnalyze][eventSelectionToAnalyze] = retVal_make_harvest_scripts
+
+        bsubJobName = "harvest%s%s" % (sampleToAnalyze, eventSelectionToAnalyze)
+        bsubJobNames_harvesting[sampleToAnalyze][eventSelectionToAnalyze] = bsubJobName
+
+        bsubJobNames_harvesting_all.append(bsubJobName)
+
+bjobListFileName_harvesting = os.path.join(configFilePath, "batchJobs_harvesting_all.lst")
+bjobListFile_harvesting = open(bjobListFileName_harvesting, "w")
+for sampleToAnalyze in samplesToAnalyze:
+    for eventSelectionToAnalyze in eventSelectionsToAnalyze:
+        for bsubJobName in bsubFileNames_harvesting[sampleToAnalyze][eventSelectionToAnalyze]['bsub_job_names']:        
+            bjobListFile_harvesting.write("%s\n" % bsubJobName)
+bjobListFile_harvesting.close()
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
@@ -362,15 +401,21 @@ for sampleToAnalyze in samplesToAnalyze:
 # build shell script for running 'hadd' in order to collect histograms
 # for all samples and event selections into single .root file
 #
-haddInputFileNames_stage2 = []
+haddInputFileNames = []
 for sampleToAnalyze in samplesToAnalyze:
     for eventSelectionToAnalyze in eventSelectionsToAnalyze:
-            haddInputFileNames_stage2.append(haddOutputFileName[sampleToAnalyze][eventSelectionToAnalyze])
-haddShellFileName_stage2 = os.path.join(configFilePath, 'harvestTauFakeRateHistograms_stage2_%s.csh' % version)
-haddOutputFileName_stage2 = os.path.join(outputFilePath, 'analyzeTauFakeRateHistograms_all_%s.root' % version)
+        for final_harvest_file in bsubFileNames_harvesting[sampleToAnalyze][eventSelectionToAnalyze]['final_harvest_files']:
+            # CV:
+            #    (1) file name of final harvesting output file is stored at index[1] in final_harvest_file-tuple
+            #       (cf. TauAnalysis/Configuration/python/tools/harvestingLXBatch.py)
+            #    (2) assume that .root files containing histograms for single sample and single event selection
+            #        are copied to local disk via rfcp prior to running 'hadd'
+            haddInputFileNames.append(os.path.join(outputFilePath, os.path.basename(final_harvest_file[1])))
+haddShellFileName = os.path.join(configFilePath, 'harvestTauFakeRateHistograms_%s.csh' % version)
+haddOutputFileName = os.path.join(outputFilePath, 'analyzeTauFakeRateHistograms_all_%s.root' % version)
 retVal_hadd = \
   buildConfigFile_hadd(executable_hadd, haddShellFileName, haddInputFileNames, haddOutputFileName)
-haddLogFileName_stage2 = retVal_hadd['logFileName']
+haddLogFileName = retVal_hadd['logFileName']
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
@@ -461,26 +506,30 @@ makeFile.write("\techo 'Finished running TauFakeRateAnalysis.'\n")
 makeFile.write("\n")
 for sampleToAnalyze in samplesToAnalyze:
     for eventSelectionToAnalyze in eventSelectionsToAnalyze:
-        fileNameEntry = fileNames_FWLiteTauFakeRateAnalyzer[sampleToAnalyze][eventSelectionToAnalyze]
-        if fileNameEntry is None or len(fileNameEntry['inputFileNames']) == 0:
-            continue
-        bsubJobEntry = bsubJobNames_FWLiteTauFakeRateAnalyzer[sampleToAnalyze][eventSelectionToAnalyze]
-        for i in range(len(fileNameEntry['inputFileNames'])):
-            makeFile.write("%s: %s\n" %
-              (fileNameEntry['outputFileNames'][i],
-               executable_FWLiteTauFakeRateAnalyzer))
-            makeFile.write("\t%s -q %s -J %s < %s\n" %
-              (executable_bsub,
-               bsubQueue,
-               bsubJobEntry[i],
-               fileNameEntry['bsubScriptFileNames'][i]))                            
+        if not skipFWLiteTauFakeRateAnalyzer:
+            fileNameEntry = fileNames_FWLiteTauFakeRateAnalyzer[sampleToAnalyze][eventSelectionToAnalyze]
+            if fileNameEntry is None or len(fileNameEntry['inputFileNames']) == 0:
+                continue
+            bsubJobEntry = bsubJobNames_FWLiteTauFakeRateAnalyzer[sampleToAnalyze][eventSelectionToAnalyze]
+            for i in range(len(fileNameEntry['inputFileNames'])):
+                makeFile.write("%s: %s\n" %
+                  (fileNameEntry['outputFileNames'][i],
+                   executable_FWLiteTauFakeRateAnalyzer))
+                makeFile.write("\t%s -q %s -J %s < %s\n" %
+                  (executable_bsub,
+                   bsubQueue,
+                   bsubJobEntry[i],
+                   fileNameEntry['bsubScriptFileNames'][i]))
+        else:
+            fileNames_FWLiteTauFakeRateAnalyzer[sampleToAnalyze][eventSelectionToAnalyze]['outputFileNames'] = []
         makeFile.write("\n")
         makeFile.write("%s: %s\n" %
           (bsubJobNames_harvesting[sampleToAnalyze][eventSelectionToAnalyze],
            make_MakeFile_vstring(fileNames_FWLiteTauFakeRateAnalyzer[sampleToAnalyze][eventSelectionToAnalyze]['outputFileNames'])))
-        makeFile.write("\t%s %s\n" %
-          (executable_waitForLXBatchJobs,
-           bjobListFileNames_FWLiteTauFakeRateAnalyzer[sampleToAnalyze][eventSelectionToAnalyze]))
+        if not skipFWLiteTauFakeRateAnalyzer:
+            makeFile.write("\t%s %s\n" %
+              (executable_waitForLXBatchJobs,
+               bjobListFileNames_FWLiteTauFakeRateAnalyzer[sampleToAnalyze][eventSelectionToAnalyze]))
         makeFile.write("\t%s %s\n" %
           (executable_shell,
            bsubFileNames_harvesting[sampleToAnalyze][eventSelectionToAnalyze]['harvest_script_name']))
@@ -515,13 +564,14 @@ makeFile.write(".PHONY: clean\n")
 makeFile.write("clean:\n")
 for sampleToAnalyze in samplesToAnalyze:
     for eventSelectionToAnalyze in eventSelectionsToAnalyze:
-        fileNameEntry = fileNames_FWLiteTauFakeRateAnalyzer[sampleToAnalyze][eventSelectionToAnalyze]
-        if fileNameEntry is None:
-            continue
-        for outputFileName in fileNameEntry['outputFileNames']:
-            makeFile.write("\t%s %s\n" %
-              (executable_rfrm,
-               os.path.join(harvestingFilePath, outputFileName)))
+        if not skipFWLiteTauFakeRateAnalyzer:
+            fileNameEntry = fileNames_FWLiteTauFakeRateAnalyzer[sampleToAnalyze][eventSelectionToAnalyze]
+            if fileNameEntry is None:
+                continue
+            for outputFileName in fileNameEntry['outputFileNames']:
+                makeFile.write("\t%s %s\n" %
+                  (executable_rfrm,
+                   os.path.join(harvestingFilePath, outputFileName)))
         for final_harvest_file in bsubFileNames_harvesting[sampleToAnalyze][eventSelectionToAnalyze]['final_harvest_files']:
             # CV: file name of final harvesting output file is stored at index[1] in final_harvest_file-tuple
             #    (cf. TauAnalysis/Configuration/python/tools/harvestingLXBatch.py)    

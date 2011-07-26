@@ -28,6 +28,7 @@ PATPFTauSelectorForTauIdEff::PATPFTauSelectorForTauIdEff(const edm::ParameterSet
   : trackQualityCuts_(0),
     muonSelection_(0),				
     pfIsolationExtractor_(0),
+    save_(0),
     verbosity_(0)
 {
   filter_ = cfg.getParameter<bool>("filter");  
@@ -60,7 +61,16 @@ PATPFTauSelectorForTauIdEff::PATPFTauSelectorForTauIdEff(const edm::ParameterSet
     srcRhoFastJet_ = cfg.getParameter<edm::InputTag>("srcRhoFastJet");
   }
 
-  produceAll_ =  ( cfg.exists("produceAll") ) ? cfg.exists("produceAll") : false;
+  if ( cfg.exists("save") ) {
+    std::cout << "<PATPFTauSelectorForTauIdEff::PATPFTauSelectorForTauIdEff>:" << std::endl;
+    std::cout << " src = " << src_.label() << std::endl;
+    std::string save_string = cfg.getParameter<std::string>("save");
+    std::cout << "--> saving pat::Taus passing: " << save_string << std::endl;
+    save_ = new StringCutObjectSelector<pat::Tau>(cfg.getParameter<std::string>("save"));
+  }
+
+  produceAll_ = ( cfg.exists("produceAll") ) ? 
+    cfg.exists("produceAll") : false;
 
   produces<PATTauCollection>();
 }
@@ -70,6 +80,7 @@ PATPFTauSelectorForTauIdEff::~PATPFTauSelectorForTauIdEff()
   delete muonSelection_;
   delete trackQualityCuts_;
   delete pfIsolationExtractor_;
+  delete save_;
 }
 
 bool PATPFTauSelectorForTauIdEff::filter(edm::Event& evt, const edm::EventSetup& es)
@@ -122,8 +133,11 @@ bool PATPFTauSelectorForTauIdEff::filter(edm::Event& evt, const edm::EventSetup&
     }
     reco::Candidate::LorentzVector p4PFJetCorrected(pfJetJEC*p4PFJetUncorrected);
     
+    bool isSaved = ( save_ ) ?
+      (*save_)(*pfTau_input) : false;
+    
 //--- check that (PF)tau-jet candidate passes Pt and eta selection
-    if ( !produceAll_ && !(p4PFJetCorrected.pt() > minJetPt_ && TMath::Abs(p4PFJetCorrected.eta()) < maxJetEta_) ) continue;
+    if ( !(produceAll_ || isSaved) && !(p4PFJetCorrected.pt() > minJetPt_ && TMath::Abs(p4PFJetCorrected.eta()) < maxJetEta_) ) continue;
 
 //--- select PFChargedHadrons passing track quality cuts
 //    applied in PFTau reconstruction
@@ -154,12 +168,12 @@ bool PATPFTauSelectorForTauIdEff::filter(edm::Event& evt, const edm::EventSetup&
 //--- require at least one PFChargedHadron passing quality cuts
 //   (corresponding to "leading track finding" applied in PFTau reconstruction,
 //    but without dR < 0.1 matching between leading track and jet-axis applied)
-    if ( !produceAll_ && !leadPFChargedHadron ) continue;
+    if ( !(produceAll_ || isSaved) && !leadPFChargedHadron ) continue;
 
 //--- require "leading" (highest Pt) PFChargedHadron to pass Pt cut
 //   (corresponding to "leading track Pt cut" applied in PFTau reconstruction,
 //    but without dR < 0.1 matching between leading track and jet-axis applied)
-    if ( !produceAll_ && !(leadPFChargedHadron->pt() > minLeadTrackPt_) ) continue;
+    if ( !(produceAll_ || isSaved) && !(leadPFChargedHadron->pt() > minLeadTrackPt_) ) continue;
 
 //--- require that (PF)Tau-jet candidate passes loose isolation criteria
     reco::VertexCollection theVertexCollection;
@@ -169,7 +183,7 @@ bool PATPFTauSelectorForTauIdEff::filter(edm::Event& evt, const edm::EventSetup&
       loosePFIsoPt = (*pfIsolationExtractor_)(*pfTau_input, leadPFChargedHadron->momentum(), 
 					      *pfIsoCandidates, &theVertexCollection, beamSpot.product(), rhoFastJet);
     if ( verbosity_ ) std::cout << " loosePFIsoPt = " << loosePFIsoPt << std::endl;
-    if ( !produceAll_ && loosePFIsoPt > maxPFIsoPt_ ) continue;
+    if ( !(produceAll_  || isSaved) && loosePFIsoPt > maxPFIsoPt_ ) continue;
 
 //--- require "leading" PFChargedHadron to pass cut on (anti-)PFElectron MVA output
 //   (corresponding to discriminatorAgainstElectrons(Loose) applied in PFTau reconstruction)
@@ -179,9 +193,9 @@ bool PATPFTauSelectorForTauIdEff::filter(edm::Event& evt, const edm::EventSetup&
       PFElectronMVA = leadPFChargedHadron->mva_e_pi();
     }
     bool isElectron = !(PFElectronMVA < maxLeadTrackPFElectronMVA_);
-    if ( !produceAll_ && isElectron ) continue;
+    if ( !(produceAll_ || isSaved) && isElectron ) continue;
     bool isECALcrack = (TMath::Abs(p4PFJetCorrected.eta()) > 1.442 && TMath::Abs(p4PFJetCorrected.eta()) < 1.560);
-    if ( !produceAll_ && applyECALcrackVeto_ && isECALcrack ) continue;
+    if ( !(produceAll_ || isSaved) && applyECALcrackVeto_ && isECALcrack ) continue;
 
 //--- require "leading" PFChargedHadron not to overlap with reconstructed muon
 //   (corresponding to discriminatorAgainstMuons applied in PFTau reconstruction;
@@ -213,7 +227,7 @@ bool PATPFTauSelectorForTauIdEff::filter(edm::Event& evt, const edm::EventSetup&
       }
       std::cout << " isMuon = " << isMuon << std::endl;
     }
-    if ( !produceAll_ && isMuon ) continue;
+    if ( !(produceAll_ || isSaved) && isMuon ) continue;
 
 //--- all cuts passed 
 //   --> create selected (PF)tau-jet candidate

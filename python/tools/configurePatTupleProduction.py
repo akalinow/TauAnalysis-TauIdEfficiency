@@ -151,6 +151,7 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
     retVal_caloTau = patSequenceBuilder(
         process,
         collectionName = [ "patCaloTaus", "" ],
+        jetCollectionName = "patJetsAK5Calo",
         patTauProducerPrototype = process.patCaloTauProducer,
         patTauCleanerPrototype = patCaloTauCleanerPrototype,
         triggerMatcherProtoType = process.patTauTriggerMatchHLTprotoType,
@@ -185,6 +186,7 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
     retVal_pfTauFixedCone = patSequenceBuilder(
         process,
         collectionName = [ "patPFTaus", "FixedCone" ],
+        jetCollectionName = "patJetsAK5PF",
         patTauProducerPrototype = process.patPFTauProducerFixedCone,
         patTauCleanerPrototype = patPFTauCleanerPrototype,
         triggerMatcherProtoType = process.patTauTriggerMatchHLTprotoType,
@@ -222,6 +224,7 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
     retVal_pfTauShrinkingCone = patSequenceBuilder(
         process,
         collectionName = [ "patPFTaus", "ShrinkingCone" ],
+        jetCollectionName = "patJetsAK5PF",
         patTauProducerPrototype = process.patPFTauProducerShrinkingCone,
         patTauCleanerPrototype = patPFTauCleanerPrototype,
         triggerMatcherProtoType = process.patTauTriggerMatchHLTprotoType,
@@ -260,6 +263,7 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
     retVal_pfTauHPS = patSequenceBuilder(
         process,
         collectionName = [ "patPFTaus", "HPS" ],
+        jetCollectionName = "patJetsAK5PF",
         patTauProducerPrototype = process.patPFTauProducerHPS,
         patTauCleanerPrototype = patPFTauCleanerPrototype,
         triggerMatcherProtoType = process.patTauTriggerMatchHLTprotoType,
@@ -294,6 +298,7 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
     retVal_pfTauHPSpTaNC = patSequenceBuilder(
         process,
         collectionName = [ "patPFTaus", "HPSpTaNC" ],
+        jetCollectionName = "patJetsAK5PF",
         patTauProducerPrototype = process.patPFTauProducerHPSpTaNC,
         patTauCleanerPrototype = patPFTauCleanerPrototype,
         triggerMatcherProtoType = process.patTauTriggerMatchHLTprotoType,
@@ -328,7 +333,7 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
                      'AK5', 'PF',
                      doJTA            = False,
                      doBTagging       = False,
-                     jetCorrLabel     = ('AK5Calo', cms.vstring(jec)),
+                     jetCorrLabel     = ('AK5PF', cms.vstring(jec)),
                      doType1MET       = False,
                      genJetCollection = cms.InputTag("ak5GenJets"),
                      doJetID          = True,
@@ -340,7 +345,7 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
                      'AK5', 'Calo',
                      doJTA            = False,
                      doBTagging       = False,
-                     jetCorrLabel     = ('AK5PF', cms.vstring(jec)),
+                     jetCorrLabel     = ('AK5Calo', cms.vstring(jec)),
                      doType1MET       = False,
                      genJetCollection = cms.InputTag("ak5GenJets"),
                      doJetID          = True,
@@ -348,6 +353,33 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
                      outputModule     = ''
     )
     #--------------------------------------------------------------------------------
+
+    #--------------------------------------------------------------------------------
+    #
+    # configure Jet Energy Corrections
+    #
+    process.load("CondCore.DBCommon.CondDBCommon_cfi")
+    process.jec = cms.ESSource("PoolDBESSource",
+        DBParameters = cms.PSet(
+            messageLevel = cms.untracked.int32(0)
+        ),
+        timetype = cms.string('runnumber'),
+        toGet = cms.VPSet(
+            cms.PSet(
+                record = cms.string('JetCorrectionsRecord'),
+                tag    = cms.string('JetCorrectorParametersCollection_Jec11V2_AK5PF'),
+                label  = cms.untracked.string('AK5PF')
+            ),
+            cms.PSet(
+                record = cms.string('JetCorrectionsRecord'),
+                tag    = cms.string('JetCorrectorParametersCollection_Jec11V2_AK5Calo'),
+                label  = cms.untracked.string('AK5Calo')
+            )
+        ),
+        connect = cms.string('sqlite_fip:TauAnalysis/Configuration/data/Jec11V2.db')
+    )
+    process.es_prefer_jec = cms.ESPrefer('PoolDBESSource', 'jec')
+    #-------------------------------------------------------------------------------------------------------------------------
 
     #--------------------------------------------------------------------------------
     # replace CaloJets by PFJets for "standard" pat::Jet collection
@@ -369,7 +401,7 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
     process.patTupleProductionSequence = cms.Sequence(
         process.patDefaultSequence
        ##+ process.patTrigger + process.patTriggerEvent
-       + process.patMuonsLoosePFIsoEmbedded
+       + process.patMuonsLoosePFIsoEmbedded       
        + process.caloTauSequence
        # store TaNC inputs as discriminators
        + process.produceTancMVAInputDiscriminators

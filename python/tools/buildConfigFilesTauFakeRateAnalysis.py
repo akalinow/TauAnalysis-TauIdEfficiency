@@ -2,6 +2,8 @@ import FWCore.ParameterSet.Config as cms
 
 from TauAnalysis.CandidateTools.tools.composeModuleName import composeModuleName
 import TauAnalysis.Configuration.tools.castor as castor
+from TauAnalysis.TauIdEfficiency.tools.buildConfigFilesTauIdEffAnalysis import \
+  make_inputFileNames_vstring, make_tauIds_string, getStringRep_bool
 
 import os
 import re
@@ -10,24 +12,15 @@ import re
 #
 # define auxiliary functions
 #
-def make_inputFileNames_vstring(list_of_strings):
-    retVal = "'"
-    for i, string_i in enumerate(list_of_strings):
-        if i > 0:
-            retVal += "', '"
-        retVal += string_i
-    retVal += "'"
-    return retVal
-
-def make_tauIds_string(tauIds):
+def make_drawOptions_string(drawOptions, namesToPlot):
     retVal = ""
-    for tauIdName, tauId in tauIds.items():
+    for nameToPlot in namesToPlot:
         retVal += "        " + "cms.PSet(" + "\n"
-        retVal += "        " + "    discriminators = cms.vstring(" + "\n"
-        for discriminator in tauId['discriminators']:
-            retVal += "        " + "        " + "'" + discriminator + "'," + "\n"
-        retVal += "        " + "    )," + "\n"
-        retVal += "        " + "    name = cms.string('" + tauIdName + "')" + "\n"
+        retVal += "        " + "    name = cms.string('%s'),\n" % nameToPlot 
+        retVal += "        " + "    legendEntry = cms.string('%s'),\n" % drawOptions[nameToPlot]['legendEntry']
+        retVal += "        " + "    markerStyleData = cms.uint32(%u),\n" % drawOptions[nameToPlot]['markerStyleData']
+        retVal += "        " + "    markerStyleSim = cms.uint32(%u),\n" % drawOptions[nameToPlot]['markerStyleSim']
+        retVal += "        " + "    color = cms.uint32(%u)\n" % drawOptions[nameToPlot]['color']
         retVal += "        " + ")," + "\n"
     return retVal
 #--------------------------------------------------------------------------------
@@ -53,12 +46,8 @@ def buildConfigFile_FWLiteTauFakeRateAnalyzer(sampleToAnalyze, evtSel, version, 
     for inputFileName in inputFileNames:        
         if inputFileName.find("chunk") != -1 and \
            inputFileName.find("".join(['_', sampleToAnalyze, '_'])) != -1:
-            if inputFilePath.find('/castor/') != -1:
-                # CV: assume that input file gets copied to local directory before FWLiteTauFakeRateAnalyzer macro gets started
-                #inputFileNames_sample.append(os.path.join("rfio:" + inputFilePath, inputFileName))
-                inputFileNames_sample.append(inputFileName)
-            else:
-                inputFileNames_sample.append(os.path.join(inputFilePath, inputFileName))
+            # CV: assume that input file gets copied to local directory before FWLiteTauFakeRateAnalyzer macro gets started
+            inputFileNames_sample.append(os.path.basename(inputFileName))
 
     #print(sampleToAnalyze)
     #print(inputFiles_sample)
@@ -99,7 +88,6 @@ def buildConfigFile_FWLiteTauFakeRateAnalyzer(sampleToAnalyze, evtSel, version, 
         jobId = match.group('jobId')
 
         outputFileName = 'analyzeTauFakeRateHistograms_%s_%s_%s_chunk_%s.root' % (evtSel, sampleToAnalyze, version, jobId)
-        outputFileName_full = os.path.join(outputFilePath, outputFileName)
 
         weights_string = ""
         if not recoSampleDefinitions['MERGE_SAMPLES'][process_matched]['type'] == 'Data':
@@ -138,6 +126,7 @@ process.tauFakeRateAnalyzer = cms.PSet(
 
     regions = cms.vstring(
         'P',
+        'F',
         'A'
     ),
     
@@ -163,22 +152,22 @@ process.tauFakeRateAnalyzer = cms.PSet(
 
     srcLumiProducer = cms.InputTag('lumiProducer')
 )
-""" % (inputFileName_sample, outputFileName_full,
+""" % (inputFileName_sample, outputFileName,
        process_matched, processType, evtSel,
        tauIds_string, srcTauJetCandidates, srcMET, weights_string, allEvents_DBS, xSection, intLumiData)
 
-        outputFileNames.append(outputFileName_full)
+        outputFileNames.append(outputFileName)
 
         configFileName = "analyzeTauFakeRatePATtuple_%s_%s_%s_cfg.py" % (evtSel, sampleToAnalyze, jobId)
         configFileName_full = os.path.join(configFilePath, configFileName)    
         configFile = open(configFileName_full, "w")
         configFile.write(config)
         configFile.close()
-        configFileNames.append(configFileName_full)
+        configFileNames.append(configFileName)
 
         logFileName = configFileName.replace('_cfg.py', '.log')
         logFileName_full = os.path.join(logFilePath, logFileName)
-        logFileNames.append(logFileName_full)
+        logFileNames.append(logFileName)
 
     retVal = {}
     retVal['inputFileNames']  = inputFileNames_sample
@@ -192,52 +181,31 @@ process.tauFakeRateAnalyzer = cms.PSet(
     return retVal
 
 def buildConfigFile_makeTauFakeRatePlots(inputFileName,
-                                         eventSelections, eventSelectionsToPlot, tauIds, tauIdNamesToPlot,
-                                         outputFilePath, outputFileName):
+                                         eventSelections, eventSelectionsToPlot, tauIds, tauIdsToPlot, labels,
+                                         outputFilePath, outputFileName, recoSampleDefinitions):
 
     """Make plots of jet --> tau fake-rate as function of jetPt, jetEta,..."""
 
-    retVal = {}
-    retVal['configFileName'] = "blah"
-    retVal['outputFileName'] = "blah"
-    retVal['logFileName']    = "blah"
+    processes_string = ""
+    processesToPlot = []
+    for processName, processConfig in recoSampleDefinitions['MERGE_SAMPLES'].items():
+        processes_string += "        " + "cms.PSet(" + "\n"
+        processes_string += "        " + "    name = cms.string('%s'),\n" % processName
+        processes_string += "        " + "    type = cms.string('%s'),\n" % processConfig['type']
+        processes_string += "        " + "    legendEntry = cms.string('%s'),\n" % processConfig['legendEntry']
+        drawOptions = processConfig['drawOption']
+        # represent all attributes of drawOption object in string format
+        for drawOptionAttrName in dir(drawOptions):
+            drawOptionAttr = getattr(drawOptions, drawOptionAttrName)
+            if isinstance(drawOptionAttr, cms._ParameterTypeBase):
+                processes_string += "        " + "    %s = cms.%s(%s),\n" % \
+                  (drawOptionAttrName, drawOptionAttr.__class__.__name__, drawOptionAttr.pythonValue())
+        processes_string += "        " + ")," + "\n"
+        processesToPlot.append(processName)
 
-    return retVal
-
-    tauIds_string = ""
-    for tauIdNameToPlot in tauIdNamesToPlot:
-        tauIds_string += "        " + "cms.PSet(" + "\n"
-        tauIds_string += "        " + "    name = cms.string('%s'),\n" % tauIdNameToPlot 
-        tauIds_string += "        " + "    legendEntry = cms.string('%s'),\n" % tauIds[tauIdNameToPlot]['legendEntry']
-        tauIds_string += "        " + "    markerStyleData = cms.uint32(%u),\n" % tauIds[tauIdNameToPlot]['markerStyleData']
-        tauIds_string += "        " + "    markerStyleSim = cms.uint32(%u),\n" % tauIds[tauIdNameToPlot]['markerStyleSim']
-        tauIds_string += "        " + "    color = cms.uint32(%u)\n" % tauIds[tauIdNameToPlot]['color']
-        tauIds_string += "        " + ")," + "\n"
-
-    def xAxisBinValue(binning_item):
-        # CV: index [1] refers to binOptions
-        #    (index [0] refers to binName)
-        if isinstance(binning_item[1], dict):
-            return binning_item[1]['min']
-        else:
-            return -1
+    eventSelections_string = make_drawOptions_string(eventSelections, eventSelectionsToPlot)
     
-    xAxisBinning_set = set()
-    for binName, binOptions in sorted(binning.items(), key = xAxisBinValue):
-        if isinstance(binOptions, dict) and binOptions.get('min') is not None and binOptions.get('max') is not None:
-            xAxisBinning_set.add(binOptions['min'])
-            xAxisBinning_set.add(binOptions['max'])
-    xAxisBinning_string = ""
-    for xAxisBin in sorted(xAxisBinning_set):
-        xAxisBinning_string += "%f," % xAxisBin
-    
-    values_string = ""
-    for binName, binOptions in sorted(binning.items(), key = xAxisBinValue):
-        if isinstance(binOptions, dict) and binOptions.get('min') is not None and binOptions.get('max') is not None:
-            values_string += "        " + "cms.PSet(" + "\n"
-            values_string += "        " + "    directory = cms.string('%s'),\n" % binName
-            values_string += "        " + "    xBinCenter = cms.double(%f),\n" % (0.5*(binOptions['min'] + binOptions['max']))
-            values_string += "        " + ")," + "\n"
+    tauIds_string = make_drawOptions_string(tauIds, tauIdsToPlot)
 
     outputFileName_full = os.path.join(outputFilePath, outputFileName)        
 
@@ -253,24 +221,39 @@ process.fwliteInput = cms.PSet(
 
 process.makeTauFakeRatePlots = cms.PSet(
 
+    processes = cms.VPSet(
+%s
+    ),
+    processesToPlot = cms.vstring(
+%s
+    ),
+
+    eventSelections = cms.VPSet(
+%s
+    ),
+    eventSelectionsToPlot = cms.vstring(
+%s
+    ),
+
     tauIds = cms.VPSet(
 %s
     ),
-
-    fitVariables = cms.vstring(
+    tauIdsToPlot = cms.vstring(
 %s
     ),
 
-    xAxisBinning = cms.vdouble(%s),
-    xAxisTitle = cms.string('%s'),
-
-    values = cms.VPSet(
-%s    
+    labels = cms.vstring(
+%s
     ),
 
     outputFileName = cms.string('%s')
 )
-""" % (inputFileName, tauIds_string, fitVariables, xAxisBinning_string, binning['xAxisTitle'], values_string, outputFileName_full)
+""" % (inputFileName,
+       processes_string, make_inputFileNames_vstring(processesToPlot),
+       eventSelections_string, make_inputFileNames_vstring(eventSelectionsToPlot),
+       tauIds_string, make_inputFileNames_vstring(tauIdsToPlot),
+       make_inputFileNames_vstring(labels),
+       outputFileName_full)
 
     configFileName = outputFileName;
     configFileName = configFileName.replace('.eps', '_cfg.py')

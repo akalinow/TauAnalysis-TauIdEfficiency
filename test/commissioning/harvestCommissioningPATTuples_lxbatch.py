@@ -8,7 +8,7 @@ from TauAnalysis.Configuration.tools.harvestingLXBatch import make_harvest_scrip
 from TauAnalysis.Configuration.tools.harvesting import castor_source, clean_by_crab_id
 
 castorFilePath = '/castor/cern.ch/user/v/veelken/TauIdCommissioning/'
-version = 'patV1_1'
+version = 'patV1_2'
 
 SAMPLES_TO_ANALYZE = [
     # modify in case you want to submit jobs for some of the samples only...
@@ -55,9 +55,9 @@ for sample in SAMPLES_TO_ANALYZE:
             # clean_by_crab_id
             skim_matcher = re.compile(skim_regex)
             for file in files:
-                 print " unmatched file: %s" % file['path']
+                 #print " unmatched file: %s" % file['path']
                  if skim_matcher.match(file['file']):
-                     print "--> matched file: %s" % file['path']
+                     #print "--> matched file: %s" % file['path']
                      yield file  
 
         def local_copy_mapper(sample):
@@ -69,14 +69,14 @@ for sample in SAMPLES_TO_ANALYZE:
         retVal_make_harvest_scripts = make_harvest_scripts(
             plot_regex,
             skim_regex,
-            sample = sample,
+            sampleToAnalyze = sample,
             job_id = "_".join([evtSel, version]),
             input_source = matches_either(castor_source(inputFilePath)),
             castor_output_directory = outputFilePath,
             script_directory = logFilePath,
             merge_script_name = os.path.join("lxbatch", "_".join(['submit', sample, evtSel, version, 'merge']) + '.sh'),
             local_copy_mapper = local_copy_mapper,
-            chunk_size = 2.e+9, # 3 GB
+            chunk_size = 2.e+9, # 2 GB
             verbosity = 0
         )
 

@@ -20,9 +20,9 @@ TauFakeRateHistManager::~TauFakeRateHistManager()
 
 void TauFakeRateHistManager::bookHistograms(TFileDirectory& dir)
 {
-  histogramJetPt_       = book1D(dir,  "jetPt",       "P_{T}^{jet}",       40,          0. ,         100.);
-  histogramJetEta_      = book1D(dir,  "jetEta",      "#eta_{jet}",        50,         -2.5,         +2.5);
-  histogramJetPhi_      = book1D(dir,  "jetPhi",      "#phi_{jet}",        36, -TMath::Pi(), +TMath::Pi());
+  histogramJetPt_       = book1D(dir, "jetPt",       "P_{T}^{jet}",       40,          0. ,         100.);
+  histogramJetEta_      = book1D(dir, "jetEta",      "#eta_{jet}",        50,         -2.5,         +2.5);
+  histogramJetPhi_      = book1D(dir, "jetPhi",      "#phi_{jet}",        36, -TMath::Pi(), +TMath::Pi());
   
   histogramTauPt_       = book1D(dir, "tauJetPt",    "P_{T}^{#tau}",      40,          0. ,         100.);
   histogramTauEta_      = book1D(dir, "tauJetEta",   "#eta_{#tau}",       50,         -2.5,         +2.5);

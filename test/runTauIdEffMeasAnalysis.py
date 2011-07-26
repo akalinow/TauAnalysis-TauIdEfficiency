@@ -8,16 +8,19 @@ import os
 
 channel = 'ZtoMuTau_tauIdEff'
 #jobId = getJobId(channel)
-jobId = '2011Jul06_mauroV5'
+jobId = '2011Jul23'
 
-inputFilePath = '/data2/veelken/CMSSW_4_2_x/PATtuples/TauIdEffMeas/2011Jul06_mauro/V5/user/v/veelken/CMSSW_4_2_x/PATtuples/TauIdEffMeas/'
-outputFilePath = '/data1/veelken/tmp/muonPtGt20/V5/'
+version = 'V6'
+
+inputFilePath = '/data2/veelken/CMSSW_4_2_x/PATtuples/TauIdEffMeas/%s/%s/' % (jobId, version) \
+               + 'user/v/veelken/CMSSW_4_2_x/PATtuples/TauIdEffMeas/'
+outputFilePath = '/data1/veelken/tmp/muonPtGt20/V6/'
 
 samplesToAnalyze = [
     # modify in case you want to submit jobs for some of the samples only...
     'data_SingleMu_Run2011A_May10ReReco_v1',
     'data_SingleMu_Run2011A_PromptReco_v4',
-    'Ztautau_pythia',
+    'Ztautau_powheg',
     'Ztautau_embedded_part1',
     'Ztautau_embedded_part2',
     'Zmumu_powheg',
@@ -28,8 +31,8 @@ samplesToAnalyze = [
 
 # define sample name and jobId of Ztautau sample
 # used to compute preselection efficiencies and purities in C1p and C1f regions
-sampleZtautau = 'Ztautau_pythia'
-jobId_noTauSel = jobId + '_noTauSel'
+sampleZtautau = 'Ztautau_powheg'
+suffix_noTauSel = '_noTauSel'
 
 fitVariables = [
     'diTauVisMass',
@@ -169,11 +172,11 @@ binning = {
         'xAxisTitle' : "P_{T}^{#tau}"
     },
     'tauAbsEta' : {
-        'tauAbsEtaLt15' : {
+        'tauAbsEtaLt14' : {
             'min' :  0.0,
-            'max' :  1.5
+            'max' :  1.4
         },
-        'tauAbsEta15to19' : {
+        'tauAbsEta14to19' : {
             'min' :  1.5,
             'max' :  1.9
         },
@@ -223,20 +226,27 @@ binning = {
     }
 }
 
-passed_region = None
-failed_region = None
-fitMethod     = None
-tauChargeMode = None
+passed_region            = None
+failed_region            = None
+fitMethod                = None
+tauChargeMode            = None
+disableTauCandPreselCuts = None
 if mode == 'tauIdEfficiency':
-    passed_region = 'C1p'
-    failed_region = 'C1f'
-    fitMethod     = 'fitTauIdEff_wConstraints'
-    tauChargeMode = 'tauLeadTrackCharge'
+    passed_region                    = 'C1p'
+    failed_region                    = 'C1f'
+    regionQCDtemplateFromData_passed = 'B1p'
+    regionQCDtemplateFromData_failed = 'B1f'
+    fitMethod                        = 'fitTauIdEff_wConstraints'
+    tauChargeMode                    = 'tauLeadTrackCharge'
+    disableTauCandPreselCuts         = False
 elif mode == 'tauChargeMisIdRate':
-    passed_region = 'C1p'
-    failed_region = 'D1p'
-    fitMethod     = 'fitTauIdEff'
-    tauChargeMode = 'tauSignalChargedHadronSum'
+    passed_region                    = 'C1p'
+    failed_region                    = 'D1p'
+    regionQCDtemplateFromData_passed = 'B1p'
+    regionQCDtemplateFromData_failed = 'B1p'
+    fitMethod                        = 'fitTauIdEff'
+    tauChargeMode                    = 'tauSignalChargedHadronSum'
+    disableTauCandPreselCuts         = True
 else:
     raise ValueError("Invalid mode = %s !!" % mode)
 
@@ -262,8 +272,13 @@ outputFileNames_FWLiteTauIdEffAnalyzer = []
 logFileNames_FWLiteTauIdEffAnalyzer    = []
 for sampleToAnalyze in samplesToAnalyze:
     retVal_FWLiteTauIdEffAnalyzer = \
-      buildConfigFile_FWLiteTauIdEffAnalyzer(sampleToAnalyze, jobId, inputFilePath, tauIds, binning, sysUncertainties, outputFilePath,
-                                             recoSampleDefinitionsTauIdEfficiency_7TeV, passed_region, failed_region, tauChargeMode)
+      buildConfigFile_FWLiteTauIdEffAnalyzer(sampleToAnalyze, "".join([ jobId, version ]), inputFilePath, tauIds,
+                                             binning, sysUncertainties, outputFilePath,
+                                             recoSampleDefinitionsTauIdEfficiency_7TeV,
+                                             passed_region, failed_region, tauChargeMode,disableTauCandPreselCuts)
+
+    if retVal_FWLiteTauIdEffAnalyzer is None:
+        continue
     
     configFileNames_FWLiteTauIdEffAnalyzer.extend(retVal_FWLiteTauIdEffAnalyzer['configFileNames'])
     outputFileNames_FWLiteTauIdEffAnalyzer.extend(retVal_FWLiteTauIdEffAnalyzer['outputFileNames'])
@@ -275,11 +290,11 @@ for sampleToAnalyze in samplesToAnalyze:
 # build shell script for running 'hadd' in order to "harvest" histograms
 # produced by FWLiteTauIdEffAnalyzer macro
 #
-haddShellFileName_stage1 = os.path.join(outputFilePath, 'harvestTauIdEffHistograms_stage1_%s.csh' % jobId)
+haddShellFileName_stage1 = os.path.join(outputFilePath, 'harvestTauIdEffHistograms_stage1_%s.csh' % "".join([ jobId, version ]))
 haddInputFileNames_stage1 = outputFileNames_FWLiteTauIdEffAnalyzer
-haddOutputFileName_stage1 = os.path.join(outputFilePath, 'analyzeTauIdEffHistograms_all_%s.root' % jobId)
+haddOutputFileName_stage1 = os.path.join(outputFilePath, 'analyzeTauIdEffHistograms_all_%s.root' % "".join([ jobId, version ]))
 retVal_hadd_stage1 = \
-  buildConfigFile_hadd(haddShellFileName_stage1, haddInputFileNames_stage1, haddOutputFileName_stage1)
+  buildConfigFile_hadd(executable_hadd, haddShellFileName_stage1, haddInputFileNames_stage1, haddOutputFileName_stage1)
 haddLogFileName_stage1 = retVal_hadd_stage1['logFileName']
 #--------------------------------------------------------------------------------
 
@@ -291,7 +306,9 @@ configFileNames_fitTauIdEff = []
 outputFileNames_fitTauIdEff = []
 logFileNames_fitTauIdEff    = []
 retVal_fitTauIdEff = \
-  buildConfigFile_fitTauIdEff(fitMethod, jobId, '', haddOutputFileName_stage1, tauIds.keys(), fitVariables, outputFilePath, True)
+  buildConfigFile_fitTauIdEff(fitMethod, "".join([ jobId, version ]), '', haddOutputFileName_stage1, tauIds.keys(),
+                              fitVariables, outputFilePath,
+                              regionQCDtemplateFromData_passed, regionQCDtemplateFromData_failed, True)
 configFileNames_fitTauIdEff.append(retVal_fitTauIdEff['configFileName'])
 outputFileNames_fitTauIdEff.append(retVal_fitTauIdEff['outputFileName'])
 logFileNames_fitTauIdEff.append(retVal_fitTauIdEff['logFileName'])
@@ -299,7 +316,9 @@ for binVariable in binning.keys():
     for binName, binOptions in binning[binVariable].items():
         if isinstance(binOptions, dict) and binOptions.get('min') is not None and binOptions.get('max') is not None:
             retVal_fitTauIdEff = \
-              buildConfigFile_fitTauIdEff(fitMethod, jobId, binName, haddOutputFileName_stage1, tauIds.keys(), fitVariables, outputFilePath, False)
+              buildConfigFile_fitTauIdEff(fitMethod, "".join([ jobId, version ]), binName, haddOutputFileName_stage1, tauIds.keys(),
+                                          fitVariables, outputFilePath,
+                                          regionQCDtemplateFromData_passed, regionQCDtemplateFromData_failed, False)
             configFileNames_fitTauIdEff.append(retVal_fitTauIdEff['configFileName'])
             outputFileNames_fitTauIdEff.append(retVal_fitTauIdEff['outputFileName'])
             logFileNames_fitTauIdEff.append(retVal_fitTauIdEff['logFileName'])
@@ -310,7 +329,8 @@ for binVariable in binning.keys():
 # build config files for running FWLiteTauIdEffPreselNumbers macro
 #
 retVal_FWLiteTauIdEffPreselNumbers = \
-  buildConfigFile_FWLiteTauIdEffPreselNumbers(inputFilePath, sampleZtautau, jobId_noTauSel, tauIds, binning, outputFilePath, tauChargeMode)
+  buildConfigFile_FWLiteTauIdEffPreselNumbers(inputFilePath, sampleZtautau, "".join([ jobId, version, suffix_noTauSel ]), tauIds,
+                                              binning, outputFilePath, tauChargeMode, disableTauCandPreselCuts)
 configFileName_FWLiteTauIdEffPreselNumbers = retVal_FWLiteTauIdEffPreselNumbers['configFileName']
 outputFileName_FWLiteTauIdEffPreselNumbers = retVal_FWLiteTauIdEffPreselNumbers['outputFileName']
 logFileName_FWLiteTauIdEffPreselNumbers = retVal_FWLiteTauIdEffPreselNumbers['logFileName']
@@ -321,13 +341,13 @@ logFileName_FWLiteTauIdEffPreselNumbers = retVal_FWLiteTauIdEffPreselNumbers['lo
 # build shell script for running 'hadd' in order to "harvest" fit results
 # with preselection efficiencies and purities in regions C1p/C1f
 #
-haddShellFileName_stage2 = os.path.join(outputFilePath, 'harvestTauIdEffHistograms_stage2_%s.csh' % jobId)
+haddShellFileName_stage2 = os.path.join(outputFilePath, 'harvestTauIdEffHistograms_stage2_%s.csh' % "".join([ jobId, version ]))
 haddInputFileNames_stage2 = []
 haddInputFileNames_stage2.extend(outputFileNames_fitTauIdEff)
 haddInputFileNames_stage2.append(outputFileName_FWLiteTauIdEffPreselNumbers)
-haddOutputFileName_stage2 = os.path.join(outputFilePath, 'compTauIdEffFinalNumbers_input_%s.root' % jobId)
+haddOutputFileName_stage2 = os.path.join(outputFilePath, 'compTauIdEffFinalNumbers_input_%s.root' % "".join([ jobId, version ]))
 retVal_hadd_stage2 = \
-  buildConfigFile_hadd(haddShellFileName_stage2, haddInputFileNames_stage2, haddOutputFileName_stage2)
+  buildConfigFile_hadd(executable_hadd, haddShellFileName_stage2, haddInputFileNames_stage2, haddOutputFileName_stage2)
 haddLogFileName_stage2 = retVal_hadd_stage2['logFileName']
 #--------------------------------------------------------------------------------
 
@@ -339,7 +359,8 @@ configFileNames_compTauIdEffFinalNumbers = []
 outputFileNames_compTauIdEffFinalNumbers = []
 logFileNames_compTauIdEffFinalNumbers = []
 retVal_compTauIdEffFinalNumbers = \
-  buildConfigFile_compTauIdEffFinalNumbers(haddOutputFileName_stage2, '', jobId, tauIds.keys(), fitVariables, outputFilePath)
+  buildConfigFile_compTauIdEffFinalNumbers(haddOutputFileName_stage2, '', "".join([ jobId, version ]), tauIds.keys(),
+                                           fitVariables, outputFilePath, passed_region, failed_region)
 configFileNames_compTauIdEffFinalNumbers.append(retVal_compTauIdEffFinalNumbers['configFileName'])
 outputFileNames_compTauIdEffFinalNumbers.append(retVal_compTauIdEffFinalNumbers['outputFileName'])
 logFileNames_compTauIdEffFinalNumbers.append(retVal_compTauIdEffFinalNumbers['logFileName'])
@@ -347,7 +368,8 @@ for binVariable in binning.keys():
     for binName, binOptions in binning[binVariable].items():
         if isinstance(binOptions, dict) and binOptions.get('min') is not None and binOptions.get('max') is not None:
             retVal_compTauIdEffFinalNumbers = \
-              buildConfigFile_compTauIdEffFinalNumbers(haddOutputFileName_stage2, binName, jobId, tauIds.keys(), fitVariables, outputFilePath)
+              buildConfigFile_compTauIdEffFinalNumbers(haddOutputFileName_stage2, binName, "".join([ jobId, version ]), tauIds.keys(),
+                                                       fitVariables, outputFilePath, passed_region, failed_region)
             configFileNames_compTauIdEffFinalNumbers.append(retVal_compTauIdEffFinalNumbers['configFileName'])
             outputFileNames_compTauIdEffFinalNumbers.append(retVal_compTauIdEffFinalNumbers['outputFileName'])
             logFileNames_compTauIdEffFinalNumbers.append(retVal_compTauIdEffFinalNumbers['logFileName'])
@@ -358,11 +380,11 @@ for binVariable in binning.keys():
 # build shell script for running 'hadd' in order to "harvest" final tau id. efficiency numbers
 # for different tauPt, tauEta,... bins
 #
-haddShellFileName_stage3 = os.path.join(outputFilePath, 'harvestTauIdEffHistograms_stage3_%s.csh' % jobId)
+haddShellFileName_stage3 = os.path.join(outputFilePath, 'harvestTauIdEffHistograms_stage3_%s.csh' % "".join([ jobId, version ]))
 haddInputFileNames_stage3 = outputFileNames_compTauIdEffFinalNumbers
-haddOutputFileName_stage3 = os.path.join(outputFilePath, 'compTauIdEffFinalNumbers_all_%s.root' % jobId)
+haddOutputFileName_stage3 = os.path.join(outputFilePath, 'compTauIdEffFinalNumbers_all_%s.root' % "".join([ jobId, version ]))
 retVal_hadd_stage3 = \
-  buildConfigFile_hadd(haddShellFileName_stage3, haddInputFileNames_stage3, haddOutputFileName_stage3)
+  buildConfigFile_hadd(executable_hadd, haddShellFileName_stage3, haddInputFileNames_stage3, haddOutputFileName_stage3)
 haddLogFileName_stage3 = retVal_hadd_stage3['logFileName']
 #--------------------------------------------------------------------------------
 
@@ -383,7 +405,8 @@ for binVariable in binning.keys():
     ]
     outputFileName_HPS = 'makeTauIdEffFinalPlots_HPS_%s.eps' % binVariable
     retVal_makeTauIdEffFinalPlots = \
-      buildConfigFile_makeTauIdEffFinalPlots(haddOutputFileName_stage3, tauIds, discriminators_HPS, binning[binVariable], fitVariables, outputFilePath, outputFileName_HPS)
+      buildConfigFile_makeTauIdEffFinalPlots(haddOutputFileName_stage3, tauIds, discriminators_HPS,
+                                             binning[binVariable], fitVariables, outputFilePath, outputFileName_HPS)
     configFileNames_makeTauIdEffFinalPlots.append(retVal_makeTauIdEffFinalPlots['configFileName'])
     outputFileNames_makeTauIdEffFinalPlots.append(retVal_makeTauIdEffFinalPlots['outputFileName'])
     logFileNames_makeTauIdEffFinalPlots.append(retVal_makeTauIdEffFinalPlots['logFileName'])
@@ -396,7 +419,8 @@ for binVariable in binning.keys():
     ]
     outputFileName_HPSdbCorr = 'makeTauIdEffFinalPlots_HPSdbCorr_%s.eps' % binVariable
     retVal_makeTauIdEffFinalPlots = \
-      buildConfigFile_makeTauIdEffFinalPlots(haddOutputFileName_stage3, tauIds, discriminators_HPSdbCorr, binning[binVariable], fitVariables, outputFilePath, outputFileName_HPSdbCorr)
+      buildConfigFile_makeTauIdEffFinalPlots(haddOutputFileName_stage3, tauIds, discriminators_HPSdbCorr,
+                                             binning[binVariable], fitVariables, outputFilePath, outputFileName_HPSdbCorr)
     configFileNames_makeTauIdEffFinalPlots.append(retVal_makeTauIdEffFinalPlots['configFileName'])
     outputFileNames_makeTauIdEffFinalPlots.append(retVal_makeTauIdEffFinalPlots['outputFileName'])
     logFileNames_makeTauIdEffFinalPlots.append(retVal_makeTauIdEffFinalPlots['logFileName'])
@@ -409,7 +433,8 @@ for binVariable in binning.keys():
     ]
     outputFileName_HPScombined = 'makeTauIdEffFinalPlots_HPScombined_%s.eps' % binVariable
     retVal_makeTauIdEffFinalPlots = \
-      buildConfigFile_makeTauIdEffFinalPlots(haddOutputFileName_stage3, tauIds, discriminators_HPScombined, binning[binVariable], fitVariables, outputFilePath, outputFileName_HPScombined)
+      buildConfigFile_makeTauIdEffFinalPlots(haddOutputFileName_stage3, tauIds, discriminators_HPScombined,
+                                             binning[binVariable], fitVariables, outputFilePath, outputFileName_HPScombined)
     configFileNames_makeTauIdEffFinalPlots.append(retVal_makeTauIdEffFinalPlots['configFileName'])
     outputFileNames_makeTauIdEffFinalPlots.append(retVal_makeTauIdEffFinalPlots['outputFileName'])
     logFileNames_makeTauIdEffFinalPlots.append(retVal_makeTauIdEffFinalPlots['logFileName'])
@@ -424,7 +449,7 @@ def make_MakeFile_vstring(list_of_strings):
     return retVal
 
 # done building config files, now build Makefile...
-makeFileName = "Makefile_TauIdEffMeasAnalysis_%s" % jobId
+makeFileName = "Makefile_TauIdEffMeasAnalysis_%s" % "".join([ jobId, version ])
 makeFile = open(makeFileName, "w")
 makeFile.write("\n")
 makeFile.write("all: %s %s\n" % (haddOutputFileName_stage3,

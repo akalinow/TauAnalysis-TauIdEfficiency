@@ -8,9 +8,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.4 $
+ * \version $Revision: 1.5 $
  *
- * $Id: TauIdEffEventSelector.h,v 1.4 2011/07/05 17:07:22 veelken Exp $
+ * $Id: TauIdEffEventSelector.h,v 1.5 2011/07/21 16:37:13 veelken Exp $
  *
  */
 
@@ -49,6 +49,10 @@ class TauIdEffEventSelector : public EventSelector
   /// flag indicating whether to take charge of tau-jet candidate 
   /// from "leading track" or from all "signal" charged hadrons
   int tauChargeMode_;
+
+  /// flag to disable "leading" track Pt > 5 GeV && pfIso < 2.5 GeV cuts applied in preselection of tau-jet candidates
+  /// CV: do not apply preselection cuts when measuring tau charge misidentification rate
+  bool disableTauCandPreselCuts_;
 
   /// cuts applied in specified region
   double muonPtMin_;

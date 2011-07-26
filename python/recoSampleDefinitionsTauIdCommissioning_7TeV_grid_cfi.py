@@ -1,12 +1,13 @@
 import FWCore.ParameterSet.Config as cms
 
 import TauAnalysis.Configuration.plotterProcessDefinitions_cfi as plotter
+import TauAnalysis.DQMTools.plotterStyleDefinitions_cfi as styles
 
 # List of samples to run in the analysis
 SAMPLES_TO_RUN = [
     ##'data_Jet_Run2011A_May10ReReco_v1',
     ##'data_Jet_Run2011A_PromptReco_v4',    
-    ##'data_SingleMu_Run2011A_May10ReReco_v1',
+    'data_SingleMu_Run2011A_May10ReReco_v1',
     ##'data_SingleMu_Run2011A_PromptReco_v4',
     'ZplusJets',
     ##'WplusJets',
@@ -236,19 +237,25 @@ MERGE_SAMPLES = {
             'data_SingleMu_Run2011A_May10ReReco_v1',
             'data_SingleMu_Run2011A_PromptReco_v4'
         ],
-        'type' : 'Data'
+        'type' : 'Data',
+        'legendEntry' : "Data",
+        'drawOption' : styles.drawOption_Data
     },
     'ZplusJets' : {
         'samples' : [
             'ZplusJets'
         ],
-        'type' : plotter.process_Ztautau.config_dqmHistPlotter.type.value()
+        'type' : plotter.process_Ztautau.config_dqmHistPlotter.type.value(),
+        'legendEntry' : plotter.process_Ztautau.config_dqmHistPlotter.legendEntry.value(),
+        'drawOption' : styles.drawOption_ZplusJets
     },
     'WplusJets' : {
         'samples' : [
             'WplusJets_madgraph'
         ],
-        'type' : plotter.process_WplusJets.config_dqmHistPlotter.type.value()
+        'type' : plotter.process_WplusJets.config_dqmHistPlotter.type.value(),
+        'legendEntry' : plotter.process_WplusJets.config_dqmHistPlotter.legendEntry.value(),
+        'drawOption' : styles.drawOption_WplusJets
     },
     'QCD' : {
         'samples' : [
@@ -260,13 +267,17 @@ MERGE_SAMPLES = {
             'qcdDiJetPtHat170to300',
             'PPmuXptGt20Mu15'
         ],
-        'type' : plotter.process_PPmuXptGt20.config_dqmHistPlotter.type.value()
+        'type' : plotter.process_PPmuXptGt20.config_dqmHistPlotter.type.value(),
+        'legendEntry' : plotter.process_PPmuXptGt20.config_dqmHistPlotter.legendEntry.value(),
+        'drawOption' : styles.drawOption_QCD
     },
     'TTplusJets' : {
         'samples' : [
             'TTplusJets_madgraph'
         ],
-        'type' : plotter.process_TTplusJets.config_dqmHistPlotter.type.value()
+        'type' : plotter.process_TTplusJets.config_dqmHistPlotter.type.value(),
+        'legendEntry' : plotter.process_TTplusJets.config_dqmHistPlotter.legendEntry.value(),
+        'drawOption' : styles.drawOption_TTplusJets
     }
 }
 

@@ -10,9 +10,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.1 $
+ * \version $Revision: 1.2 $
  *
- * $Id: FWLiteTauFakeRateAnalyzer.cc,v 1.1 2011/07/18 16:40:45 veelken Exp $
+ * $Id: FWLiteTauFakeRateAnalyzer.cc,v 1.2 2011/07/21 16:37:13 veelken Exp $
  *
  */
 
@@ -69,8 +69,8 @@ struct regionEntryType
       numTauJetCands_selected_(0),
       numTauJetCandsWeighted_selected_(0.)
   {
-    std::cout << "<regionEntryType>:" << std::endl;
-    std::cout << " region = " << region << std::endl;
+    //std::cout << "<regionEntryType>:" << std::endl;
+    //std::cout << " region = " << region << std::endl;
 
     edm::ParameterSet cfgSelector;
     cfgSelector.addParameter<vstring>("tauIdDiscriminators", tauIdDiscriminators_);

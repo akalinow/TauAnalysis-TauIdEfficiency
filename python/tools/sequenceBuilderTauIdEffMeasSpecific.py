@@ -10,6 +10,7 @@ from TauAnalysis.CandidateTools.tools.objProdConfigurator import objProdConfigur
 def buildSequenceTauIdEffMeasSpecific(process,
                                       patMuonCollectionName = "selectedPatMuonsForTauIdEffTrkIP",
                                       tauIdAlgorithmName = None, patTauCollectionName = "patTaus",
+                                      savePatTaus = None,
                                       patMEtCollectionName = "patPFMETs",
                                       patTauProducerPrototype = None,
                                       patTauCleanerPrototype = None,
@@ -115,6 +116,8 @@ def buildSequenceTauIdEffMeasSpecific(process,
         srcVertex = cms.InputTag('offlinePrimaryVerticesWithBS'),
         filter = cms.bool(False)                                                  
     )
+    if savePatTaus is not None:
+        setattr(selectedPatPFTausForTauIdEff, "save", cms.string(savePatTaus))
     setattr(process, selectedPatPFTausForTauIdEffName, selectedPatPFTausForTauIdEff)
     patTauSelectionModules.append(selectedPatPFTausForTauIdEff)
 

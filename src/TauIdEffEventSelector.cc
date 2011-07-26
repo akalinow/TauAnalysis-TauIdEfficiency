@@ -22,6 +22,8 @@ TauIdEffEventSelector::TauIdEffEventSelector(const edm::ParameterSet& cfg)
   else throw cms::Exception("TauIdEffEventSelector") 
     << "Invalid configuration parameter 'tauChargeMode' = " << tauChargeMode_string << " !!\n";
 
+  disableTauCandPreselCuts_ = cfg.getParameter<bool>("disableTauCandPreselCuts");
+
 //--- define default cuts for ABCD regions
   muonPtMin_                =  20.0; 
   muonPtMax_                =  +1.e+3; 
@@ -146,8 +148,9 @@ bool TauIdEffEventSelector::operator()(const PATMuTauPair& muTauPair, pat::strbi
        muonIso             > (muonRelIsoMin_*muonPt)  && muonIso                 < (muonRelIsoMax_*muonPt)  && 
        tauPt               >  tauPtMin_               && tauPt                   <  tauPtMax_               &&
        tauEta              >  tauEtaMin_              && tauEta                  <  tauEtaMax_              &&
-       tauLeadTrackPt      >  tauLeadTrackPtMin_      &&
-       tauIso              >  tauAbsIsoMin_           && tauIso                  <  tauAbsIsoMax_           && 
+       ((tauLeadTrackPt    >  tauLeadTrackPtMin_      &&
+         tauIso            >  tauAbsIsoMin_           && tauIso                  <  tauAbsIsoMax_           ) ||
+        disableTauCandPreselCuts_                                                                           ) &&
        muTauPairAbsDz      <  muTauPairAbsDzMax_      &&
        muTauPairChargeProd >  muTauPairChargeProdMin_ && muTauPairChargeProd     <  muTauPairChargeProdMax_ && 
        visMass             >  visMassCutoffMin_       && visMass                 <  visMassCutoffMax_       &&

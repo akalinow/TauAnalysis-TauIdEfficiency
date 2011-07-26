@@ -16,6 +16,7 @@ Author: Evan K. Friis, Christian Veelken (UC Davis)
 def buildTauSequence(
     process, 
     collectionName = [ "patTaus", "" ],
+    jetCollectionName = "patJets",
     patTauProducerPrototype = None,
     patTauCleanerPrototype = None,
     triggerMatcherProtoType = None,
@@ -128,9 +129,18 @@ def buildTauSequence(
     else:
         patTauVertexMatcherName = patTauCleanerName
 
+    # embed jetId quality flags
+    patTauJetIdEmbedder = cms.EDProducer("PATTauJetIdEmbedder",
+        src = cms.InputTag(patTauVertexMatcherName),
+        srcJet = cms.InputTag(jetCollectionName)
+    )                                         
+    patTauJetIdEmbedderName = collectionName[0] + "JetIdEmbedded" + collectionName[1]
+    setattr(process, patTauJetIdEmbedderName, patTauJetIdEmbedder)
+    outputSequence += getattr(process, patTauJetIdEmbedderName)
+    
     # embed loose PFIsolation sums into pat::Tau objects
     patTauLoosePFIsoEmbedder04 = cms.EDProducer("PATTauPFIsolationEmbedder",
-        src = cms.InputTag(patTauVertexMatcherName),                                       
+        src = cms.InputTag(patTauJetIdEmbedderName),                                       
         userFloatName = cms.string('pfLooseIsoPt04'),
         pfCandidateSource = cms.InputTag('pfNoPileUp'),
         chargedHadronIso = cms.PSet(
@@ -185,6 +195,7 @@ def buildTauSequence(
 def buildQCDdiJetTauSequence(
     process, 
     collectionName = [ "patTaus", "" ],
+    jetCollectionName = "patJets",
     patTauProducerPrototype = None,
     patTauCleanerPrototype = None,
     triggerMatcherProtoType = None,
@@ -200,6 +211,7 @@ def buildQCDdiJetTauSequence(
     retVal_tau = buildTauSequence(
         process, 
         collectionName = collectionName,
+        jetCollectionName = jetCollectionName,
         patTauProducerPrototype = patTauProducerPrototype,
         patTauCleanerPrototype = patTauCleanerPrototype,
         triggerMatcherProtoType = triggerMatcherProtoType,
@@ -240,6 +252,7 @@ def buildQCDdiJetTauSequence(
 def buildGenericTauSequence(
     process, 
     collectionName = [ "patTaus", "" ],
+    jetCollectionName = "patJets",
     patTauProducerPrototype = None,
     patTauCleanerPrototype = None,
     triggerMatcherProtoType = None,
@@ -255,6 +268,7 @@ def buildGenericTauSequence(
     retVal_tau = buildTauSequence(
         process, 
         collectionName = collectionName,
+        jetCollectionName = jetCollectionName,
         patTauProducerPrototype = patTauProducerPrototype,
         patTauCleanerPrototype = patTauCleanerPrototype,
         triggerMatcherProtoType = triggerMatcherProtoType,

@@ -9,16 +9,16 @@ import TauAnalysis.Configuration.recoSampleDefinitionsZtoMuTau_7TeV_grid_cfi as 
 
 # List of samples to run in the analysis
 SAMPLES_TO_ANALYZE = [
-    'data_SingleMu_Run2011A_PromptReco_v4',
     'data_SingleMu_Run2011A_May10ReReco_v1',
+    'data_SingleMu_Run2011A_PromptReco_v4',
     #'DYtautauM10to20_powheg',
-    'Ztautau_pythia',
-    #'Ztautau_powheg',
+    #'Ztautau_pythia',
+    'Ztautau_powheg',
     'Ztautau_embedded_part1',
     'Ztautau_embedded_part2',
     #'qqZll',
     #'DYmumuM10to20_pythia',
-    'Zmumu_pythia',
+    #'Zmumu_pythia',
     'Zmumu_powheg',
     #'Zmumu_powheg',
     'PPmuXptGt20Mu15',
@@ -110,7 +110,8 @@ MERGE_SAMPLES = {
     },
     'Ztautau' : {
         'samples' : [
-            'Ztautau_pythia'
+            ##'Ztautau_pythia'
+            'Ztautau_powheg'
         ],
         'type' : plotter.process_Ztautau.config_dqmHistPlotter.type.value()
     },

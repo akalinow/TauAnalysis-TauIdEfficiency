@@ -44,6 +44,17 @@ typedef std::map<std::string, frMapType3>         frMapType4;
 
 typedef std::vector<std::string> vstring;
 
+int defaultMarkerColor =    1;
+int defaultMarkerStyle =   20;
+int defaultMarkerSize  =    1.;
+
+int defaultLineColor   =    1;
+int defaultLineStyle   =    1;
+int defaultLineSize    =    1;  
+
+int defaultFillColor   =    5;
+int defaultFillStyle   = 1001;
+
 // define auxiliary class holding draw-options for control plots
 struct histogramDrawOptionType 
 {
@@ -52,23 +63,33 @@ struct histogramDrawOptionType
   histogramDrawOptionType(const edm::ParameterSet& cfg)
     : name_(cfg.getParameter<std::string>("name")),
       legendEntry_(cfg.getParameter<std::string>("legendEntry")),
-      lineColor_(cfg.getParameter<int>("lineColor")),
-      lineStyle_(cfg.getParameter<int>("lineStyle")),
-      lineWidth_(cfg.getParameter<int>("lineWidth")),
-      fillColor_(cfg.getParameter<int>("fillColor")),
-      fillStyle_(cfg.getParameter<int>("fillStyle")),
-      drawOption_(cfg.getParameter<std::string>("drawOption")),
+      
+      //drawOption_(cfg.getParameter<std::string>("drawOption")),
       drawOptionLegend_(cfg.getParameter<std::string>("drawOptionLegend"))
-  {}
+  {
+    markerColor_ = ( cfg.exists("markerColor") ) ? cfg.getParameter<int>("markerColor")   : defaultMarkerColor;
+    markerStyle_ = ( cfg.exists("markerStyle") ) ? cfg.getParameter<int>("markerStyle")   : defaultMarkerStyle;
+    markerSize_  = ( cfg.exists("markerSize")  ) ? cfg.getParameter<double>("markerSize") : defaultMarkerSize;
+      
+    lineColor_   = ( cfg.exists("lineColor")   ) ? cfg.getParameter<int>("lineColor")     : defaultLineColor;
+    lineStyle_   = ( cfg.exists("lineStyle")   ) ? cfg.getParameter<int>("lineStyle")     : defaultLineStyle;
+    lineWidth_   = ( cfg.exists("lineWidth")   ) ? cfg.getParameter<int>("lineWidth")     : defaultLineSize;
+
+    fillColor_   = ( cfg.exists("fillColor")   ) ? cfg.getParameter<int>("fillColor")     : defaultFillColor;
+    fillStyle_   = ( cfg.exists("fillStyle")   ) ? cfg.getParameter<int>("fillStyle")     : defaultFillStyle;
+  }
   ~histogramDrawOptionType() {}
   std::string name_;
   std::string legendEntry_;
+  int markerColor_;
+  int markerStyle_;
+  double markerSize_;
   int lineColor_;
   int lineStyle_;
   int lineWidth_;
   int fillColor_;
   int fillStyle_;
-  std::string drawOption_;
+  //std::string drawOption_;
   std::string drawOptionLegend_;
 };
 
@@ -100,6 +121,10 @@ void applyStyleOption_histogram(
   //std::cout << " histogramName = " << histogram->GetName() << std::endl;
 
   histogram->SetTitle(histogramTitle.data());
+
+  histogram->SetMarkerColor(drawOptions.markerColor_);
+  histogram->SetMarkerStyle(drawOptions.markerStyle_);
+  histogram->SetMarkerSize(drawOptions.markerSize_);
 
   histogram->SetLineColor(drawOptions.lineColor_);
   histogram->SetLineStyle(drawOptions.lineStyle_);
@@ -214,9 +239,13 @@ void loadHistograms(
 	    histogramName.append("_").append(*tauId);
 	    
 	    TH1* histogram = dynamic_cast<TH1*>(inputDirectory->Get(histogramName.data()));
-	    if ( !histogram ) 
+	    if ( !histogram ) {
 	      throw cms::Exception("loadHistograms") 
 		<< "Failed to load histogram = " << histogramName << " from directory = " << inputDirectory->GetName() << " !!\n";
+	      //std::cerr << "Failed to load histogram = " << histogramName 
+	      //	  << " from directory = " << inputDirectory->GetName() << " !!\n";
+	      //continue;
+	    }
 	    
 	    if ( !histogram->GetSumw2N() ) histogram->Sumw2();
 
@@ -385,6 +414,34 @@ TPaveText* drawLabel(
   return drawLabels(labels, textSize, color, xOffset, yOffset)[0];
 }
 
+std::string getOutputFilePath(const std::string& outputFileName)
+{
+  size_t pos = outputFileName.find_last_of('/');
+  std::string retVal;
+  if ( pos != std::string::npos ) retVal = std::string(outputFileName, 0, pos + 1);
+  else retVal = "./";
+  retVal.append("plots/");
+  return retVal;
+}
+
+std::string getOutputFileName(const std::string& outputFileName, const std::string& suffix)
+{
+  size_t pos1 = outputFileName.find_last_of('/');
+  std::string outputFileName_base = ( pos1 != std::string::npos ) ?
+    std::string(outputFileName, pos1 + 1) : outputFileName;
+  
+  size_t pos2 = outputFileName_base.find_last_of('.');
+  if ( pos2 == std::string::npos )
+    throw cms::Exception("drawGraphs") 
+      << "Failed to find '.' in outputFileName_base = " << outputFileName << " passed as function argument !!\n";
+
+  std::string retVal;
+  retVal.append(std::string(outputFileName_base, 0, pos2));
+  retVal.append(suffix);
+  retVal.append(std::string(outputFileName_base, pos2));
+  return retVal;
+}
+
 void drawHistograms(
   const std::string& observable, const std::string& xAxisTitle,
   TCanvas* canvas, histogramMapType5& histogramMap, 
@@ -392,12 +449,19 @@ void drawHistograms(
   const vstring& eventSelectionsToPlot, const vstring& tauIdsToPlot, const vstring& regionsToPlot,
   const vstring& labels, const std::string& outputFileName)
 {
+  std::cout << "<drawHistograms>:" << std::endl;
+  std::cout << " observable = " << observable << std::endl;
+  std::cout << " processNamesSim = " << format_vstring(processNamesSim) << std::endl;
+  std::cout << " processNameData = " << processNameData << std::endl;
+
   for ( vstring::const_iterator eventSelection = eventSelectionsToPlot.begin();
 	eventSelection != eventSelectionsToPlot.end(); ++eventSelection ) {
     for ( vstring::const_iterator tauId = tauIdsToPlot.begin();
 	  tauId != tauIdsToPlot.end(); ++tauId ) {
       for ( vstring::const_iterator region = regionsToPlot.begin();
 	    region != regionsToPlot.end(); ++region ) {
+	std::cout << "--> drawing histograms for eventSelection = " << (*eventSelection) << ","
+		  << " tauId = " << (*tauId) << ", region = " << (*region) << std::endl;
 
 	canvas->SetLogy(true);
 	canvas->Clear();
@@ -413,12 +477,14 @@ void drawHistograms(
 	for ( vstring::const_iterator process = processNamesSim.begin();
 	      process != processNamesSim.end(); ++process ) {
 	  TH1* histogramSim = histogramMap[*eventSelection][*process][*tauId][observable][*region];
+	  std::cout << "histogramSim = " << histogramSim << std::endl;
 	  applyStyleOption_histogram(histogramSim, "", drawOptions[*process], xAxisTitle);
 	  smSum.Add(histogramSim);
 	  legend.AddEntry(histogramSim, drawOptions[*process].drawOptionLegend_.data(), "f");
 	}
 	
 	TH1* histogramData = histogramMap[*eventSelection][processNameData][*tauId][observable][*region];	  
+	std::cout << "histogramData = " << histogramData << std::endl;
 	applyStyleOption_histogram(histogramData, "", drawOptions[processNameData], xAxisTitle);
 	legend.AddEntry(histogramData, drawOptions[processNameData].drawOptionLegend_.data(), "p");
 
@@ -433,12 +499,11 @@ void drawHistograms(
 	std::vector<TPaveText*> labels_text = drawLabels(labels);
 	
 	canvas->Update();
-	std::string outputFilePath = std::string("./plots/");
+	std::string outputFilePath = getOutputFilePath(outputFileName);
 	gSystem->mkdir(outputFilePath.data(), true);
 	std::string suffix = std::string("_").append(*eventSelection).append("_").append(*tauId).append("_").append(*region);
-	suffix.append("_").append(observable).append(".");
-	canvas->Print(TString(outputFilePath.append(outputFileName).data()).ReplaceAll(".", suffix.data()));
-
+	suffix.append("_").append(observable);
+	canvas->Print(std::string(outputFilePath).append(getOutputFileName(outputFileName, suffix)).data());
 	for ( std::vector<TPaveText*>::iterator it = labels_text.begin();
 	      it != labels_text.end(); ++it ) {
 	  delete (*it);
@@ -611,10 +676,10 @@ void drawGraphs(
   }
 
   canvas->Update();
-  std::string outputFilePath = std::string("./plots/");
+  std::string outputFilePath = getOutputFilePath(outputFileName);
   gSystem->mkdir(outputFilePath.data(), true);
   std::string suffix = std::string("_fr").append(plotName).append("_").append(observable);
-  canvas->Print(TString(outputFilePath.append(outputFileName).data()).ReplaceAll(".", suffix.data()));
+  canvas->Print(std::string(outputFilePath).append(getOutputFileName(outputFileName, suffix)).data());
   
   for ( std::vector<TPaveText*>::iterator it = labels_text.begin();
 	it != labels_text.end(); ++it ) {
