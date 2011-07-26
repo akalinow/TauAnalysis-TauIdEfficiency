@@ -12,15 +12,17 @@ from TauAnalysis.Configuration.tools.jobtools import make_bsub_script
 from TauAnalysis.Configuration.tools.harvestingLXBatch import make_harvest_scripts
 from TauAnalysis.Configuration.tools.harvesting import castor_source
 
-version = 'v1_0'
+version = 'patV1_2'
 
 inputFilePath  = '/castor/cern.ch/user/v/veelken/TauIdCommissioning/'
 harvestingFilePath = '/castor/cern.ch/user/v/veelken/CMSSW_4_2_x/harvesting/TauIdCommissioning/'
-outputFilePath = '/data1/veelken/tmp/tauFakeRateAnalysis/'
+#outputFilePath = '/data1/veelken/tmp/tauFakeRateAnalysis/'
+outputFilePath = '/tmp/veelken/'
 
 samplesToAnalyze = [
     # modify in case you want to submit jobs for some of the samples only...
-    'ZplusJets'
+    'ZplusJets',
+    'data_SingleMu_Run2011A_May10ReReco_v1'
 ]
 
 eventSelectionsToAnalyze = [
@@ -46,7 +48,7 @@ eventSelections = {
         'legendEntry'         : 'QCDj30',
         'markerStyleData'     : 20,
         'markerStyleSim'      : 24,
-        'color'               : color_black
+        'color'               : color_black.value()
     },
     'QCDj60' : {
         'tauJetCandSelection' : [ "userFloat('probeJet60') > 0.5" ], 
@@ -55,7 +57,7 @@ eventSelections = {
         'legendEntry'         : 'QCDj60',
         'markerStyleData'     : 21,
         'markerStyleSim'      : 25,
-        'color'               : color_red
+        'color'               : color_red.value()
     },
     'QCDj80' : {
         'tauJetCandSelection' : [ "userFloat('probeJet80') > 0.5" ], 
@@ -64,7 +66,7 @@ eventSelections = {
         'legendEntry'         : 'QCDj80',
         'markerStyleData'     : 22,
         'markerStyleSim'      : 26,
-        'color'               : color_green
+        'color'               : color_green.value()
     },
     'QCDj110' : {
         'tauJetCandSelection' : [ "userFloat('probeJet110') > 0.5" ], 
@@ -73,7 +75,7 @@ eventSelections = {
         'legendEntry'         : 'QCDj110',
         'markerStyleData'     : 23,
         'markerStyleSim'      : 32,
-        'color'               : color_lightBlue
+        'color'               : color_lightBlue.value()
     },
     'QCDj150' : {
         'tauJetCandSelection' : [ "userFloat('probeJet150') > 0.5" ], 
@@ -82,7 +84,7 @@ eventSelections = {
         'legendEntry'         : 'QCDj150',
         'markerStyleData'     : 33,
         'markerStyleSim'      : 27,
-        'color'               : color_violett
+        'color'               : color_violett.value()
     },
     'QCDmu' : {
         'tauJetCandSelection' : [], 
@@ -91,7 +93,7 @@ eventSelections = {
         'legendEntry'         : 'QCD#mu',
         'markerStyleData'     : 33,
         'markerStyleSim'      : 27,
-        'color'               : color_darkBlue
+        'color'               : color_darkBlue.value()
     },
     'Wmunu' : {
         'tauJetCandSelection' : [], 
@@ -100,7 +102,7 @@ eventSelections = {
         'legendEntry'         : 'W #rightarrow #mu #nu',
         'markerStyleData'     : 33,
         'markerStyleSim'      : 27,
-        'color'               : color_red
+        'color'               : color_red.value()
     },
     'Zmumu' : {
         'tauJetCandSelection' : [], 
@@ -109,7 +111,7 @@ eventSelections = {
         'legendEntry'         : 'Z #rightarrow #mu^{+} #mu^{-}',
         'markerStyleData'     : 33,
         'markerStyleSim'      : 27,
-        'color'               : color_lightBlue
+        'color'               : color_lightBlue.value()
     }
 }
 
@@ -214,6 +216,11 @@ tauIds = {
     }
 }
 
+labels = [
+    'CMS Preliminary 2011',
+    '#sqrt{s} = 7 TeV, L = 1.1 fb^{-1}'
+]    
+
 srcTauJetCandidates = 'patPFTausLoosePFIsoEmbedded06HPS'
 srcMET = 'patPFMETs' 
 
@@ -231,8 +238,8 @@ executable_FWLiteTauFakeRateAnalyzer = execDir + 'FWLiteTauFakeRateAnalyzer'
 executable_bsub = 'bsub'
 executable_waitForLXBatchJobs = 'python %s/src/TauAnalysis/Configuration/python/tools/waitForLXBatchJobs.py' % os.environ['CMSSW_BASE']
 executable_rfcp = 'rfcp'
-executable_rfrm = 'rfrm'
-executable_hadd = 'hadd'
+executable_rfrm = '- rfrm' # CV: ignore error code returned by 'rfrm' in case file on castor does not exist
+executable_hadd = 'hadd -f'
 executable_makeTauFakeRatePlots = execDir + 'makeTauFakeRatePlots'
 executable_shell = '/bin/csh'
 
@@ -261,11 +268,20 @@ for sampleToAnalyze in samplesToAnalyze:
                                                     tauIds, srcTauJetCandidates, srcMET, 
                                                     configFilePath, logFilePath, harvestingFilePath,
                                                     recoSampleDefinitionsTauIdCommissioning_7TeV)
-
-        fileNames_FWLiteTauFakeRateAnalyzer[sampleToAnalyze][eventSelectionToAnalyze] = retVal_FWLiteTauFakeRateAnalyzer        
+        
+        if retVal_FWLiteTauFakeRateAnalyzer is not None:
+            fileNames_FWLiteTauFakeRateAnalyzer[sampleToAnalyze][eventSelectionToAnalyze] = retVal_FWLiteTauFakeRateAnalyzer
+        else:
+            fileNames_FWLiteTauFakeRateAnalyzer[sampleToAnalyze][eventSelectionToAnalyze] = {
+                'inputFileNames'  : [],
+                'configFileNames' : [],
+                'outputFileNames' : [],
+                'logFileNames'    : []
+            }
         fileNames_FWLiteTauFakeRateAnalyzer[sampleToAnalyze][eventSelectionToAnalyze]['bsubScriptFileNames'] = []
 
         bsubJobNames_FWLiteTauFakeRateAnalyzer[sampleToAnalyze][eventSelectionToAnalyze] = []
+        bjobListFileNames_FWLiteTauFakeRateAnalyzer[sampleToAnalyze][eventSelectionToAnalyze] = None
 
         if retVal_FWLiteTauFakeRateAnalyzer is None:
             continue
@@ -273,21 +289,23 @@ for sampleToAnalyze in samplesToAnalyze:
         for i in range(len(retVal_FWLiteTauFakeRateAnalyzer['inputFileNames'])):
 
             # The None in the tuple indicates that batch job has no dependencies on other batch jobs
-            input_files_and_jobs = [ (None, retVal_FWLiteTauFakeRateAnalyzer['inputFileNames'][i]) ]
+            input_files_and_jobs = \
+              [ (None, os.path.join(inputFilePath, eventSelectionToAnalyze, version, sampleToAnalyze,
+                                    retVal_FWLiteTauFakeRateAnalyzer['inputFileNames'][i])) ]
 
             def log_file_maker(job_hash):
-                return retVal_FWLiteTauFakeRateAnalyzer['logFileNames'][i]
+                return os.path.join(logFilePath, retVal_FWLiteTauFakeRateAnalyzer['logFileNames'][i])
 
             # Build script for batch job submission
             jobName, bsubScript = make_bsub_script(
-                os.path.join(outputFilePath, retVal_FWLiteTauFakeRateAnalyzer['outputFileNames'][i]),
+                os.path.join(harvestingFilePath, retVal_FWLiteTauFakeRateAnalyzer['outputFileNames'][i]),
                 input_files_and_jobs,
                 log_file_maker,
                 "%s %s" % (executable_FWLiteTauFakeRateAnalyzer,
                            os.path.join(configFilePath, retVal_FWLiteTauFakeRateAnalyzer['configFileNames'][i])))
 
-            print "configFilePath = %s" % configFilePath
-            print "retVal_FWLiteTauFakeRateAnalyzer['logFileNames'][i] = %s" % retVal_FWLiteTauFakeRateAnalyzer['logFileNames'][i]
+            #print "configFilePath = %s" % configFilePath
+            #print "retVal_FWLiteTauFakeRateAnalyzer['logFileNames'][i] = %s" % retVal_FWLiteTauFakeRateAnalyzer['logFileNames'][i]
             
             bsubScriptFileName = os.path.join(configFilePath, retVal_FWLiteTauFakeRateAnalyzer['logFileNames'][i].replace(".log", ".sh"))
             bsubScriptFile = open(bsubScriptFileName, "w")
@@ -297,7 +315,7 @@ for sampleToAnalyze in samplesToAnalyze:
             fileNames_FWLiteTauFakeRateAnalyzer[sampleToAnalyze][eventSelectionToAnalyze]['bsubScriptFileNames'].append(
               bsubScriptFileName)
 
-            bsubJobName = "tauFRana%s%s" % (sampleToAnalyze, eventSelectionToAnalyze)
+            bsubJobName = "tauFRana%s%s%i" % (sampleToAnalyze, eventSelectionToAnalyze, i)
             bsubJobNames_FWLiteTauFakeRateAnalyzer[sampleToAnalyze][eventSelectionToAnalyze].append(bsubJobName)
 
         bjobListFileName = \
@@ -325,11 +343,6 @@ for sampleToAnalyze in samplesToAnalyze:
         plot_regex = r"[a-zA-Z0-9._]+"
         skim_regex = r"dont match anything"
         
-        def matches_either(files):
-            for file in files:
-                if file in fileNames_FWLiteTauFakeRateAnalyzer[sampleToAnalyze][eventSelectionToAnalyze]['outputFileNames']:
-                    yield file  
-
         def local_copy_mapper(sample):
             return os.path.join(
               outputFilePath,
@@ -338,21 +351,20 @@ for sampleToAnalyze in samplesToAnalyze:
         inputFileInfos = []
         for inputFileName in fileNames_FWLiteTauFakeRateAnalyzer[sampleToAnalyze][eventSelectionToAnalyze]['outputFileNames']:
             inputFileInfo = {
-                'path'        : inputFileName,
+                'path'        : os.path.join(harvestingFilePath, inputFileName),
                 'size'        : 1,           # dummy
                 'time'        : time.localtime(),
-                'file'        : os.path.basename(inputFileName),
+                'file'        : inputFileName,
                 'permissions' : 'mrw-r--r--' # "ordinary" file access permissions
             }
-            print "inputFileInfo = %s" % inputFileInfo
+            #print "inputFileInfo = %s" % inputFileInfo
             inputFileInfos.append(inputFileInfo)
 
         retVal_make_harvest_scripts = make_harvest_scripts(
             plot_regex,
             skim_regex,
-            sample = sampleToAnalyze,
-            job_id = "_".join([eventSelectionToAnalyze, version]),
-            #input_source = matches_either(castor_source(harvestingFilePath)),
+            sampleToAnalyze = sampleToAnalyze,
+            job_id = "_".join([eventSelectionToAnalyze, sampleToAnalyze, version]),
             input_files_info = inputFileInfos, 
             castor_output_directory = harvestingFilePath,
             script_directory = configFilePath,
@@ -374,7 +386,8 @@ bjobListFileName_harvesting = os.path.join(configFilePath, "batchJobs_harvesting
 bjobListFile_harvesting = open(bjobListFileName_harvesting, "w")
 for sampleToAnalyze in samplesToAnalyze:
     for eventSelectionToAnalyze in eventSelectionsToAnalyze:
-        bjobListFile_harvesting.write("%s\n" % bsubJobNames_harvesting[sampleToAnalyze][eventSelectionToAnalyze])
+        for bsubJobName in bsubFileNames_harvesting[sampleToAnalyze][eventSelectionToAnalyze]['bsub_job_names']:        
+            bjobListFile_harvesting.write("%s\n" % bsubJobName)
 bjobListFile_harvesting.close()
 #--------------------------------------------------------------------------------
 
@@ -389,11 +402,11 @@ for sampleToAnalyze in samplesToAnalyze:
         for final_harvest_file in bsubFileNames_harvesting[sampleToAnalyze][eventSelectionToAnalyze]['final_harvest_files']:
             # CV: file name of final harvesting output file is stored at index[1] in final_harvest_file-tuple
             #    (cf. TauAnalysis/Configuration/python/tools/harvestingLXBatch.py)
-            haddInputFileNames.append(os.path.join(outputFilePath, final_harvest_file[1]))
+            haddInputFileNames.append(os.path.join(outputFilePath, os.path.basename(final_harvest_file[1])))
 haddShellFileName = os.path.join(configFilePath, 'harvestTauFakeRateHistograms_stage1_%s.csh' % version)
 haddOutputFileName = os.path.join(outputFilePath, 'analyzeTauFakeRateHistograms_all_%s.root' % version)
 retVal_hadd = \
-  buildConfigFile_hadd(haddShellFileName, haddInputFileNames, haddOutputFileName)
+  buildConfigFile_hadd(executable_hadd, haddShellFileName, haddInputFileNames, haddOutputFileName)
 haddLogFileName = retVal_hadd['logFileName']
 #--------------------------------------------------------------------------------
 
@@ -406,8 +419,8 @@ haddLogFileName = retVal_hadd['logFileName']
 fileNames_makeTauFakeRatePlots = []
 
 evtSelQCDmu_WplusJets_Zmumu = [
-    'QCDmu',
-    'Wmunu',
+    ##'QCDmu',
+    ##'Wmunu',
     'Zmumu'
 ]    
 
@@ -421,7 +434,7 @@ evtSelQCDj = [
 
 evtSelJobs = {
     'evtSelQCDmu_WplusJets_Zmumu' : evtSelQCDmu_WplusJets_Zmumu,
-    'evtSelQCDj'                  : evtSelQCDj
+    ##'evtSelQCDj'                  : evtSelQCDj
 }
 
 for evtSelName, evtSelJob in evtSelJobs.items():
@@ -434,8 +447,8 @@ for evtSelName, evtSelJob in evtSelJobs.items():
     ]
     outputFileName_HPS = 'makeTauFakeRatePlots_HPS_%s.eps' % evtSelName
     retVal_makeTauFakeRatePlots = \
-      buildConfigFile_makeTauFakeRatePlots(haddOutputFileName, eventSelections, evtSelJob, tauIds, discriminators_HPS, 
-                                           outputFilePath, outputFileName_HPS)
+      buildConfigFile_makeTauFakeRatePlots(haddOutputFileName, eventSelections, evtSelJob, tauIds, discriminators_HPS, labels,
+                                           outputFilePath, outputFileName_HPS, recoSampleDefinitionsTauIdCommissioning_7TeV)
     fileNames_makeTauFakeRatePlots.append(retVal_makeTauFakeRatePlots)
 
     # make plots for HPS isolation with no applied deltaBeta corrections
@@ -446,8 +459,8 @@ for evtSelName, evtSelJob in evtSelJobs.items():
     ]
     outputFileName_HPSdbCorr = 'makeTauFakeRatePlots_HPSdbCorr_%s.eps' % evtSelName
     retVal_makeTauFakeRatePlots = \
-      buildConfigFile_makeTauFakeRatePlots(haddOutputFileName, eventSelections, evtSelJob, tauIds, discriminators_HPSdbCorr,
-                                           outputFilePath, outputFileName_HPSdbCorr)
+      buildConfigFile_makeTauFakeRatePlots(haddOutputFileName, eventSelections, evtSelJob, tauIds, discriminators_HPSdbCorr, labels,
+                                           outputFilePath, outputFileName_HPSdbCorr, recoSampleDefinitionsTauIdCommissioning_7TeV)
     fileNames_makeTauFakeRatePlots.append(retVal_makeTauFakeRatePlots)
           
     # make plots for HPS combined isolation discriminators
@@ -458,8 +471,8 @@ for evtSelName, evtSelJob in evtSelJobs.items():
     ]
     outputFileName_HPScombined = 'makeTauFakeRatePlots_HPScombined_%s.eps' % evtSelName
     retVal_makeTauFakeRatePlots = \
-      buildConfigFile_makeTauFakeRatePlots(haddOutputFileName, eventSelections, evtSelJob, tauIds, discriminators_HPScombined,
-                                           outputFilePath, outputFileName_HPScombined)
+      buildConfigFile_makeTauFakeRatePlots(haddOutputFileName, eventSelections, evtSelJob, tauIds, discriminators_HPScombined, labels,
+                                           outputFilePath, outputFileName_HPScombined, recoSampleDefinitionsTauIdCommissioning_7TeV)
     fileNames_makeTauFakeRatePlots.append(retVal_makeTauFakeRatePlots)
 #--------------------------------------------------------------------------------
 
@@ -486,7 +499,7 @@ makeFile.write("\n")
 for sampleToAnalyze in samplesToAnalyze:
     for eventSelectionToAnalyze in eventSelectionsToAnalyze:
         fileNameEntry = fileNames_FWLiteTauFakeRateAnalyzer[sampleToAnalyze][eventSelectionToAnalyze]
-        if fileNameEntry is None:
+        if fileNameEntry is None or len(fileNameEntry['inputFileNames']) == 0:
             continue
         bsubJobEntry = bsubJobNames_FWLiteTauFakeRateAnalyzer[sampleToAnalyze][eventSelectionToAnalyze]
         for i in range(len(fileNameEntry['inputFileNames'])):
@@ -499,16 +512,16 @@ for sampleToAnalyze in samplesToAnalyze:
                bsubJobEntry[i],
                fileNameEntry['bsubScriptFileNames'][i]))                            
         makeFile.write("\n")
-        makeFile.write("%s:\n" % bsubJobNames_harvesting[sampleToAnalyze][eventSelectionToAnalyze])
+        makeFile.write("%s: %s\n" %
+          (bsubJobNames_harvesting[sampleToAnalyze][eventSelectionToAnalyze],
+           make_MakeFile_vstring(fileNames_FWLiteTauFakeRateAnalyzer[sampleToAnalyze][eventSelectionToAnalyze]['outputFileNames'])))
         makeFile.write("\t%s %s\n" %
           (executable_waitForLXBatchJobs,
            bjobListFileNames_FWLiteTauFakeRateAnalyzer[sampleToAnalyze][eventSelectionToAnalyze]))
-        makeFile.write("\t%s -q %s -J %s < %s\n" %
-          (executable_bsub,
-           bsubQueue,
-           bsubJobNames_harvesting[sampleToAnalyze][eventSelectionToAnalyze],
+        makeFile.write("\t%s %s\n" %
+          (executable_shell,
            bsubFileNames_harvesting[sampleToAnalyze][eventSelectionToAnalyze]['harvest_script_name']))
-makeFile.write("\n")
+        makeFile.write("\n")
 makeFile.write("%s: %s\n" %
   (haddOutputFileName,
    make_MakeFile_vstring(bsubJobNames_harvesting_all)))
@@ -516,9 +529,9 @@ makeFile.write("\t%s %s\n" %
   (executable_waitForLXBatchJobs,
    bjobListFileName_harvesting))
 for haddInputFileName in haddInputFileNames:
-    makeFile.write("\t%s %s %s" %
+    makeFile.write("\t%s %s %s\n" %
       (executable_rfcp,
-       os.path.join(harvestingFilePath, haddInputFileName),
+       os.path.join(harvestingFilePath, os.path.basename(haddInputFileName)),
        outputFilePath))
 makeFile.write("\t%s %s >&! %s\n" %
   (executable_shell,
@@ -543,13 +556,13 @@ for sampleToAnalyze in samplesToAnalyze:
         if fileNameEntry is None:
             continue
         for outputFileName in fileNameEntry['outputFileNames']:
-            makeFile.write("\t%s -f %s\n" %
+            makeFile.write("\t%s %s\n" %
               (executable_rfrm,
                os.path.join(harvestingFilePath, outputFileName)))
         for final_harvest_file in bsubFileNames_harvesting[sampleToAnalyze][eventSelectionToAnalyze]['final_harvest_files']:
             # CV: file name of final harvesting output file is stored at index[1] in final_harvest_file-tuple
             #    (cf. TauAnalysis/Configuration/python/tools/harvestingLXBatch.py)    
-            makeFile.write("\t%s -f %s\n" %
+            makeFile.write("\t%s %s\n" %
               (executable_rfrm,
                os.path.join(harvestingFilePath, final_harvest_file[1])))
 makeFile.write("\trm -f %s\n" % make_MakeFile_vstring(haddInputFileNames))            
