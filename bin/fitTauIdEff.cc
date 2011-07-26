@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.20 $
+ * \version $Revision: 1.21 $
  *
- * $Id: fitTauIdEff.cc,v 1.20 2011/07/22 17:24:56 veelken Exp $
+ * $Id: fitTauIdEff.cc,v 1.21 2011/07/22 17:31:11 veelken Exp $
  *
  */
 
@@ -163,14 +163,14 @@ void fitUsingRooFit(std::map<std::string, std::map<std::string, TH1*> >& distrib
     double fittedEvents_passed   = fittedFraction_passed*numEvents_passed;
     double fittedFraction_failed = fittedFractions[*process]["FAILED"][getKey(fitVariable, tauId, "failed")];
     //std::cout << " numEvents = " << numEvents << ", fittedFraction = " << fittedFraction << std::endl;
-    
+
     std::string pTauIdName_passed_failed = std::string("pTauId_passed_failed").append("_").append(*process);
     double pTauId_passed_failed0 = fittedEvents_passed/fittedEvents;
     //std::cout << " pTauId_passed_failed0 = " << pTauId_passed_failed0 << std::endl;
     pTauId_passed_failed[*process] = 
       new RooRealVar(pTauIdName_passed_failed.data(), 
 		     pTauIdName_passed_failed.data(), pTauId_passed_failed0, 0., 1.);
-    
+
     //double numEventsSum = numEventsAll["sum"]["ALL"][getKey("diTauMt", tauId)];
     //std::cout << " numEventsSum = " << numEventsSum << std::endl;
     
@@ -182,7 +182,7 @@ void fitUsingRooFit(std::map<std::string, std::map<std::string, TH1*> >& distrib
     double norm_initial = scaleFactorMCtoData*numEvents;
     //std::cout << " norm_initial = " << norm_initial << std::endl;
     norm[*process] = new RooRealVar(nameNorm.data(), nameNorm.data(), norm_initial, 0., 2.*numEventsData);
-    
+
     TH1* template_passed = templatesAll[*process]["PASSED"][getKey(fitVariable, tauId, "passed")];
     //std::cout << "PASSED: numBins = " << template_passed->GetNbinsX() << "," 
     //          << " integral = " << template_passed->Integral() << std::endl;
@@ -221,7 +221,7 @@ void fitUsingRooFit(std::map<std::string, std::map<std::string, TH1*> >& distrib
     } else {
       pdf_failed = makeRooHistPdf(template_failed, fitVar);
     }
-    
+
     pdf[*process]["PASSED"] = pdf_passed;
     pdfs_passed.Add(pdf_passed);
     pdf[*process]["FAILED"] = pdf_failed;
@@ -229,9 +229,10 @@ void fitUsingRooFit(std::map<std::string, std::map<std::string, TH1*> >& distrib
 
     norm_passed[*process] = makeRooFormulaVar(*process, "PASSED", norm[*process], fittedFraction_passed, pTauId_passed_failed[*process]);
     norm_failed[*process] = makeRooFormulaVar(*process, "FAILED", norm[*process], fittedFraction_failed, pTauId_passed_failed[*process]);
-    
+
     fitParameters_passed.Add(norm_passed[*process]);
     fitParameters_failed.Add(norm_failed[*process]);
+
   }
 
   RooAddPdf* pdfSum_passed = new RooAddPdf("pdfSum_passed", "pdfSum_passed", RooArgList(pdfs_passed), RooArgList(fitParameters_passed));
@@ -245,7 +246,7 @@ void fitUsingRooFit(std::map<std::string, std::map<std::string, TH1*> >& distrib
   RooSimultaneous* pdfSimultaneousFit = new RooSimultaneous("pdfSimultaneousFit", "pdfSimultaneousFit", *fitCategories);
   pdfSimultaneousFit->addPdf(*pdfSum_passed, "PASSED");
   pdfSimultaneousFit->addPdf(*pdfSum_failed, "FAILED");
- 
+
   std::map<std::string, TH1*> histogramDataMap;
   histogramDataMap["PASSED"] = distributionsData["PASSED"][getKey(fitVariable, tauId, "passed")];
   //std::cout << "PASSED: numBins = " << histogramDataMap["PASSED"]->GetNbinsX() << "," 
@@ -309,7 +310,7 @@ void fitUsingRooFit(std::map<std::string, std::map<std::string, TH1*> >& distrib
 //--- unpack covariance matrix of fit parameters
   std::string fitResultName = std::string("fitResult").append("_").append(tauId);
   RooFitResult*	fitResult = minuit.save(fitResultName.data(), fitResultName.data());
-     
+
   effValue = pTauId_passed_failed["Ztautau"]->getVal();
   effError = pTauId_passed_failed["Ztautau"]->getError();
   for ( std::vector<std::string>::const_iterator process = processes.begin();
@@ -446,8 +447,8 @@ int main(int argc, const char* argv[])
   std::string morphSysUncertaintyDown = "CENTRAL_VALUE";
   if ( allowTemplateMorphing ) {
     std::string morphSysUncertainty = cfgFitTauIdEff.getParameter<std::string>("morphSysUncertainty");
-    morphSysUncertaintyUp = morphSysUncertainty.append("Up");
-    morphSysUncertaintyDown = morphSysUncertainty.append("Down");
+    morphSysUncertaintyUp = std::string(morphSysUncertainty).append("Up");
+    morphSysUncertaintyDown = std::string(morphSysUncertainty).append("Down");
   }
   
   std::vector<std::string> loadSysShifts;
@@ -501,7 +502,7 @@ int main(int argc, const char* argv[])
 	sysShift != loadSysShifts.end(); ++sysShift ) {
     std::cout << "loading histograms for sysShift = " << (*sysShift) << "..." << std::endl;
     
-    if ( !runClosureTest ) {
+    if ( (*sysShift) == "CENTRAL_VALUE" && !runClosureTest ) {
       loadHistograms(distributionsData, histogramInputDirectory, "Data",       regions, tauIds, fitVariables, *sysShift);
     }
 
@@ -547,42 +548,41 @@ int main(int argc, const char* argv[])
 	  tauId != tauIds.end(); ++tauId ) {
       for ( std::vector<std::string>::const_iterator fitVariable = fitVariables.begin();
 	    fitVariable != fitVariables.end(); ++fitVariable ) {
-	std::string key_all    = getKey(*fitVariable, *tauId);
-	std::string key_passed = getKey(*fitVariable, *tauId, "passed");
-	std::string key_failed = getKey(*fitVariable, *tauId, "failed");
+	for ( std::vector<std::string>::const_iterator sysShift = loadSysShifts.begin();
+	      sysShift != loadSysShifts.end(); ++sysShift ) {
+	  std::string keyQCD_passed = getKey(*fitVariable, *tauId, "all",    *sysShift);
+	  if ( region_passed.find("p") != std::string::npos ) keyQCD_passed = getKey(*fitVariable, *tauId, "passed", *sysShift);
+	  std::string keyQCD_failed = getKey(*fitVariable, *tauId, "all",    *sysShift);
+	  if ( region_failed.find("f") != std::string::npos ) keyQCD_failed = getKey(*fitVariable, *tauId, "failed", *sysShift);
 	
-	std::string keyQCD_passed = key_all;
-	if ( region_passed.find("p") != std::string::npos ) keyQCD_passed = key_passed;
-	std::string keyQCD_failed = key_all;
-	if ( region_failed.find("f") != std::string::npos ) keyQCD_failed = key_failed;
-	
-	std::string keyData_passed = key_all;
-	if ( regionQCDtemplateFromData_passed.find("p") != std::string::npos ) keyData_passed = key_passed;
-	std::string keyData_failed = key_all;
-	if ( regionQCDtemplateFromData_failed.find("f") != std::string::npos ) keyData_failed = key_failed;
-	
-	std::cout << "templatesQCD[" << region_passed << "][" << key_passed << "] = " 
-		  << templatesQCD[region_passed][keyQCD_passed]  << std::endl;
-	std::cout << "templatesQCD[" << region_failed << "][" << key_failed << "] = " 
-		  << templatesQCD[region_passed][keyQCD_failed]  << std::endl;
-	std::cout << "distributionsData" 
-		  << "['" << regionQCDtemplateFromData_passed << "'][" << keyData_passed << "] = " 
-		  << distributionsData[regionQCDtemplateFromData_passed][keyData_passed] << std::endl;
-	std::cout << "distributionsData" 
-		  << "['" << regionQCDtemplateFromData_failed << "'][" << keyData_failed << "] = " 
-		  << distributionsData[regionQCDtemplateFromData_failed][keyData_failed] << std::endl;
-	
-	std::string histogramNameQCD_passed = templatesQCD[region_passed][keyQCD_passed]->GetName();
-	double normQCD_passed = getIntegral(templatesQCD[region_passed][keyQCD_passed], true, true);	
-	templatesQCD[region_passed][keyQCD_passed] = 
-	  normalize(distributionsData[regionQCDtemplateFromData_passed][keyData_passed], normQCD_passed);
-	templatesQCD[region_passed][keyQCD_passed]->SetName(histogramNameQCD_passed.data());
-	
-	std::string histogramNameQCD_failed = templatesQCD[region_failed][keyQCD_failed]->GetName();
-	double normQCD_failed = getIntegral(templatesQCD[region_failed][keyQCD_failed], true, true);
-	templatesQCD[region_passed][keyQCD_failed] = 
-	  normalize(distributionsData[regionQCDtemplateFromData_failed][keyData_failed], normQCD_failed);
-	templatesQCD[region_failed][keyQCD_failed]->SetName(histogramNameQCD_failed.data());
+	  std::string keyData_passed = getKey(*fitVariable, *tauId, "all");
+	  if ( regionQCDtemplateFromData_passed.find("p") != std::string::npos ) keyData_passed = getKey(*fitVariable, *tauId, "passed");
+	  std::string keyData_failed = getKey(*fitVariable, *tauId, "all");
+	  if ( regionQCDtemplateFromData_failed.find("f") != std::string::npos ) keyData_failed = getKey(*fitVariable, *tauId, "failed");
+	  
+	  //std::cout << "templatesQCD[" << region_passed << "][" << keyQCD_passed << "] = " 
+	  //	      << templatesQCD[region_passed][keyQCD_passed]  << std::endl;
+	  //std::cout << "templatesQCD[" << region_failed << "][" << keyQCD_failed << "] = " 
+	  //	      << templatesQCD[region_failed][keyQCD_failed]  << std::endl;
+	  //std::cout << "distributionsData" 
+	  //	      << "['" << regionQCDtemplateFromData_passed << "'][" << keyData_passed << "] = " 
+	  //	      << distributionsData[regionQCDtemplateFromData_passed][keyData_passed] << std::endl;
+	  //std::cout << "distributionsData" 
+	  //	      << "['" << regionQCDtemplateFromData_failed << "'][" << keyData_failed << "] = " 
+	  //	      << distributionsData[regionQCDtemplateFromData_failed][keyData_failed] << std::endl;
+	  
+	  std::string histogramNameQCD_passed = templatesQCD[region_passed][keyQCD_passed]->GetName();
+	  double normQCD_passed = getIntegral(templatesQCD[region_passed][keyQCD_passed], true, true);	
+	  templatesQCD[region_passed][keyQCD_passed] = 
+	    normalize(distributionsData[regionQCDtemplateFromData_passed][keyData_passed], normQCD_passed);
+	  templatesQCD[region_passed][keyQCD_passed]->SetName(histogramNameQCD_passed.data());
+	  
+	  std::string histogramNameQCD_failed = templatesQCD[region_failed][keyQCD_failed]->GetName();
+	  double normQCD_failed = getIntegral(templatesQCD[region_failed][keyQCD_failed], true, true);
+	  templatesQCD[region_passed][keyQCD_failed] = 
+	    normalize(distributionsData[regionQCDtemplateFromData_failed][keyData_failed], normQCD_failed);
+	  templatesQCD[region_failed][keyQCD_failed]->SetName(histogramNameQCD_failed.data());
+	}
       }
     }
 
@@ -594,33 +594,42 @@ int main(int argc, const char* argv[])
 	tauId != tauIds.end(); ++tauId ) {
     for ( std::vector<std::string>::const_iterator fitVariable = fitVariables.begin();
 	  fitVariable != fitVariables.end(); ++fitVariable ) {
-      std::string key_all    = getKey(*fitVariable, *tauId);
-      std::string key_passed = key_all;
-      if ( region_passed.find("p") != std::string::npos ) key_passed = getKey(*fitVariable, *tauId, "passed");
-      std::string key_failed = key_all;
-      if ( region_failed.find("f") != std::string::npos ) key_failed = getKey(*fitVariable, *tauId, "failed");
-   
-      TH1* distributionData_passed = distributionsData[region_passed][key_passed];
-      TH1* distributionData_failed = distributionsData[region_failed][key_failed];
+      std::string keyData_all    = getKey(*fitVariable, *tauId, "all");
+      std::string keyData_passed = keyData_all;
+      if ( region_passed.find("p") != std::string::npos ) keyData_passed = getKey(*fitVariable, *tauId, "passed");
+      std::string keyData_failed = keyData_all;
+      if ( region_failed.find("f") != std::string::npos ) keyData_failed = getKey(*fitVariable, *tauId, "failed");
+      
+      TH1* distributionData_passed = distributionsData[region_passed][keyData_passed];
+      TH1* distributionData_failed = distributionsData[region_failed][keyData_failed];
       TString distributionDataName_all = TString(distributionData_passed->GetName()).ReplaceAll(region_passed.data(), "Pass&Fail");
       TH1* distributionData_all = (TH1*)distributionData_passed->Clone(distributionDataName_all.Data());
       distributionData_all->Add(distributionData_failed);
+      
+      distributionsData["PASSED"][keyData_passed] = distributionData_passed;
+      distributionsData["FAILED"][keyData_failed] = distributionData_failed;
+      distributionsData["ALL"][keyData_all]       = distributionData_all;
 
-      distributionsData["PASSED"][key_passed] = distributionData_passed;
-      distributionsData["FAILED"][key_failed] = distributionData_failed;
-      distributionsData["ALL"][key_all]       = distributionData_all;
-
-      for ( std::vector<std::string>::const_iterator process = processes.begin();
-	    process != processes.end(); ++process ) {
-	TH1* templateProcess_passed = templatesAll[*process][region_passed][key_passed];
-	TH1* templateProcess_failed = templatesAll[*process][region_failed][key_failed];
-	TString templateProcessName_all = TString(templateProcess_passed->GetName()).ReplaceAll(region_passed.data(), "Pass&Fail");
-	TH1* templateProcess_all = (TH1*)templateProcess_passed->Clone();
-	templateProcess_all->Add(templateProcess_failed);
-
-	templatesAll[*process]["PASSED"][key_passed] = templateProcess_passed;
-	templatesAll[*process]["FAILED"][key_failed] = templateProcess_failed;
-	templatesAll[*process]["ALL"][key_all]       = templateProcess_all;
+      for ( std::vector<std::string>::const_iterator sysShift = loadSysShifts.begin();
+	    sysShift != loadSysShifts.end(); ++sysShift ) {
+	std::string keySim_all    = getKey(*fitVariable, *tauId, "all", *sysShift);
+	std::string keySim_passed = keySim_all;
+	if ( region_passed.find("p") != std::string::npos ) keySim_passed = getKey(*fitVariable, *tauId, "passed", *sysShift);
+	std::string keySim_failed = keySim_all;
+	if ( region_failed.find("f") != std::string::npos ) keySim_failed = getKey(*fitVariable, *tauId, "failed", *sysShift);
+	
+	for ( std::vector<std::string>::const_iterator process = processes.begin();
+	      process != processes.end(); ++process ) {
+	  TH1* templateProcess_passed = templatesAll[*process][region_passed][keySim_passed];
+	  TH1* templateProcess_failed = templatesAll[*process][region_failed][keySim_failed];
+	  TString templateProcessName_all = TString(templateProcess_passed->GetName()).ReplaceAll(region_passed.data(), "Pass&Fail");
+	  TH1* templateProcess_all = (TH1*)templateProcess_passed->Clone();
+	  templateProcess_all->Add(templateProcess_failed);
+	  
+	  templatesAll[*process]["PASSED"][keySim_passed] = templateProcess_passed;
+	  templatesAll[*process]["FAILED"][keySim_failed] = templateProcess_failed;
+	  templatesAll[*process]["ALL"][keySim_all]       = templateProcess_all;
+	}
       }
     }
   }
@@ -664,14 +673,14 @@ int main(int argc, const char* argv[])
     }
   }
   
-  for ( vstring::const_iterator region = regionsToDraw.begin();
-	region != regionsToDraw.end(); ++region ) {
-    for ( std::map<std::string, TH1*>::const_iterator key = distributionsData[*region].begin();
-	  key != distributionsData[*region].end(); ++key ) {
-      std::cout << "numEvents[" << "Data" << "][" << (*region) << "][" << key->first << "] = "
-		<< getIntegral(key->second, true, true) << std::endl;
-    }
-  }
+  //for ( vstring::const_iterator region = regionsToDraw.begin();
+  //	  region != regionsToDraw.end(); ++region ) {
+  //  for ( std::map<std::string, TH1*>::const_iterator key = distributionsData[*region].begin();
+  //	    key != distributionsData[*region].end(); ++key ) {
+  //    std::cout << "numEvents[" << "Data" << "][" << (*region) << "][" << key->first << "] = "
+  //		  << getIntegral(key->second, true, true) << std::endl;
+  //  }
+  //}
 
   std::map<std::string, std::map<std::string, std::map<std::string, double> > > numEventsAll = // key = (process/"sum", region, observable)
     compNumEvents(templatesAll, processes, distributionsData);

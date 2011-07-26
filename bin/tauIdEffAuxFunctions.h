@@ -833,8 +833,8 @@ std::map<std::string, std::map<std::string, std::map<std::string, double> > > co
       for ( std::map<std::string, TH1*>::const_iterator key = region->second.begin();
 	    key != region->second.end(); ++key ) {
 	retVal[*process][region->first][key->first] = getIntegral(templatesAll[*process][region->first][key->first], true, true);
-	std::cout << "numEvents[" << (*process) << "][" << region->first << "][" << key->first << "] = "
-		  << retVal[*process][region->first][key->first] << std::endl;
+	//std::cout << "numEvents[" << (*process) << "][" << region->first << "][" << key->first << "] = "
+	//	    << retVal[*process][region->first][key->first] << std::endl;
 	retVal["sum"][region->first][key->first] += retVal[*process][region->first][key->first];
       }
     }

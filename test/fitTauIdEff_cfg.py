@@ -18,8 +18,8 @@ process.fitTauIdEff = cms.PSet(
     #    (needs as many 'fitTauIdEff' jobs to be run in parallel as there are bins)
     directory = cms.string(''),
 
-    runClosureTest = cms.bool(False),
-    #runClosureTest = cms.bool(True),
+    #runClosureTest = cms.bool(False),
+    runClosureTest = cms.bool(True),
 
     regions = cms.vstring(
         'A1',  # needed to access QCD template obtained from Data
