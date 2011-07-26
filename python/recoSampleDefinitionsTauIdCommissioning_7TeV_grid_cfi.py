@@ -5,26 +5,26 @@ import TauAnalysis.DQMTools.plotterStyleDefinitions_cfi as styles
 
 # List of samples to run in the analysis
 SAMPLES_TO_RUN = [
-    ##'data_Jet_Run2011A_May10ReReco_v1',
-    ##'data_Jet_Run2011A_PromptReco_v4',    
+    'data_Jet_Run2011A_May10ReReco_v1',
+    'data_Jet_Run2011A_PromptReco_v4',    
     'data_SingleMu_Run2011A_May10ReReco_v1',
-    ##'data_SingleMu_Run2011A_PromptReco_v4',
+    'data_SingleMu_Run2011A_PromptReco_v4',
     'ZplusJets',
-    ##'WplusJets',
-    ##'qcdDiJetPtHat15to30',
-    ##'qcdDiJetPtHat30to50',
-    ##'qcdDiJetPtHat50to80',
-    ##'qcdDiJetPtHat80to120',
-    ##'qcdDiJetPtHat120to170',
-    ##'qcdDiJetPtHat170to300',
-    ##'PPmuXptGt20Mu15',
-    ##'TTplusJets'
+    'WplusJets',
+    'qcdDiJetPtHat15to30',
+    'qcdDiJetPtHat30to50',
+    'qcdDiJetPtHat50to80',
+    'qcdDiJetPtHat80to120',
+    'qcdDiJetPtHat120to170',
+    'qcdDiJetPtHat170to300',
+    'PPmuXptGt20Mu15',
+    'TTplusJets'
 ]
 
 JOBS_TO_RUN = [
-    ##'qcdDiJet',
-    ##'qcdMuEnriched',
-    ##'WplusJets',
+    'qcdDiJet',
+    'qcdMuEnriched',
+    'WplusJets',
     'Zmumu'
 ]
 

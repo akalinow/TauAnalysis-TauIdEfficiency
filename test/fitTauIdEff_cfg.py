@@ -4,11 +4,11 @@ process = cms.PSet()
 
 process.fwliteInput = cms.PSet(
     #fileNames   = cms.vstring('fitTauIdEff_wConstraints_2011June30_matthew.root'),
-    fileNames   = cms.vstring('/data1/veelken/tmp/muonPtGt20/V4d/analyzeTauIdEffHistograms_all_2011Jul06_mauroV4.root'),
+    fileNames   = cms.vstring('/data1/veelken/tmp/muonPtGt20/V6/analyzeTauIdEffHistograms_all_2011Jul23V6.root'),
 )
     
 process.fwliteOutput = cms.PSet(
-    fileName  = cms.string('/data1/veelken/tmp/muonPtGt20/V4b/fitTauIdEff.root')
+    fileName  = cms.string('/data1/veelken/tmp/muonPtGt20/V6/fitTauIdEff.root')
 )
 
 process.fitTauIdEff = cms.PSet(
@@ -70,7 +70,9 @@ process.fitTauIdEff = cms.PSet(
     sysVariedByNsigma = cms.double(3.0),
     
     loadSysUncertainties = cms.vstring(
-        "sysTauJetEn"
+        "sysTauJetEn",
+        #"sysJetEn",
+        #"sysAddPUsmearing"
     ),
 
     runPseudoExperiments = cms.bool(False),

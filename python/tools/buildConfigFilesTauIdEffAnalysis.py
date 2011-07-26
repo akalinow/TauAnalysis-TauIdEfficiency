@@ -544,7 +544,8 @@ process.compTauIdEffFinalNumbers = cms.PSet(
 
     return retVal
 
-def buildConfigFile_makeTauIdEffFinalPlots(inputFileName, tauIds, tauIdNamesToPlot, binning, fitVariables, outputFilePath, outputFileName):
+def buildConfigFile_makeTauIdEffFinalPlots(inputFileName, tauIds, tauIdNamesToPlot, binning, fitVariables, outputFilePath, outputFileName,
+                                           expEff_label, measEff_label):
 
     """Make plots of tau id. efficiency as function of tauPt, tauEta,..."""
 
@@ -601,6 +602,9 @@ process.makeTauIdEffFinalPlots = cms.PSet(
 %s
     ),
 
+    expEff_label  = cms.string('%s'),
+    measEff_label = cms.string('%s'),
+
     fitVariables = cms.vstring(
 %s
     ),
@@ -614,7 +618,8 @@ process.makeTauIdEffFinalPlots = cms.PSet(
 
     outputFileName = cms.string('%s')
 )
-""" % (inputFileName, tauIds_string, fitVariables, xAxisBinning_string, binning['xAxisTitle'], values_string, outputFileName_full)
+""" % (inputFileName, tauIds_string, expEff_label, measEff_label,
+       fitVariables, xAxisBinning_string, binning['xAxisTitle'], values_string, outputFileName_full)
 
     configFileName = outputFileName;
     configFileName = configFileName.replace('.eps', '_cfg.py')

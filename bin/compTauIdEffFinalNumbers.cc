@@ -108,7 +108,7 @@ int main(int argc, const char* argv[])
   std::map<std::string, std::map<std::string, double> > expTauIdEfficiency;     // key = (tauId, fitVariable)
   std::map<std::string, std::map<std::string, double> > measTauIdEfficiency;    // key = (tauId, fitVariable)
   std::map<std::string, std::map<std::string, double> > measTauIdEfficiencyErr; // key = (tauId, fitVariable)  
-
+  
   for ( std::vector<std::string>::const_iterator tauId = tauIds.begin();
 	tauId != tauIds.end(); ++tauId ) {
     for ( std::vector<std::string>::const_iterator fitVariable = fitVariables.begin();
@@ -116,11 +116,12 @@ int main(int argc, const char* argv[])
 
       std::cout << "processing tauId = " << (*tauId) << ", fitVariable = " << (*fitVariable) << "..." << std::endl;
 
-//--- compute efficiencies and uncertainties of lead. track finding, track Pt cut 
-//    and loose isolation requirement applied in preselection
-      TString effPreselectionName_passed = Form("Ztautau_%s_%s_TauHadMatched", region_passed.data(), tauId->data());  
       TString key_passed = Form("_%s_", region_passed.data());
       TString key_failed = Form("_%s_", region_failed.data());
+
+//--- compute efficiencies and uncertainties of lead. track finding, track Pt cut 
+//    and loose isolation requirement applied in preselection
+      TString effPreselectionName_passed = Form("Ztautau_%s_%s_TauHadMatched", region_passed.data(), tauId->data());        
       TString effPreselectionName_failed = TString(effPreselectionName_passed).ReplaceAll(key_passed, key_failed);
       
       double numLeadTrackFindingEff = 
@@ -271,7 +272,7 @@ int main(int argc, const char* argv[])
        * expPurityCorrFactor
        * mcExp;
       std::cout << " MC exp. (1) = " << totEffExp << std::endl;
-      std::cout << "--> Data/MC = " << totEff/totEffExp << " +/- " << totEff/totEffExp*TMath::Sqrt(totErr2) << std::endl;
+      std::cout << "--> Data/MC = " << totEff/totEffExp << " +/- " << (totEff/totEffExp)*TMath::Sqrt(totErr2) << std::endl;
 
       expTauIdEfficiency[*tauId][*fitVariable] = totEffExp;
 

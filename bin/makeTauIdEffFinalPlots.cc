@@ -111,6 +111,9 @@ int main(int argc, const char* argv[])
     tauIds.push_back(tauIdEntryType(name, legendEntry, expMarkerStyle, measMarkerStyle, color));
   }
 
+  std::string expEff_label  = cfgMakeTauIdEffPlots.getParameter<std::string>("expEff");
+  std::string measEff_label = cfgMakeTauIdEffPlots.getParameter<std::string>("measEff");
+
   typedef std::vector<std::string> vstring;
   vstring fitVariables = cfgMakeTauIdEffPlots.getParameter<vstring>("fitVariables");
 
@@ -208,12 +211,12 @@ int main(int argc, const char* argv[])
 	  throw cms::Exception("makeTauIdEffFinalPlots") 
 	    << "Directory = " << tauIdValue->directory_ << " does not exists in input file = " << inputFileName << " !!\n";
 
-	std::string expEffName = std::string("expEff_").append(*fitVariable).append("_").append(tauId->name_);
+	std::string expEffName = std::string(expEff_label).append("_").append(*fitVariable).append("_").append(tauId->name_);
 	double expEff = getNumber(inputDirectory, expEffName.data(), 0).first;
         expEffGraphs[tauId->name_]->SetPoint(binIdx, binCenter, expEff);
 	expEffGraphs[tauId->name_]->SetPointError(binIdx, 0.5*(binUpperEdge - binLowerEdge), 0.01);
 	
-	std::string measEffName = std::string("measEff_").append(*fitVariable).append("_").append(tauId->name_);
+	std::string measEffName = std::string(measEff_label).append("_").append(*fitVariable).append("_").append(tauId->name_);
 	double measEff = getNumber(inputDirectory, measEffName.data(), 0).first;
 	double measEffErr = getNumber(inputDirectory, measEffName.data(), 0).second;
 	measEffGraphs[tauId->name_]->SetPoint(binIdx, binCenter, measEff);

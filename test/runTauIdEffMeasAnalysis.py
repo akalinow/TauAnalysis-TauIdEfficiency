@@ -226,39 +226,49 @@ binning = {
     }
 }
 
-passed_region            = None
-failed_region            = None
-fitMethod                = None
-tauChargeMode            = None
-disableTauCandPreselCuts = None
-if mode == 'tauIdEfficiency':
-    passed_region                    = 'C1p'
-    failed_region                    = 'C1f'
-    regionQCDtemplateFromData_passed = 'B1p'
-    regionQCDtemplateFromData_failed = 'B1f'
-    fitMethod                        = 'fitTauIdEff_wConstraints'
-    tauChargeMode                    = 'tauLeadTrackCharge'
-    disableTauCandPreselCuts         = False
-elif mode == 'tauChargeMisIdRate':
-    passed_region                    = 'C1p'
-    failed_region                    = 'D1p'
-    regionQCDtemplateFromData_passed = 'B1p'
-    regionQCDtemplateFromData_failed = 'B1p'
-    fitMethod                        = 'fitTauIdEff'
-    tauChargeMode                    = 'tauSignalChargedHadronSum'
-    disableTauCandPreselCuts         = True
-else:
-    raise ValueError("Invalid mode = %s !!" % mode)
-
 execDir = "%s/bin/%s/" % (os.environ['CMSSW_BASE'], os.environ['SCRAM_ARCH'])
 
 executable_FWLiteTauIdEffAnalyzer = execDir + 'FWLiteTauIdEffAnalyzer'
 executable_hadd = 'hadd'
 executable_fitTauIdEff = execDir + fitMethod
 executable_FWLiteTauIdEffPreselNumbers = execDir + 'FWLiteTauIdEffPreselNumbers'
-executable_compTauIdEffFinalNumbers = execDir + 'compTauIdEffFinalNumbers'
 executable_makeTauIdEffFinalPlots = execDir + 'makeTauIdEffFinalPlots'
 executable_shell = '/bin/csh'
+
+passed_region                       = None
+failed_region                       = None
+regionQCDtemplateFromData_passed    = None
+regionQCDtemplateFromData_failed    = None
+fitMethod                           = None
+tauChargeMode                       = None
+disableTauCandPreselCuts            = None
+executable_compTauIdEffFinalNumbers = None
+expEff_label                        = None                
+measEff_label                       = None  
+if mode == 'tauIdEfficiency':
+    passed_region                       = 'C1p'
+    failed_region                       = 'C1f'
+    regionQCDtemplateFromData_passed    = 'B1p'
+    regionQCDtemplateFromData_failed    = 'B1f'
+    fitMethod                           = 'fitTauIdEff_wConstraints'
+    tauChargeMode                       = 'tauLeadTrackCharge'
+    disableTauCandPreselCuts            = False
+    executable_compTauIdEffFinalNumbers = execDir + 'compTauIdEffFinalNumbers'
+    expEff_label                        = 'expEff'
+    measEff_label                       = 'measEff'   
+elif mode == 'tauChargeMisIdRate':
+    passed_region                       = 'C1p'
+    failed_region                       = 'D1p'
+    regionQCDtemplateFromData_passed    = 'B1p'
+    regionQCDtemplateFromData_failed    = 'B1p'
+    fitMethod                           = 'fitTauIdEff'
+    tauChargeMode                       = 'tauSignalChargedHadronSum'
+    disableTauCandPreselCuts            = True
+    executable_compTauIdEffFinalNumbers = execDir + 'compTauChargeMisIdFinalNumbers'
+    expEff_label                        = 'expRate'
+    measEff_label                       = 'measRate'   
+else:
+    raise ValueError("Invalid mode = %s !!" % mode)
 
 if len(samplesToAnalyze) == 0:
     samplesToAnalyze = recoSampleDefinitionsTauIdEfficiency_7TeV['RECO_SAMPLES'].keys()
@@ -405,8 +415,9 @@ for binVariable in binning.keys():
     ]
     outputFileName_HPS = 'makeTauIdEffFinalPlots_HPS_%s.eps' % binVariable
     retVal_makeTauIdEffFinalPlots = \
-      buildConfigFile_makeTauIdEffFinalPlots(haddOutputFileName_stage3, tauIds, discriminators_HPS,
-                                             binning[binVariable], fitVariables, outputFilePath, outputFileName_HPS)
+      buildConfigFile_makeTauIdEffFinalPlots(haddOutputFileName_stage3, tauIds,
+                                             binning[binVariable], fitVariables, outputFilePath, outputFileName_HPS,
+                                             expEff_label, measEff_label)
     configFileNames_makeTauIdEffFinalPlots.append(retVal_makeTauIdEffFinalPlots['configFileName'])
     outputFileNames_makeTauIdEffFinalPlots.append(retVal_makeTauIdEffFinalPlots['outputFileName'])
     logFileNames_makeTauIdEffFinalPlots.append(retVal_makeTauIdEffFinalPlots['logFileName'])
@@ -420,7 +431,8 @@ for binVariable in binning.keys():
     outputFileName_HPSdbCorr = 'makeTauIdEffFinalPlots_HPSdbCorr_%s.eps' % binVariable
     retVal_makeTauIdEffFinalPlots = \
       buildConfigFile_makeTauIdEffFinalPlots(haddOutputFileName_stage3, tauIds, discriminators_HPSdbCorr,
-                                             binning[binVariable], fitVariables, outputFilePath, outputFileName_HPSdbCorr)
+                                             binning[binVariable], fitVariables, outputFilePath, outputFileName_HPSdbCorr,
+                                             expEff_label, measEff_label)
     configFileNames_makeTauIdEffFinalPlots.append(retVal_makeTauIdEffFinalPlots['configFileName'])
     outputFileNames_makeTauIdEffFinalPlots.append(retVal_makeTauIdEffFinalPlots['outputFileName'])
     logFileNames_makeTauIdEffFinalPlots.append(retVal_makeTauIdEffFinalPlots['logFileName'])
@@ -434,7 +446,8 @@ for binVariable in binning.keys():
     outputFileName_HPScombined = 'makeTauIdEffFinalPlots_HPScombined_%s.eps' % binVariable
     retVal_makeTauIdEffFinalPlots = \
       buildConfigFile_makeTauIdEffFinalPlots(haddOutputFileName_stage3, tauIds, discriminators_HPScombined,
-                                             binning[binVariable], fitVariables, outputFilePath, outputFileName_HPScombined)
+                                             binning[binVariable], fitVariables, outputFilePath, outputFileName_HPScombined,
+                                             expEff_label, measEff_label)
     configFileNames_makeTauIdEffFinalPlots.append(retVal_makeTauIdEffFinalPlots['configFileName'])
     outputFileNames_makeTauIdEffFinalPlots.append(retVal_makeTauIdEffFinalPlots['outputFileName'])
     logFileNames_makeTauIdEffFinalPlots.append(retVal_makeTauIdEffFinalPlots['logFileName'])

@@ -10,13 +10,14 @@ from TauAnalysis.Configuration.submitToGrid2 import submitToGrid
 print("<submitCommissioningPATTtupleProductionJobs_grid>:")
 
 castorFilePath = "/castor/cern.ch/user/v/veelken/TauIdCommissioning/"
-crabFilePath = "/afs/cern.ch/user/v/veelken/scratch0/CMSSW_4_2_4_patch1/src/TauAnalysis/TauIdEfficiency/test/commissioning/crab/"
+#crabFilePath = "/afs/cern.ch/user/v/veelken/scratch0/CMSSW_4_2_4_patch1/src/TauAnalysis/TauIdEfficiency/test/commissioning/crab/"
 #crabFilePath = "/data1/veelken/CMSSW_4_2_x/crab/TauIdEfficiency/"
+crabFilePath = "/tmp/veelken/crab/"
 
 pfCandidateCollection = "particleFlow" # pile-up removal disabled
 #pfCandidateCollection = "pfNoPileUp"   # pile-up removal enabled
 
-version = "patV1_2"
+version = "patV1_3"
 
 crab_template = """
 [CRAB]
