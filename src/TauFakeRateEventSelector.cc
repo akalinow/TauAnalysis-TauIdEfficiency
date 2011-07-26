@@ -18,7 +18,7 @@ TauFakeRateEventSelector::TauFakeRateEventSelector(const edm::ParameterSet& cfg)
 
 //--- define default preselection criteria for tau-jet candidates
   vstring tauJetCandPreselCriteria_string;
-  //tauJetCandPreselCriteria_string.push_back("userFloat('jetIdLoose') > 0.5");
+  tauJetCandPreselCriteria_string.push_back("userFloat('jetIdLoose') > 0.5");
   tauJetCandPreselCriteria_string.push_back("tauID('againstElectronLoose') > 0.5");
   tauJetCandPreselCriteria_string.push_back("tauID('againstMuonTight') > 0.5");
 
