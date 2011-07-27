@@ -5,15 +5,15 @@ import TauAnalysis.DQMTools.plotterStyleDefinitions_cfi as styles
 
 # List of samples to run in the analysis
 SAMPLES_TO_RUN = [
-    'data_Jet_Run2011A_May10ReReco_v1',
-    'data_Jet_Run2011A_PromptReco_v4',    
-    'data_SingleMu_Run2011A_May10ReReco_v1',
-    'data_SingleMu_Run2011A_PromptReco_v4',
-    'ZplusJets',
-    'WplusJets',
-    'qcdDiJetPtHat15to30',
-    'qcdDiJetPtHat30to50',
-    'qcdDiJetPtHat50to80',
+    #'data_Jet_Run2011A_May10ReReco_v1',
+    #'data_Jet_Run2011A_PromptReco_v4',    
+    #'data_SingleMu_Run2011A_May10ReReco_v1',
+    #'data_SingleMu_Run2011A_PromptReco_v4',
+    #'ZplusJets',
+    #'WplusJets',
+    #'qcdDiJetPtHat15to30',
+    #'qcdDiJetPtHat30to50',
+    #'qcdDiJetPtHat50to80',
     'qcdDiJetPtHat80to120',
     'qcdDiJetPtHat120to170',
     'qcdDiJetPtHat170to300',
@@ -145,7 +145,7 @@ RECO_SAMPLES = {
         'hlt'              : 'HLT'
     },
     'qcdDiJetPtHat30to50' : {
-        'datasetpath'      : "/QCD_Pt_30to50_TuneZ2_7TeV_pythia6/Summer11-PU_S3_START42_V11-v2/AODSIM",
+        'datasetpath'      : "/QCD_Pt-30to50_TuneZ2_7TeV_pythia6/Summer11-PU_S3_START42_V11-v2/AODSIM",
         'dbs_url'          : "http://cmsdbsprod.cern.ch/cms_dbs_prod_global/servlet/DBSServlet",
         'events_processed' : 6583068,
         'x_sec'            : 5.31e7*_picobarns,
@@ -154,7 +154,7 @@ RECO_SAMPLES = {
         'hlt'              : 'HLT'
     },
     'qcdDiJetPtHat50to80' : {
-        'datasetpath'      : "/QCD_Pt_50to80_TuneZ2_7TeV_pythia6/Summer11-PU_S3_START42_V11-v2/AODSIM",
+        'datasetpath'      : "/QCD_Pt-50to80_TuneZ2_7TeV_pythia6/Summer11-PU_S3_START42_V11-v1/AODSIM",
         'dbs_url'          : "http://cmsdbsprod.cern.ch/cms_dbs_prod_global/servlet/DBSServlet",
         'events_processed' : 6600000,
         'x_sec'            : 6.36e6*_picobarns,
@@ -163,7 +163,7 @@ RECO_SAMPLES = {
         'hlt'              : 'HLT'
     },
     'qcdDiJetPtHat80to120' : {
-        'datasetpath'      : "/QCD_Pt_80to120_TuneZ2_7TeV_pythia6/Summer11-PU_S3_START42_V11-v2/AODSIM",
+        'datasetpath'      : "/QCD_Pt-80to120_TuneZ2_7TeV_pythia6/Summer11-PU_S3_START42_V11-v1/AODSIM",
         'dbs_url'          : "http://cmsdbsprod.cern.ch/cms_dbs_prod_global/servlet/DBSServlet",
         'events_processed' : 6589956,
         'x_sec'            : 7.84e5*_picobarns,
@@ -172,7 +172,7 @@ RECO_SAMPLES = {
         'hlt'              : 'HLT'
     },
     'qcdDiJetPtHat120to170' : {
-        'datasetpath'      : "/QCD_Pt_120to170_TuneZ2_7TeV_pythia6/Summer11-PU_S3_START42_V11-v2/AODSIM",
+        'datasetpath'      : "/QCD_Pt-120to170_TuneZ2_7TeV_pythia6/Summer11-PU_S3_START42_V11-v2/AODSIM",
         'dbs_url'          : "http://cmsdbsprod.cern.ch/cms_dbs_prod_global/servlet/DBSServlet",
         'events_processed' : 6127528,
         'x_sec'            : 1.15e5*_picobarns,
@@ -181,7 +181,7 @@ RECO_SAMPLES = {
         'hlt'              : 'HLT'
     },
     'qcdDiJetPtHat170to300' : {
-        'datasetpath'      : "/QCD_Pt_170to300_TuneZ2_7TeV_pythia6/Summer11-PU_S3_START42_V11-v2/AODSIM",
+        'datasetpath'      : "/QCD_Pt-170to300_TuneZ2_7TeV_pythia6/Summer11-PU_S3_START42_V11-v1/AODSIM",
         'dbs_url'          : "http://cmsdbsprod.cern.ch/cms_dbs_prod_global/servlet/DBSServlet",
         'events_processed' : 6220160,
         'x_sec'            : 2.43e4*_picobarns,

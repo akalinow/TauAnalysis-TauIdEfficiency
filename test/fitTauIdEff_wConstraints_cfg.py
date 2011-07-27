@@ -4,11 +4,11 @@ process = cms.PSet()
 
 process.fwliteInput = cms.PSet(
     #fileNames   = cms.vstring('fitTauIdEff_wConstraints_2011June30_matthew.root'),
-    fileNames   = cms.vstring('/data1/veelken/tmp/muonPtGt20/V4b/analyzeTauIdEffHistograms_all_2011Jul06_mauroV4.root')
+    fileNames   = cms.vstring('/data1/veelken/tmp/muonPtGt20/V6/analyzeTauIdEffHistograms_all_2011Jul23V6.root'),
 )
     
 process.fwliteOutput = cms.PSet(
-    fileName  = cms.string('/data1/veelken/tmp/muonPtGt20/V4b/fitTauIdEff_wConstraints.root')
+    fileName  = cms.string('/data1/veelken/tmp/muonPtGt20/V6/fitTauIdEff_wConstraints.root')
 )
 
 process.fitTauIdEff_wConstraints = cms.PSet(
@@ -21,6 +21,10 @@ process.fitTauIdEff_wConstraints = cms.PSet(
     runClosureTest = cms.bool(False),
     #runClosureTest = cms.bool(True),
 
+    # regions (in Data) from which templates for QCD background are taken
+    regionTakeQCDtemplateFromData_all    = cms.string('B1'),
+    regionTakeQCDtemplateFromData_passed = cms.string('B1p'),
+    regionTakeQCDtemplateFromData_failed = cms.string('B1f'),
     #takeQCDfromData = cms.bool(False),
     takeQCDfromData = cms.bool(True),
 
@@ -28,11 +32,6 @@ process.fitTauIdEff_wConstraints = cms.PSet(
     #     in C2f/C2p regions causes bias of fit result (2011/06/28)
     fitTauIdEffC2 = cms.bool(False),
     #fitTauIdEffC2 = cms.bool(True),
-    
-    runSysUncertainties = cms.bool(False),
-    #runSysUncertainties = cms.bool(True),
-
-    numPseudoExperiments = cms.uint32(10000),
 
     regions = cms.vstring(
         'ABCD',
@@ -73,11 +72,27 @@ process.fitTauIdEff_wConstraints = cms.PSet(
     fitVariables = cms.vstring(
         'diTauVisMass',
         #'diTauVisMassFromJet' # CV: diTauVisMass always computed from PFJet momenta if using PAT-tuple workflow
+        #'diTauSVfitMass'
     ),
 
-    sysUncertainties = cms.vstring(
-        ##"sysTauJetEn", # needed for diTauVisMass/diTauVisMassFromJet
-        ##"sysJetEnUp"   # needed for diTauMt
+    allowTemplateMorphing = cms.bool(False),
+    morphSysUncertainty = cms.string(
+        "sysTauJetEn"
+    ),
+    sysVariedByNsigma = cms.double(3.0),
+    morphQCDinABD = cms.bool(True),
+    
+    loadSysUncertainties = cms.vstring(
+        "sysTauJetEn",
+        "sysJetEn",
+        "sysAddPUsmearing"
+    ),
+
+    runPseudoExperiments = cms.bool(False),
+    #runPseudoExperiments = cms.bool(True),
+    numPseudoExperiments = cms.uint32(10000),
+    varySysUncertainties = cms.vstring(
+        "sysTauJetEn"
     ),
 
     makeControlPlots = cms.bool(True)

@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.18 $
+ * \version $Revision: 1.19 $
  *
- * $Id: fitTauIdEff_wConstraints.cc,v 1.18 2011/07/24 16:37:57 veelken Exp $
+ * $Id: fitTauIdEff_wConstraints.cc,v 1.19 2011/07/27 10:46:21 veelken Exp $
  *
  */
 
@@ -36,6 +36,7 @@
 #include "RooFormulaVar.h"
 #include "RooGaussian.h"
 #include "RooHistPdf.h"
+#include "RooIntegralMorph.h"
 #include "RooProduct.h"
 #include "RooRealVar.h"
 #include "RooSimultaneous.h"
@@ -202,13 +203,34 @@ double getNormInRegion(std::map<std::string, RooRealVar*> normABCD,
   return retVal;
 }
 
+RooAbsPdf* makeMorphedPDF(std::map<std::string, TH1*>& templates, 
+			  const std::string& morphSysUncertaintyUp, const std::string& morphSysUncertaintyDown, 
+			  RooRealVar* fitVar, const std::string& fitVariable, const std::string& tauId, const std::string& tauIdValue,
+			  std::vector<RooRealVar*>& alphas)
+{
+  TH1* templateHist = templates[getKey(fitVariable, tauId, tauIdValue)];
+  TH1* templateHistUp = templates[getKey(fitVariable, tauId, tauIdValue, morphSysUncertaintyUp)];
+  RooHistPdf* pdfUp = makeRooHistPdf(templateHistUp, fitVar);
+  TH1* templateHistDown = templates[getKey(fitVariable, tauId, tauIdValue, morphSysUncertaintyDown)];
+  RooHistPdf* pdfDown = makeRooHistPdf(templateHistDown, fitVar);
+  std::string alphaName = std::string(templateHist->GetName()).append("_alpha");
+  RooRealVar* alpha = new RooRealVar(alphaName.data(), alphaName.data(), 0.5, 0., 1.);
+  alphas.push_back(alpha);
+  std::string pdfName = std::string(templateHist->GetName()).append("_pdf");
+  //bool cacheHistogramMorph = true;
+  bool cacheHistogramMorph = false;
+  RooAbsPdf* retVal = new RooIntegralMorph(pdfName.data(), pdfName.data(), *pdfUp, *pdfDown, *fitVar, *alpha, cacheHistogramMorph);
+  return retVal;
+}
+
 void fitUsingRooFit(std::map<std::string, std::map<std::string, TH1*> >& distributionsData,                         // key = (region, observable)
 		    std::map<std::string, std::map<std::string, std::map<std::string, TH1*> > >& templatesAll,      // key = (process, region, observable)
 		    std::map<std::string, std::map<std::string, std::map<std::string, double> > >& numEventsAll,    // key = (process/"sum", region, observable)
 		    std::map<std::string, std::map<std::string, std::map<std::string, double> > >& fittedFractions, // key = (process, region, observable)
 		    const std::vector<std::string>& processes,
-		    const std::string& tauId, const std::string& fitVariable, bool fitTauIdEffC2,
+		    const std::string& tauId, const std::string& fitVariable, bool fitTauIdEffC2, 
 		    const std::string& morphSysUncertaintyUp, const std::string& morphSysUncertaintyDown, double sysVariedByNsigma,
+		    bool morphQCDinABD,
 		    double& effValue, double& effError, 
 		    std::map<std::string, std::map<std::string, double> >& normFactors_fitted, bool& hasFitConverged,
 		    int verbosity = 0)
@@ -334,56 +356,56 @@ void fitUsingRooFit(std::map<std::string, std::map<std::string, TH1*> >& distrib
     double normABCD0         = scaleFactorMCtoData*numEventsABCD;
     normABCD[*process]       = new RooRealVar(nameNormABCD.data(), nameNormABCD.data(), normABCD0, 0., numEventsDataABCD);
 
-    TH1* templateA     = templatesAll[*process]["A"][getKey("diTauMt", tauId)];
-    RooHistPdf* pdfA   = makeRooHistPdf(templateA, fitVarABC2D);
-    TH1* templateB     = templatesAll[*process]["B"][getKey("diTauMt", tauId)];
-    RooHistPdf* pdfB   = makeRooHistPdf(templateB, fitVarABC2D);
-    TH1* templateC1p = templatesAll[*process]["C1p"][getKey(fitVariable, tauId, "passed")];
-    //std::cout << "C1p: numBins = " << templateC1p->GetNbinsX() << "," 
-    //          << " integral = " << templateC1p->Integral() << std::endl;
+    RooAbsPdf* pdfA = 0;
+    if ( (*process) == "QCD" && morphQCDinABD ) {
+      pdfA = makeMorphedPDF(templatesAll[*process]["A"], "sysAddPUsmearing", "CENTRAL_VALUE", 
+			    fitVarABC2D, "diTauMt", tauId, "all", alphas);
+    } else {
+      TH1* templateA = templatesAll[*process]["A"][getKey("diTauMt", tauId)];
+      pdfA = makeRooHistPdf(templateA, fitVarABC2D);
+    }
+    RooAbsPdf* pdfB = 0;
+    if ( (*process) == "QCD" && morphQCDinABD ) {
+      pdfB = makeMorphedPDF(templatesAll[*process]["B"], "sysAddPUsmearing", "CENTRAL_VALUE", 
+			    fitVarABC2D, "diTauMt", tauId, "all", alphas);
+    } else {
+      TH1* templateB = templatesAll[*process]["B"][getKey("diTauMt", tauId)];
+      pdfB = makeRooHistPdf(templateB, fitVarABC2D);
+    }
     RooAbsPdf* pdfC1p = 0;
     if ( morphSysUncertaintyUp != morphSysUncertaintyDown ) {
-      TH1* templateC1pUp = templatesAll[*process]["C1p"][getKey(fitVariable, tauId, "passed", morphSysUncertaintyUp)];
-      RooHistPdf* pdfC1pUp = makeRooHistPdf(templateC1pUp, fitVarC1);
-      TH1* templateC1pDown = templatesAll[*process]["C1p"][getKey(fitVariable, tauId, "passed", morphSysUncertaintyDown)];
-      RooHistPdf* pdfC1pDown = makeRooHistPdf(templateC1pDown, fitVarC1);
-      std::string alphaC1pName = std::string(templateC1p->GetName()).append("_alpha");
-      RooRealVar* alphaC1p = new RooRealVar(alphaC1pName.data(), alphaC1pName.data(), 0.5, 0., 1.);
-      alphas.push_back(alphaC1p);
-      std::string pdfC1pName = std::string(templateC1p->GetName()).append("_pdf");
-      pdfC1p = 
-	new RooIntegralMorph(pdfC1pName.data(), 
-			     pdfC1pName.data(), *pdfC1pUp, *pdfC1pDown, *fitVarC1, *alphaC1p, true);
+      pdfC1p = makeMorphedPDF(templatesAll[*process]["C1p"], morphSysUncertaintyUp, morphSysUncertaintyDown, 
+			      fitVarC1, fitVariable, tauId, "passed", alphas);
     } else {
-      pdfC1p = makeRooHistPdf(templateC1p, fitVarC1);
+       TH1* templateC1p = templatesAll[*process]["C1p"][getKey(fitVariable, tauId, "passed")];
+       //std::cout << "C1p: numBins = " << templateC1p->GetNbinsX() << "," 
+       //          << " integral = " << templateC1p->Integral() << std::endl;
+       pdfC1p = makeRooHistPdf(templateC1p, fitVarC1);
     }
-    TH1* templateC1f = templatesAll[*process]["C1f"][getKey(fitVariable, tauId, "failed")];
-    //std::cout << "C1f: numBins = " << templateC1f->GetNbinsX() << "," 
-    //          << " integral = " << templateC1f->Integral() << std::endl;
     RooAbsPdf* pdfC1f = 0;
     if ( morphSysUncertaintyUp != morphSysUncertaintyDown ) {
-      TH1* templateC1fUp = templatesAll[*process]["C1f"][getKey(fitVariable, tauId, "failed", morphSysUncertaintyUp)];
-      RooHistPdf* pdfC1fUp = makeRooHistPdf(templateC1fUp, fitVarC1);
-      TH1* templateC1fDown = templatesAll[*process]["C1f"][getKey(fitVariable, tauId, "failed", morphSysUncertaintyDown)];
-      RooHistPdf* pdfC1fDown = makeRooHistPdf(templateC1fDown, fitVarC1);
-      std::string alphaC1fName = std::string(templateC1f->GetName()).append("_alpha");
-      RooRealVar* alphaC1f = new RooRealVar(alphaC1fName.data(), alphaC1fName.data(), 0.5, 0., 1.);
-      alphas.push_back(alphaC1f);
-      std::string pdfC1fName = std::string(templateC1f->GetName()).append("_pdf");
-      pdfC1f = 
-	new RooIntegralMorph(pdfC1fName.data(), 
-			     pdfC1fName.data(), *pdfC1fUp, *pdfC1fDown, *fitVarC1, *alphaC1f, true);
+      pdfC1f = makeMorphedPDF(templatesAll[*process]["C1f"], morphSysUncertaintyUp, morphSysUncertaintyDown, 
+			      fitVarC1, fitVariable, tauId, "failed", alphas);
     } else {
+      TH1* templateC1f = templatesAll[*process]["C1f"][getKey(fitVariable, tauId, "failed")];
+      //std::cout << "C1f: numBins = " << templateC1f->GetNbinsX() << "," 
+      //          << " integral = " << templateC1f->Integral() << std::endl;
       pdfC1f = makeRooHistPdf(templateC1f, fitVarC1);
     }
-    TH1* templateC2p   = templatesAll[*process]["C2p"][getKey("diTauMt", tauId, "passed")];
+    TH1* templateC2p = templatesAll[*process]["C2p"][getKey("diTauMt", tauId, "passed")];
     RooHistPdf* pdfC2p = makeRooHistPdf(templateC2p, fitVarABC2D);
-    TH1* templateC2f   = templatesAll[*process]["C2f"][getKey("diTauMt", tauId, "failed")];
+    TH1* templateC2f = templatesAll[*process]["C2f"][getKey("diTauMt", tauId, "failed")];
     RooHistPdf* pdfC2f = makeRooHistPdf(templateC2f, fitVarABC2D);
-    TH1* templateC2    = templatesAll[*process]["C2"][getKey("diTauMt", tauId)];
-    RooHistPdf* pdfC2  = makeRooHistPdf(templateC2, fitVarABC2D);
-    TH1* templateD     = templatesAll[*process]["D"][getKey("diTauMt", tauId)];
-    RooHistPdf* pdfD   = makeRooHistPdf(templateD, fitVarABC2D);
+    TH1* templateC2 = templatesAll[*process]["C2"][getKey("diTauMt", tauId)];
+    RooHistPdf* pdfC2 = makeRooHistPdf(templateC2, fitVarABC2D);
+    RooAbsPdf* pdfD = 0;
+    if ( (*process) == "QCD" && morphQCDinABD ) {
+      pdfD = makeMorphedPDF(templatesAll[*process]["D"], "sysAddPUsmearing", "CENTRAL_VALUE", 
+			    fitVarABC2D, "diTauMt", tauId, "all", alphas);
+    } else {
+      TH1* templateD = templatesAll[*process]["D"][getKey("diTauMt", tauId)];
+      pdfD = makeRooHistPdf(templateD, fitVarABC2D);
+    }
 
     pdfsA.Add(pdfA);
     pdfsB.Add(pdfB);
@@ -777,14 +799,19 @@ int main(int argc, const char* argv[])
     morphSysUncertaintyUp = std::string(morphSysUncertainty).append("Up");
     morphSysUncertaintyDown = std::string(morphSysUncertainty).append("Down");
   }
+  bool morphQCDinABD = cfgFitTauIdEff_wConstraints.getParameter<bool>("morphQCDinABD");
   
   std::vector<std::string> loadSysShifts;
   loadSysShifts.push_back("CENTRAL_VALUE");
   vstring loadSysUncertaintyNames = cfgFitTauIdEff_wConstraints.getParameter<vstring>("loadSysUncertainties");
   for ( vstring::const_iterator sysUncertaintyName = loadSysUncertaintyNames.begin();
 	sysUncertaintyName != loadSysUncertaintyNames.end(); ++sysUncertaintyName ) {
-    loadSysShifts.push_back(std::string(*sysUncertaintyName).append("Up"));
-    loadSysShifts.push_back(std::string(*sysUncertaintyName).append("Down"));
+    if ( (*sysUncertaintyName) == "sysAddPUsmearing" ) {
+      loadSysShifts.push_back(*sysUncertaintyName);
+    } else {
+      loadSysShifts.push_back(std::string(*sysUncertaintyName).append("Up"));
+      loadSysShifts.push_back(std::string(*sysUncertaintyName).append("Down"));
+    } 
   }
 
   bool runClosureTest = cfgFitTauIdEff_wConstraints.getParameter<bool>("runClosureTest");
@@ -1041,7 +1068,7 @@ int main(int argc, const char* argv[])
       fitUsingRooFit(distributionsData, templatesAll, numEventsAll, fittedFractions,
 		     processes,
 		     *tauId, *fitVariable, fitTauIdEffC2,
-		     morphSysUncertaintyUp, morphSysUncertaintyDown, sysVariedByNsigma,
+		     morphSysUncertaintyUp, morphSysUncertaintyDown, sysVariedByNsigma, morphQCDinABD,
 		     effValue, effError, normFactors_fitted, hasFitConverged,		       
 		     1);
       effValues[*tauId][*fitVariable] = effValue;
@@ -1180,7 +1207,7 @@ int main(int argc, const char* argv[])
 	  fitUsingRooFit(distributionsData, templatesAll_fluctuated, numEventsAll_fluctuated, fittedFractions_fluctuated,
 			 processes,
 			 *tauId, *fitVariable, fitTauIdEffC2,
-			 morphSysUncertaintyUp, morphSysUncertaintyDown, sysVariedByNsigma,
+			 morphSysUncertaintyUp, morphSysUncertaintyDown, sysVariedByNsigma, morphQCDinABD,
 			 effValue, effError, normFactors_fitted, hasFitConverged,		       
 			 0);
 

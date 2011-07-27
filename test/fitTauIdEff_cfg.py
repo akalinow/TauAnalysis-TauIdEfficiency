@@ -60,7 +60,7 @@ process.fitTauIdEff = cms.PSet(
     fitVariables = cms.vstring(
         'diTauVisMass',
         #'diTauVisMassFromJet' # CV: diTauVisMass always computed from PFJet momenta if using PAT-tuple workflow
-        #diTauSVfitMass
+        #'diTauSVfitMass'
     ),
 
     allowTemplateMorphing = cms.bool(True),
