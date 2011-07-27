@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.17 $
+ * \version $Revision: 1.18 $
  *
- * $Id: fitTauIdEff_wConstraints.cc,v 1.17 2011/07/21 16:37:13 veelken Exp $
+ * $Id: fitTauIdEff_wConstraints.cc,v 1.18 2011/07/24 16:37:57 veelken Exp $
  *
  */
 
@@ -208,6 +208,7 @@ void fitUsingRooFit(std::map<std::string, std::map<std::string, TH1*> >& distrib
 		    std::map<std::string, std::map<std::string, std::map<std::string, double> > >& fittedFractions, // key = (process, region, observable)
 		    const std::vector<std::string>& processes,
 		    const std::string& tauId, const std::string& fitVariable, bool fitTauIdEffC2,
+		    const std::string& morphSysUncertaintyUp, const std::string& morphSysUncertaintyDown, double sysVariedByNsigma,
 		    double& effValue, double& effError, 
 		    std::map<std::string, std::map<std::string, double> >& normFactors_fitted, bool& hasFitConverged,
 		    int verbosity = 0)
@@ -247,7 +248,8 @@ void fitUsingRooFit(std::map<std::string, std::map<std::string, TH1*> >& distrib
   std::map<std::string, RooAbsReal*> normC2f;                     // key = process
   std::map<std::string, RooAbsReal*> normD;                       // key = process
   
-  std::map<std::string, std::map<std::string, RooHistPdf*> > pdf; // key = (process/"sum", region)
+  std::map<std::string, std::map<std::string, RooAbsPdf*> > pdf; // key = (process/"sum", region)
+  std::vector<RooRealVar*> alphas;
 
   TObjArray pdfsA;
   TObjArray pdfsB;
@@ -336,10 +338,44 @@ void fitUsingRooFit(std::map<std::string, std::map<std::string, TH1*> >& distrib
     RooHistPdf* pdfA   = makeRooHistPdf(templateA, fitVarABC2D);
     TH1* templateB     = templatesAll[*process]["B"][getKey("diTauMt", tauId)];
     RooHistPdf* pdfB   = makeRooHistPdf(templateB, fitVarABC2D);
-    TH1* templateC1p   = templatesAll[*process]["C1p"][getKey(fitVariable, tauId, "passed")];
-    RooHistPdf* pdfC1p = makeRooHistPdf(templateC1p, fitVarC1);
-    TH1* templateC1f   = templatesAll[*process]["C1f"][getKey(fitVariable, tauId, "failed")];
-    RooHistPdf* pdfC1f = makeRooHistPdf(templateC1f, fitVarC1);    
+    TH1* templateC1p = templatesAll[*process]["C1p"][getKey(fitVariable, tauId, "passed")];
+    //std::cout << "C1p: numBins = " << templateC1p->GetNbinsX() << "," 
+    //          << " integral = " << templateC1p->Integral() << std::endl;
+    RooAbsPdf* pdfC1p = 0;
+    if ( morphSysUncertaintyUp != morphSysUncertaintyDown ) {
+      TH1* templateC1pUp = templatesAll[*process]["C1p"][getKey(fitVariable, tauId, "passed", morphSysUncertaintyUp)];
+      RooHistPdf* pdfC1pUp = makeRooHistPdf(templateC1pUp, fitVarC1);
+      TH1* templateC1pDown = templatesAll[*process]["C1p"][getKey(fitVariable, tauId, "passed", morphSysUncertaintyDown)];
+      RooHistPdf* pdfC1pDown = makeRooHistPdf(templateC1pDown, fitVarC1);
+      std::string alphaC1pName = std::string(templateC1p->GetName()).append("_alpha");
+      RooRealVar* alphaC1p = new RooRealVar(alphaC1pName.data(), alphaC1pName.data(), 0.5, 0., 1.);
+      alphas.push_back(alphaC1p);
+      std::string pdfC1pName = std::string(templateC1p->GetName()).append("_pdf");
+      pdfC1p = 
+	new RooIntegralMorph(pdfC1pName.data(), 
+			     pdfC1pName.data(), *pdfC1pUp, *pdfC1pDown, *fitVarC1, *alphaC1p, true);
+    } else {
+      pdfC1p = makeRooHistPdf(templateC1p, fitVarC1);
+    }
+    TH1* templateC1f = templatesAll[*process]["C1f"][getKey(fitVariable, tauId, "failed")];
+    //std::cout << "C1f: numBins = " << templateC1f->GetNbinsX() << "," 
+    //          << " integral = " << templateC1f->Integral() << std::endl;
+    RooAbsPdf* pdfC1f = 0;
+    if ( morphSysUncertaintyUp != morphSysUncertaintyDown ) {
+      TH1* templateC1fUp = templatesAll[*process]["C1f"][getKey(fitVariable, tauId, "failed", morphSysUncertaintyUp)];
+      RooHistPdf* pdfC1fUp = makeRooHistPdf(templateC1fUp, fitVarC1);
+      TH1* templateC1fDown = templatesAll[*process]["C1f"][getKey(fitVariable, tauId, "failed", morphSysUncertaintyDown)];
+      RooHistPdf* pdfC1fDown = makeRooHistPdf(templateC1fDown, fitVarC1);
+      std::string alphaC1fName = std::string(templateC1f->GetName()).append("_alpha");
+      RooRealVar* alphaC1f = new RooRealVar(alphaC1fName.data(), alphaC1fName.data(), 0.5, 0., 1.);
+      alphas.push_back(alphaC1f);
+      std::string pdfC1fName = std::string(templateC1f->GetName()).append("_pdf");
+      pdfC1f = 
+	new RooIntegralMorph(pdfC1fName.data(), 
+			     pdfC1fName.data(), *pdfC1fUp, *pdfC1fDown, *fitVarC1, *alphaC1f, true);
+    } else {
+      pdfC1f = makeRooHistPdf(templateC1f, fitVarC1);
+    }
     TH1* templateC2p   = templatesAll[*process]["C2p"][getKey("diTauMt", tauId, "passed")];
     RooHistPdf* pdfC2p = makeRooHistPdf(templateC2p, fitVarABC2D);
     TH1* templateC2f   = templatesAll[*process]["C2f"][getKey("diTauMt", tauId, "failed")];
@@ -503,10 +539,15 @@ void fitUsingRooFit(std::map<std::string, std::map<std::string, TH1*> >& distrib
   //					   pTauId_passed_failed["WplusJets"]->getVal(),    1.0*pTauId_passed_failed["WplusJets"]->getVal()));
   //fitConstraintsC1.Add(makeFitConstraint(pTauId_passed_failed["TTplusJets"], 
   //					   pTauId_passed_failed["TTplusJets"]->getVal(),   1.0*pTauId_passed_failed["TTplusJets"]->getVal()));
+  for ( std::vector<RooRealVar*>::iterator alpha = alphas.begin();
+	alpha != alphas.end(); ++alpha ) {
+    fitConstraintsC1.Add(makeFitConstraint(*alpha, 0.5, 0.5/sysVariedByNsigma));
+  }
 
   RooLinkedList fitOptionsC1;
   fitOptionsC1.Add(new RooCmdArg(RooFit::Extended()));
-  //fitOptionsC1.Add(new RooCmdArg(RooFit::ExternalConstraints(RooArgSet(fitConstraintsC1))));
+  if ( fitConstraintsC1.GetEntries() > 0 ) 
+    fitOptionsC1.Add(new RooCmdArg(RooFit::ExternalConstraints(RooArgSet(fitConstraintsC1))));
 
   //pdfSimultaneousFitC1->printCompactTree();
 
@@ -561,6 +602,19 @@ void fitUsingRooFit(std::map<std::string, std::map<std::string, TH1*> >& distrib
   }
   hasFitConverged = (fitResult->status() == 0) ? true : false;
   
+//--- store fitted/morphed template shapes
+  for ( std::vector<std::string>::const_iterator process = processes.begin();
+	process != processes.end(); ++process ) {
+    TH1* templateC1p = templatesAll[*process]["C1p"][getKey(fitVariable, tauId, "passed")];
+    TH1* templateC1p_fittedShape = ( morphSysUncertaintyUp != morphSysUncertaintyDown ) ?
+      compFittedTemplateShape(templateC1p, pdf[*process]["C1p"]) : templateC1p;
+    templatesAll[*process]["C1p"][getKey(fitVariable, tauId, "passed").append("_fittedShape")] = templateC1p_fittedShape;
+    TH1* templateC1f = templatesAll[*process]["C1f"][getKey(fitVariable, tauId, "failed")];
+    TH1* templateC1f_fittedShape = ( morphSysUncertaintyUp != morphSysUncertaintyDown ) ?
+      compFittedTemplateShape(templateC1f, pdf[*process]["C1f"]) : templateC1f;
+    templatesAll[*process]["C1f"][getKey(fitVariable, tauId, "failed").append("_fittedShape")] = templateC1f_fittedShape;
+  }
+
   if ( verbosity ) {
     std::cout << tauId << ":";
     if ( hasFitConverged ) std::cout << " fit converged."          << std::endl; 
@@ -700,25 +754,52 @@ int main(int argc, const char* argv[])
 
   typedef std::vector<std::string> vstring;
   vstring regions = cfgFitTauIdEff_wConstraints.getParameter<vstring>("regions");
-  std::string regionQCDtemplateFromData_passed = 
-    cfgFitTauIdEff_wConstraints.getParameter<std::string>("regionQCDtemplateFromData_passed");
-  std::string regionQCDtemplateFromData_failed = 
-    cfgFitTauIdEff_wConstraints.getParameter<std::string>("regionQCDtemplateFromData_failed");
+
   vstring tauIds = cfgFitTauIdEff_wConstraints.getParameter<vstring>("tauIds");
   vstring fitVariables = cfgFitTauIdEff_wConstraints.getParameter<vstring>("fitVariables");
-  std::vector<sysUncertaintyEntry> sysUncertainties;
-  vstring sysUncertaintyNames = cfgFitTauIdEff_wConstraints.getParameter<vstring>("sysUncertainties");
-  for ( vstring::const_iterator sysUncertaintyName = sysUncertaintyNames.begin();
-	sysUncertaintyName != sysUncertaintyNames.end(); ++sysUncertaintyName ) {
-    sysUncertainties.push_back(sysUncertaintyEntry(std::string(*sysUncertaintyName).append("Up"),
-						   std::string(*sysUncertaintyName).append("Down"),
-						   std::string(*sysUncertaintyName).append("Diff")));
-  }
-  bool runClosureTest = cfgFitTauIdEff_wConstraints.getParameter<bool>("runClosureTest");
+
   bool takeQCDfromData = cfgFitTauIdEff_wConstraints.getParameter<bool>("takeQCDfromData");
+  std::string regionQCDtemplateFromData_all = 
+    cfgFitTauIdEff_wConstraints.getParameter<std::string>("regionTakeQCDtemplateFromData_all");
+  std::string regionQCDtemplateFromData_passed = 
+    cfgFitTauIdEff_wConstraints.getParameter<std::string>("regionTakeQCDtemplateFromData_passed");
+  std::string regionQCDtemplateFromData_failed = 
+    cfgFitTauIdEff_wConstraints.getParameter<std::string>("regionTakeQCDtemplateFromData_failed");
+
   bool fitTauIdEffC2 = cfgFitTauIdEff_wConstraints.getParameter<bool>("fitTauIdEffC2");
-  bool runSysUncertainties = cfgFitTauIdEff_wConstraints.getParameter<bool>("runSysUncertainties");
+
+  bool allowTemplateMorphing = cfgFitTauIdEff_wConstraints.getParameter<bool>("allowTemplateMorphing");
+  double sysVariedByNsigma = cfgFitTauIdEff_wConstraints.getParameter<double>("sysVariedByNsigma");
+  std::string morphSysUncertaintyUp = "CENTRAL_VALUE";
+  std::string morphSysUncertaintyDown = "CENTRAL_VALUE";
+  if ( allowTemplateMorphing ) {
+    std::string morphSysUncertainty = cfgFitTauIdEff_wConstraints.getParameter<std::string>("morphSysUncertainty");
+    morphSysUncertaintyUp = std::string(morphSysUncertainty).append("Up");
+    morphSysUncertaintyDown = std::string(morphSysUncertainty).append("Down");
+  }
+  
+  std::vector<std::string> loadSysShifts;
+  loadSysShifts.push_back("CENTRAL_VALUE");
+  vstring loadSysUncertaintyNames = cfgFitTauIdEff_wConstraints.getParameter<vstring>("loadSysUncertainties");
+  for ( vstring::const_iterator sysUncertaintyName = loadSysUncertaintyNames.begin();
+	sysUncertaintyName != loadSysUncertaintyNames.end(); ++sysUncertaintyName ) {
+    loadSysShifts.push_back(std::string(*sysUncertaintyName).append("Up"));
+    loadSysShifts.push_back(std::string(*sysUncertaintyName).append("Down"));
+  }
+
+  bool runClosureTest = cfgFitTauIdEff_wConstraints.getParameter<bool>("runClosureTest");
+  
+  bool runPseudoExperiments = cfgFitTauIdEff_wConstraints.getParameter<bool>("runPseudoExperiments");
   unsigned numPseudoExperiments = cfgFitTauIdEff_wConstraints.getParameter<unsigned>("numPseudoExperiments");
+  std::vector<sysUncertaintyEntry> varySysUncertainties;
+  vstring varySysUncertaintyNames = cfgFitTauIdEff_wConstraints.getParameter<vstring>("varySysUncertainties");
+  for ( vstring::const_iterator sysUncertaintyName = varySysUncertaintyNames.begin();
+	sysUncertaintyName != varySysUncertaintyNames.end(); ++sysUncertaintyName ) {
+    varySysUncertainties.push_back(sysUncertaintyEntry(std::string(*sysUncertaintyName).append("Up"),
+						       std::string(*sysUncertaintyName).append("Down"),
+						       std::string(*sysUncertaintyName).append("Diff")));
+  }
+
   bool makeControlPlots = cfgFitTauIdEff_wConstraints.getParameter<bool>("makeControlPlots");
 
   fwlite::InputSource inputFiles(cfg); 
@@ -726,16 +807,6 @@ int main(int argc, const char* argv[])
     throw cms::Exception("fitTauIdEff_wConstraints") 
       << "Input file must be unique, got = " << format_vstring(inputFiles.files()) << " !!\n";
   std::string histogramFileName = (*inputFiles.files().begin());
-
-  std::vector<std::string> sysShifts;
-  sysShifts.push_back("CENTRAL_VALUE");
-  if ( runSysUncertainties ) {
-    for ( std::vector<sysUncertaintyEntry>::const_iterator sysUncertainty = sysUncertainties.begin();
-	  sysUncertainty != sysUncertainties.end(); ++sysUncertainty ) {
-      sysShifts.push_back(sysUncertainty->sysNameUp_);
-      sysShifts.push_back(sysUncertainty->sysNameDown_);
-    }
-  }
 
   typedef std::map<std::string, std::map<std::string, TH1*> > histogramMap; // key = (region, observable + sysShift)
   histogramMap distributionsData;
@@ -754,11 +825,11 @@ int main(int argc, const char* argv[])
     throw cms::Exception("fitTauIdEff_wConstraints") 
       << "Directory = " << directory << " does not exists in input file = " << histogramFileName << " !!\n";
   
-  for ( std::vector<std::string>::const_iterator sysShift = sysShifts.begin();
-	sysShift != sysShifts.end(); ++sysShift ) {
+   for ( std::vector<std::string>::const_iterator sysShift = loadSysShifts.begin();
+	sysShift != loadSysShifts.end(); ++sysShift ) {
     std::cout << "loading histograms for sysShift = " << (*sysShift) << "..." << std::endl;
     
-    if ( !runClosureTest ) {
+    if ( (*sysShift) == "CENTRAL_VALUE" && !runClosureTest ) {
       loadHistograms(distributionsData, histogramInputDirectory, "Data",       regions, tauIds, fitVariables, *sysShift);
     }
 
@@ -783,12 +854,6 @@ int main(int argc, const char* argv[])
   processes.push_back(std::string("WplusJets"));
   processes.push_back(std::string("TTplusJets"));
 
-//--- compute systematic shifts 
-  for ( std::vector<sysUncertaintyEntry>::const_iterator sysUncertainty = sysUncertainties.begin();
-	sysUncertainty != sysUncertainties.end(); ++sysUncertainty ) {
-    compSysHistograms(templatesAll, *sysUncertainty);
-  }
-
 //--- closure test: fit sum(MC) instead of Data
   if ( runClosureTest ) {
     std::cout << ">>> NOTE: RUNNING CLOSURE TEST <<<" << std::endl;
@@ -810,42 +875,52 @@ int main(int argc, const char* argv[])
 	  tauId != tauIds.end(); ++tauId ) {
       for ( std::vector<std::string>::const_iterator fitVariable = fitVariables.begin();
 	    fitVariable != fitVariables.end(); ++fitVariable ) {
-	std::string key_all    = getKey(*fitVariable, *tauId);
-	std::string key_passed = getKey(*fitVariable, *tauId, "passed");
-	std::string key_failed = getKey(*fitVariable, *tauId, "failed");
-	
-	std::string keyQCDtemplateFromData_passed = key_all;
-	if ( regionQCDtemplateFromData_passed.find("p") != std::string::npos ) keyQCDtemplateFromData_passed = key_passed;
-	std::string keyQCDtemplateFromData_failed = key_all;
-	if ( regionQCDtemplateFromData_failed.find("f") != std::string::npos ) keyQCDtemplateFromData_failed = key_failed;
+	for ( std::vector<std::string>::const_iterator sysShift = loadSysShifts.begin();
+	      sysShift != loadSysShifts.end(); ++sysShift ) {	  
+	  std::string keyQCD_all     = getKey(*fitVariable, *tauId, "all",    *sysShift);
+	  std::string keyQCD_passed  = getKey(*fitVariable, *tauId, "passed", *sysShift);
+	  std::string keyQCD_failed  = getKey(*fitVariable, *tauId, "passed", *sysShift);
 
-	std::cout << "templatesQCD['C1']["  << key_all    << "] = " << templatesQCD["C1"][key_all]      << std::endl;
-	std::cout << "templatesQCD['C1p'][" << key_passed << "] = " << templatesQCD["C1p"][key_passed]  << std::endl;
-	std::cout << "templatesQCD['C1f'][" << key_failed << "] = " << templatesQCD["C1f"][key_failed]  << std::endl;
-	std::cout << "distributionsData" 
-		  << "['" << regionQCDtemplateFromData_passed << "'][" << keyQCDtemplateFromData_passed << "] = " 
-		  << distributionsData[regionQCDtemplateFromData_passed][keyQCDtemplateFromData_passed] << std::endl;
-	std::cout << "distributionsData" 
-		  << "['" << regionQCDtemplateFromData_failed << "'][" << keyQCDtemplateFromData_failed << "] = " 
-		  << distributionsData[regionQCDtemplateFromData_failed][keyQCDtemplateFromData_failed] << std::endl;
-	
-	std::string histogramNameQCD_C1 = templatesQCD["C1"][key_all]->GetName();
-	double normQCD_C1 = getIntegral(templatesQCD["C1"][key_all], true, true);
-	templatesQCD["C1"][key_all] = 
-	  normalize(distributionsData[regionQCDtemplateFromData_failed][keyQCDtemplateFromData_failed], normQCD_C1);
-	templatesQCD["C1"][key_all]->SetName(histogramNameQCD_C1.data());
-	
-	std::string histogramNameQCD_C1p = templatesQCD["C1p"][key_passed]->GetName();
-	double normQCD_C1p = getIntegral(templatesQCD["C1p"][key_passed], true, true);	
-	templatesQCD["C1p"][key_passed] = 
-	  normalize(distributionsData[regionQCDtemplateFromData_passed][keyQCDtemplateFromData_passed], normQCD_C1p);
-	templatesQCD["C1p"][key_passed]->SetName(histogramNameQCD_C1p.data());
-	
-	std::string histogramNameQCD_C1f = templatesQCD["C1f"][key_failed]->GetName();
-	double normQCD_C1f = getIntegral(templatesQCD["C1f"][key_failed], true, true);
-	templatesQCD["C1f"][key_failed] = 
-	  normalize(distributionsData[regionQCDtemplateFromData_failed][keyQCDtemplateFromData_failed], normQCD_C1f);
-	templatesQCD["C1f"][key_failed]->SetName(histogramNameQCD_C1f.data());
+	  std::string keyData_all    = getKey(*fitVariable, *tauId, "all");
+	  std::string keyData_passed = getKey(*fitVariable, *tauId, "all");
+	  if ( regionQCDtemplateFromData_passed.find("p") != std::string::npos ) keyData_passed = getKey(*fitVariable, *tauId, "passed");
+	  std::string keyData_failed = getKey(*fitVariable, *tauId, "all");
+	  if ( regionQCDtemplateFromData_failed.find("f") != std::string::npos ) keyData_failed = getKey(*fitVariable, *tauId, "failed");
+	  
+	  //std::cout << "templatesQCD[C1][" << keyQCD_all << "] = " 
+	  //	      << templatesQCD["C1"][keyQCD_all]  << std::endl;
+	  //std::cout << "templatesQCD[C1p][" << keyQCD_passed << "] = " 
+	  //	      << templatesQCD["C1p"][keyQCD_passed]  << std::endl;
+	  //std::cout << "templatesQCD[C1f][" << keyQCD_failed << "] = " 
+	  //	      << templatesQCD["C1f"][keyQCD_failed]  << std::endl;
+	  //std::cout << "distributionsData" 
+	  //	      << "['" << regionQCDtemplateFromData_all << "'][" << keyData_all << "] = " 
+	  //	      << distributionsData[regionQCDtemplateFromData_all][keyData_all] << std::endl;
+	  //std::cout << "distributionsData" 
+	  //	      << "['" << regionQCDtemplateFromData_passed << "'][" << keyData_passed << "] = " 
+	  //	      << distributionsData[regionQCDtemplateFromData_passed][keyData_passed] << std::endl;
+	  //std::cout << "distributionsData" 
+	  //	      << "['" << regionQCDtemplateFromData_failed << "'][" << keyData_failed << "] = " 
+	  //	      << distributionsData[regionQCDtemplateFromData_failed][keyData_failed] << std::endl;
+	  
+	  std::string histogramNameQCD_C1 = templatesQCD["C1"][keyQCD_all]->GetName();
+	  double normQCD_C1 = getIntegral(templatesQCD["C1"][keyQCD_all], true, true);	
+	  templatesQCD["C1"][keyQCD_all] = 
+	    normalize(distributionsData[regionQCDtemplateFromData_all][keyData_all], normQCD_C1);
+	  templatesQCD["C1"][keyQCD_all]->SetName(histogramNameQCD_C1.data());
+
+	  std::string histogramNameQCD_C1p = templatesQCD["C1p"][keyQCD_passed]->GetName();
+	  double normQCD_C1p = getIntegral(templatesQCD["C1p"][keyQCD_passed], true, true);	
+	  templatesQCD["C1p"][keyQCD_passed] = 
+	    normalize(distributionsData[regionQCDtemplateFromData_passed][keyData_passed], normQCD_C1p);
+	  templatesQCD["C1p"][keyQCD_passed]->SetName(histogramNameQCD_C1p.data());
+	  
+	  std::string histogramNameQCD_C1f = templatesQCD["C1f"][keyQCD_failed]->GetName();
+	  double normQCD_C1f = getIntegral(templatesQCD["C1f"][keyQCD_failed], true, true);
+	  templatesQCD["C1f"][keyQCD_failed] = 
+	    normalize(distributionsData[regionQCDtemplateFromData_failed][keyData_failed], normQCD_C1f);
+	  templatesQCD["C1f"][keyQCD_failed]->SetName(histogramNameQCD_C1f.data());
+	}
       }
     }
 
@@ -886,14 +961,14 @@ int main(int argc, const char* argv[])
     }
   }
 
-  for ( std::map<std::string, std::map<std::string, TH1*> >::const_iterator region = distributionsData.begin();
-	region != distributionsData.end(); ++region ) {
-    for ( std::map<std::string, TH1*>::const_iterator key = region->second.begin();
-	  key != region->second.end(); ++key ) {
-      std::cout << "numEvents[" << "Data" << "][" << region->first << "][" << key->first << "] = "
-		<< getIntegral(key->second, true, true) << std::endl;
-    }
-  }
+  //for ( std::map<std::string, std::map<std::string, TH1*> >::const_iterator region = distributionsData.begin();
+  //	  region != distributionsData.end(); ++region ) {
+  //  for ( std::map<std::string, TH1*>::const_iterator key = region->second.begin();
+  //	    key != region->second.end(); ++key ) {
+  //    std::cout << "numEvents[" << "Data" << "][" << region->first << "][" << key->first << "] = "
+  //		  << getIntegral(key->second, true, true) << std::endl;
+  //  }
+  //}
 
   std::map<std::string, std::map<std::string, std::map<std::string, double> > > numEventsAll = // key = (process/"sum", region, observable)
     compNumEvents(templatesAll, processes, distributionsData);
@@ -966,6 +1041,7 @@ int main(int argc, const char* argv[])
       fitUsingRooFit(distributionsData, templatesAll, numEventsAll, fittedFractions,
 		     processes,
 		     *tauId, *fitVariable, fitTauIdEffC2,
+		     morphSysUncertaintyUp, morphSysUncertaintyDown, sysVariedByNsigma,
 		     effValue, effError, normFactors_fitted, hasFitConverged,		       
 		     1);
       effValues[*tauId][*fitVariable] = effValue;
@@ -1044,8 +1120,14 @@ int main(int argc, const char* argv[])
     }
   }
 
-  if ( runSysUncertainties ) {
+  if ( runPseudoExperiments ) {
     
+//--- compute systematic shifts 
+    for ( std::vector<sysUncertaintyEntry>::const_iterator sysUncertainty = varySysUncertainties.begin();
+	  sysUncertainty != varySysUncertainties.end(); ++sysUncertainty ) {
+      compSysHistograms(templatesAll, *sysUncertainty);
+    }
+
     std::map<std::string, std::map<std::string, TH1*> > effDistributions;            // key = (tauId, fitVariable)
     std::map<std::string, std::map<std::string, TH1*> > fitConvergenceDistributions; // key = (tauId, fitVariable)
     
@@ -1071,8 +1153,8 @@ int main(int argc, const char* argv[])
 	      
 	      sampleHistogram_stat(origHistogram, fluctHistogram);
 	      
-	      for ( std::vector<sysUncertaintyEntry>::const_iterator sysUncertainty = sysUncertainties.begin();
-		    sysUncertainty != sysUncertainties.end(); ++sysUncertainty ) {
+	      for ( std::vector<sysUncertaintyEntry>::const_iterator sysUncertainty = varySysUncertainties.begin();
+		    sysUncertainty != varySysUncertainties.end(); ++sysUncertainty ) {
 		std::string key_sys = std::string(key->first).append("_").append(sysUncertainty->sysNameDiff_);
 		TH1* sysHistogram = templatesAll_fluctuated[*process][region->first][key_sys];
 		assert(sysHistogram);
@@ -1098,6 +1180,7 @@ int main(int argc, const char* argv[])
 	  fitUsingRooFit(distributionsData, templatesAll_fluctuated, numEventsAll_fluctuated, fittedFractions_fluctuated,
 			 processes,
 			 *tauId, *fitVariable, fitTauIdEffC2,
+			 morphSysUncertaintyUp, morphSysUncertaintyDown, sysVariedByNsigma,
 			 effValue, effError, normFactors_fitted, hasFitConverged,		       
 			 0);
 
@@ -1176,8 +1259,10 @@ int main(int argc, const char* argv[])
   std::cout << "finished executing fitTauIdEff_wConstraints macro:" << std::endl;
   std::cout << " #tauIdDiscr.  = " << tauIds.size() << std::endl;
   std::cout << " #fitVariables = " << fitVariables.size() << std::endl;
-  std::cout << " #sysShifts    = " << sysShifts.size() 
-	    << " (numPseudoExperiments = " << numPseudoExperiments << ")" << std::endl;
+  if ( runPseudoExperiments ) {
+    std::cout << " #sysUncertainties    = " << varySysUncertainties.size() 
+	      << " (numPseudoExperiments = " << numPseudoExperiments << ")" << std::endl;
+  }
   clock.Show("fitTauIdEff_wConstraints");
 
   return 0;
