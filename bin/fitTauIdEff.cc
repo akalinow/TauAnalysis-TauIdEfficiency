@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.21 $
+ * \version $Revision: 1.22 $
  *
- * $Id: fitTauIdEff.cc,v 1.21 2011/07/22 17:31:11 veelken Exp $
+ * $Id: fitTauIdEff.cc,v 1.22 2011/07/26 16:39:08 veelken Exp $
  *
  */
 
@@ -123,7 +123,7 @@ void fitUsingRooFit(std::map<std::string, std::map<std::string, TH1*> >& distrib
     std::cout << "<fitUsingRooFit>:" << std::endl;
     std::cout << " performing Fit of variable = " << fitVariable << " for Tau id. = " << tauId << std::endl;
   }
-      
+
   double fitMin_passed = templatesAll["Ztautau"]["PASSED"][getKey(fitVariable, tauId, "passed")]->GetXaxis()->GetXmin();
   double fitMax_passed = templatesAll["Ztautau"]["PASSED"][getKey(fitVariable, tauId, "passed")]->GetXaxis()->GetXmax();
   double fitMin_failed = templatesAll["Ztautau"]["FAILED"][getKey(fitVariable, tauId, "failed")]->GetXaxis()->GetXmin();
@@ -131,6 +131,7 @@ void fitUsingRooFit(std::map<std::string, std::map<std::string, TH1*> >& distrib
   assert(fitMin_passed == fitMin_failed && fitMax_passed == fitMax_failed);
   std::string fitVarName = std::string("fitVar").append("_").append(fitVariable);
   RooRealVar* fitVar = new RooRealVar(fitVarName.data(), fitVarName.data(), fitMin_passed, fitMax_passed);
+  fitVar->setBins(100, "cache");
   if ( verbosity ) std::cout << "range = " << fitMin_passed << ".." << fitMax_passed << std::endl;
 
   double numEventsData = distributionsData["ALL"][getKey(fitVariable, tauId)]->Integral();
@@ -154,7 +155,7 @@ void fitUsingRooFit(std::map<std::string, std::map<std::string, TH1*> >& distrib
   for ( std::vector<std::string>::const_iterator process = processes.begin();
 	process != processes.end(); ++process ) {
     //std::cout << "process = " << (*process) << ":" << std::endl;
-    
+
     double numEvents             = numEventsAll[*process]["ALL"][getKey(fitVariable, tauId)];
     double fittedFraction        = fittedFractions[*process]["ALL"][getKey(fitVariable, tauId)];
     double fittedEvents          = fittedFraction*numEvents;
@@ -194,11 +195,13 @@ void fitUsingRooFit(std::map<std::string, std::map<std::string, TH1*> >& distrib
       RooHistPdf* pdfDown_passed = makeRooHistPdf(templateDown_passed, fitVar);
       std::string alphaName_passed = std::string(template_passed->GetName()).append("_alpha");
       RooRealVar* alpha_passed = new RooRealVar(alphaName_passed.data(), alphaName_passed.data(), 0.5, 0., 1.);
+      alpha_passed->setBins(30, "cache");
       alphas.push_back(alpha_passed);
       std::string pdfName_passed = std::string(template_passed->GetName()).append("_pdf");
       pdf_passed = 
 	new RooIntegralMorph(pdfName_passed.data(), 
-			     pdfName_passed.data(), *pdfUp_passed, *pdfDown_passed, *fitVar, *alpha_passed, true);
+			     pdfName_passed.data(), *pdfUp_passed, *pdfDown_passed, *fitVar, *alpha_passed);
+      ((RooIntegralMorph*)pdf_passed)->setCacheAlpha(true);
     } else {
       pdf_passed = makeRooHistPdf(template_passed, fitVar);
     }
@@ -213,11 +216,13 @@ void fitUsingRooFit(std::map<std::string, std::map<std::string, TH1*> >& distrib
       RooHistPdf* pdfDown_failed = makeRooHistPdf(templateDown_failed, fitVar);
       std::string alphaName_failed = std::string(template_failed->GetName()).append("_alpha");
       RooRealVar* alpha_failed = new RooRealVar(alphaName_failed.data(), alphaName_failed.data(), 0.5, 0., 1.);
+      alpha_failed->setBins(50, "cache");
       alphas.push_back(alpha_failed);
       std::string pdfName_failed = std::string(template_failed->GetName()).append("_pdf");
       pdf_failed = 
 	new RooIntegralMorph(pdfName_failed.data(), 
-			     pdfName_failed.data(), *pdfUp_failed, *pdfDown_failed, *fitVar, *alpha_failed, true);
+			     pdfName_failed.data(), *pdfUp_failed, *pdfDown_failed, *fitVar, *alpha_failed);
+      ((RooIntegralMorph*)pdf_failed)->setCacheAlpha(true);
     } else {
       pdf_failed = makeRooHistPdf(template_failed, fitVar);
     }
@@ -232,7 +237,6 @@ void fitUsingRooFit(std::map<std::string, std::map<std::string, TH1*> >& distrib
 
     fitParameters_passed.Add(norm_passed[*process]);
     fitParameters_failed.Add(norm_failed[*process]);
-
   }
 
   RooAddPdf* pdfSum_passed = new RooAddPdf("pdfSum_passed", "pdfSum_passed", RooArgList(pdfs_passed), RooArgList(fitParameters_passed));
@@ -292,25 +296,38 @@ void fitUsingRooFit(std::map<std::string, std::map<std::string, TH1*> >& distrib
   //fitOptions.Add(new RooCmdArg(RooFit::PrintEvalErrors(10)));
   fitOptions.Add(new RooCmdArg(RooFit::PrintEvalErrors(-1)));
   fitOptions.Add(new RooCmdArg(RooFit::Save(true)));
+  fitOptions.Add(new RooCmdArg(RooFit::Verbose(true)));
 
   pdfSimultaneousFit->printCompactTree();
 
-  //RooFitResult* fitResult = pdfSimultaneousFit->fitTo(*data, fitOptions);
+  RooFitResult* fitResult = pdfSimultaneousFit->fitTo(*data, fitOptions);
 
-  RooAbsReal* nll = pdfSimultaneousFit->createNLL(*data, fitOptions); 
-  RooMinuit minuit(*nll);
-  minuit.setErrorLevel(1);
-  minuit.setNoWarn();
-  minuit.setPrintEvalErrors(1);
-  minuit.setPrintLevel(0);
+  //RooAbsReal* nll = pdfSimultaneousFit->createNLL(*data, fitOptions); 
+  //RooMinuit minuit(*nll);
+  //minuit.setErrorLevel(1);
+  //minuit.setNoWarn();
+  //minuit.setPrintEvalErrors(1);
+  //minuit.setPrintLevel(0);
   //minuit.setWarnLevel(1);
-  minuit.migrad(); 
-  minuit.hesse(); 
+  //minuit.migrad(); 
+  //minuit.hesse(); 
+  //std::string fitResultName = std::string("fitResult").append("_").append(tauId);
+  //RooFitResult* fitResult = minuit.save(fitResultName.data(), fitResultName.data());
+
+//--- disable caching of RooIntegralMorph PDFs
+  for ( std::vector<std::string>::const_iterator process = processes.begin();
+	process != processes.end(); ++process ) {
+    if ( dynamic_cast<RooIntegralMorph*>(pdf[*process]["PASSED"]) ) {
+      RooIntegralMorph* pdf_passed = dynamic_cast<RooIntegralMorph*>(pdf[*process]["PASSED"]);
+      pdf_passed->setCacheAlpha(false);
+    }
+    if ( dynamic_cast<RooIntegralMorph*>(pdf[*process]["FAILED"]) ) {
+      RooIntegralMorph* pdf_failed = dynamic_cast<RooIntegralMorph*>(pdf[*process]["FAILED"]);
+      pdf_failed->setCacheAlpha(false);
+    }
+  }
 
 //--- unpack covariance matrix of fit parameters
-  std::string fitResultName = std::string("fitResult").append("_").append(tauId);
-  RooFitResult*	fitResult = minuit.save(fitResultName.data(), fitResultName.data());
-
   effValue = pTauId_passed_failed["Ztautau"]->getVal();
   effError = pTauId_passed_failed["Ztautau"]->getError();
   for ( std::vector<std::string>::const_iterator process = processes.begin();
@@ -553,11 +570,13 @@ int main(int argc, const char* argv[])
 	  std::string keyQCD_passed = getKey(*fitVariable, *tauId, "all",    *sysShift);
 	  if ( region_passed.find("p") != std::string::npos ) keyQCD_passed = getKey(*fitVariable, *tauId, "passed", *sysShift);
 	  std::string keyQCD_failed = getKey(*fitVariable, *tauId, "all",    *sysShift);
+	  if ( region_failed.find("p") != std::string::npos ) keyQCD_failed = getKey(*fitVariable, *tauId, "passed", *sysShift);
 	  if ( region_failed.find("f") != std::string::npos ) keyQCD_failed = getKey(*fitVariable, *tauId, "failed", *sysShift);
 	
 	  std::string keyData_passed = getKey(*fitVariable, *tauId, "all");
 	  if ( regionQCDtemplateFromData_passed.find("p") != std::string::npos ) keyData_passed = getKey(*fitVariable, *tauId, "passed");
 	  std::string keyData_failed = getKey(*fitVariable, *tauId, "all");
+	  if ( regionQCDtemplateFromData_failed.find("p") != std::string::npos ) keyData_failed = getKey(*fitVariable, *tauId, "passed");
 	  if ( regionQCDtemplateFromData_failed.find("f") != std::string::npos ) keyData_failed = getKey(*fitVariable, *tauId, "failed");
 	  
 	  //std::cout << "templatesQCD[" << region_passed << "][" << keyQCD_passed << "] = " 
@@ -592,13 +611,15 @@ int main(int argc, const char* argv[])
 //--- compute sum of "passed" and "failed" regions
   for ( std::vector<std::string>::const_iterator tauId = tauIds.begin();
 	tauId != tauIds.end(); ++tauId ) {
-    for ( std::vector<std::string>::const_iterator fitVariable = fitVariables.begin();
-	  fitVariable != fitVariables.end(); ++fitVariable ) {
-      std::string keyData_all    = getKey(*fitVariable, *tauId, "all");
+    std::vector<std::string> observables = getObservables("ABCD", fitVariables);
+    for ( std::vector<std::string>::const_iterator observable = observables.begin();
+	  observable != observables.end(); ++observable ) {
+      std::string keyData_all    = getKey(*observable, *tauId, "all");
       std::string keyData_passed = keyData_all;
-      if ( region_passed.find("p") != std::string::npos ) keyData_passed = getKey(*fitVariable, *tauId, "passed");
+      if ( region_passed.find("p") != std::string::npos ) keyData_passed = getKey(*observable, *tauId, "passed");
       std::string keyData_failed = keyData_all;
-      if ( region_failed.find("f") != std::string::npos ) keyData_failed = getKey(*fitVariable, *tauId, "failed");
+      if ( region_failed.find("p") != std::string::npos ) keyData_failed = getKey(*observable, *tauId, "passed");
+      if ( region_failed.find("f") != std::string::npos ) keyData_failed = getKey(*observable, *tauId, "failed");
       
       TH1* distributionData_passed = distributionsData[region_passed][keyData_passed];
       TH1* distributionData_failed = distributionsData[region_failed][keyData_failed];
@@ -607,16 +628,17 @@ int main(int argc, const char* argv[])
       distributionData_all->Add(distributionData_failed);
       
       distributionsData["PASSED"][keyData_passed] = distributionData_passed;
-      distributionsData["FAILED"][keyData_failed] = distributionData_failed;
-      distributionsData["ALL"][keyData_all]       = distributionData_all;
+      distributionsData["FAILED"][getKey(*observable, *tauId, "failed")] = distributionData_failed;
+      distributionsData["ALL"][keyData_all] = distributionData_all;
 
       for ( std::vector<std::string>::const_iterator sysShift = loadSysShifts.begin();
 	    sysShift != loadSysShifts.end(); ++sysShift ) {
-	std::string keySim_all    = getKey(*fitVariable, *tauId, "all", *sysShift);
+	std::string keySim_all    = getKey(*observable, *tauId, "all", *sysShift);
 	std::string keySim_passed = keySim_all;
-	if ( region_passed.find("p") != std::string::npos ) keySim_passed = getKey(*fitVariable, *tauId, "passed", *sysShift);
+	if ( region_passed.find("p") != std::string::npos ) keySim_passed = getKey(*observable, *tauId, "passed", *sysShift);
 	std::string keySim_failed = keySim_all;
-	if ( region_failed.find("f") != std::string::npos ) keySim_failed = getKey(*fitVariable, *tauId, "failed", *sysShift);
+	if ( region_failed.find("p") != std::string::npos ) keySim_failed = getKey(*observable, *tauId, "passed", *sysShift);
+	if ( region_failed.find("f") != std::string::npos ) keySim_failed = getKey(*observable, *tauId, "failed", *sysShift);
 	
 	for ( std::vector<std::string>::const_iterator process = processes.begin();
 	      process != processes.end(); ++process ) {
@@ -627,8 +649,8 @@ int main(int argc, const char* argv[])
 	  templateProcess_all->Add(templateProcess_failed);
 	  
 	  templatesAll[*process]["PASSED"][keySim_passed] = templateProcess_passed;
-	  templatesAll[*process]["FAILED"][keySim_failed] = templateProcess_failed;
-	  templatesAll[*process]["ALL"][keySim_all]       = templateProcess_all;
+	  templatesAll[*process]["FAILED"][getKey(*observable, *tauId, "failed", *sysShift)] = templateProcess_failed;
+	  templatesAll[*process]["ALL"][keySim_all] = templateProcess_all;
 	}
       }
     }
@@ -672,13 +694,13 @@ int main(int argc, const char* argv[])
       }
     }
   }
-  
+
   //for ( vstring::const_iterator region = regionsToDraw.begin();
   //	  region != regionsToDraw.end(); ++region ) {
   //  for ( std::map<std::string, TH1*>::const_iterator key = distributionsData[*region].begin();
   //	    key != distributionsData[*region].end(); ++key ) {
   //    std::cout << "numEvents[" << "Data" << "][" << (*region) << "][" << key->first << "] = "
-  //		  << getIntegral(key->second, true, true) << std::endl;
+  //	  	  << getIntegral(key->second, true, true) << std::endl;
   //  }
   //}
 

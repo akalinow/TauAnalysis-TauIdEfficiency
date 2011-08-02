@@ -41,6 +41,22 @@
   <use   name="PhysicsTools/FWLite"/>
   <use   name="TauAnalysis/TauIdEfficiency"/>
 </bin>
+<bin   file="FWLiteTauChargeMisIdPreselNumbers.cc" name="FWLiteTauChargeMisIdPreselNumbers">
+  <use   name="DataFormats/Common"/>
+  <use   name="DataFormats/FWLite"/>
+  <use   name="DataFormats/HepMCCandidate"/>
+  <use   name="DataFormats/StdDictionaries"/>
+  <use   name="DataFormats/WrappedStdDictionaries"/>
+  <use   name="FWCore/FWLite"/>
+  <use   name="FWCore/ParameterSet"/>
+  <use   name="FWCore/PythonParameterSet"/>
+  <use   name="FWCore/Utilities"/>
+  <use   name="PhysicsTools/FWLite"/>
+  <use   name="PhysicsTools/JetMCUtils"/>
+  <use   name="TauAnalysis/CandidateTools"/>
+  <use   name="TauAnalysis/TauIdEfficiency"/>
+  <use   name="AnalysisDataFormats/TauAnalysis"/>
+</bin>
 <bin   file="makeTauFakeRatePlots.cc" name="makeTauFakeRatePlots">
   <use   name="FWCore/FWLite"/>
   <use   name="FWCore/ParameterSet"/>

@@ -834,7 +834,7 @@ std::map<std::string, std::map<std::string, std::map<std::string, double> > > co
 	    key != region->second.end(); ++key ) {
 	retVal[*process][region->first][key->first] = getIntegral(templatesAll[*process][region->first][key->first], true, true);
 	//std::cout << "numEvents[" << (*process) << "][" << region->first << "][" << key->first << "] = "
-	//	    << retVal[*process][region->first][key->first] << std::endl;
+	//          << retVal[*process][region->first][key->first] << std::endl;
 	retVal["sum"][region->first][key->first] += retVal[*process][region->first][key->first];
       }
     }

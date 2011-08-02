@@ -10,9 +10,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.2 $
+ * \version $Revision: 1.3 $
  *
- * $Id: FWLiteTauFakeRateAnalyzer.cc,v 1.2 2011/07/21 16:37:13 veelken Exp $
+ * $Id: FWLiteTauFakeRateAnalyzer.cc,v 1.3 2011/07/26 14:04:16 veelken Exp $
  *
  */
 
@@ -31,6 +31,8 @@
 #include "PhysicsTools/FWLite/interface/TFileService.h"
 #include "DataFormats/FWLite/interface/InputSource.h"
 #include "DataFormats/FWLite/interface/OutputFiles.h"
+
+#include "CommonTools/UtilAlgos/interface/StringCutObjectSelector.h"
 
 #include "DataFormats/PatCandidates/interface/Tau.h"
 #include "DataFormats/PatCandidates/interface/MET.h"
@@ -52,6 +54,7 @@
 #include <TBenchmark.h>
 
 typedef std::vector<std::string> vstring;
+typedef StringCutObjectSelector<pat::Tau> StringCutPatTauSelector;
 
 struct regionEntryType
 {
@@ -185,6 +188,12 @@ int main(int argc, char* argv[])
       regionEntries.push_back(regionEntry);
     }
   }
+  std::vector<StringCutPatTauSelector*> tauJetCandSelection;
+  vstring tauJetCandSelection_string = cfgTauFakeRateAnalyzer.getParameter<vstring>("tauJetCandSelection");
+  for ( vstring::const_iterator tauJetCandSelCriterion = tauJetCandSelection_string.begin();
+	tauJetCandSelCriterion != tauJetCandSelection_string.end(); ++tauJetCandSelCriterion ) {
+    tauJetCandSelection.push_back(new StringCutPatTauSelector(*tauJetCandSelCriterion));
+  }
 
 //--- book "dummy" histogram counting number of processed events
   TH1* histogramEventCounter = fs.make<TH1F>("numEventsProcessed", "Number of processed Events", 3, -0.5, +2.5);
@@ -290,6 +299,17 @@ int main(int argc, char* argv[])
       evt.getByLabel(srcTauJetCandidates, tauJetCandidates);
       for ( pat::TauCollection::const_iterator tauJetCand = tauJetCandidates->begin();
 	    tauJetCand != tauJetCandidates->end(); ++tauJetCand ) {
+	bool passesTauJetCandSelection = true;
+	for ( std::vector<StringCutPatTauSelector*>::const_iterator tauJetCandSelCriterion = tauJetCandSelection.begin();
+	      tauJetCandSelCriterion != tauJetCandSelection.end(); ++tauJetCandSelCriterion ) {
+	  if ( !(**tauJetCandSelCriterion)(*tauJetCand) ) {
+	    passesTauJetCandSelection = false;
+	    break;
+	  }
+	}
+
+	if ( !passesTauJetCandSelection ) continue;
+
 	for ( std::vector<regionEntryType*>::iterator regionEntry = regionEntries.begin();
 	      regionEntry != regionEntries.end(); ++regionEntry ) {
 	  (*regionEntry)->analyze(*tauJetCand, numVertices, sumEt, evtWeight);
@@ -311,20 +331,9 @@ int main(int argc, char* argv[])
     std::cout << "--> scaling histograms by factor = " << mcScaleFactor
 	      << " according to cross-section times luminosity." << std::endl;
 
-//--- apply correction to scale-factor in order to account for events lost, 
-//    due to aborted skimming/crab or PAT-tuple production/lxbatch jobs
-    double lostStatCorrFactor = 1.;
-    if ( histogramEventCounter->GetBinContent(1) > histogramEventCounter->GetBinContent(2) && 
-	 histogramEventCounter->GetBinContent(2) > 0.                                      ) {
-      lostStatCorrFactor = histogramEventCounter->GetBinContent(1)/histogramEventCounter->GetBinContent(2);
-      std::cout << "--> scaling histograms by additional factor = " << lostStatCorrFactor
-		<< " to account for events lost," << std::endl; 
-      std::cout << "    due to aborted skimming/crab or PAT-tuple production/lxbatch jobs." << std::endl;
-    }
-
     for ( std::vector<regionEntryType*>::iterator regionEntry = regionEntries.begin();
 	  regionEntry != regionEntries.end(); ++regionEntry ) {  
-      (*regionEntry)->histograms_->scaleHistograms(mcScaleFactor*lostStatCorrFactor);
+      (*regionEntry)->histograms_->scaleHistograms(mcScaleFactor);
     }
   }
 

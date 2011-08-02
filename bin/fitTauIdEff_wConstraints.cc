@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.19 $
+ * \version $Revision: 1.20 $
  *
- * $Id: fitTauIdEff_wConstraints.cc,v 1.19 2011/07/27 10:46:21 veelken Exp $
+ * $Id: fitTauIdEff_wConstraints.cc,v 1.20 2011/07/27 12:40:36 veelken Exp $
  *
  */
 
@@ -219,7 +219,8 @@ RooAbsPdf* makeMorphedPDF(std::map<std::string, TH1*>& templates,
   std::string pdfName = std::string(templateHist->GetName()).append("_pdf");
   //bool cacheHistogramMorph = true;
   bool cacheHistogramMorph = false;
-  RooAbsPdf* retVal = new RooIntegralMorph(pdfName.data(), pdfName.data(), *pdfUp, *pdfDown, *fitVar, *alpha, cacheHistogramMorph);
+  RooIntegralMorph* retVal = new RooIntegralMorph(pdfName.data(), pdfName.data(), *pdfUp, *pdfDown, *fitVar, *alpha, cacheHistogramMorph);
+  retVal->setCacheAlpha(true);
   return retVal;
 }
 
@@ -243,6 +244,7 @@ void fitUsingRooFit(std::map<std::string, std::map<std::string, TH1*> >& distrib
   double fitMinABC2D = templatesAll["Ztautau"]["A"][getKey("diTauMt", tauId)]->GetXaxis()->GetXmin();
   double fitMaxABC2D = templatesAll["Ztautau"]["A"][getKey("diTauMt", tauId)]->GetXaxis()->GetXmax();
   RooRealVar* fitVarABC2D = new RooRealVar("fitVarABC2D", "fitVarABC2D", fitMinABC2D, fitMaxABC2D);
+  fitVarABC2D->setBins(100, "cache");
 
   double fitMinC1p = templatesAll["Ztautau"]["C1p"][getKey(fitVariable, tauId, "passed")]->GetXaxis()->GetXmin();
   double fitMaxC1p = templatesAll["Ztautau"]["C1p"][getKey(fitVariable, tauId, "passed")]->GetXaxis()->GetXmax();
@@ -250,6 +252,7 @@ void fitUsingRooFit(std::map<std::string, std::map<std::string, TH1*> >& distrib
   double fitMaxC1f = templatesAll["Ztautau"]["C1f"][getKey(fitVariable, tauId, "failed")]->GetXaxis()->GetXmax();
   assert(fitMinC1p == fitMinC1f && fitMaxC1p == fitMaxC1f);
   RooRealVar* fitVarC1 = new RooRealVar("fitVarC1", "fitVarC1", fitMinC1p, fitMaxC1p);
+  fitVarC1->setBins(100, "cache");
 
   double numEventsDataABCD = distributionsData["ABCD"][getKey("diTauMt", tauId)]->Integral();
   //std::cout << "numEventsDataABCD = " << numEventsDataABCD << std::endl;
@@ -606,6 +609,19 @@ void fitUsingRooFit(std::map<std::string, std::map<std::string, TH1*> >& distrib
   minuit.migrad(); 
   minuit.hesse(); 
 
+//--- disable caching of RooIntegralMorph PDFs
+  for ( std::vector<std::string>::const_iterator process = processes.begin();
+	process != processes.end(); ++process ) {
+    if ( dynamic_cast<RooIntegralMorph*>(pdf[*process]["PASSED"]) ) {
+      RooIntegralMorph* pdf_passed = dynamic_cast<RooIntegralMorph*>(pdf[*process]["PASSED"]);
+      pdf_passed->setCacheAlpha(false);
+    }
+    if ( dynamic_cast<RooIntegralMorph*>(pdf[*process]["FAILED"]) ) {
+      RooIntegralMorph* pdf_failed = dynamic_cast<RooIntegralMorph*>(pdf[*process]["FAILED"]);
+      pdf_failed->setCacheAlpha(false);
+    }
+  }
+
 //--- unpack covariance matrix of fit parameters
   std::string fitResultName = std::string("fitResult").append("_").append(tauId);
   RooFitResult*	fitResult = minuit.save(fitResultName.data(), fitResultName.data());
@@ -906,7 +922,7 @@ int main(int argc, const char* argv[])
 	      sysShift != loadSysShifts.end(); ++sysShift ) {	  
 	  std::string keyQCD_all     = getKey(*fitVariable, *tauId, "all",    *sysShift);
 	  std::string keyQCD_passed  = getKey(*fitVariable, *tauId, "passed", *sysShift);
-	  std::string keyQCD_failed  = getKey(*fitVariable, *tauId, "passed", *sysShift);
+	  std::string keyQCD_failed  = getKey(*fitVariable, *tauId, "failed", *sysShift);
 
 	  std::string keyData_all    = getKey(*fitVariable, *tauId, "all");
 	  std::string keyData_passed = getKey(*fitVariable, *tauId, "all");
@@ -1137,10 +1153,10 @@ int main(int argc, const char* argv[])
       else std::cout << " (fit failed to converge)";
       std::cout << std::endl;      
       
-      double numEventsC    = numEventsAll["Ztautau"]["C"][getKey("diTauMt", *tauId)];
-      double numEventsC1   = numEventsAll["Ztautau"]["C1"][getKey("diTauMt", *tauId)];
-      double numEventsC1p  = numEventsAll["Ztautau"]["C1p"][getKey(fitVariables.front(), *tauId, "passed")];
-      double numEventsC2p  = numEventsAll["Ztautau"]["C2p"][getKey("diTauMt", *tauId, "passed")];
+      double numEventsC   = numEventsAll["Ztautau"]["C"][getKey("diTauMt", *tauId)];
+      double numEventsC1  = numEventsAll["Ztautau"]["C1"][getKey("diTauMt", *tauId)];
+      double numEventsC1p = numEventsAll["Ztautau"]["C1p"][getKey(fitVariables.front(), *tauId, "passed")];
+      double numEventsC2p = numEventsAll["Ztautau"]["C2p"][getKey("diTauMt", *tauId, "passed")];
       
       tauIdEffMCexp[*tauId][*fitVariable] = ( fitTauIdEffC2 ) ? (numEventsC1p + numEventsC2p)/numEventsC : numEventsC1p/numEventsC1;
       std::cout << "(Monte Carlo prediction = " << tauIdEffMCexp[*tauId][*fitVariable]*100. << "%)" << std::endl;
