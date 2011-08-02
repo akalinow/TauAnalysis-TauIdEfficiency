@@ -3,11 +3,11 @@ import FWCore.ParameterSet.Config as cms
 process = cms.PSet()
 
 process.fwliteInput = cms.PSet(
-    fileNames   = cms.vstring('/data1/veelken/tmp/muonPtGt20/V4b/compTauIdEffFinalNumbers_input.root')
+    fileNames = cms.vstring('/data1/veelken/tmp/muonPtGt20/V4b/compTauIdEffFinalNumbers_input.root')
 )
     
 process.fwliteOutput = cms.PSet(
-    fileName  = cms.string('/data1/veelken/tmp/muonPtGt20/V4b/compTauIdEffFinalNumbers_output.root')
+    fileName = cms.string('/data1/veelken/tmp/muonPtGt20/V4b/compTauIdEffFinalNumbers_output.root')
 )
 
 process.compTauIdEffFinalNumbers = cms.PSet(
@@ -16,6 +16,9 @@ process.compTauIdEffFinalNumbers = cms.PSet(
     #     set to name of one individual bin in case you want to measure the tau id. efficiency as function of tauPt, tauEta,...
     #    (needs as many 'fitTauIdEff' jobs to be run in parallel as there are bins)
     directory = cms.string(''),
+
+    passed_region = cms.string('C1p'),
+    failed_region = cms.string('C1f'),
     
     tauIds = cms.vstring(
         'tauDiscrHPSloose', # "new" HPS implemented in HPS+TaNC combined algorithm

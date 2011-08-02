@@ -6,11 +6,18 @@
 
 TauIdEffCutFlowTable::TauIdEffCutFlowTable(const edm::ParameterSet& cfg)
 {
+  //std::cout << "<TauIdEffCutFlowTable::TauIdEffCutFlowTable>:" << std::endl;
+
   process_            = cfg.getParameter<std::string>("process");
   region_             = cfg.getParameter<std::string>("region");
   tauIdDiscriminator_ = cfg.getParameter<std::string>("tauIdDiscriminator");
   label_              = cfg.getParameter<std::string>("label");
   
+  //std::cout << " process = " << process_ << std::endl;
+  //std::cout << " region = " << region_ << std::endl;
+  //std::cout << " tauIdDiscriminator = " << tauIdDiscriminator_ << std::endl;
+  //std::cout << " label = " << label_ << std::endl;
+
   selectionNames_     = cfg.getParameter<vstring>("selectionNames");
   numSelections_      = selectionNames_.size();
   if ( !(numSelections_ >= 1) ) 

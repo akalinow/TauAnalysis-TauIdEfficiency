@@ -3,12 +3,12 @@ import FWCore.ParameterSet.Config as cms
 process = cms.PSet()
 
 process.fwliteInput = cms.PSet(
-    #fileNames   = cms.vstring('fitTauIdEff_wConstraints_2011June30_matthew.root'),
-    fileNames   = cms.vstring('/data1/veelken/tmp/muonPtGt20/V6/analyzeTauIdEffHistograms_all_2011Jul23V6.root'),
+    #fileNames = cms.vstring('fitTauIdEff_wConstraints_2011June30_matthew.root'),
+    fileNames = cms.vstring('/data1/veelken/tmp/muonPtGt20/V6/analyzeTauIdEffHistograms_all_2011Jul23V6.root'),
 )
     
 process.fwliteOutput = cms.PSet(
-    fileName  = cms.string('/data1/veelken/tmp/muonPtGt20/V6/fitTauIdEff.root')
+    fileName = cms.string('/data1/veelken/tmp/muonPtGt20/V6/fitTauIdEff_wTemplateMorphing.root')
 )
 
 process.fitTauIdEff = cms.PSet(
@@ -63,7 +63,8 @@ process.fitTauIdEff = cms.PSet(
         #'diTauSVfitMass'
     ),
 
-    allowTemplateMorphing = cms.bool(True),
+    allowTemplateMorphing = cms.bool(True), # WARNING: template morphing runs **very** slow !!
+    #allowTemplateMorphing = cms.bool(False),
     morphSysUncertainty = cms.string(
         "sysTauJetEn"
     ),
@@ -71,8 +72,7 @@ process.fitTauIdEff = cms.PSet(
     
     loadSysUncertainties = cms.vstring(
         "sysTauJetEn",
-        #"sysJetEn",
-        #"sysAddPUsmearing"
+        #"sysJetEn"
     ),
 
     runPseudoExperiments = cms.bool(False),

@@ -14,6 +14,8 @@ enum { kLeadTrackCharge, kSignalChargedHadronSum };
 
 TauIdEffEventSelector::TauIdEffEventSelector(const edm::ParameterSet& cfg)
 {
+  //std::cout << "<TauIdEffEventSelector::TauIdEffEventSelector>:" << std::endl;
+
   tauIdDiscriminators_ = cfg.getParameter<vstring>("tauIdDiscriminators");
 
   std::string tauChargeMode_string = cfg.getParameter<std::string>("tauChargeMode");
@@ -60,6 +62,8 @@ TauIdEffEventSelector::TauIdEffEventSelector(const edm::ParameterSet& cfg)
   MtCutoffMax_              = 120.0;
 
   region_ = cfg.getParameter<std::string>("region");
+  //std::cout << " region = " << region_ << std::endl;
+
   if        ( region_           == "ABCD"            ) {
     // nothing to be done yet...
     // (simply use default cuts)

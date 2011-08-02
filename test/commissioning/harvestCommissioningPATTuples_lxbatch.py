@@ -8,7 +8,7 @@ from TauAnalysis.Configuration.tools.harvestingLXBatch import make_harvest_scrip
 from TauAnalysis.Configuration.tools.harvesting import castor_source, clean_by_crab_id
 
 castorFilePath = '/castor/cern.ch/user/v/veelken/TauIdCommissioning/'
-version = 'patV1_2'
+version = 'patV1_3'
 
 SAMPLES_TO_ANALYZE = [
     # modify in case you want to submit jobs for some of the samples only...
@@ -77,6 +77,9 @@ for sample in SAMPLES_TO_ANALYZE:
             merge_script_name = os.path.join("lxbatch", "_".join(['submit', sample, evtSel, version, 'merge']) + '.sh'),
             local_copy_mapper = local_copy_mapper,
             chunk_size = 2.e+9, # 2 GB
+            run_harvesting = False,
+            check_old_files = False,
+            max_bsub_concurrent_file_access = 500,
             verbosity = 0
         )
 

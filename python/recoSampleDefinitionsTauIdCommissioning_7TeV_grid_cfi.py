@@ -5,15 +5,15 @@ import TauAnalysis.DQMTools.plotterStyleDefinitions_cfi as styles
 
 # List of samples to run in the analysis
 SAMPLES_TO_RUN = [
-    #'data_Jet_Run2011A_May10ReReco_v1',
-    #'data_Jet_Run2011A_PromptReco_v4',    
-    #'data_SingleMu_Run2011A_May10ReReco_v1',
-    #'data_SingleMu_Run2011A_PromptReco_v4',
-    #'ZplusJets',
-    #'WplusJets',
-    #'qcdDiJetPtHat15to30',
-    #'qcdDiJetPtHat30to50',
-    #'qcdDiJetPtHat50to80',
+    'data_Jet_Run2011A_May10ReReco_v1',
+    'data_Jet_Run2011A_PromptReco_v4',    
+    'data_SingleMu_Run2011A_May10ReReco_v1',
+    'data_SingleMu_Run2011A_PromptReco_v4',
+    'ZplusJets',
+    'WplusJets',
+    'qcdDiJetPtHat15to30',
+    'qcdDiJetPtHat30to50',
+    'qcdDiJetPtHat50to80',
     'qcdDiJetPtHat80to120',
     'qcdDiJetPtHat120to170',
     'qcdDiJetPtHat170to300',
@@ -251,7 +251,7 @@ MERGE_SAMPLES = {
     },
     'WplusJets' : {
         'samples' : [
-            'WplusJets_madgraph'
+            'WplusJets'
         ],
         'type' : plotter.process_WplusJets.config_dqmHistPlotter.type.value(),
         'legendEntry' : plotter.process_WplusJets.config_dqmHistPlotter.legendEntry.value(),
@@ -273,7 +273,7 @@ MERGE_SAMPLES = {
     },
     'TTplusJets' : {
         'samples' : [
-            'TTplusJets_madgraph'
+            'TTplusJets'
         ],
         'type' : plotter.process_TTplusJets.config_dqmHistPlotter.type.value(),
         'legendEntry' : plotter.process_TTplusJets.config_dqmHistPlotter.legendEntry.value(),

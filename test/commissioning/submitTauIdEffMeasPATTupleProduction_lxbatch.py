@@ -23,15 +23,15 @@ pfCandidateCollection = "particleFlow" # pile-up removal disabled
 #pfCandidateCollection = "pfNoPileUp"   # pile-up removal enabled
 
 samplesToAnalyze = [
-    'data_SingleMu_Run2011A_May10ReReco_v1',
-    'data_SingleMu_Run2011A_PromptReco_v4',
-    'Ztautau_powheg',
+    #'data_SingleMu_Run2011A_May10ReReco_v1',
+    #'data_SingleMu_Run2011A_PromptReco_v4',
+    #'Ztautau_powheg',
     'Ztautau_embedded_part1',
     'Ztautau_embedded_part2',
-    'Zmumu_powheg',
-    'PPmuXptGt20Mu15',
-    'WplusJets_madgraph',
-    'TTplusJets_madgraph'
+    #'Zmumu_powheg',
+    #'PPmuXptGt20Mu15',
+    #'WplusJets_madgraph',
+    #'TTplusJets_madgraph'
 ]
 
 #outputFilePath = "/castor/cern.ch/user/m/mverzett/tagprobe/patTuples_v6"
