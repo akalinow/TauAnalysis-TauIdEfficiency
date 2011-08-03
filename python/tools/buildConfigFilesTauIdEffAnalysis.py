@@ -67,17 +67,18 @@ def buildConfigFile_FWLiteTauIdEffAnalyzer(sampleToAnalyze, jobId, inputFilePath
         raise ValueError("Invalid configuration parameter 'tauChargeMode' = %s !!" % tauChargeMode)
 
     disableTauCandPreselCuts_string = getStringRep_bool(disableTauCandPreselCuts)
-    
+
     inputFileNames = os.listdir(inputFilePath)
     #print(inputFileNames)
 
     # check if inputFile is PAT-tuple and
     # matches sampleToAnalyze, jobId
-    inputFileNames_sample = []
-    for inputFileName in inputFileNames:        
-        if inputFileName.find("tauIdEffMeasPATTuple") != -1 and \
-           inputFileName.find("".join(['_', sampleToAnalyze, '_'])) != -1 and \
-           inputFileName.find("".join(['_', jobId, '_'])) != -1:
+    inputFile_regex = \
+      r"tauIdEffMeasPATTuple_%s_%s_(?P<gridJob>\d*)(_(?P<gridTry>\d*))*_(?P<hash>[a-zA-Z0-9]*).root" % (sampleToAnalyze, jobId)
+    inputFile_matcher = re.compile(inputFile_regex)
+    inputFileNames = []
+    for inputFileName in inputFileNames:
+        if inputFile_matcher.match(inputFileName):
             inputFileNames_sample.append(os.path.join(inputFilePath, inputFileName))
 
     #print(sampleToAnalyze)

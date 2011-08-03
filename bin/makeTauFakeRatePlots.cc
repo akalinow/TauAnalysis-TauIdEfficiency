@@ -61,11 +61,6 @@ int main(int argc, const char* argv[])
 
   typedef std::vector<std::string> vstring;
   vstring processesToPlot       = cfgMakeTauFakeRatePlots.getParameter<vstring>("processesToPlot");
-  // !!! only for testing 
-  processesToPlot.clear();
-  processesToPlot.push_back("Data");
-  processesToPlot.push_back("ZplusJets");
-  //     for testing only !!!
   vstring tauIdsToPlot          = cfgMakeTauFakeRatePlots.getParameter<vstring>("tauIdsToPlot");
   vstring eventSelectionsToPlot = cfgMakeTauFakeRatePlots.getParameter<vstring>("eventSelectionsToPlot");
 
@@ -174,11 +169,11 @@ int main(int argc, const char* argv[])
 		 canvas, histogramMap, processNamesSim, processNameData, drawOptionsProcesses,
 		 eventSelectionsToPlot, tauIdsToPlot, regions, 
 		 labels, outputFileName);
-  drawHistograms("jetPhi", "phi_{jet}", 
+  drawHistograms("jetPhi", "#phi_{jet}", 
 		 canvas, histogramMap, processNamesSim, processNameData, drawOptionsProcesses,
 		 eventSelectionsToPlot, tauIdsToPlot, regions, 
 		 labels, outputFileName);
-  
+
 //--- plot fake-rates of different tau id. discriminators
 //   (for one event selection at a time)
   for ( vstring::const_iterator eventSelectionToPlot = eventSelectionsToPlot.begin();
@@ -218,8 +213,8 @@ int main(int argc, const char* argv[])
     frMapType3  frMapToPlot; // key = (process, tauId, observable)
     for ( vstring::const_iterator eventSelectionToPlot = eventSelectionsToPlot.begin();
 	  eventSelectionToPlot != eventSelectionsToPlot.end(); ++eventSelectionToPlot ) {
-      frMapToPlot["sum"][*tauIdToPlot] = frMap[*eventSelectionToPlot]["sum"][*tauIdToPlot];
-      frMapToPlot[processNameData][*tauIdToPlot] = frMap[*eventSelectionToPlot][processNameData][*tauIdToPlot];
+      frMapToPlot["sum"][*eventSelectionToPlot] = frMap[*eventSelectionToPlot]["sum"][*tauIdToPlot];
+      frMapToPlot[processNameData][*eventSelectionToPlot] = frMap[*eventSelectionToPlot][processNameData][*tauIdToPlot];
     }
 
     std::string label_tauId = drawOptionsTauIds[*tauIdToPlot].legendEntry_;

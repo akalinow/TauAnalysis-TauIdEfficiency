@@ -4,11 +4,12 @@ process = cms.PSet()
 
 process.fwliteInput = cms.PSet(
     #fileNames = cms.vstring('fitTauIdEff_wConstraints_2011June30_matthew.root'),
-    fileNames = cms.vstring('/data1/veelken/tmp/muonPtGt20/V6/analyzeTauIdEffHistograms_all_2011Jul23V6.root'),
+    #fileNames = cms.vstring('/data1/veelken/tmp/muonPtGt20/V6/analyzeTauIdEffHistograms_all_2011Jul23V6.root'),
+    fileNames = cms.vstring('/data1/veelken/tmp/muonPtGt20/V6/analyzeTauIdEffHistograms_Ztautau_powheg_2011Jul23V6.root'),
 )
     
 process.fwliteOutput = cms.PSet(
-    fileName = cms.string('/data1/veelken/tmp/muonPtGt20/V6/fitTauIdEff_wTemplateMorphing.root')
+    fileName = cms.string('/data1/veelken/tmp/muonPtGt20/V6/fitTauIdEff_woTemplateMorphing.root')
 )
 
 process.fitTauIdEff = cms.PSet(
@@ -22,39 +23,39 @@ process.fitTauIdEff = cms.PSet(
     runClosureTest = cms.bool(True),
 
     regions = cms.vstring(
-        'A1',  # needed to access QCD template obtained from Data
-        'B1',  # needed to access QCD template obtained from Data
-        'B1p',
-        'B1f',
-        'C1',
+        ##'A1',  # needed to access QCD template obtained from Data
+        ##'B1',  # needed to access QCD template obtained from Data
+        ##'B1p',
+        ##'B1f',
+        ##'C1',
         'C1p',
-        'C1f',
-        'D1',  # needed to measure tau charge misidentification rate
+        ##'C1f',
+        ##'D1',  # needed to measure tau charge misidentification rate
         'D1p',
-        'D1f'
+        ##'D1f'
     ),
 
     # regions (in Data) from which templates for QCD background are taken
     regionTakeQCDtemplateFromData_passed = cms.string('B1p'),
     regionTakeQCDtemplateFromData_failed = cms.string('B1f'),
-    #takeQCDfromData = cms.bool(False),
-    takeQCDfromData = cms.bool(True),
+    takeQCDfromData = cms.bool(False),
+    #takeQCDfromData = cms.bool(True),
 
     # define "passed" and "failed" regions
     passed_region = cms.string('C1p'),
-    failed_region = cms.string('C1f'), # use for tau id. efficiency measurement
-    #failed_region = cms.string('D1p'), # use for measurement of tau charge misidentification efficiency
+    #failed_region = cms.string('C1f'), # use for tau id. efficiency measurement
+    failed_region = cms.string('D1p'), # use for measurement of tau charge misidentification efficiency
     
     tauIds = cms.vstring(
         'tauDiscrHPSloose', # "new" HPS implemented in HPS+TaNC combined algorithm
-        'tauDiscrHPSlooseDBcorr',
-        'tauDiscrHPScombLooseDBcorr',
-        'tauDiscrHPSmedium',
-        'tauDiscrHPSmediumDBcorr',
-        'tauDiscrHPScombMediumDBcorr',
-        'tauDiscrHPStight',
-        'tauDiscrHPStightDBcorr',
-        'tauDiscrHPScombTightDBcorr'
+        ##'tauDiscrHPSlooseDBcorr',
+        ##'tauDiscrHPScombLooseDBcorr',
+        ##'tauDiscrHPSmedium',
+        ##'tauDiscrHPSmediumDBcorr',
+        ##'tauDiscrHPScombMediumDBcorr',
+        ##'tauDiscrHPStight',
+        ##'tauDiscrHPStightDBcorr',
+        ##'tauDiscrHPScombTightDBcorr'
     ),
 
     fitVariables = cms.vstring(
@@ -63,8 +64,8 @@ process.fitTauIdEff = cms.PSet(
         #'diTauSVfitMass'
     ),
 
-    allowTemplateMorphing = cms.bool(True), # WARNING: template morphing runs **very** slow !!
-    #allowTemplateMorphing = cms.bool(False),
+    #allowTemplateMorphing = cms.bool(True), # WARNING: template morphing runs **very** slow !!
+    allowTemplateMorphing = cms.bool(False),
     morphSysUncertainty = cms.string(
         "sysTauJetEn"
     ),

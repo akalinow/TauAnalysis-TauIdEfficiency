@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.17 $
+ * \version $Revision: 1.18 $
  *
- * $Id: FWLiteTauIdEffAnalyzer.cc,v 1.17 2011/07/22 15:20:24 veelken Exp $
+ * $Id: FWLiteTauIdEffAnalyzer.cc,v 1.18 2011/07/24 16:37:57 veelken Exp $
  *
  */
 
@@ -421,8 +421,14 @@ int main(int argc, char* argv[])
       for ( PATMuTauPairCollection::const_iterator muTauPair = muTauPairs->begin();
 	    muTauPair != muTauPairs->end(); ++muTauPair ) {
 	for ( std::vector<regionEntryType*>::iterator regionEntry = regionEntries.begin();
-	      regionEntry != regionEntries.end(); ++regionEntry ) {
+	      regionEntry != regionEntries.end(); ++regionEntry ) {	  
 	  (*regionEntry)->analyze(*muTauPair, numVertices, evtWeight);
+
+	  //pat::strbitset evtSelFlags;
+	  //if ( (*regionEntry)->region_ == "D1p" && (*regionEntry)->selector_->operator()(*muTauPair, evtSelFlags) ) {
+	  //  std::cout << evt.id().run() << ":" << evt.luminosityBlock() << ":" << evt.id().event() 
+	  //	        << " (weight = " << evtWeight << ")" << std::endl;
+	  //}
 	}
       }
     }

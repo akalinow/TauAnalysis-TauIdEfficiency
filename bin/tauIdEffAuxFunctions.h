@@ -45,6 +45,7 @@
 #include <iomanip>
 #include <string>
 #include <vector>
+#include <time.h>
 
 bool isSystematicShift(const std::string& key)
 {
@@ -947,6 +948,18 @@ std::pair<double, double> getNumber(TDirectory* inputDirectory, const TString& a
   //std::cout << "--> returning " << retVal.first << " +/- " << retVal.second << std::endl;
 
   return retVal;
+}
+
+//
+//-------------------------------------------------------------------------------
+//
+
+void printTimeStamp()
+{
+  time_t now_raw;
+  time(&now_raw);
+  struct tm* now_local = localtime(&now_raw);
+  std::cout << "it is NOW: " << asctime(now_local) << std::endl;
 }
 
 #endif

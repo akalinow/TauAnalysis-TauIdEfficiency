@@ -69,7 +69,7 @@ def buildConfigFile_FWLiteTauFakeRateAnalyzer(sampleToAnalyze, evtSel, version, 
         print("No process associated to sample %s --> skipping !!" % sampleToAnalyze)
         return
 
-    print("building config file(s) for sample %s..." % sampleToAnalyze)
+    print("building config file(s) for sample %s, evtSel %s..." % (sampleToAnalyze, evtSel))
 
     processType = recoSampleDefinitions['RECO_SAMPLES'][sampleToAnalyze]['type']
 

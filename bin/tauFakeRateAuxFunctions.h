@@ -449,10 +449,10 @@ void drawHistograms(
   const vstring& eventSelectionsToPlot, const vstring& tauIdsToPlot, const vstring& regionsToPlot,
   const vstring& labels, const std::string& outputFileName)
 {
-  std::cout << "<drawHistograms>:" << std::endl;
-  std::cout << " observable = " << observable << std::endl;
-  std::cout << " processNamesSim = " << format_vstring(processNamesSim) << std::endl;
-  std::cout << " processNameData = " << processNameData << std::endl;
+  //std::cout << "<drawHistograms>:" << std::endl;
+  //std::cout << " observable = " << observable << std::endl;
+  //std::cout << " processNamesSim = " << format_vstring(processNamesSim) << std::endl;
+  //std::cout << " processNameData = " << processNameData << std::endl;
 
   for ( vstring::const_iterator eventSelection = eventSelectionsToPlot.begin();
 	eventSelection != eventSelectionsToPlot.end(); ++eventSelection ) {
@@ -460,15 +460,15 @@ void drawHistograms(
 	  tauId != tauIdsToPlot.end(); ++tauId ) {
       for ( vstring::const_iterator region = regionsToPlot.begin();
 	    region != regionsToPlot.end(); ++region ) {
-	std::cout << "--> drawing histograms for eventSelection = " << (*eventSelection) << ","
-		  << " tauId = " << (*tauId) << ", region = " << (*region) << std::endl;
+	//std::cout << "--> drawing histograms for eventSelection = " << (*eventSelection) << ","
+	//	    << " tauId = " << (*tauId) << ", region = " << (*region) << std::endl;
 
 	canvas->SetLogy(true);
 	canvas->Clear();
 	canvas->SetLeftMargin(0.14);
 	canvas->SetBottomMargin(0.12);
 	
-	TLegend legend(0.64, 0.59, 0.89, 0.89, "", "brNDC"); 
+	TLegend legend(0.64, 0.64, 0.89, 0.89, "", "brNDC"); 
 	legend.SetBorderSize(0);
 	legend.SetFillColor(0);
 	
@@ -477,18 +477,25 @@ void drawHistograms(
 	for ( vstring::const_iterator process = processNamesSim.begin();
 	      process != processNamesSim.end(); ++process ) {
 	  TH1* histogramSim = histogramMap[*eventSelection][*process][*tauId][observable][*region];
-	  std::cout << "histogramSim = " << histogramSim << std::endl;
-	  applyStyleOption_histogram(histogramSim, "", drawOptions[*process], xAxisTitle);
+	  //std::cout << "process = " << (*process) << ": histogram = " << histogramSim 
+	  //	      << " (integral = " << histogramSim->Integral() << ")" << std::endl;
+	  const histogramDrawOptionType& drawOptionsSim = drawOptions[*process];
+	  applyStyleOption_histogram(histogramSim, "", drawOptionsSim, xAxisTitle);
 	  smSum.Add(histogramSim);
-	  legend.AddEntry(histogramSim, drawOptions[*process].drawOptionLegend_.data(), "f");
+	  legend.AddEntry(histogramSim, drawOptionsSim.legendEntry_.data(), drawOptionsSim.drawOptionLegend_.data());
 	}
 	
 	TH1* histogramData = histogramMap[*eventSelection][processNameData][*tauId][observable][*region];	  
-	std::cout << "histogramData = " << histogramData << std::endl;
-	applyStyleOption_histogram(histogramData, "", drawOptions[processNameData], xAxisTitle);
-	legend.AddEntry(histogramData, drawOptions[processNameData].drawOptionLegend_.data(), "p");
-
-	smSum.SetMaximum(1.5*TMath::Max(smSum.GetMaximum(), histogramData->GetMaximum()));
+	//std::cout << "Data: histogram = " << histogramData 
+	//	    << " (integral = " << histogramData->Integral() << ")" << std::endl;
+	const histogramDrawOptionType& drawOptionsData = drawOptions[processNameData];
+	applyStyleOption_histogram(histogramData, "", drawOptionsData, xAxisTitle);
+	legend.AddEntry(histogramData, drawOptionsData.legendEntry_.data(), drawOptionsData.drawOptionLegend_.data());
+	
+	double yMax = TMath::Max(smSum.GetMaximum(), histogramData->GetMaximum());
+	if ( canvas->GetLogy() ) smSum.SetMaximum(TMath::Exp(1.5*TMath::Log(yMax)));
+	else smSum.SetMaximum(1.5*yMax);
+	smSum.SetMinimum(1.);
 	smSum.Draw("hist");
 	applyStyleOption_histogram(&smSum, "", xAxisTitle);
 
@@ -529,13 +536,14 @@ void drawGraphs(
   canvas->Clear();
   canvas->SetLeftMargin(0.12);
   canvas->SetBottomMargin(0.12);
-  
+
   TPad* topPad = new TPad("topPad", "topPad", 0.00, 0.35, 1.00, 1.00);
   topPad->SetFillColor(10);
   topPad->SetTopMargin(0.04);
   topPad->SetLeftMargin(0.15);
   topPad->SetBottomMargin(0.03);
   topPad->SetRightMargin(0.05);
+  topPad->SetLogy(true);
 
   TPad* bottomPad = new TPad("bottomPad", "bottomPad", 0.00, 0.00, 1.00, 0.35);
   bottomPad->SetFillColor(10);
@@ -544,19 +552,23 @@ void drawGraphs(
   bottomPad->SetBottomMargin(0.20);
   bottomPad->SetRightMargin(0.05);
   
-  TLegend legend(0.53, 0.63, 0.94, 0.95, "", "brNDC"); 
+  TLegend legend(0.63, 0.59, 0.94, 0.95, "", "brNDC"); 
   legend.SetBorderSize(0);
   legend.SetFillColor(0);
-  
+
   canvas->cd();
   topPad->Draw();
   topPad->cd();
   for ( vstring::const_iterator graphName = graphsToPlot.begin();
 	graphName != graphsToPlot.end(); ++graphName ) {
-    TGraph* graphSim = frMapToPlot[*graphName][processNameSim][observable];
+    TGraph* graphSim = frMapToPlot[processNameSim][*graphName][observable];
+    //std::cout << processNameSim << ", graphName = " << (*graphName) << ", observable = " << observable << ":"
+    //	        << " graph = " << graphSim << std::endl;
     applyStyleOption_graph(graphSim, "", drawOptions[*graphName].expMarkerStyle_, drawOptions[*graphName].color_, xAxisTitle);
 
-    TGraph* graphData = frMapToPlot[*graphName][processNameData][observable];
+    TGraph* graphData = frMapToPlot[processNameData][*graphName][observable];
+    //std::cout << processNameData << ", graphName = " << (*graphName) << ", observable = " << observable << ":"
+    //	        << " graph = " << graphSim << std::endl;
     applyStyleOption_graph(graphData, "", drawOptions[*graphName].measMarkerStyle_, drawOptions[*graphName].color_, xAxisTitle);
 
     TAxis* xAxis = graphData->GetXaxis();
@@ -567,36 +579,37 @@ void drawGraphs(
     yAxis->SetTitle("Fake-rate");
     yAxis->SetTitleOffset(1.15);
     yAxis->SetTitleSize(0.06);
-    
+
     graphData->SetTitle("");
-    graphData->SetMaximum(1.e0);
-    graphData->SetMinimum(1.e-4);
+    graphData->SetMaximum(5.e-1);
+    graphData->SetMinimum(5.e-4);
     std::string drawOption_string = ( graphName == graphsToPlot.begin() ) ? "A" : "";
     graphData->Draw(drawOption_string.append("P").data());      
     legend.AddEntry(graphData, std::string(drawOptions[*graphName].legendEntry_).append(" Data").data(), "p");
-    
+
     graphSim->Draw("P");      
     legend.AddEntry(graphSim, std::string(drawOptions[*graphName].legendEntry_).append(" Simulation").data(), "p");
   }
 
   legend.Draw();
-  std::vector<TPaveText*> labels_text = drawLabels(labels);
-  TPaveText* addPlotLabel_text = drawLabel(addPlotLabel, 0.035, 2, 0.5000, 0.6150);
+  std::vector<TPaveText*> labels_text = drawLabels(labels, 0.0450, 1, 0.1650, 0.8575);
+  TPaveText* addPlotLabel_text = drawLabel(addPlotLabel, 0.0450, 2, 0.2150, 0.7250);
 
   frMapType1 frMapDiff;
 
   for ( vstring::const_iterator graphName = graphsToPlot.begin();
 	graphName != graphsToPlot.end(); ++graphName ) {
-    TGraphAsymmErrors* graphSim  = frMapToPlot[*graphName][processNameSim][observable];
-    TGraphAsymmErrors* graphData = frMapToPlot[*graphName][processNameData][observable];
-    
-    if ( !(graphSim->GetN() == graphData->GetN()) )
-      throw cms::Exception("drawGraphs") 
-	<< "Incompatible binning of graphs for Data = " << graphData->GetName() 
-	<< " and Simulation = " << graphSim->GetName() << " !!\n";
+    TGraphAsymmErrors* graphSim  = frMapToPlot[processNameSim][*graphName][observable];
+    TGraphAsymmErrors* graphData = frMapToPlot[processNameData][*graphName][observable];
+    // CV: unequal number of points may actually happen in case of empty bins
+    //     in the numerator/denominator histograms (low event statistics) and is **not** an error
+    //if ( !(graphSim->GetN() == graphData->GetN()) )
+    //  throw cms::Exception("drawGraphs") 
+    //	  << "Incompatible binning of graphs for Data = " << graphData->GetName() << " (" << graphData->GetN() << ")"
+    //	  << " and Simulation = " << graphSim->GetName() << " (" << graphSim->GetN() << ")" << " !!\n";
     
     TGraphAsymmErrors* graphDiff = (TGraphAsymmErrors*)graphData->Clone();
-    
+
     int numPoints = graphData->GetN();
     for ( int iPoint = 0; iPoint < numPoints; ++iPoint ) {
       double xCenter, ySim, yData, dummy;
@@ -609,13 +622,13 @@ void drawGraphs(
       double dyUpSim   = graphSim->GetErrorYhigh(iPoint);
       double dyLowData = graphData->GetErrorYlow(iPoint);
       double dyUpData  = graphData->GetErrorYhigh(iPoint);
-      
+
       if ( ySim > 0. ) {
 	graphDiff->SetPoint(iPoint, xCenter, (yData - ySim)/ySim);
 	
 	double dyLowDiff2 = square(dyLowData/ySim) + square((yData/ySim)*(dyUpSim/ySim));
         double dyUpDiff2 = square(dyUpData/ySim) + square((yData/ySim)*(dyLowSim/ySim));
-	
+
 	graphDiff->SetPointError(iPoint, dxLow, dxUp, TMath::Sqrt(dyLowDiff2), TMath::Sqrt(dyUpDiff2));
       }
     }
@@ -627,14 +640,16 @@ void drawGraphs(
   for ( vstring::const_iterator graphName = graphsToPlot.begin();
 	graphName != graphsToPlot.end(); ++graphName ) {
     TGraph* graphDiff = frMapDiff[*graphName];
+    //std::cout << "graphName = " << (*graphName) << ", graphDiff = " << graphDiff << std::endl;
 
     int numPoints = graphDiff->GetN();
     for ( int iPoint = 0; iPoint < numPoints; ++iPoint ) {
+
       double x, diff;
       graphDiff->GetPoint(iPoint, x, diff);
       if ( diff > maxDiff ) maxDiff = diff;
-      double err = TMath::Max(graphDiff->GetErrorYlow(iPoint), graphDiff->GetErrorYhigh(iPoint));
-      if ( err  > maxDiff ) maxDiff = err;
+      //double err = TMath::Max(graphDiff->GetErrorYlow(iPoint), graphDiff->GetErrorYhigh(iPoint));
+      //if ( err  > maxDiff ) maxDiff = err;
     }
   }
 
@@ -650,8 +665,6 @@ void drawGraphs(
     TAxis* xAxis = graphDiff->GetXaxis();
     xAxis->SetTitle(xAxisTitle.data());
     xAxis->SetTitleOffset(1.20);
-    xAxis->SetNdivisions(505);
-    xAxis->SetTitleOffset(1.1);
     xAxis->SetTitleSize(0.08);
     xAxis->SetLabelOffset(0.02);
     xAxis->SetLabelSize(0.08);
@@ -660,14 +673,15 @@ void drawGraphs(
     TAxis* yAxis = graphDiff->GetYaxis();
     yAxis->SetTitle("#frac{Data - Simulation}{Simulation}");
     yAxis->SetTitleOffset(1.15);
+    yAxis->SetNdivisions(505);
     yAxis->CenterTitle();
-    yAxis->SetTitleOffset(0.9);
     yAxis->SetTitleSize(0.08);
     yAxis->SetLabelSize(0.08);
     yAxis->SetTickLength(0.04);
 
     graphDiff->SetTitle("");
-    double maxDiff01 = 0.1*TMath::Ceil(1.2*maxDiff*10.);
+    //double maxDiff01 = 0.1*TMath::Ceil(1.2*maxDiff*10.);
+    double maxDiff01 = 0.5;
     graphDiff->SetMaximum(+maxDiff01);
     graphDiff->SetMinimum(-maxDiff01);
 
@@ -680,7 +694,7 @@ void drawGraphs(
   gSystem->mkdir(outputFilePath.data(), true);
   std::string suffix = std::string("_fr").append(plotName).append("_").append(observable);
   canvas->Print(std::string(outputFilePath).append(getOutputFileName(outputFileName, suffix)).data());
-  
+
   for ( std::vector<TPaveText*>::iterator it = labels_text.begin();
 	it != labels_text.end(); ++it ) {
     delete (*it);

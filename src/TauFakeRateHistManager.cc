@@ -20,15 +20,15 @@ TauFakeRateHistManager::~TauFakeRateHistManager()
 
 void TauFakeRateHistManager::bookHistograms(TFileDirectory& dir)
 {
-  histogramJetPt_       = book1D(dir, "jetPt",       "P_{T}^{jet}",       40,          0. ,         100.);
-  histogramJetEta_      = book1D(dir, "jetEta",      "#eta_{jet}",        50,         -2.5,         +2.5);
+  histogramJetPt_       = book1D(dir, "jetPt",       "P_{T}^{jet}",       20,          0. ,         100.);
+  histogramJetEta_      = book1D(dir, "jetEta",      "#eta_{jet}",        25,         -2.5,         +2.5);
   histogramJetPhi_      = book1D(dir, "jetPhi",      "#phi_{jet}",        36, -TMath::Pi(), +TMath::Pi());
   
-  histogramTauPt_       = book1D(dir, "tauJetPt",    "P_{T}^{#tau}",      40,          0. ,         100.);
-  histogramTauEta_      = book1D(dir, "tauJetEta",   "#eta_{#tau}",       50,         -2.5,         +2.5);
+  histogramTauPt_       = book1D(dir, "tauJetPt",    "P_{T}^{#tau}",      20,          0. ,         100.);
+  histogramTauEta_      = book1D(dir, "tauJetEta",   "#eta_{#tau}",       25,         -2.5,         +2.5);
   histogramTauPhi_      = book1D(dir, "tauJetPhi",   "#phi_{#tau}",       36, -TMath::Pi(), +TMath::Pi());
 
-  histogramSumEt_       = book1D(dir, "sumEt",       "#Sigma E_{T}^{PF}", 50,          0.,         500.0);
+  histogramSumEt_       = book1D(dir, "sumEt",       "#Sigma E_{T}^{PF}",  8,        100.,          500.0);
   histogramNumVertices_ = book1D(dir, "numVertices", "Num. Vertices",     20,         -0.5,         19.5);
 }
 

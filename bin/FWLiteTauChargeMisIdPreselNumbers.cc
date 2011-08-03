@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.9 $
+ * \version $Revision: 1.1 $
  *
- * $Id: FWLiteTauChargeMisIdPreselNumbers.cc,v 1.9 2011/07/26 15:43:30 veelken Exp $
+ * $Id: FWLiteTauChargeMisIdPreselNumbers.cc,v 1.1 2011/08/02 15:16:09 veelken Exp $
  *
  */
 
@@ -144,11 +144,15 @@ struct regionEntryType
       numPreselCuts_(3),
       numTauIdDiscriminators_(tauIdDiscriminators.size()),      
       selector_(0),
-      cutFlowUnbinned_(0)
+      cutFlowUnbinned_(0),
+      numMuTauPairs_selected_(0),
+      numMuTauPairsWeighted_selected_(0.)
   {
     edm::ParameterSet cfgSelector;
-    cfgSelector.addParameter<vstring>("tauIdDiscriminators", tauIdDiscriminators_);
     cfgSelector.addParameter<std::string>("region", region_);
+    cfgSelector.addParameter<vstring>("tauIdDiscriminators", tauIdDiscriminators_);
+    cfgSelector.addParameter<std::string>("tauChargeMode", "tauSignalChargedHadronSum");
+    cfgSelector.addParameter<bool>("disableTauCandPreselCuts", true);
 
     selector_ = new TauIdEffEventSelector(cfgSelector);
 
@@ -258,6 +262,9 @@ struct regionEntryType
 					   genMatchType, genTauCharge, recTauCharge,
 					   evtWeight);
       }
+
+      ++numMuTauPairs_selected_;
+      numMuTauPairsWeighted_selected_ += evtWeight;
     }
   }
 
@@ -278,6 +285,9 @@ struct regionEntryType
   
   cutFlowEntryType* cutFlowUnbinned_;
   std::vector<cutFlowEntryType*> cutFlowEntriesBinned_;
+
+  int numMuTauPairs_selected_;
+  double numMuTauPairsWeighted_selected_;
 };
 
 int getGenMatchType(const PATMuTauPair& muTauPair, const reco::GenParticleCollection& genParticles,
@@ -387,8 +397,10 @@ int main(int argc, char* argv[])
   }
 
   edm::ParameterSet cfgSelectorABCD;
-  cfgSelectorABCD.addParameter<vstring>("tauIdDiscriminators", vstring());
   cfgSelectorABCD.addParameter<std::string>("region", "ABCD");
+  cfgSelectorABCD.addParameter<vstring>("tauIdDiscriminators", vstring());
+  cfgSelectorABCD.addParameter<std::string>("tauChargeMode", "tauSignalChargedHadronSum");
+  cfgSelectorABCD.addParameter<bool>("disableTauCandPreselCuts", true);
   TauIdEffEventSelector* selectorABCD = new TauIdEffEventSelector(cfgSelectorABCD);
 
   int    numEvents_processed                     = 0; 
@@ -521,6 +533,12 @@ int main(int argc, char* argv[])
 				  genMatchType, genTauCharge, recTauCharge, 
 				  numVertices, 
 				  evtWeight);
+
+	  //pat::strbitset evtSelFlags;
+	  //if ( (*regionEntry)->region_ == "D1p" && (*regionEntry)->selector_->operator()(*muTauPair, evtSelFlags) ) {
+	  //  std::cout << evt.id().run() << ":" << evt.luminosityBlock() << ":" << evt.id().event() 
+	  //            << " (weight = " << evtWeight << ")" << std::endl;
+	  //}
         }
       }
     }
@@ -538,18 +556,31 @@ int main(int argc, char* argv[])
 	    << " (weighted = " << numEventsWeighted_passedDiMuonVeto << ")" << std::endl;
   std::cout << " numEvents_passedDiMuTauPairVeto: " << numEvents_passedDiMuTauPairVeto
 	    << " (weighted = " << numEventsWeighted_passedDiMuTauPairVeto << ")" << std::endl;
+  std::string lastTauIdName = "";
   for ( std::vector<regionEntryType*>::iterator regionEntry = regionEntries.begin();
 	regionEntry != regionEntries.end(); ++regionEntry ) {
-    std::cout << " region " << (*regionEntry)->region_ << ", " << (*regionEntry)->tauIdName_ << std::endl;
+    if ( (*regionEntry)->tauIdName_ != lastTauIdName ) 
+      std::cout << " numMuTauPairs_selected, " << (*regionEntry)->tauIdName_ << std::endl;
+    std::cout << "  region " << (*regionEntry)->region_ << ":" << std::endl;
+    std::cout << "   entries = " << (*regionEntry)->numMuTauPairs_selected_ 
+	      << " (weighted = " << (*regionEntry)->numMuTauPairsWeighted_selected_ << ")" << std::endl;
     TauIdEffCutFlowTable* cutFlowTableTauHadMatched = (*regionEntry)->cutFlowUnbinned_->cutFlowTauHadMatched_;
-    std::cout << "  entries = " << cutFlowTableTauHadMatched->getCutFlowNumber(0, 0) << std::endl;
+    std::cout << "   tauHadMatched (weighted) = " << cutFlowTableTauHadMatched->getCutFlowNumber(0, 0) << std::endl;
     TauIdEffCutFlowTable* cutFlowTableFakeTauMatched = (*regionEntry)->cutFlowUnbinned_->cutFlowFakeTauMatched_;
-    double purity = cutFlowTableTauHadMatched->getCutFlowNumber(0, 4)/
-                   (cutFlowTableTauHadMatched->getCutFlowNumber(0, 4) + cutFlowTableFakeTauMatched->getCutFlowNumber(0, 4));
-    std::cout << "  purity = " << purity << std::endl;
+    std::cout << "   fakeTauMatched (weighted) = " << cutFlowTableFakeTauMatched->getCutFlowNumber(0, 0) << std::endl;
+    TauIdEffCutFlowTable* cutFlowNoMatchingApplied = (*regionEntry)->cutFlowUnbinned_->cutFlowNoMatchingApplied_;
+    std::cout << "   noMatchingApplied (weighted) = " << cutFlowNoMatchingApplied->getCutFlowNumber(0, 0) << std::endl;
+    double purity_high = cutFlowTableTauHadMatched->getCutFlowNumber(0, 4)/
+      (cutFlowTableTauHadMatched->getCutFlowNumber(0, 4) + cutFlowTableFakeTauMatched->getCutFlowNumber(0, 4));
+    std::cout << "   purity (tauHadMatched/(tauHadMatched + fakeTauMatched) = " << purity_high << std::endl;
+    double purity_low = cutFlowTableTauHadMatched->getCutFlowNumber(0, 4)/
+      cutFlowNoMatchingApplied->getCutFlowNumber(0, 4);
+    std::cout << "   purity (tauHadMatched/(noMatchingApplied) = " << purity_low << std::endl;
+    lastTauIdName = (*regionEntry)->tauIdName_;
   }
 
   clock.Show("FWLiteTauChargeMisIdPreselNumbers");
 
   return 0;
 }
+

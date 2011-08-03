@@ -258,8 +258,8 @@ executable_shell = '/bin/csh'
 
 bsubQueue = "1nw"
 
-skipFWLiteTauFakeRateAnalyzer = False
-#skipFWLiteTauFakeRateAnalyzer = True
+#skipFWLiteTauFakeRateAnalyzer = False
+skipFWLiteTauFakeRateAnalyzer = True
 
 if len(samplesToAnalyze) == 0:
     samplesToAnalyze = recoSampleDefinitionsTauIdCommissioning_7TeV['SAMPLES_TO_RUN']
@@ -390,16 +390,20 @@ for sampleToAnalyze in samplesToAnalyze:
             retVal_make_harvest_scripts = make_harvest_scripts(
                 plot_regex,
                 skim_regex,
+                channel = eventSelectionToAnalyze,
                 sampleToAnalyze = sampleToAnalyze,
-                job_id = "_".join([eventSelectionToAnalyze, sampleToAnalyze, version]),
+                job_id = version,
                 input_files_info = inputFileInfos,
                 harvester_command = executable_hadd,
+                abort_on_rfcp_error = False,
                 castor_output_directory = harvestingFilePath,
                 script_directory = configFilePath,
                 merge_script_name = \
                   os.path.join(configFilePath, "_".join(['submit', sampleToAnalyze, eventSelectionToAnalyze, 'merge']) + '.sh'),
                 local_copy_mapper = local_copy_mapper,
-                chunk_size = 2.e+9, # 3 GB
+                chunk_size = 2.e+9, # 2 GB
+                check_old_files = False,
+                max_bsub_concurrent_file_access = 250,
                 verbosity = 0
             )
 

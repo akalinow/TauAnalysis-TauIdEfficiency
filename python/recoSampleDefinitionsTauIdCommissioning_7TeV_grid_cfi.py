@@ -245,9 +245,9 @@ MERGE_SAMPLES = {
         'samples' : [
             'ZplusJets'
         ],
-        'type' : plotter.process_Ztautau.config_dqmHistPlotter.type.value(),
-        'legendEntry' : plotter.process_Ztautau.config_dqmHistPlotter.legendEntry.value(),
-        'drawOption' : styles.drawOption_ZplusJets
+        'type' : plotter.process_ZplusJets.config_dqmHistPlotter.type.value(),
+        'legendEntry' : plotter.process_ZplusJets.config_dqmHistPlotter.legendEntry.value(),
+        'drawOption' : styles.drawOption_ZeePlusJets
     },
     'WplusJets' : {
         'samples' : [
@@ -268,7 +268,7 @@ MERGE_SAMPLES = {
             'PPmuXptGt20Mu15'
         ],
         'type' : plotter.process_PPmuXptGt20.config_dqmHistPlotter.type.value(),
-        'legendEntry' : plotter.process_PPmuXptGt20.config_dqmHistPlotter.legendEntry.value(),
+        'legendEntry' : "QCD",
         'drawOption' : styles.drawOption_QCD
     },
     'TTplusJets' : {
@@ -276,7 +276,7 @@ MERGE_SAMPLES = {
             'TTplusJets'
         ],
         'type' : plotter.process_TTplusJets.config_dqmHistPlotter.type.value(),
-        'legendEntry' : plotter.process_TTplusJets.config_dqmHistPlotter.legendEntry.value(),
+        'legendEntry' : "t #bar{t}",
         'drawOption' : styles.drawOption_TTplusJets
     }
 }

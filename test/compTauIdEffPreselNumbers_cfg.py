@@ -1,6 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 
 import os
+import re
 
 process = cms.PSet()
 
@@ -8,13 +9,19 @@ inputFilePath = '/data2/veelken/CMSSW_4_2_x/PATtuples/TauIdEffMeas/2011Jul23/V6/
 sampleZtautau = 'Ztautau_powheg'
 jobId = '2011Jul23V6_noTauSel'
 
+inputFile_regex = \
+  r"tauIdEffMeasPATTuple_%s_%s_(?P<gridJob>\d*)(_(?P<gridTry>\d*))*_(?P<hash>[a-zA-Z0-9]*).root" % (sampleZtautau, jobId)
+
 outputFilePath = '/data1/veelken/tmp/muonPtGt20/V6/'
 
 inputFileNames = []
 files = os.listdir(inputFilePath)
 for file in files:
-    if file.find(sampleZtautau) != -1 and file.find(jobId) != -1:
+    inputFile_matcher = re.compile(inputFile_regex)
+    if inputFile_matcher.match(file):
         inputFileNames.append(os.path.join(inputFilePath, file))
+#print "inputFileNames = %s" % inputFileNames
+inputFileNames = [ "".join([inputFilePath, "tauIdEffMeasPATTuple_Ztautau_powheg_2011Jul23V6_23_171e.root"]) ]
 
 process.fwliteInput = cms.PSet(
     fileNames   = cms.vstring(inputFileNames),
@@ -25,7 +32,7 @@ process.fwliteInput = cms.PSet(
 )
 
 process.fwliteOutput = cms.PSet(
-    fileName  = cms.string(os.path.join(outputFilePath, 'compTauIdEffPreselNumbers_%s_%s_%s.root' % (sampleZtautau, jobId)))
+    fileName  = cms.string(os.path.join(outputFilePath, 'compTauIdEffPreselNumbers_%s_%s.root' % (sampleZtautau, jobId)))
 )
 
 process.tauIdEffPreselNumbers = cms.PSet(

@@ -1,47 +1,82 @@
 import FWCore.ParameterSet.Config as cms
 
+from TauAnalysis.TauIdEfficiency.recoSampleDefinitionsTauIdEfficiency_7TeV_grid_cfi import recoSampleDefinitionsTauIdEfficiency_7TeV
+from TauAnalysis.Configuration.userRegistry import getJobId
+from TauAnalysis.CandidateTools.tools.composeModuleName import composeModuleName
+
 import os
 import re
 
-process = cms.PSet()
-
 inputFilePath = '/data2/veelken/CMSSW_4_2_x/PATtuples/TauIdEffMeas/2011Jul23/V6/user/v/veelken/CMSSW_4_2_x/PATtuples/TauIdEffMeas/'
-sampleZtautau = 'Ztautau_powheg'
-#jobId = '2011Jul23V6_noTauSel'
+sampleToAnalyze = 'Ztautau_powheg'
 jobId = '2011Jul23V6'
 
 inputFile_regex = \
-  r"tauIdEffMeasPATTuple_%s_%s_(?P<gridJob>\d*)(_(?P<gridTry>\d*))*_(?P<hash>[a-zA-Z0-9]*).root" % (sampleZtautau, jobId)
+  r"tauIdEffMeasPATTuple_%s_%s_(?P<gridJob>\d*)(_(?P<gridTry>\d*))*_(?P<hash>[a-zA-Z0-9]*).root" % (sampleToAnalyze, jobId)
 
 outputFilePath = '/data1/veelken/tmp/muonPtGt20/V6/'
 
+# check if inputFile is PAT-tuple and
+# matches sampleToAnalyze, jobId
 inputFileNames = []
 files = os.listdir(inputFilePath)
 for file in files:
     inputFile_matcher = re.compile(inputFile_regex)
     if inputFile_matcher.match(file):
         inputFileNames.append(os.path.join(inputFilePath, file))
-#print "inputFileNames = %s" % inputFileNames
+#print "inputFileNames = %s" % inputFileNames 
 ##inputFileNames = [ "".join([inputFilePath, "tauIdEffMeasPATTuple_Ztautau_powheg_2011Jul23V6_23_171e.root"]) ]
+
+# find name of associated "process"
+process_matched = None
+processes = recoSampleDefinitionsTauIdEfficiency_7TeV['MERGE_SAMPLES'].keys()
+for process in processes:
+    for sample in recoSampleDefinitionsTauIdEfficiency_7TeV['MERGE_SAMPLES'][process]['samples']:
+        if sample == sampleToAnalyze:
+            process_matched = process
+
+if not process_matched:
+    raise ValueError("No process associated to sample %s --> skipping !!" % sampleToAnalyze)
+
+process = cms.PSet()
 
 process.fwliteInput = cms.PSet(
     fileNames   = cms.vstring(inputFileNames),
-        
+    
     maxEvents   = cms.int32(-1),
     
     outputEvery = cms.uint32(1000)
 )
-
+    
 process.fwliteOutput = cms.PSet(
-    fileName  = cms.string(os.path.join(outputFilePath, 'compTauChargeMisIdPreselNumbers_%s_%s.root' % (sampleZtautau, jobId)))
+    fileName  = cms.string(os.path.join(outputFilePath, 'analyzeTauIdEffHistograms_%s_%s.root' % (sampleToAnalyze, jobId)))
 )
 
-process.tauChargeMisIdPreselNumbers = cms.PSet(
-    process = cms.string('Ztautau'),
+process.tauIdEffAnalyzer = cms.PSet(
+    process = cms.string(process_matched),
+    type = cms.string(recoSampleDefinitionsTauIdEfficiency_7TeV['RECO_SAMPLES'][sampleToAnalyze]['type']),
 
     regions = cms.vstring(
+        ##'ABCD',
+        ##'A',
+        ##'A1',
+        ##'A1p',
+        ##'A1f',
+        ##'B',
+        ##'B1',
+        ##'B1p',
+        ##'B1f',
+        ##'C',
+        ##'C1',
         'C1p',
-        'D1p'
+        ##'C1f',
+        ##'C2',
+        ##'C2p',
+        ##'C2f',
+        ##'D',
+        ##'D1',
+        'D1p',
+        ##'D1f'
     ),
     
     tauIds = cms.VPSet(
@@ -55,23 +90,23 @@ process.tauChargeMisIdPreselNumbers = cms.PSet(
 ##         cms.PSet(
 ##             discriminators = cms.vstring(
 ##                 'decayModeFinding',
-##                 'byLooseIsolationDeltaBetaCorr'
-##             ),
-##             name = cms.string("tauDiscrHPSlooseDBcorr")
-##         ),
-##         cms.PSet(
-##             discriminators = cms.vstring(
-##                 'decayModeFinding',
-##                 'byLooseCombinedIsolationDeltaBetaCorr'
-##             ),
-##             name = cms.string("tauDiscrHPScombLooseDBcorr")
-##         ),
-##         cms.PSet(
-##             discriminators = cms.vstring(
-##                 'decayModeFinding',
 ##                 'byMediumIsolation'
 ##             ),
 ##             name = cms.string("tauDiscrHPSmedium")
+##         ),
+##         cms.PSet(
+##             discriminators = cms.vstring(
+##                 'decayModeFinding',
+##                 'byTightIsolation'
+##             ),
+##             name = cms.string("tauDiscrHPStight")
+##         ),     
+##         cms.PSet(
+##             discriminators = cms.vstring(
+##                 'decayModeFinding',
+##                 'byLooseIsolationDeltaBetaCorr'
+##             ),
+##             name = cms.string("tauDiscrHPSlooseDBcorr")
 ##         ),
 ##         cms.PSet(
 ##             discriminators = cms.vstring(
@@ -83,6 +118,20 @@ process.tauChargeMisIdPreselNumbers = cms.PSet(
 ##         cms.PSet(
 ##             discriminators = cms.vstring(
 ##                 'decayModeFinding',
+##                 'byTightIsolationDeltaBetaCorr'
+##             ),
+##             name = cms.string("tauDiscrHPStightDBcorr")
+##         ),     
+##         cms.PSet(
+##             discriminators = cms.vstring(
+##                 'decayModeFinding',
+##                 'byLooseCombinedIsolationDeltaBetaCorr'
+##             ),
+##             name = cms.string("tauDiscrHPScombLooseDBcorr")
+##         ),
+##         cms.PSet(
+##             discriminators = cms.vstring(
+##                 'decayModeFinding',
 ##                 'byMediumCombinedIsolationDeltaBetaCorr'
 ##             ),
 ##             name = cms.string("tauDiscrHPScombMediumDBcorr")
@@ -90,24 +139,10 @@ process.tauChargeMisIdPreselNumbers = cms.PSet(
 ##         cms.PSet(
 ##             discriminators = cms.vstring(
 ##                 'decayModeFinding',
-##                 'byTightIsolation'
-##             ),
-##             name = cms.string("tauDiscrHPStight")
-##         ),
-##         cms.PSet(
-##             discriminators = cms.vstring(
-##                 'decayModeFinding',
-##                 'byTightIsolationDeltaBetaCorr'
-##             ),
-##             name = cms.string("tauDiscrHPStightDBcorr")
-##         ),
-##         cms.PSet(
-##             discriminators = cms.vstring(
-##                 'decayModeFinding',
 ##                 'byTightCombinedIsolationDeltaBetaCorr'
 ##             ),
 ##             name = cms.string("tauDiscrHPScombTightDBcorr")
-##         )
+##         )             
     ),
 
     binning = cms.PSet(
@@ -196,7 +231,7 @@ process.tauChargeMisIdPreselNumbers = cms.PSet(
         )
     ),
 
-    sysShift = cms.string("CENTRAL_VALUE"),
+    sysShift = cms.string('CENTRAL_VALUE'),
 
     srcTrigger = cms.InputTag('patTriggerEvent'),
     hltPaths = cms.vstring(
@@ -206,11 +241,21 @@ process.tauChargeMisIdPreselNumbers = cms.PSet(
     srcGoodMuons = cms.InputTag('patGoodMuons'),
     
     srcMuTauPairs = cms.InputTag('selectedMuPFTauHPSpairsDzForTauIdEffCumulative'),
-    
-    srcGenParticles = cms.InputTag('genParticles'),
+    svFitMassHypothesis = cms.string('psKine_MEt_logM_fit'),
+    tauChargeMode = cms.string("tauSignalChargedHadronSum"),
+    disableTauCandPreselCuts = cms.bool(True),
 
     srcVertices = cms.InputTag('offlinePrimaryVertices'),
 
-    weights = cms.VInputTag('ntupleProducer:tauIdEffNtuple#addPileupInfo#vtxMultReweight')
-)
+    weights = cms.VInputTag('ntupleProducer:tauIdEffNtuple#addPileupInfo#vtxMultReweight'),
 
+    # CV: 'srcEventCounter' is defined in TauAnalysis/Skimming/test/skimTauIdEffSample_cfg.py
+    srcEventCounter = cms.InputTag('totalEventsProcessed'),
+    allEvents_DBS = cms.int32(recoSampleDefinitionsTauIdEfficiency_7TeV['RECO_SAMPLES'][sampleToAnalyze]['events_processed']),
+    
+    xSection = cms.double(recoSampleDefinitionsTauIdEfficiency_7TeV['RECO_SAMPLES'][sampleToAnalyze]['x_sec']),
+    
+    intLumiData = cms.double(recoSampleDefinitionsTauIdEfficiency_7TeV['TARGET_LUMI']),
+
+    srcLumiProducer = cms.InputTag('lumiProducer')
+)

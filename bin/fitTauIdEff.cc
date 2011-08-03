@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.22 $
+ * \version $Revision: 1.23 $
  *
- * $Id: fitTauIdEff.cc,v 1.22 2011/07/26 16:39:08 veelken Exp $
+ * $Id: fitTauIdEff.cc,v 1.23 2011/08/02 15:16:09 veelken Exp $
  *
  */
 
@@ -122,6 +122,7 @@ void fitUsingRooFit(std::map<std::string, std::map<std::string, TH1*> >& distrib
   if ( verbosity ) {
     std::cout << "<fitUsingRooFit>:" << std::endl;
     std::cout << " performing Fit of variable = " << fitVariable << " for Tau id. = " << tauId << std::endl;
+    printTimeStamp();
   }
 
   double fitMin_passed = templatesAll["Ztautau"]["PASSED"][getKey(fitVariable, tauId, "passed")]->GetXaxis()->GetXmin();
@@ -137,14 +138,14 @@ void fitUsingRooFit(std::map<std::string, std::map<std::string, TH1*> >& distrib
   double numEventsData = distributionsData["ALL"][getKey(fitVariable, tauId)]->Integral();
   if ( verbosity ) std::cout << "numEventsData = " << numEventsData << std::endl;
 
-  std::map<std::string, RooRealVar*> pTauId_passed_failed;       // key = process
+  std::map<std::string, RooRealVar*> pTauId_passed_failed;          // key = process
 
-  std::map<std::string, RooRealVar*> norm;                       // key = process
-  std::map<std::string, RooAbsReal*> norm_passed;                // key = process
-  std::map<std::string, RooAbsReal*> norm_failed;                // key = process
+  std::map<std::string, RooRealVar*> norm;                          // key = process
+  std::map<std::string, RooAbsReal*> norm_passed;                   // key = process
+  std::map<std::string, RooAbsReal*> norm_failed;                   // key = process
 
-  std::map<std::string, std::map<std::string, RooAbsPdf*> > pdf; // key = (process/"sum", region)
-  std::vector<RooRealVar*> alphas;
+  std::map<std::string, std::map<std::string, RooAbsPdf*> > pdf;    // key = (process/"sum", region)
+  std::map<std::string, std::map<std::string, RooRealVar*> > alpha; // key = process, "PASSED"/"FAILED"
 
   TObjArray pdfs_passed;
   TObjArray pdfs_failed;
@@ -196,7 +197,7 @@ void fitUsingRooFit(std::map<std::string, std::map<std::string, TH1*> >& distrib
       std::string alphaName_passed = std::string(template_passed->GetName()).append("_alpha");
       RooRealVar* alpha_passed = new RooRealVar(alphaName_passed.data(), alphaName_passed.data(), 0.5, 0., 1.);
       alpha_passed->setBins(30, "cache");
-      alphas.push_back(alpha_passed);
+      alpha[*process]["PASSED"] = alpha_passed;
       std::string pdfName_passed = std::string(template_passed->GetName()).append("_pdf");
       pdf_passed = 
 	new RooIntegralMorph(pdfName_passed.data(), 
@@ -217,7 +218,7 @@ void fitUsingRooFit(std::map<std::string, std::map<std::string, TH1*> >& distrib
       std::string alphaName_failed = std::string(template_failed->GetName()).append("_alpha");
       RooRealVar* alpha_failed = new RooRealVar(alphaName_failed.data(), alphaName_failed.data(), 0.5, 0., 1.);
       alpha_failed->setBins(50, "cache");
-      alphas.push_back(alpha_failed);
+      alpha[*process]["FAILED"] = alpha_failed;
       std::string pdfName_failed = std::string(template_failed->GetName()).append("_pdf");
       pdf_failed = 
 	new RooIntegralMorph(pdfName_failed.data(), 
@@ -283,9 +284,10 @@ void fitUsingRooFit(std::map<std::string, std::map<std::string, TH1*> >& distrib
   //					 pTauId_passed_failed["WplusJets"]->getVal(),  1.0*pTauId_passed_failed["WplusJets"]->getVal()));
   //fitConstraints.Add(makeFitConstraint(pTauId_passed_failed["TTplusJets"], 
   //					 pTauId_passed_failed["TTplusJets"]->getVal(), 1.0*pTauId_passed_failed["TTplusJets"]->getVal()));
-  for ( std::vector<RooRealVar*>::iterator alpha = alphas.begin();
-	alpha != alphas.end(); ++alpha ) {
-    fitConstraints.Add(makeFitConstraint(*alpha, 0.5, 0.5/sysVariedByNsigma));
+  for ( std::vector<std::string>::const_iterator process = processes.begin();
+	process != processes.end(); ++process ) {
+    if ( alpha[*process]["PASSED"] ) fitConstraints.Add(makeFitConstraint(alpha[*process]["PASSED"], 0.5, 0.5/sysVariedByNsigma));
+    if ( alpha[*process]["FAILED"] ) fitConstraints.Add(makeFitConstraint(alpha[*process]["FAILED"], 0.5, 0.5/sysVariedByNsigma));
   }
 
   RooLinkedList fitOptions;
@@ -296,23 +298,18 @@ void fitUsingRooFit(std::map<std::string, std::map<std::string, TH1*> >& distrib
   //fitOptions.Add(new RooCmdArg(RooFit::PrintEvalErrors(10)));
   fitOptions.Add(new RooCmdArg(RooFit::PrintEvalErrors(-1)));
   fitOptions.Add(new RooCmdArg(RooFit::Save(true)));
-  fitOptions.Add(new RooCmdArg(RooFit::Verbose(true)));
+  //fitOptions.Add(new RooCmdArg(RooFit::Verbose(true)));
 
   pdfSimultaneousFit->printCompactTree();
 
   RooFitResult* fitResult = pdfSimultaneousFit->fitTo(*data, fitOptions);
 
-  //RooAbsReal* nll = pdfSimultaneousFit->createNLL(*data, fitOptions); 
-  //RooMinuit minuit(*nll);
-  //minuit.setErrorLevel(1);
-  //minuit.setNoWarn();
-  //minuit.setPrintEvalErrors(1);
-  //minuit.setPrintLevel(0);
-  //minuit.setWarnLevel(1);
-  //minuit.migrad(); 
-  //minuit.hesse(); 
-  //std::string fitResultName = std::string("fitResult").append("_").append(tauId);
-  //RooFitResult* fitResult = minuit.save(fitResultName.data(), fitResultName.data());
+  if ( verbosity ) {
+    std::cout << tauId << ":";
+    if ( hasFitConverged ) std::cout << " fit converged."          << std::endl; 
+    else                   std::cout << " fit failed to converge." << std::endl;
+    printTimeStamp();
+  }
 
 //--- disable caching of RooIntegralMorph PDFs
   for ( std::vector<std::string>::const_iterator process = processes.begin();
@@ -352,10 +349,6 @@ void fitUsingRooFit(std::map<std::string, std::map<std::string, TH1*> >& distrib
   }
 
   if ( verbosity ) {
-    std::cout << tauId << ":";
-    if ( hasFitConverged ) std::cout << " fit converged."          << std::endl; 
-    else                   std::cout << " fit failed to converge." << std::endl;
-  
     const RooArgList& fitParameter = fitResult->floatParsFinal();
     
     int numFitParameter = fitParameter.getSize();
@@ -404,6 +397,9 @@ void fitUsingRooFit(std::map<std::string, std::map<std::string, TH1*> >& distrib
 		<< " +/- " << pTauId_passed_failed[*process]->getError() 
 		<< " (MC exp. = " << pTauId_passed_failedMCexp << ")" << std::endl;
       
+      if ( alpha[*process]["PASSED"] ) std::cout << " (alpha_passed = " << alpha[*process]["PASSED"] << ")" << std::endl;
+      if ( alpha[*process]["FAILED"] ) std::cout << " (alpha_failed = " << alpha[*process]["FAILED"] << ")" << std::endl;
+
       std::cout << "--> ALL = " << normFactors_fitted[*process]["ALL"]
 		<< " (MC exp. = " << numEvents << ")" << std::endl;
       std::cout << "--> PASSED = " << normFactors_fitted[*process]["PASSED"]
