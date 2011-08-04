@@ -258,8 +258,8 @@ executable_shell = '/bin/csh'
 
 bsubQueue = "1nw"
 
-#skipFWLiteTauFakeRateAnalyzer = False
-skipFWLiteTauFakeRateAnalyzer = True
+skipFWLiteTauFakeRateAnalyzer = False
+#skipFWLiteTauFakeRateAnalyzer = True
 
 if len(samplesToAnalyze) == 0:
     samplesToAnalyze = recoSampleDefinitionsTauIdCommissioning_7TeV['SAMPLES_TO_RUN']

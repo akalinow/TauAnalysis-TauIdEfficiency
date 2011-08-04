@@ -3,6 +3,7 @@ import FWCore.ParameterSet.Config as cms
 from TauAnalysis.CandidateTools.tools.composeModuleName import composeModuleName
 
 import os
+import re
 
 #--------------------------------------------------------------------------------
 #
@@ -63,7 +64,7 @@ def buildConfigFile_FWLiteTauIdEffAnalyzer(sampleToAnalyze, jobId, inputFilePath
 
     # CV: check that tauChargeMode parameter matches either of the modes 
     #     define in TauAnalysis/TauIdEfficiency/src/TauIdEffEventSelector.cc
-    if not tauChargeMode == "tauLeadTrackCharge" or tauChargeMode == "tauSignalChargedHadronSum":
+    if not (tauChargeMode == "tauLeadTrackCharge" or tauChargeMode == "tauSignalChargedHadronSum"):
         raise ValueError("Invalid configuration parameter 'tauChargeMode' = %s !!" % tauChargeMode)
 
     disableTauCandPreselCuts_string = getStringRep_bool(disableTauCandPreselCuts)
@@ -75,14 +76,12 @@ def buildConfigFile_FWLiteTauIdEffAnalyzer(sampleToAnalyze, jobId, inputFilePath
     # matches sampleToAnalyze, jobId
     inputFile_regex = \
       r"tauIdEffMeasPATTuple_%s_%s_(?P<gridJob>\d*)(_(?P<gridTry>\d*))*_(?P<hash>[a-zA-Z0-9]*).root" % (sampleToAnalyze, jobId)
-    inputFile_matcher = re.compile(inputFile_regex)
-    inputFileNames = []
+    inputFileNames_sample = []
     for inputFileName in inputFileNames:
+        inputFile_matcher = re.compile(inputFile_regex)
         if inputFile_matcher.match(inputFileName):
             inputFileNames_sample.append(os.path.join(inputFilePath, inputFileName))
 
-    #print(sampleToAnalyze)
-    #print(inputFileNames_sample)
     print " found %i input files." % len(inputFileNames_sample)
     
     if len(inputFileNames_sample) == 0:
@@ -268,17 +267,15 @@ process.tauIdEffAnalyzer = cms.PSet(
     return retVal
 
 def buildConfigFile_fitTauIdEff(fitMethod, jobId, directory, inputFileName, tauIds, fitVariables, outputFilePath,
+                                passed_region, failed_region, 
                                 regionQCDtemplateFromData_passed, regionQCDtemplateFromData_failed, makeControlPlots):
 
     """Fit Ztautau signal plus background templates to Mt and visMass distributions
        observed in regions A/B/C/D, in order to determined Ztautau signal contribution
        in regions C1p (tau id. passed sample), C1f (tau id. failed sample)"""
 
-    outputFileName = None
-    if directory != '':
-        outputFileName = '%s_%s_%s.root' % (fitMethod, jobId, directory)
-    else:
-        outputFileName = '%s_%s.root' % (fitMethod, jobId)
+    outputFileName = '%s_%s_%s.root' % (fitMethod, jobId, directory)
+    outputFileName = outputFileName.replace('__', '_')
     outputFileName_full = os.path.join(outputFilePath, outputFileName)
 
     makeControlPlots_string = getStringRep_bool(makeControlPlots)
@@ -307,18 +304,10 @@ process.%s = cms.PSet(
     runClosureTest = cms.bool(False),
     #runClosureTest = cms.bool(True),
 
-    #takeQCDfromData = cms.bool(False),
-    takeQCDfromData = cms.bool(True),
-
     # CV: fitting fake-rates of background processes
     #     in C2f/C2p regions causes bias of fit result (2011/06/28)
     fitTauIdEffC2 = cms.bool(False),
     #fitTauIdEffC2 = cms.bool(True),
-    
-    runSysUncertainties = cms.bool(False),
-    #runSysUncertainties = cms.bool(True),
-
-    numPseudoExperiments = cms.uint32(10000),
 
     regions = cms.vstring(
         'ABCD',
@@ -343,8 +332,16 @@ process.%s = cms.PSet(
         #'D2p',
         #'D2f'
     ),
-    regionQCDtemplateFromData_passed = cms.string('%s'),
-    regionQCDtemplateFromData_failed = cms.string('%s'),
+
+    # regions (in Data) from which templates for QCD background are taken
+    regionTakeQCDtemplateFromData_passed = cms.string('%s'),
+    regionTakeQCDtemplateFromData_failed = cms.string('%s'),
+    #takeQCDfromData = cms.bool(False),
+    takeQCDfromData = cms.bool(True),
+
+    # define "passed" and "failed" regions
+    passed_region = cms.string('%s'),
+    failed_region = cms.string('%s'),
     
     tauIds = cms.vstring(
 %s
@@ -354,15 +351,29 @@ process.%s = cms.PSet(
 %s
     ),
 
-    sysUncertainties = cms.vstring(
-        "sysTauJetEn", # needed for diTauVisMass/diTauVisMassFromJet
-        "sysJetEnUp"   # needed for diTauMt
+    #allowTemplateMorphing = cms.bool(True), # WARNING: template morphing runs **very** slow !!
+    allowTemplateMorphing = cms.bool(False),
+    morphSysUncertainty = cms.string(
+        "sysTauJetEn"
+    ),
+    sysVariedByNsigma = cms.double(3.0),
+    
+    loadSysUncertainties = cms.vstring(
+        "sysTauJetEn",
+        #"sysJetEn"
+    ),
+
+    runPseudoExperiments = cms.bool(False),
+    #runPseudoExperiments = cms.bool(True),
+    numPseudoExperiments = cms.uint32(10000),
+    varySysUncertainties = cms.vstring(
+        "sysTauJetEn"
     ),
 
     makeControlPlots = cms.bool(%s)
 )
 """ % (inputFileName, outputFileName_full,
-       fitMethod, directory, regionQCDtemplateFromData_passed, regionQCDtemplateFromData_failed,
+       fitMethod, directory, regionQCDtemplateFromData_passed, regionQCDtemplateFromData_failed, passed_region, failed_region, 
        tauIds, fitVariables, makeControlPlots_string)
 
     configFileName = outputFileName.replace('.root', '_cfg.py')
@@ -382,16 +393,9 @@ process.%s = cms.PSet(
     return retVal
 
 def buildConfigFile_FWLiteTauIdEffPreselNumbers(inputFilePath, sampleZtautau, jobId, tauIds, binning, outputFilePath,
-                                                tauChargeMode, disableTauCandPreselCuts):
+                                                keyword_compTauIdEffPreselNumbers):
 
     """Compute preselection efficiencies and purities in regions C1p, C1f"""
-
-    # CV: check that tauChargeMode parameter matches either of the modes 
-    #     define in TauAnalysis/TauIdEfficiency/src/TauIdEffEventSelector.cc
-    if not tauChargeMode == "tauLeadTrackCharge" or tauChargeMode == "tauSignalChargedHadronSum":
-        raise ValueError("Invalid configuration parameter 'tauChargeMode' = %s !!" % tauChargeMode)
-
-    disableTauCandPreselCuts_string = getStringRep_bool(disableTauCandPreselCuts)
 
     inputFileNames_Ztautau = []
     inputFileNames = os.listdir(inputFilePath)
@@ -405,7 +409,7 @@ def buildConfigFile_FWLiteTauIdEffPreselNumbers(inputFilePath, sampleZtautau, jo
 
     binning_string = make_binning_string(binning)
 
-    outputFileName = 'compTauIdEffPreselNumbers_%s_%s.root' % (sampleZtautau, jobId)
+    outputFileName = '%s_%s_%s.root' % (keyword_compTauIdEffPreselNumbers, sampleZtautau, jobId)
     outputFileName_full = os.path.join(outputFilePath, outputFileName)
     
     config = \
@@ -426,7 +430,7 @@ process.fwliteOutput = cms.PSet(
     fileName  = cms.string('%s')
 )
 
-process.tauIdEffPreselNumbers = cms.PSet(
+process.%s = cms.PSet(
     process = cms.string('Ztautau'),
 
     regions = cms.vstring(
@@ -454,8 +458,6 @@ process.tauIdEffPreselNumbers = cms.PSet(
     srcGoodMuons = cms.InputTag('patGoodMuons'),
     
     srcMuTauPairs = cms.InputTag('selectedMuPFTauHPSpairsDzForTauIdEffCumulative'),
-    tauChargeMode = cms.string('%s'),
-    disableTauCandPreselCuts = cms.bool(%s),
     
     srcGenParticles = cms.InputTag('genParticles'),
 
@@ -463,8 +465,8 @@ process.tauIdEffPreselNumbers = cms.PSet(
 
     weights = cms.VInputTag('ntupleProducer:tauIdEffNtuple#addPileupInfo#vtxMultReweight')
 )
-""" % (inputFileNames_string, outputFileName_full,
-       tauIds_string, binning_string, tauChargeMode, disableTauCandPreselCuts_string)
+""" % (inputFileNames_string, outputFileName_full, keyword_compTauIdEffPreselNumbers,
+       tauIds_string, binning_string)
 
     configFileName = outputFileName.replace('.root', '_cfg.py')
     configFileName_full = os.path.join(outputFilePath, configFileName)    
@@ -483,15 +485,12 @@ process.tauIdEffPreselNumbers = cms.PSet(
     return retVal
 
 def buildConfigFile_compTauIdEffFinalNumbers(inputFileName, directory, jobId, tauIds, fitVariables, outputFilePath,
-                                             passed_region, failed_region):
+                                             keyword_compTauIdEffFinalNumbers, passed_region, failed_region):
 
     """Compute final tau id. efficiency values and uncertainties"""
 
-    outputFileName = None
-    if directory != '':
-        outputFileName = 'compTauIdEffFinalNumbers_%s_%s.root' % (directory, jobId)
-    else:
-        outputFileName = 'compTauIdEffFinalNumbers_%s.root' % jobId
+    outputFileName = '%s_%s_%s.root' % (keyword_compTauIdEffFinalNumbers, directory, jobId)
+    outputFileName = outputFileName.replace('__', '_')
     outputFileName_full = os.path.join(outputFilePath, outputFileName)
 
     config = \
@@ -501,14 +500,14 @@ import FWCore.ParameterSet.Config as cms
 process = cms.PSet()
 
 process.fwliteInput = cms.PSet(
-    fileNames   = cms.vstring('%s')
+    fileNames = cms.vstring('%s')
 )
     
 process.fwliteOutput = cms.PSet(
-    fileName  = cms.string('%s')
+    fileName = cms.string('%s')
 )
 
-process.compTauIdEffFinalNumbers = cms.PSet(
+process.%s = cms.PSet(
 
     # CV: set to '' if determining tau id. efficiency for whole Tag & Probe sample,
     #     set to name of one individual bin in case you want to measure the tau id. efficiency as function of tauPt, tauEta,...
@@ -526,7 +525,7 @@ process.compTauIdEffFinalNumbers = cms.PSet(
     passed_region = cms.string('%s'),
     failed_region = cms.string('%s')
 )
-""" % (inputFileName, outputFileName_full,
+""" % (inputFileName, outputFileName_full, keyword_compTauIdEffFinalNumbers,
        directory, tauIds, fitVariables, passed_region, failed_region)
 
     configFileName = outputFileName.replace('.root', '_cfg.py')

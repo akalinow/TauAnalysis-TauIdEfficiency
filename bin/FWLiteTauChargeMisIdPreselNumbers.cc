@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.1 $
+ * \version $Revision: 1.2 $
  *
- * $Id: FWLiteTauChargeMisIdPreselNumbers.cc,v 1.1 2011/08/02 15:16:09 veelken Exp $
+ * $Id: FWLiteTauChargeMisIdPreselNumbers.cc,v 1.2 2011/08/03 15:35:31 veelken Exp $
  *
  */
 
@@ -356,7 +356,7 @@ int main(int argc, char* argv[])
 
   edm::ParameterSet cfg = edm::readPSetsFrom(argv[1])->getParameter<edm::ParameterSet>("process");
 
-  edm::ParameterSet cfgTauChargeMisIdPreselNumbers = cfg.getParameter<edm::ParameterSet>("tauChargeMisIdPreselNumbers");
+  edm::ParameterSet cfgTauChargeMisIdPreselNumbers = cfg.getParameter<edm::ParameterSet>("compTauChargeMisIdPreselNumbers");
 
   edm::InputTag srcMuTauPairs = cfgTauChargeMisIdPreselNumbers.getParameter<edm::InputTag>("srcMuTauPairs");
   edm::InputTag srcGenParticles = cfgTauChargeMisIdPreselNumbers.getParameter<edm::InputTag>("srcGenParticles");

@@ -549,10 +549,10 @@ void drawGraphs(
   bottomPad->SetFillColor(10);
   bottomPad->SetTopMargin(0.02);
   bottomPad->SetLeftMargin(0.15);
-  bottomPad->SetBottomMargin(0.20);
+  bottomPad->SetBottomMargin(0.24);
   bottomPad->SetRightMargin(0.05);
   
-  TLegend legend(0.63, 0.59, 0.94, 0.95, "", "brNDC"); 
+  TLegend legend(0.53, 0.59, 0.94, 0.95, "", "brNDC"); 
   legend.SetBorderSize(0);
   legend.SetFillColor(0);
 
@@ -577,12 +577,12 @@ void drawGraphs(
     
     TAxis* yAxis = graphData->GetYaxis();
     yAxis->SetTitle("Fake-rate");
-    yAxis->SetTitleOffset(1.15);
+    yAxis->SetTitleOffset(0.90);
     yAxis->SetTitleSize(0.06);
 
     graphData->SetTitle("");
     graphData->SetMaximum(5.e-1);
-    graphData->SetMinimum(5.e-4);
+    graphData->SetMinimum(1.e-4);
     std::string drawOption_string = ( graphName == graphsToPlot.begin() ) ? "A" : "";
     graphData->Draw(drawOption_string.append("P").data());      
     legend.AddEntry(graphData, std::string(drawOptions[*graphName].legendEntry_).append(" Data").data(), "p");
@@ -593,7 +593,7 @@ void drawGraphs(
 
   legend.Draw();
   std::vector<TPaveText*> labels_text = drawLabels(labels, 0.0450, 1, 0.1650, 0.8575);
-  TPaveText* addPlotLabel_text = drawLabel(addPlotLabel, 0.0450, 2, 0.2150, 0.7250);
+  TPaveText* addPlotLabel_text = drawLabel(addPlotLabel, 0.0450, 2, 0.1800, 0.1050);
 
   frMapType1 frMapDiff;
 
@@ -672,7 +672,7 @@ void drawGraphs(
 
     TAxis* yAxis = graphDiff->GetYaxis();
     yAxis->SetTitle("#frac{Data - Simulation}{Simulation}");
-    yAxis->SetTitleOffset(1.15);
+    yAxis->SetTitleOffset(0.85);
     yAxis->SetNdivisions(505);
     yAxis->CenterTitle();
     yAxis->SetTitleSize(0.08);

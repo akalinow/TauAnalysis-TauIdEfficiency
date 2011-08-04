@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.10 $
+ * \version $Revision: 1.11 $
  *
- * $Id: FWLiteTauIdEffPreselNumbers.cc,v 1.10 2011/08/02 15:16:09 veelken Exp $
+ * $Id: FWLiteTauIdEffPreselNumbers.cc,v 1.11 2011/08/03 15:35:31 veelken Exp $
  *
  */
 
@@ -425,7 +425,7 @@ int main(int argc, char* argv[])
 
   edm::ParameterSet cfg = edm::readPSetsFrom(argv[1])->getParameter<edm::ParameterSet>("process");
 
-  edm::ParameterSet cfgTauIdEffPreselNumbers = cfg.getParameter<edm::ParameterSet>("tauIdEffPreselNumbers");
+  edm::ParameterSet cfgTauIdEffPreselNumbers = cfg.getParameter<edm::ParameterSet>("compTauIdEffPreselNumbers");
 
   edm::InputTag srcMuTauPairs = cfgTauIdEffPreselNumbers.getParameter<edm::InputTag>("srcMuTauPairs");
   edm::InputTag srcGenParticles = cfgTauIdEffPreselNumbers.getParameter<edm::InputTag>("srcGenParticles");

@@ -39,13 +39,13 @@ fitVariables = [
     #'diTauVisMassFromJet' # CV: diTauVisMass always computed from PFJet momenta if using PAT-tuple workflow
 ]    
 
-mode = 'tauIdEfficiency'
-#mode = 'tauChargeMisIdRate'
+#mode = 'tauIdEfficiency'
+mode = 'tauChargeMisIdRate'
 
 sysUncertainties = [
-    "sysTauJetEn",     # needed for diTauVisMass/diTauVisMassFromJet
-    "sysJetEn",        # needed for diTauMt
-    "sysAddPUsmearing" # additional MET smearing, not correlated with nay particles reconstructed in the event
+    #"sysTauJetEn",     # needed for diTauVisMass/diTauVisMassFromJet
+    #"sysJetEn",        # needed for diTauMt
+    #"sysAddPUsmearing" # additional MET smearing, not correlated with nay particles reconstructed in the event
 ]
 
 tauIds = {
@@ -228,50 +228,62 @@ binning = {
 
 execDir = "%s/bin/%s/" % (os.environ['CMSSW_BASE'], os.environ['SCRAM_ARCH'])
 
-executable_FWLiteTauIdEffAnalyzer = execDir + 'FWLiteTauIdEffAnalyzer'
-executable_hadd = 'hadd'
-executable_fitTauIdEff = execDir + fitMethod
-executable_FWLiteTauIdEffPreselNumbers = execDir + 'FWLiteTauIdEffPreselNumbers'
-executable_makeTauIdEffFinalPlots = execDir + 'makeTauIdEffFinalPlots'
-executable_shell = '/bin/csh'
-
-passed_region                       = None
-failed_region                       = None
-regionQCDtemplateFromData_passed    = None
-regionQCDtemplateFromData_failed    = None
-fitMethod                           = None
-tauChargeMode                       = None
-disableTauCandPreselCuts            = None
-executable_compTauIdEffFinalNumbers = None
-expEff_label                        = None                
-measEff_label                       = None  
+executable_compTauIdEffPreselNumbers = None
+keyword_compTauIdEffPreselNumbers    = None
+passed_region                        = None
+failed_region                        = None
+regionQCDtemplateFromData_passed     = None
+regionQCDtemplateFromData_failed     = None
+fitMethod                            = None
+tauChargeMode                        = None
+disableTauCandPreselCuts             = None
+executable_compTauIdEffFinalNumbers  = None
+keyword_compTauIdEffFinalNumbers     = None
+expEff_label                         = None                
+measEff_label                        = None  
 if mode == 'tauIdEfficiency':
-    passed_region                       = 'C1p'
-    failed_region                       = 'C1f'
-    regionQCDtemplateFromData_passed    = 'B1p'
-    regionQCDtemplateFromData_failed    = 'B1f'
-    fitMethod                           = 'fitTauIdEff_wConstraints'
-    tauChargeMode                       = 'tauLeadTrackCharge'
-    disableTauCandPreselCuts            = False
-    executable_compTauIdEffFinalNumbers = execDir + 'compTauIdEffFinalNumbers'
-    expEff_label                        = 'expEff'
-    measEff_label                       = 'measEff'   
+    executable_compTauIdEffPreselNumbers = execDir + 'FWLiteTauIdEffPreselNumbers'
+    keyword_compTauIdEffPreselNumbers    = 'compTauIdEffPreselNumbers'
+    passed_region                        = 'C1p'
+    failed_region                        = 'C1f'
+    regionQCDtemplateFromData_passed     = 'B1p'
+    regionQCDtemplateFromData_failed     = 'B1f'
+    fitMethod                            = 'fitTauIdEff_wConstraints'
+    tauChargeMode                        = 'tauLeadTrackCharge'
+    disableTauCandPreselCuts             = False
+    executable_compTauIdEffFinalNumbers  = execDir + 'compTauIdEffFinalNumbers'
+    keyword_compTauIdEffFinalNumbers     = 'compIdEffPreselNumbers'
+    expEff_label                         = 'expEff'
+    measEff_label                        = 'measEff'   
 elif mode == 'tauChargeMisIdRate':
-    passed_region                       = 'C1p'
-    failed_region                       = 'D1p'
-    regionQCDtemplateFromData_passed    = 'B1p'
-    regionQCDtemplateFromData_failed    = 'B1p'
-    fitMethod                           = 'fitTauIdEff'
-    tauChargeMode                       = 'tauSignalChargedHadronSum'
-    disableTauCandPreselCuts            = True
-    executable_compTauIdEffFinalNumbers = execDir + 'compTauChargeMisIdFinalNumbers'
-    expEff_label                        = 'expRate'
-    measEff_label                       = 'measRate'   
+    executable_compTauIdEffPreselNumbers = execDir + 'FWLiteTauChargeMisIdPreselNumbers'
+    keyword_compTauIdEffPreselNumbers    = 'compTauChargeMisIdPreselNumbers'
+    passed_region                        = 'C1p'
+    failed_region                        = 'D1p'
+    regionQCDtemplateFromData_passed     = 'B1p'
+    regionQCDtemplateFromData_failed     = 'B1p'
+    fitMethod                            = 'fitTauIdEff'
+    tauChargeMode                        = 'tauSignalChargedHadronSum'
+    disableTauCandPreselCuts             = True
+    executable_compTauIdEffFinalNumbers  = execDir + 'compTauChargeMisIdFinalNumbers'
+    keyword_compTauIdEffFinalNumbers     = 'compTauChargeMisIdFinalNumbers'
+    expEff_label                         = 'expRate'
+    measEff_label                        = 'measRate'   
 else:
     raise ValueError("Invalid mode = %s !!" % mode)
 
+executable_FWLiteTauIdEffAnalyzer = execDir + 'FWLiteTauIdEffAnalyzer'
+executable_hadd = 'hadd'
+executable_fitTauIdEff = execDir + fitMethod
+executable_makeTauIdEffFinalPlots = execDir + 'makeTauIdEffFinalPlots'
+executable_shell = '/bin/csh'
+
 if len(samplesToAnalyze) == 0:
     samplesToAnalyze = recoSampleDefinitionsTauIdEfficiency_7TeV['RECO_SAMPLES'].keys()
+
+outputFilePath = os.path.join(outputFilePath, mode)
+if not os.path.exists(outputFilePath):
+    os.mkdir(outputFilePath)
 
 #--------------------------------------------------------------------------------
 #
@@ -318,6 +330,7 @@ logFileNames_fitTauIdEff    = []
 retVal_fitTauIdEff = \
   buildConfigFile_fitTauIdEff(fitMethod, "".join([ jobId, version ]), '', haddOutputFileName_stage1, tauIds.keys(),
                               fitVariables, outputFilePath,
+                              passed_region, failed_region,
                               regionQCDtemplateFromData_passed, regionQCDtemplateFromData_failed, True)
 configFileNames_fitTauIdEff.append(retVal_fitTauIdEff['configFileName'])
 outputFileNames_fitTauIdEff.append(retVal_fitTauIdEff['outputFileName'])
@@ -328,6 +341,7 @@ for binVariable in binning.keys():
             retVal_fitTauIdEff = \
               buildConfigFile_fitTauIdEff(fitMethod, "".join([ jobId, version ]), binName, haddOutputFileName_stage1, tauIds.keys(),
                                           fitVariables, outputFilePath,
+                                          passed_region, failed_region,
                                           regionQCDtemplateFromData_passed, regionQCDtemplateFromData_failed, False)
             configFileNames_fitTauIdEff.append(retVal_fitTauIdEff['configFileName'])
             outputFileNames_fitTauIdEff.append(retVal_fitTauIdEff['outputFileName'])
@@ -340,7 +354,7 @@ for binVariable in binning.keys():
 #
 retVal_FWLiteTauIdEffPreselNumbers = \
   buildConfigFile_FWLiteTauIdEffPreselNumbers(inputFilePath, sampleZtautau, "".join([ jobId, version, suffix_noTauSel ]), tauIds,
-                                              binning, outputFilePath, tauChargeMode, disableTauCandPreselCuts)
+                                              binning, outputFilePath, keyword_compTauIdEffPreselNumbers)
 configFileName_FWLiteTauIdEffPreselNumbers = retVal_FWLiteTauIdEffPreselNumbers['configFileName']
 outputFileName_FWLiteTauIdEffPreselNumbers = retVal_FWLiteTauIdEffPreselNumbers['outputFileName']
 logFileName_FWLiteTauIdEffPreselNumbers = retVal_FWLiteTauIdEffPreselNumbers['logFileName']
@@ -370,7 +384,8 @@ outputFileNames_compTauIdEffFinalNumbers = []
 logFileNames_compTauIdEffFinalNumbers = []
 retVal_compTauIdEffFinalNumbers = \
   buildConfigFile_compTauIdEffFinalNumbers(haddOutputFileName_stage2, '', "".join([ jobId, version ]), tauIds.keys(),
-                                           fitVariables, outputFilePath, passed_region, failed_region)
+                                           fitVariables, outputFilePath,
+                                           keyword_compTauIdEffFinalNumbers, passed_region, failed_region)
 configFileNames_compTauIdEffFinalNumbers.append(retVal_compTauIdEffFinalNumbers['configFileName'])
 outputFileNames_compTauIdEffFinalNumbers.append(retVal_compTauIdEffFinalNumbers['outputFileName'])
 logFileNames_compTauIdEffFinalNumbers.append(retVal_compTauIdEffFinalNumbers['logFileName'])
@@ -379,7 +394,8 @@ for binVariable in binning.keys():
         if isinstance(binOptions, dict) and binOptions.get('min') is not None and binOptions.get('max') is not None:
             retVal_compTauIdEffFinalNumbers = \
               buildConfigFile_compTauIdEffFinalNumbers(haddOutputFileName_stage2, binName, "".join([ jobId, version ]), tauIds.keys(),
-                                                       fitVariables, outputFilePath, passed_region, failed_region)
+                                                       fitVariables, outputFilePath,
+                                                       keyword_compTauIdEffFinalNumbers, passed_region, failed_region)
             configFileNames_compTauIdEffFinalNumbers.append(retVal_compTauIdEffFinalNumbers['configFileName'])
             outputFileNames_compTauIdEffFinalNumbers.append(retVal_compTauIdEffFinalNumbers['outputFileName'])
             logFileNames_compTauIdEffFinalNumbers.append(retVal_compTauIdEffFinalNumbers['logFileName'])
@@ -415,7 +431,7 @@ for binVariable in binning.keys():
     ]
     outputFileName_HPS = 'makeTauIdEffFinalPlots_HPS_%s.eps' % binVariable
     retVal_makeTauIdEffFinalPlots = \
-      buildConfigFile_makeTauIdEffFinalPlots(haddOutputFileName_stage3, tauIds,
+      buildConfigFile_makeTauIdEffFinalPlots(haddOutputFileName_stage3, tauIds, discriminators_HPS,
                                              binning[binVariable], fitVariables, outputFilePath, outputFileName_HPS,
                                              expEff_label, measEff_label)
     configFileNames_makeTauIdEffFinalPlots.append(retVal_makeTauIdEffFinalPlots['configFileName'])
@@ -491,8 +507,8 @@ for i, outputFileName in enumerate(outputFileNames_fitTauIdEff):
                                          logFileNames_fitTauIdEff[i]))
 makeFile.write("\n")
 makeFile.write("%s: %s\n" % (outputFileName_FWLiteTauIdEffPreselNumbers,
-                             executable_FWLiteTauIdEffPreselNumbers))
-makeFile.write("\t%s %s >&! %s\n" % (executable_FWLiteTauIdEffPreselNumbers,
+                             executable_compTauIdEffPreselNumbers))
+makeFile.write("\t%s %s >&! %s\n" % (executable_compTauIdEffPreselNumbers,
                                      configFileName_FWLiteTauIdEffPreselNumbers,
                                      logFileName_FWLiteTauIdEffPreselNumbers))
 makeFile.write("\n")
