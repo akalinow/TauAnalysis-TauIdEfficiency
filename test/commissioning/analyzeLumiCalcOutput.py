@@ -18,7 +18,8 @@ summaryRowMatcher_regexp = \
 summaryRowMatcher = re.compile(summaryRowMatcher_regexp)
 
 units = {
-    '/mb' : 1.0e-9,
+    '/mb' : 1.0e-12,
+    '/ub' : 1.0e-9,
     '/nb' : 1.0e-6,
     '/pb' : 1.0e-3,
     '/fb' : 1.0
@@ -26,6 +27,7 @@ units = {
 
 recLumi_ref = None
 effLumiSum = 0.
+hltPaths = []
     
 inputFile = open(inputFileName, "r")
 isSummaryReached = False
@@ -43,7 +45,7 @@ for line in inputFile.readlines():
         if recUnits not in units:
             raise ValueError("Undefined units = %s !!" % recUnits)
         recLumi = float(recValue)*units[recUnits]
-        print("recLumi = %f" % recLumi)
+        #print("recLumi = %f" % recLumi)
 
         if recLumi_ref is not None:
             if recLumi != recLumi_ref:
@@ -57,9 +59,13 @@ for line in inputFile.readlines():
         if effUnits not in units:
             raise ValueError("Undefined units = %s !!" % effUnits)
         effLumi = float(effValue)*units[effUnits]
-        print("effLumi = %f" % effLumi)
+        #print("effLumi = %f" % effLumi)
         effLumiSum += effLumi
 
-print("recLumi = %f" % recLumi_ref)
-print("effLumi = %f" % effLumiSum)
+        hltPath = summaryRowMatch.group('hltPath')
+        hltPaths.append(hltPath)
+
+print("hltPaths: %s" % hltPaths)
+print(" recLumi = %f" % recLumi_ref)
+print(" effLumi = %f" % effLumiSum)
 print("--> average Prescale factor = %f" % (recLumi_ref/effLumiSum))
