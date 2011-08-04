@@ -209,8 +209,9 @@ void applyStyleOption_graph(
 void loadHistograms(
   histogramMapType5& histogramMap,
   TFile* inputFile, 
-  const vstring& processes, const vstring& eventSelections, const vstring& tauIds,
-  const vstring& observables, const vstring& regions)
+  const vstring& processes, const vstring& eventSelections, 
+  const std::map<std::string, double>& avTriggerPrescales, 
+  const vstring& tauIds, const vstring& observables, const vstring& regions)
 {
 //--------------------------------------------------------------------------------
 // Load histograms from ROOT file
@@ -224,8 +225,15 @@ void loadHistograms(
     TDirectory* inputDirectory = dynamic_cast<TDirectory*>(inputFile->Get(inputDirectoryName.data()));
     if ( !inputDirectory ) 
       throw cms::Exception("loadHistograms") 
-	<< "Failed to load histograms for event selection," 
+	<< "Failed to load histograms for event selection = " << (*eventSelection) << "," 
 	<< " directory = " << inputDirectoryName << " does not exists in input file = " << inputFile->GetName() << " !!\n";
+    
+    if ( avTriggerPrescales.find(*eventSelection) == avTriggerPrescales.end() ) 
+      throw cms::Exception("loadHistograms") 
+	<< "No trigger prescale defined for event selection = " << (*eventSelection) << " !!\n";
+    double avTriggerPrescale = avTriggerPrescales.find(*eventSelection)->second;
+    assert(avTriggerPrescale > 0.);
+    avTriggerPrescale *= 0.10; // CV: fudge factor to account for 'weird' luminosity units
     
     for ( vstring::const_iterator process = processes.begin();
 	  process != processes.end(); ++process ) {
@@ -248,6 +256,8 @@ void loadHistograms(
 	    }
 	    
 	    if ( !histogram->GetSumw2N() ) histogram->Sumw2();
+
+	    if ( process->find("Data") == std::string::npos ) histogram->Scale(1./avTriggerPrescale);
 
 	    histogramMap[*eventSelection][*process][*tauId][*observable][*region] = histogram;
 	  }

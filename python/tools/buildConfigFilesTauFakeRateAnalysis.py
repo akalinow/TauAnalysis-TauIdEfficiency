@@ -16,7 +16,9 @@ def make_drawOptions_string(drawOptions, namesToPlot):
     retVal = ""
     for nameToPlot in namesToPlot:
         retVal += "        " + "cms.PSet(" + "\n"
-        retVal += "        " + "    name = cms.string('%s'),\n" % nameToPlot 
+        retVal += "        " + "    name = cms.string('%s'),\n" % nameToPlot
+        if 'avTriggerPrescale' in drawOptions[nameToPlot]:
+            retVal += "        " + "    avTriggerPrescale = cms.double(%f),\n" % drawOptions[nameToPlot]['avTriggerPrescale']
         retVal += "        " + "    legendEntry = cms.string('%s'),\n" % drawOptions[nameToPlot]['legendEntry']
         retVal += "        " + "    markerStyleData = cms.uint32(%u),\n" % drawOptions[nameToPlot]['markerStyleData']
         retVal += "        " + "    markerStyleSim = cms.uint32(%u),\n" % drawOptions[nameToPlot]['markerStyleSim']

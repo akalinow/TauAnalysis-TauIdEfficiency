@@ -481,66 +481,83 @@ def make_MakeFile_vstring(list_of_strings):
 makeFileName = "Makefile_TauIdEffMeasAnalysis_%s" % "".join([ jobId, version ])
 makeFile = open(makeFileName, "w")
 makeFile.write("\n")
-makeFile.write("all: %s %s\n" % (haddOutputFileName_stage3,
-                                 make_MakeFile_vstring(outputFileNames_makeTauIdEffFinalPlots)))
+makeFile.write("all: %s %s\n" %
+  (haddOutputFileName_stage3,
+   make_MakeFile_vstring(outputFileNames_makeTauIdEffFinalPlots)))
 makeFile.write("\techo 'Finished running TauIdEffMeasAnalysis.'\n")
 makeFile.write("\n")
 for i, outputFileName in enumerate(outputFileNames_FWLiteTauIdEffAnalyzer):
-    makeFile.write("%s: %s\n" % (outputFileName,
-                                 executable_FWLiteTauIdEffAnalyzer))
-    makeFile.write("\t%s %s >&! %s\n" % (executable_FWLiteTauIdEffAnalyzer,
-                                         configFileNames_FWLiteTauIdEffAnalyzer[i],
-                                         logFileNames_FWLiteTauIdEffAnalyzer[i]))
+    makeFile.write("%s: %s\n" %
+      (outputFileName,
+       executable_FWLiteTauIdEffAnalyzer))
+    makeFile.write("\t%s %s &> %s\n" %
+      (executable_FWLiteTauIdEffAnalyzer,
+       configFileNames_FWLiteTauIdEffAnalyzer[i],
+       logFileNames_FWLiteTauIdEffAnalyzer[i]))
 makeFile.write("\n")
-makeFile.write("%s: %s\n" % (haddOutputFileName_stage1,
-                             make_MakeFile_vstring(outputFileNames_FWLiteTauIdEffAnalyzer)))
-makeFile.write("\t%s %s >&! %s\n" % (executable_shell,
-                                     haddShellFileName_stage1,
-                                     haddLogFileName_stage1))
+makeFile.write("%s: %s\n" %
+  (haddOutputFileName_stage1,
+   make_MakeFile_vstring(outputFileNames_FWLiteTauIdEffAnalyzer)))
+makeFile.write("\t%s %s &> %s\n" %
+  (executable_shell,
+   haddShellFileName_stage1,
+   haddLogFileName_stage1))
 makeFile.write("\n")
 for i, outputFileName in enumerate(outputFileNames_fitTauIdEff):
-    makeFile.write("%s: %s %s\n" % (outputFileName,
-                                    executable_fitTauIdEff,
-                                    haddOutputFileName_stage1))
-    makeFile.write("\t%s %s >&! %s\n" % (executable_fitTauIdEff,
-                                         configFileNames_fitTauIdEff[i],
-                                         logFileNames_fitTauIdEff[i]))
+    makeFile.write("%s: %s %s\n" %
+      (outputFileName,
+       executable_fitTauIdEff,
+       haddOutputFileName_stage1))
+    makeFile.write("\t%s %s &> %s\n" %
+      (executable_fitTauIdEff,
+       configFileNames_fitTauIdEff[i],
+       logFileNames_fitTauIdEff[i]))
 makeFile.write("\n")
-makeFile.write("%s: %s\n" % (outputFileName_FWLiteTauIdEffPreselNumbers,
-                             executable_compTauIdEffPreselNumbers))
-makeFile.write("\t%s %s >&! %s\n" % (executable_compTauIdEffPreselNumbers,
-                                     configFileName_FWLiteTauIdEffPreselNumbers,
-                                     logFileName_FWLiteTauIdEffPreselNumbers))
+makeFile.write("%s: %s\n" %
+  (outputFileName_FWLiteTauIdEffPreselNumbers,
+   executable_compTauIdEffPreselNumbers))
+makeFile.write("\t%s %s &> %s\n" %
+  (executable_compTauIdEffPreselNumbers,
+   configFileName_FWLiteTauIdEffPreselNumbers,
+   logFileName_FWLiteTauIdEffPreselNumbers))
 makeFile.write("\n")
-makeFile.write("%s:  %s %s\n" % (haddOutputFileName_stage2,
-                                 make_MakeFile_vstring(outputFileNames_fitTauIdEff),
-                                 outputFileName_FWLiteTauIdEffPreselNumbers))
-makeFile.write("\t%s %s >&! %s\n" % (executable_shell,
-                                     haddShellFileName_stage2,
-                                     haddLogFileName_stage2))
+makeFile.write("%s:  %s %s\n" %
+  (haddOutputFileName_stage2,
+   make_MakeFile_vstring(outputFileNames_fitTauIdEff),
+   outputFileName_FWLiteTauIdEffPreselNumbers))
+makeFile.write("\t%s %s &> %s\n" %
+  (executable_shell,
+   haddShellFileName_stage2,
+   haddLogFileName_stage2))
 makeFile.write("\n")
 for i, outputFileName in enumerate(outputFileNames_compTauIdEffFinalNumbers):
-    makeFile.write("%s: %s %s\n" % (outputFileName,
-                                    executable_compTauIdEffFinalNumbers,
-                                    haddOutputFileName_stage2))
-    makeFile.write("\t%s %s >&! %s\n" % (executable_compTauIdEffFinalNumbers,
-                                         configFileNames_compTauIdEffFinalNumbers[i],
-                                         logFileNames_compTauIdEffFinalNumbers[i]))
+    makeFile.write("%s: %s %s\n" %
+      (outputFileName,
+       executable_compTauIdEffFinalNumbers,
+       haddOutputFileName_stage2))
+    makeFile.write("\t%s %s &> %s\n" %
+      (executable_compTauIdEffFinalNumbers,
+       configFileNames_compTauIdEffFinalNumbers[i],
+       logFileNames_compTauIdEffFinalNumbers[i]))
 makeFile.write("\n")
-makeFile.write("%s: %s %s\n" % (haddOutputFileName_stage3,
-                                make_MakeFile_vstring(outputFileNames_compTauIdEffFinalNumbers),
-                                make_MakeFile_vstring(outputFileNames_compTauIdEffFinalNumbers)))
-makeFile.write("\t%s %s >&! %s\n" % (executable_shell,
-                                     haddShellFileName_stage3,
-                                     haddLogFileName_stage3))
+makeFile.write("%s: %s %s\n" %
+  (haddOutputFileName_stage3,
+   make_MakeFile_vstring(outputFileNames_compTauIdEffFinalNumbers),
+   make_MakeFile_vstring(outputFileNames_compTauIdEffFinalNumbers)))
+makeFile.write("\t%s %s &> %s\n" %
+  (executable_shell,
+   haddShellFileName_stage3,
+   haddLogFileName_stage3))
 makeFile.write("\n")
 for i, outputFileName in enumerate(outputFileNames_makeTauIdEffFinalPlots):
-    makeFile.write("%s: %s %s\n" % (outputFileName,
-                                    executable_makeTauIdEffFinalPlots,
-                                    haddOutputFileName_stage3))
-    makeFile.write("\t%s %s >&! %s\n" % (executable_makeTauIdEffFinalPlots,
-                                         configFileNames_makeTauIdEffFinalPlots[i],
-                                         logFileNames_makeTauIdEffFinalPlots[i]))
+    makeFile.write("%s: %s %s\n" %
+      (outputFileName,
+       executable_makeTauIdEffFinalPlots,
+       haddOutputFileName_stage3))
+    makeFile.write("\t%s %s &> %s\n" %
+      (executable_makeTauIdEffFinalPlots,
+       configFileNames_makeTauIdEffFinalPlots[i],
+       logFileNames_makeTauIdEffFinalPlots[i]))
 makeFile.write("\n")
 makeFile.write(".PHONY: clean\n")
 makeFile.write("clean:\n")

@@ -64,12 +64,25 @@ int main(int argc, const char* argv[])
   vstring tauIdsToPlot          = cfgMakeTauFakeRatePlots.getParameter<vstring>("tauIdsToPlot");
   vstring eventSelectionsToPlot = cfgMakeTauFakeRatePlots.getParameter<vstring>("eventSelectionsToPlot");
 
+//--- read average trigger prescales
+//
+//    NOTE: average trigger prescales may be different for different event selections
+//         (HLT paths/Pt thresholds)
+  std::map<std::string, double> avTriggerPrescales; // key = eventSelection
+  typedef std::vector<edm::ParameterSet> vParameterSet;
+  vParameterSet cfgEventSelections = cfgMakeTauFakeRatePlots.getParameter<vParameterSet>("eventSelections");
+  for ( vParameterSet::const_iterator cfgEventSelection = cfgEventSelections.begin();
+	cfgEventSelection != cfgEventSelections.end(); ++cfgEventSelection ) {
+    std::string eventSelectionName = cfgEventSelection->getParameter<std::string>("name");
+    double avTriggerPrescale = cfgEventSelection->getParameter<double>("avTriggerPrescale");
+    avTriggerPrescales[eventSelectionName] = avTriggerPrescale;
+  }
+
 //--- read configuration parameters needed to make control plots 
 //    comparing jetPt, jetEta, jetPhi distributions observed in analyzed dataset to Monte Carlo predictions
   vstring processNamesSim;
   std::string processNameData;
   std::map<std::string, histogramDrawOptionType> drawOptionsProcesses;
-  typedef std::vector<edm::ParameterSet> vParameterSet;
   vParameterSet cfgProcesses = cfgMakeTauFakeRatePlots.getParameter<vParameterSet>("processes");
   for ( vParameterSet::const_iterator cfgProcess = cfgProcesses.begin();
 	cfgProcess != cfgProcesses.end(); ++cfgProcess ) {
@@ -93,7 +106,6 @@ int main(int argc, const char* argv[])
 //    comparing fake-rates of different tau id. discriminators
 //   (for one event selection at a time)
   std::map<std::string, graphDrawOptionType> drawOptionsTauIds; // key = tauId
-  typedef std::vector<edm::ParameterSet> vParameterSet;
   vParameterSet cfgTauIds = cfgMakeTauFakeRatePlots.getParameter<vParameterSet>("tauIds");
   for ( vParameterSet::const_iterator cfgTauId = cfgTauIds.begin();
 	cfgTauId != cfgTauIds.end(); ++cfgTauId ) {
@@ -105,8 +117,6 @@ int main(int argc, const char* argv[])
 //    comparing fake-rates of different jets selected in QCD, W + jets and Zmumu events
 //   (for one tau id. discriminator at a time)
   std::map<std::string, graphDrawOptionType> drawOptionsEventSelections; // key = eventSelection
-  typedef std::vector<edm::ParameterSet> vParameterSet;
-  vParameterSet cfgEventSelections = cfgMakeTauFakeRatePlots.getParameter<vParameterSet>("eventSelections");
   for ( vParameterSet::const_iterator cfgEventSelection = cfgEventSelections.begin();
 	cfgEventSelection != cfgEventSelections.end(); ++cfgEventSelection ) {
     std::string eventSelectionName = cfgEventSelection->getParameter<std::string>("name");
@@ -142,7 +152,7 @@ int main(int argc, const char* argv[])
 
 //--- load histograms
   histogramMapType5 histogramMap; // key = (eventSelection, process, tauId, observable, region)
-  loadHistograms(histogramMap, inputFile, processesToPlot, eventSelectionsToPlot, tauIdsToPlot, observables, regions);
+  loadHistograms(histogramMap, inputFile, processesToPlot, eventSelectionsToPlot, avTriggerPrescales, tauIdsToPlot, observables, regions);
 
 //--- compute histogram for sum of all Standard Model processes
 //   (= Monte Carlo prediction to be compared with data)

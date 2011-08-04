@@ -30,20 +30,27 @@ eventSelectionsToAnalyze = [
 
 intLumiData = recoSampleDefinitionsTauIdCommissioning_7TeV['TARGET_LUMI']
 
-avPrescaleJet30   =  1.0
-avPrescaleJet60   =  1.0
-avPrescaleJet80   =  1.0
-avPrescaleJet110  =  1.0
-avPrescaleJet150  =  1.0
-avPrescaleMu15    = 26.0
-avPrescaleIsoMu17 =  1.0
+#--------------------------------------------------------------------------------
+#
+# CV: average prescale factors determined by lumiCalc2
+#     for JSON file Cert_160404-167913_7TeV_PromptReco_Collisions11_JSON.txt
+#    (L = 1.1 fb^-1, EPS dataset)
+#
+avPrescaleJet30   = 119910.7
+avPrescaleJet60   =   5010.6
+avPrescaleJet80   =   1409.3
+avPrescaleJet110  =    241.1
+avPrescaleJet150  =     49.6
+avPrescaleMu15    =     27.1
+avPrescaleIsoMu17 =      1.0
+#--------------------------------------------------------------------------------
 
 eventSelections = {
     'QCDj30' : {
         'jobNameInRecoSampleDef' : 'qcdDiJet',
         'tauJetCandSelection'    : [ "userFloat('probeJet30') > 0.5" ], 
         'inputFileNames'         : "tauCommissioningQCDdiJetPATtuple.root",
-        'intLumiData'            : intLumiData/avPrescaleJet30,
+        'avTriggerPrescale'      : avPrescaleJet30,
         'srcTauJetCandidates'    : 'patPFTausDijetTagAndProbeHPS',
         'legendEntry'            : 'QCDj30',
         'markerStyleData'        : 20,
@@ -54,7 +61,7 @@ eventSelections = {
         'jobNameInRecoSampleDef' : 'qcdDiJet',
         'tauJetCandSelection'    : [ "userFloat('probeJet60') > 0.5" ], 
         'inputFileNames'         : "tauCommissioningQCDdiJetPATtuple.root",
-        'intLumiData'            : intLumiData/avPrescaleJet60,
+        'avTriggerPrescale'      : avPrescaleJet60,
         'srcTauJetCandidates'    : 'patPFTausDijetTagAndProbeHPS',
         'legendEntry'            : 'QCDj60',
         'markerStyleData'        : 21,
@@ -65,7 +72,7 @@ eventSelections = {
         'jobNameInRecoSampleDef' : 'qcdDiJet',
         'tauJetCandSelection'    : [ "userFloat('probeJet80') > 0.5" ], 
         'inputFileNames'         : "tauCommissioningQCDdiJetPATtuple.root",
-        'intLumiData'            : intLumiData/avPrescaleJet80,
+        'avTriggerPrescale'      : avPrescaleJet80,
         'srcTauJetCandidates'    : 'patPFTausDijetTagAndProbeHPS',
         'legendEntry'            : 'QCDj80',
         'markerStyleData'        : 22,
@@ -76,7 +83,7 @@ eventSelections = {
         'jobNameInRecoSampleDef' : 'qcdDiJet',
         'tauJetCandSelection'    : [ "userFloat('probeJet110') > 0.5" ], 
         'inputFileNames'         : "tauCommissioningQCDdiJetPATtuple.root",
-        'intLumiData'            : intLumiData/avPrescaleJet110,
+        'avTriggerPrescale'      : avPrescaleJet110,
         'srcTauJetCandidates'    : 'patPFTausDijetTagAndProbeHPS',
         'legendEntry'            : 'QCDj110',
         'markerStyleData'        : 23,
@@ -87,7 +94,7 @@ eventSelections = {
         'jobNameInRecoSampleDef' : 'qcdDiJet',
         'tauJetCandSelection'    : [ "userFloat('probeJet150') > 0.5" ], 
         'inputFileNames'         : "tauCommissioningQCDdiJetPATtuple.root",
-        'intLumiData'            : intLumiData/avPrescaleJet150,
+        'avTriggerPrescale'      : avPrescaleJet150,
         'srcTauJetCandidates'    : 'patPFTausDijetTagAndProbeHPS',
         'legendEntry'            : 'QCDj150',
         'markerStyleData'        : 33,
@@ -98,7 +105,7 @@ eventSelections = {
         'jobNameInRecoSampleDef' : 'qcdMuEnriched',
         'tauJetCandSelection'    : [], 
         'inputFileNames'         : "tauCommissioningQCDmuEnrichedPATtuple.root",
-        'intLumiData'            : intLumiData/avPrescaleMu15,
+        'avTriggerPrescale'      : avPrescaleMu15,
         'srcTauJetCandidates'    : 'patPFTausLoosePFIsoEmbedded06HPS',
         'legendEntry'            : 'QCD#mu',
         'markerStyleData'        : 33,
@@ -109,7 +116,7 @@ eventSelections = {
         'jobNameInRecoSampleDef' : 'WplusJets',
         'tauJetCandSelection'    : [], 
         'inputFileNames'         : "tauCommissioningWplusJetsEnrichedPATtuple.root",
-        'intLumiData'            : intLumiData/avPrescaleIsoMu17,
+        'avTriggerPrescale'      : avPrescaleIsoMu17,
         'srcTauJetCandidates'    : 'patPFTausLoosePFIsoEmbedded06HPS',
         'legendEntry'            : 'W #rightarrow #mu #nu',
         'markerStyleData'        : 33,
@@ -120,7 +127,7 @@ eventSelections = {
         'jobNameInRecoSampleDef' : 'Zmumu',
         'tauJetCandSelection'    : [], 
         'inputFileNames'         : "tauCommissioningZmumuEnrichedPATtuple.root",
-        'intLumiData'            : intLumiData/avPrescaleIsoMu17,
+        'avTriggerPrescale'      : avPrescaleIsoMu17,
         'srcTauJetCandidates'    : 'patPFTausLoosePFIsoEmbedded06HPS',
         'legendEntry'            : 'Z #rightarrow #mu^{+} #mu^{-}',
         'markerStyleData'        : 33,
@@ -258,8 +265,8 @@ executable_shell = '/bin/csh'
 
 bsubQueue = "1nw"
 
-skipFWLiteTauFakeRateAnalyzer = False
-#skipFWLiteTauFakeRateAnalyzer = True
+#skipFWLiteTauFakeRateAnalyzer = False
+skipFWLiteTauFakeRateAnalyzer = True
 
 if len(samplesToAnalyze) == 0:
     samplesToAnalyze = recoSampleDefinitionsTauIdCommissioning_7TeV['SAMPLES_TO_RUN']
@@ -578,7 +585,7 @@ for haddInputFileName in haddInputFileNames:
       (executable_rfcp,
        os.path.join(harvestingFilePath, os.path.basename(haddInputFileName)),
        outputFilePath))
-makeFile.write("\t%s %s >&! %s\n" %
+makeFile.write("\t%s %s &> %s\n" %
   (executable_shell,
    haddShellFileName,
    haddLogFileName))
@@ -588,7 +595,7 @@ for fileNameEntry in fileNames_makeTauFakeRatePlots:
       (fileNameEntry['outputFileName'],
        executable_makeTauFakeRatePlots,
        haddOutputFileName))
-    makeFile.write("\t%s %s >&! %s\n" %
+    makeFile.write("\t%s %s &> %s\n" %
       (executable_makeTauFakeRatePlots,
        fileNameEntry['configFileName'],
        fileNameEntry['logFileName']))

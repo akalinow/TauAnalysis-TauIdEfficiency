@@ -3,6 +3,7 @@
 import os
 import re
 import sys
+from collections import defaultdict
 
 print("<analyzeLumiCalcOutput>:")
 
@@ -27,7 +28,7 @@ units = {
 
 recLumi_ref = None
 effLumiSum = 0.
-hltPaths = []
+hltPaths = defaultdict(float)
     
 inputFile = open(inputFileName, "r")
 isSummaryReached = False
@@ -63,9 +64,11 @@ for line in inputFile.readlines():
         effLumiSum += effLumi
 
         hltPath = summaryRowMatch.group('hltPath')
-        hltPaths.append(hltPath)
+        hltPaths[hltPath] += effLumi
 
-print("hltPaths: %s" % hltPaths)
-print(" recLumi = %f" % recLumi_ref)
-print(" effLumi = %f" % effLumiSum)
+print(" recLumi = %f /fb" % recLumi_ref)
+print(" effLumi = %f /fb" % effLumiSum)
 print("--> average Prescale factor = %f" % (recLumi_ref/effLumiSum))
+print("hltPaths:")
+for hltPathName, effLumiSum_hltPath in hltPaths.items():
+    print(" %s: %f /fb" % (hltPathName, effLumiSum_hltPath)) 
