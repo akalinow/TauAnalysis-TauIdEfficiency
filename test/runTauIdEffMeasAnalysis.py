@@ -30,9 +30,8 @@ samplesToAnalyze = [
 ]
 
 # define sample name and jobId of Ztautau sample
-# used to compute preselection efficiencies and purities in C1p and C1f regions
+# used to compute preselection efficiencies and purities in C1p and C1f/D1p regions
 sampleZtautau = 'Ztautau_powheg'
-suffix_noTauSel = '_noTauSel'
 
 fitVariables = [
     'diTauVisMass',
@@ -43,9 +42,9 @@ fitVariables = [
 mode = 'tauChargeMisIdRate'
 
 sysUncertainties = [
-    #"sysTauJetEn",     # needed for diTauVisMass/diTauVisMassFromJet
-    #"sysJetEn",        # needed for diTauMt
-    #"sysAddPUsmearing" # additional MET smearing, not correlated with nay particles reconstructed in the event
+    "sysTauJetEn",     # needed for diTauVisMass/diTauVisMassFromJet
+    "sysJetEn",        # needed for diTauMt
+    "sysAddPUsmearing" # additional MET smearing, not correlated with nay particles reconstructed in the event
 ]
 
 tauIds = {
@@ -177,7 +176,7 @@ binning = {
             'max' :  1.4
         },
         'tauAbsEta14to19' : {
-            'min' :  1.5,
+            'min' :  1.4,
             'max' :  1.9
         },
         'tauAbsEta19to23' : {
@@ -229,6 +228,7 @@ binning = {
 execDir = "%s/bin/%s/" % (os.environ['CMSSW_BASE'], os.environ['SCRAM_ARCH'])
 
 executable_compTauIdEffPreselNumbers = None
+suffix_noTauSel                      = None
 keyword_compTauIdEffPreselNumbers    = None
 passed_region                        = None
 failed_region                        = None
@@ -244,6 +244,29 @@ measEff_label                        = None
 if mode == 'tauIdEfficiency':
     executable_compTauIdEffPreselNumbers = execDir + 'FWLiteTauIdEffPreselNumbers'
     keyword_compTauIdEffPreselNumbers    = 'compTauIdEffPreselNumbers'
+    suffix_noTauSel                      = '_noTauSel'
+    regions                              = [
+        'ABCD',
+        'A',
+        'A1',  # QCD enriched control region (OS, loose muon isolation, Mt && Pzeta cuts applied)
+        'A1p',
+        'A1f',
+        'B',
+        'B1',  # QCD enriched control region (SS, loose muon isolation, Mt && Pzeta cuts applied)
+        'B1p',
+        'B1f',
+        'C',
+        'C1',
+        'C1p',
+        'C1f',
+        'C2',
+        'C2p',
+        'C2f',
+        'D',   # generic background control region (SS, tight muon isolation)
+        'D1',
+        'D1p',
+        'D1f'
+    ]
     passed_region                        = 'C1p'
     failed_region                        = 'C1f'
     regionQCDtemplateFromData_passed     = 'B1p'
@@ -258,10 +281,22 @@ if mode == 'tauIdEfficiency':
 elif mode == 'tauChargeMisIdRate':
     executable_compTauIdEffPreselNumbers = execDir + 'FWLiteTauChargeMisIdPreselNumbers'
     keyword_compTauIdEffPreselNumbers    = 'compTauChargeMisIdPreselNumbers'
+    suffix_noTauSel                      = ''
+    regions                              = [
+        'B1',  # control region used to obtain QCD template from Data
+        'B1p',
+        'B1f',
+        'C1',
+        'C1p',
+        'C1f',
+        'D1',
+        'D1p',
+        'D1f'
+    ]
     passed_region                        = 'C1p'
     failed_region                        = 'D1p'
     regionQCDtemplateFromData_passed     = 'B1p'
-    regionQCDtemplateFromData_failed     = 'B1p'
+    regionQCDtemplateFromData_failed     = 'B1f'
     fitMethod                            = 'fitTauIdEff'
     tauChargeMode                        = 'tauSignalChargedHadronSum'
     disableTauCandPreselCuts             = True
@@ -273,7 +308,7 @@ else:
     raise ValueError("Invalid mode = %s !!" % mode)
 
 executable_FWLiteTauIdEffAnalyzer = execDir + 'FWLiteTauIdEffAnalyzer'
-executable_hadd = 'hadd'
+executable_hadd = 'hadd -f'
 executable_fitTauIdEff = execDir + fitMethod
 executable_makeTauIdEffFinalPlots = execDir + 'makeTauIdEffFinalPlots'
 executable_shell = '/bin/csh'
@@ -297,7 +332,7 @@ for sampleToAnalyze in samplesToAnalyze:
       buildConfigFile_FWLiteTauIdEffAnalyzer(sampleToAnalyze, "".join([ jobId, version ]), inputFilePath, tauIds,
                                              binning, sysUncertainties, outputFilePath,
                                              recoSampleDefinitionsTauIdEfficiency_7TeV,
-                                             passed_region, failed_region, tauChargeMode,disableTauCandPreselCuts)
+                                             regions, passed_region, failed_region, tauChargeMode, disableTauCandPreselCuts)
 
     if retVal_FWLiteTauIdEffAnalyzer is None:
         continue
@@ -329,8 +364,8 @@ outputFileNames_fitTauIdEff = []
 logFileNames_fitTauIdEff    = []
 retVal_fitTauIdEff = \
   buildConfigFile_fitTauIdEff(fitMethod, "".join([ jobId, version ]), '', haddOutputFileName_stage1, tauIds.keys(),
-                              fitVariables, outputFilePath,
-                              passed_region, failed_region,
+                              fitVariables, sysUncertainties, outputFilePath,
+                              regions, passed_region, failed_region,
                               regionQCDtemplateFromData_passed, regionQCDtemplateFromData_failed, True)
 configFileNames_fitTauIdEff.append(retVal_fitTauIdEff['configFileName'])
 outputFileNames_fitTauIdEff.append(retVal_fitTauIdEff['outputFileName'])
@@ -340,8 +375,8 @@ for binVariable in binning.keys():
         if isinstance(binOptions, dict) and binOptions.get('min') is not None and binOptions.get('max') is not None:
             retVal_fitTauIdEff = \
               buildConfigFile_fitTauIdEff(fitMethod, "".join([ jobId, version ]), binName, haddOutputFileName_stage1, tauIds.keys(),
-                                          fitVariables, outputFilePath,
-                                          passed_region, failed_region,
+                                          fitVariables, sysUncertainties, outputFilePath,
+                                          regions, passed_region, failed_region,
                                           regionQCDtemplateFromData_passed, regionQCDtemplateFromData_failed, False)
             configFileNames_fitTauIdEff.append(retVal_fitTauIdEff['configFileName'])
             outputFileNames_fitTauIdEff.append(retVal_fitTauIdEff['outputFileName'])

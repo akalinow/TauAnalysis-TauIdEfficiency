@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.24 $
+ * \version $Revision: 1.25 $
  *
- * $Id: fitTauIdEff.cc,v 1.24 2011/08/03 15:35:31 veelken Exp $
+ * $Id: fitTauIdEff.cc,v 1.25 2011/08/05 12:57:13 veelken Exp $
  *
  */
 
@@ -342,22 +342,21 @@ void fitUsingRooFit(std::map<std::string, std::map<std::string, TH1*> >& distrib
     TH1* templateFittedShape_passed = ( morphSysUncertaintyUp != morphSysUncertaintyDown ) ?
       compFittedTemplateShape(template_passed, pdf[*process]["PASSED"]) : template_passed;
     templatesAll[*process]["PASSED"][getKey(fitVariable, tauId, "passed").append("_fittedShape")] = templateFittedShape_passed;
-    std::cout << "key_passed_fittedShape = " << getKey(fitVariable, tauId, "passed").append("_fittedShape") << std::endl;
+
     TH1* template_failed = templatesAll[*process]["FAILED"][getKey(fitVariable, tauId, "failed")];
     TH1* templateFittedShape_failed = ( morphSysUncertaintyUp != morphSysUncertaintyDown ) ?
       compFittedTemplateShape(template_failed, pdf[*process]["FAILED"]) : template_failed;
     templatesAll[*process]["FAILED"][getKey(fitVariable, tauId, "failed").append("_fittedShape")] = templateFittedShape_failed;
-    std::cout << "key_failed_fittedShape = " << getKey(fitVariable, tauId, "failed").append("_fittedShape") << std::endl;
+
     TH1* templateFittedShape_all = templatesAll[*process]["ALL"][getKey(fitVariable, tauId)];
     if ( morphSysUncertaintyUp != morphSysUncertaintyDown ) {
       std::string templateFittedShapeName_all = std::string(templateFittedShape_all->GetName()).append("_fittedShape");
-      TH1* templateFittedShape_all = (TH1*)templateFittedShape_passed->Clone(templateFittedShapeName_all.data());
+      templateFittedShape_all = (TH1*)templateFittedShape_passed->Clone(templateFittedShapeName_all.data());
       templateFittedShape_all->Scale(normFactors_fitted[*process]["PASSED"]);
       templateFittedShape_all->Add(templateFittedShape_failed, normFactors_fitted[*process]["FAILED"]);
-      if ( templateFittedShape_all->Integral() > 0. ) templateFittedShape_all->Scale(1./templateFittedShape_all->Integral());
+      if ( templateFittedShape_all->Integral() > 0. ) templateFittedShape_all->Scale(1./templateFittedShape_all->Integral());      
     }
-    templatesAll[*process]["ALL"][getKey(fitVariable, tauId).append("_fittedShape")] = templateFittedShape_passed;
-    std::cout << "key_all_fittedShape = " << getKey(fitVariable, tauId).append("_fittedShape") << std::endl;
+    templatesAll[*process]["ALL"][getKey(fitVariable, tauId).append("_fittedShape")] = templateFittedShape_all;
   }
 
   if ( verbosity ) {
@@ -694,7 +693,6 @@ int main(int argc, const char* argv[])
 	  std::string histogramTitle = "";
 	  std::string outputFileName = std::string("controlPlotsTauIdEff_");
 	  outputFileName.append(*region).append("_").append(key->first).append(".png");
-	  std::cout << "region = " << (*region) << ", key = " << key->first << std::endl;
 	  drawHistograms(templatesAll["Ztautau"][*region][key->first], -1.,
 			 templatesAll["Zmumu"][*region][key->first], -1.,
 			 templatesAll["QCD"][*region][key->first], -1.,
@@ -778,7 +776,6 @@ int main(int argc, const char* argv[])
 	  else assert(0);
 	  std::string key = getKey(*fitVariable, *tauId, tauIdValue);
 	  std::string key_fittedShape = std::string(key).append("_fittedShape");
-	  std::cout << "region = " << (*region) << ", key = " << key << ", key_fittedShape = " << key_fittedShape << std::endl;
 	  drawHistograms(
 	    templatesAll["Ztautau"][*region][key_fittedShape], 
 	    getTemplateNorm_fitted("Ztautau", *region, key, *tauId, *fitVariable, normFactorsAll_fitted, fittedFractions),

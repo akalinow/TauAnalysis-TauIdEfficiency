@@ -111,8 +111,8 @@ int main(int argc, const char* argv[])
     tauIds.push_back(tauIdEntryType(name, legendEntry, expMarkerStyle, measMarkerStyle, color));
   }
 
-  std::string expEff_label  = cfgMakeTauIdEffPlots.getParameter<std::string>("expEff");
-  std::string measEff_label = cfgMakeTauIdEffPlots.getParameter<std::string>("measEff");
+  std::string expEff_label  = cfgMakeTauIdEffPlots.getParameter<std::string>("expEff_label");
+  std::string measEff_label = cfgMakeTauIdEffPlots.getParameter<std::string>("measEff_label");
 
   typedef std::vector<std::string> vstring;
   vstring fitVariables = cfgMakeTauIdEffPlots.getParameter<vstring>("fitVariables");

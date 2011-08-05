@@ -54,7 +54,8 @@ def getStringRep_bool(flag):
 #--------------------------------------------------------------------------------
 
 def buildConfigFile_FWLiteTauIdEffAnalyzer(sampleToAnalyze, jobId, inputFilePath, tauIds, binning, sysUncertainties, outputFilePath,
-                                           recoSampleDefinitions, passed_region, failed_region, tauChargeMode, disableTauCandPreselCuts):
+                                           recoSampleDefinitions, regions, passed_region, failed_region,
+                                           tauChargeMode, disableTauCandPreselCuts):
 
     """Build cfg.py file to run FWLiteTauIdEffAnalyzer macro to run on PAT-tuples,
        apply event selections and fill histograms for A/B/C/D regions"""
@@ -103,6 +104,8 @@ def buildConfigFile_FWLiteTauIdEffAnalyzer(sampleToAnalyze, jobId, inputFilePath
     print(" building config file...")
 
     processType = recoSampleDefinitions['RECO_SAMPLES'][sampleToAnalyze]['type']
+
+    regions_string = make_inputFileNames_vstring(regions)
 
     sysUncertainties_expanded = [ "CENTRAL_VALUE" ]
     if processType != 'Data':
@@ -174,26 +177,7 @@ process.tauIdEffAnalyzer = cms.PSet(
     type = cms.string('%s'),
 
     regions = cms.vstring(
-        'ABCD',
-        'A',
-        'A1',
-        'A1p',
-        'A1f',
-        'B',
-        'B1',
-        'B1p',
-        'B1f',
-        'C',
-        'C1',
-        'C1p',
-        'C1f',
-        'C2',
-        'C2p',
-        'C2f',
-        'D',
-        'D1',
-        'D1p',
-        'D1f'
+%s
     ),
 
     passed_region = cms.string('%s'),
@@ -239,7 +223,7 @@ process.tauIdEffAnalyzer = cms.PSet(
     srcLumiProducer = cms.InputTag('lumiProducer')
 )
 """ % (inputFileNames_string, outputFileName_full,
-       process_matched, processType, passed_region, failed_region, tauIds_string, binning_string, sysUncertainty,
+       process_matched, processType, regions_string, passed_region, failed_region, tauIds_string, binning_string, sysUncertainty,
        srcMuTauPairs, tauChargeMode, disableTauCandPreselCuts_string, weights_string, allEvents_DBS, xSection, intLumiData)
 
         outputFileNames.append(outputFileName_full)
@@ -266,8 +250,8 @@ process.tauIdEffAnalyzer = cms.PSet(
 
     return retVal
 
-def buildConfigFile_fitTauIdEff(fitMethod, jobId, directory, inputFileName, tauIds, fitVariables, outputFilePath,
-                                passed_region, failed_region, 
+def buildConfigFile_fitTauIdEff(fitMethod, jobId, directory, inputFileName, tauIds, fitVariables, sysUncertainties, outputFilePath,
+                                regions, passed_region, failed_region, 
                                 regionQCDtemplateFromData_passed, regionQCDtemplateFromData_failed, makeControlPlots):
 
     """Fit Ztautau signal plus background templates to Mt and visMass distributions
@@ -277,6 +261,14 @@ def buildConfigFile_fitTauIdEff(fitMethod, jobId, directory, inputFileName, tauI
     outputFileName = '%s_%s_%s.root' % (fitMethod, jobId, directory)
     outputFileName = outputFileName.replace('__', '_')
     outputFileName_full = os.path.join(outputFilePath, outputFileName)
+
+    regions_string = make_inputFileNames_vstring(regions)
+
+    loadSysUncertainties_string = make_inputFileNames_vstring(sysUncertainties)
+    varySysUncertainties = []
+    if "sysTauJetEn" in sysUncertainties:
+        varySysUncertainties.append("sysTauJetEn")
+    varySysUncertainties_string = make_inputFileNames_vstring(varySysUncertainties)
 
     makeControlPlots_string = getStringRep_bool(makeControlPlots)
 
@@ -310,27 +302,7 @@ process.%s = cms.PSet(
     #fitTauIdEffC2 = cms.bool(True),
 
     regions = cms.vstring(
-        'ABCD',
-        'A',
-        'A1',  # QCD enriched control region (OS, loose muon isolation, Mt && Pzeta cuts applied)
-        'B',
-        'B1',  # QCD enriched control region (SS, loose muon isolation, Mt && Pzeta cuts applied)
-        'B1p',
-        'B1f',
-        'C',
-        'C1',
-        'C1p',
-        'C1f',
-        'C2',
-        'C2p',
-        'C2f',
-        'D',   # generic background control region (SS, tight muon isolation)
-        #'D1',
-        #'D1p',
-        #'D1f',
-        #'D2',
-        #'D2p',
-        #'D2f'
+%s
     ),
 
     # regions (in Data) from which templates for QCD background are taken
@@ -359,22 +331,22 @@ process.%s = cms.PSet(
     sysVariedByNsigma = cms.double(3.0),
     
     loadSysUncertainties = cms.vstring(
-        "sysTauJetEn",
-        #"sysJetEn"
+%s
     ),
 
     runPseudoExperiments = cms.bool(False),
     #runPseudoExperiments = cms.bool(True),
     numPseudoExperiments = cms.uint32(10000),
     varySysUncertainties = cms.vstring(
-        "sysTauJetEn"
+%s
     ),
 
     makeControlPlots = cms.bool(%s)
 )
 """ % (inputFileName, outputFileName_full,
-       fitMethod, directory, regionQCDtemplateFromData_passed, regionQCDtemplateFromData_failed, passed_region, failed_region, 
-       tauIds, fitVariables, makeControlPlots_string)
+       fitMethod, directory,
+       regions_string, regionQCDtemplateFromData_passed, regionQCDtemplateFromData_failed, passed_region, failed_region, 
+       tauIds, fitVariables, loadSysUncertainties_string, varySysUncertainties_string, makeControlPlots_string)
 
     configFileName = outputFileName.replace('.root', '_cfg.py')
     configFileName_full = os.path.join(outputFilePath, configFileName)    
@@ -520,7 +492,7 @@ process.%s = cms.PSet(
 
     fitVariables = cms.vstring(
 %s
-    )
+    ),
 
     passed_region = cms.string('%s'),
     failed_region = cms.string('%s')

@@ -7,9 +7,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.4 $
+ * \version $Revision: 1.5 $
  *
- * $Id: TauIdEffHistManager.h,v 1.4 2011/07/04 09:51:23 veelken Exp $
+ * $Id: TauIdEffHistManager.h,v 1.5 2011/07/21 16:37:13 veelken Exp $
  *
  */
 
@@ -18,6 +18,8 @@
 #include "CommonTools/Utils/interface/TFileDirectory.h"
 
 #include "AnalysisDataFormats/TauAnalysis/interface/CompositePtrCandidateT1T2MEt.h"
+
+#include <TH1.h>
 
 class TauIdEffHistManager
 {

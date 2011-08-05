@@ -261,17 +261,17 @@ void drawHistograms(TH1* histogramZtautau, double normZtautau,
 // are already properly normalized (by cross-section)
 //--------------------------------------------------------------------------------
 
-  std::cout << "<drawHistograms>:" << std::endl;
-  std::cout << " Ztautau:       histogram = " << histogramZtautau       << ", norm = " << normZtautau       << std::endl;
-  std::cout << " Zmumu:         histogram = " << histogramZmumu         << ", norm = " << normZmumu         << std::endl;
-  std::cout << " QCD:           histogram = " << histogramQCD           << ", norm = " << normQCD           << std::endl;
-  std::cout << " WplusJets:     histogram = " << histogramWplusJets     << ", norm = " << normWplusJets     << std::endl;
-  std::cout << " TTplusJets:    histogram = " << histogramTTplusJets    << ", norm = " << normTTplusJets    << std::endl;
-  std::cout << " Data:          histogram = " << histogramData          << std::endl;
-  std::cout << " Options: " << std::endl;
-  std::cout << "  histogramTitle = " << histogramTitle << std::endl;
-  std::cout << "  xAxisTitle     = " << xAxisTitle << std::endl;
-  std::cout << "  outputFileName = " << outputFileName << std::endl;
+  //std::cout << "<drawHistograms>:" << std::endl;
+  //std::cout << " Ztautau:       histogram = " << histogramZtautau       << ", norm = " << normZtautau       << std::endl;
+  //std::cout << " Zmumu:         histogram = " << histogramZmumu         << ", norm = " << normZmumu         << std::endl;
+  //std::cout << " QCD:           histogram = " << histogramQCD           << ", norm = " << normQCD           << std::endl;
+  //std::cout << " WplusJets:     histogram = " << histogramWplusJets     << ", norm = " << normWplusJets     << std::endl;
+  //std::cout << " TTplusJets:    histogram = " << histogramTTplusJets    << ", norm = " << normTTplusJets    << std::endl;
+  //std::cout << " Data:          histogram = " << histogramData          << std::endl;
+  //std::cout << " Options: " << std::endl;
+  //std::cout << "  histogramTitle = " << histogramTitle << std::endl;
+  //std::cout << "  xAxisTitle     = " << xAxisTitle << std::endl;
+  //std::cout << "  outputFileName = " << outputFileName << std::endl;
 
   TCanvas* canvas = new TCanvas("canvas", "canvas", 800, 640);
   canvas->SetFillColor(10);

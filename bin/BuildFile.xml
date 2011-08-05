@@ -12,6 +12,19 @@
   <use   name="PhysicsTools/SelectorUtils"/>
   <use   name="roofit"/>
 </bin>
+<bin   file="FWLiteTauPtResAnalyzer.cc" name="FWLiteTauPtResAnalyzer">
+  <use   name="DataFormats/Common"/>
+  <use   name="DataFormats/FWLite"/>
+  <use   name="DataFormats/Luminosity"/>
+  <use   name="DataFormats/StdDictionaries"/>
+  <use   name="DataFormats/WrappedStdDictionaries"/>
+  <use   name="FWCore/FWLite"/>
+  <use   name="FWCore/ParameterSet"/>
+  <use   name="FWCore/PythonParameterSet"/>
+  <use   name="FWCore/Utilities"/>
+  <use   name="PhysicsTools/FWLite"/>
+  <use   name="TauAnalysis/TauIdEfficiency"/>
+</bin>
 <bin name="SystematicsMacro.exe"  file="SystematicsMacro.cc">
   <use   name="root"/>
   <use   name="boost"/>

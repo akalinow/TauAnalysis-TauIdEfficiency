@@ -1,9 +1,13 @@
 <use   name="FWCore/Framework"/>
+<use   name="CommonTools/JetMCTag"/>
 <use   name="CommonTools/Utils"/>
 <use   name="PhysicsTools/SelectorUtils"/>
 <use   name="DataFormats/Candidate"/>
 <use   name="DataFormats/Math"/>
+<use   name="DataFormats/HepMCCandidate"/>
 <use   name="DataFormats/PatCandidates"/>
+<use   name="TauAnalysis/CandidateTools"/>
+<use   name="TauAnalysis/Core"/>
 <use   name="AnalysisDataFormats/TauAnalysis"/>
 <export>
   <lib   name="1"/>

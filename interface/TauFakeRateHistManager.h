@@ -7,9 +7,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.4 $
+ * \version $Revision: 1.1 $
  *
- * $Id: TauFakeRateHistManager.h,v 1.4 2011/07/04 09:51:23 veelken Exp $
+ * $Id: TauFakeRateHistManager.h,v 1.1 2011/07/18 16:40:45 veelken Exp $
  *
  */
 
@@ -18,6 +18,8 @@
 #include "CommonTools/Utils/interface/TFileDirectory.h"
 
 #include "DataFormats/PatCandidates/interface/Tau.h"
+
+#include <TH1.h>
 
 class TauFakeRateHistManager
 {

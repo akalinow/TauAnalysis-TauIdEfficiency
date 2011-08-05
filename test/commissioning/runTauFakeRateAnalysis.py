@@ -28,6 +28,9 @@ eventSelectionsToAnalyze = [
     # modify in case you want to submit jobs for some of the event selections only...
 ]
 
+skipFWLiteTauFakeRateAnalyzer = False
+#skipFWLiteTauFakeRateAnalyzer = True
+
 intLumiData = recoSampleDefinitionsTauIdCommissioning_7TeV['TARGET_LUMI']
 
 #--------------------------------------------------------------------------------
@@ -264,9 +267,6 @@ executable_makeTauFakeRatePlots = execDir + 'makeTauFakeRatePlots'
 executable_shell = '/bin/csh'
 
 bsubQueue = "1nw"
-
-#skipFWLiteTauFakeRateAnalyzer = False
-skipFWLiteTauFakeRateAnalyzer = True
 
 if len(samplesToAnalyze) == 0:
     samplesToAnalyze = recoSampleDefinitionsTauIdCommissioning_7TeV['SAMPLES_TO_RUN']

@@ -58,7 +58,7 @@ void TauFakeRateHistManager::scaleHistograms(double factor)
 TH1* TauFakeRateHistManager::book1D(TFileDirectory& dir,
 				    const std::string& distribution, const std::string& title, int numBins, double min, double max)
 {
-  TH1* retVal = dir.make<TH1D>(getHistogramName(distribution).data(), title.data(), numBins, min, max);;
+  TH1* retVal = dir.make<TH1D>(getHistogramName(distribution).data(), title.data(), numBins, min, max);
   histograms_.push_back(retVal);
   return retVal;
 }

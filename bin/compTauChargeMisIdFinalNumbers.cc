@@ -141,18 +141,18 @@ int main(int argc, const char* argv[])
       std::cout << " expNorm_failed = " << expNorm_failed << std::endl;
 
       TString matchedTauHadName_passed = Form("Ztautau_%s_%s_TauHadMatched", region_passed.data(), tauId->data());  
-      double matchedTauHad_passed = getNumber(inputDirectory_presel, matchedTauHadName_passed, 9, 11).first;
+      double matchedTauHad_passed = getNumber(inputDirectory_presel, matchedTauHadName_passed, 4, 6).first;
       TString matchedFakeTauName_passed = Form("Ztautau_%s_%s_FakeTauMatched", region_passed.data(), tauId->data());
-      double matchedFakeTau_passed = getNumber(inputDirectory_presel, matchedFakeTauName_passed, 9, 11).first;
+      double matchedFakeTau_passed = getNumber(inputDirectory_presel, matchedFakeTauName_passed, 4, 6).first;
       double expPurity_passed = matchedTauHad_passed/(matchedTauHad_passed + matchedFakeTau_passed);
       std::cout << " expPurity_passed = " << expPurity_passed << std::endl;
       double expFake_passed = expNorm_passed*(1. - expPurity_passed);
       std::cout << " expFake_passed = " << expFake_passed << std::endl;
 
       TString matchedTauHadName_failed = TString(matchedTauHadName_passed).ReplaceAll(key_passed, key_failed);
-      double matchedTauHad_failed = getNumber(inputDirectory_presel, matchedTauHadName_failed, 9, 11).first;
+      double matchedTauHad_failed = getNumber(inputDirectory_presel, matchedTauHadName_failed, 4, 6).first;
       TString matchedFakeTauName_failed = TString(matchedFakeTauName_passed).ReplaceAll(key_passed, key_failed);
-      double matchedFakeTau_failed = getNumber(inputDirectory_presel, matchedFakeTauName_failed, 9, 11).first;
+      double matchedFakeTau_failed = getNumber(inputDirectory_presel, matchedFakeTauName_failed, 4, 6).first;
       double expPurity_failed = matchedTauHad_failed/(matchedTauHad_failed + matchedFakeTau_failed);
       std::cout << " expPurity_failed = " << expPurity_failed << std::endl;
       double expFake_failed = expNorm_failed*(1. - expPurity_failed);
@@ -204,14 +204,14 @@ int main(int argc, const char* argv[])
       TString totRateExpName_control_cc1 = Form("Ztautau_%s_%s_TauHadMatchedCorrectCharge", region_passed.data(), tauId->data()); 
       TString totRateExpName_control_cc2 = TString(totRateExpName_control_cc1).ReplaceAll(region_passed.data(), region_failed.data());
       double totRateExp_control_cc = 
-	getNumber(inputDirectory_presel, totRateExpName_control_cc1, 6, 8).first
-       + getNumber(inputDirectory_presel, totRateExpName_control_cc2, 6, 8).first;
+	getNumber(inputDirectory_presel, totRateExpName_control_cc1, 4, 6).first
+       + getNumber(inputDirectory_presel, totRateExpName_control_cc2, 4, 6).first;
       std::cout << " totRateExp_control_cc = " << totRateExp_control_cc << std::endl;
       TString totRateExpName_control_wc1 = TString(totRateExpName_control_cc1).ReplaceAll("CorrectCharge", "WrongCharge");
       TString totRateExpName_control_wc2 = TString(totRateExpName_control_cc2).ReplaceAll("CorrectCharge", "WrongCharge");
       double totRateExp_control_wc = 
-	getNumber(inputDirectory_presel, totRateExpName_control_wc1, 6, 8).first 
-       + getNumber(inputDirectory_presel, totRateExpName_control_wc2, 6, 8).first;
+	getNumber(inputDirectory_presel, totRateExpName_control_wc1, 4, 6).first 
+       + getNumber(inputDirectory_presel, totRateExpName_control_wc2, 4, 6).first;
       std::cout << " totRateExp_control_wc = " << totRateExp_control_wc << std::endl;
       double totRateExp_control = totRateExp_control_wc/(totRateExp_control_cc + totRateExp_control_wc);
       std::cout << " MC exp. (2) = " << totRateExp_control << std::endl;
