@@ -34,10 +34,33 @@ void TauFakeRateHistManager::bookHistograms(TFileDirectory& dir)
 
 void TauFakeRateHistManager::fillHistograms(const pat::Tau& tauJetCand, size_t numVertices, double sumEt, double weight)
 {
+  std::cout << "<TauFakeRateHistManager::fillHistograms>:" << std::endl;
+  std::cout << " filling " << histogramJetPt_->GetName() << ": jetPt = " << tauJetCand.p4Jet().pt() << "," 
+	    << " jetEta = " << tauJetCand.p4Jet().eta() << ", jetPhi = " << tauJetCand.p4Jet().phi() << std::endl;
+  std::string histogramJetPtName = histogramJetPt_->GetName();
+  if ( tauJetCand.p4Jet().pt() > 20. && tauJetCand.p4Jet().pt() < 25. && 
+       histogramJetPtName.find("tauDiscrHPSloose")       != std::string::npos &&
+       histogramJetPtName.find("tauDiscrHPSlooseDBcorr") == std::string::npos ) {
+    static unsigned numJets_passed = 0;
+    if ( histogramJetPtName.find("_P_") != std::string::npos ) {
+      ++numJets_passed;
+      std::cout << "decayModeFinding = " << tauJetCand.tauID("decayModeFinding") << std::endl;
+      std::cout << "byLooseIsolation = " << tauJetCand.tauID("byLooseIsolation") << std::endl;
+    }
+    static unsigned numJets_failed = 0;
+    if ( histogramJetPtName.find("_F_") != std::string::npos ) ++numJets_failed;
+    static unsigned numJets_all    = 0;
+    if ( histogramJetPtName.find("_A_") != std::string::npos ) ++numJets_all;
+    std::cout << "numJets_passed = " << numJets_passed << std::endl;
+    std::cout << "numJets_failed = " << numJets_failed << std::endl;
+    std::cout << "numJets_all = " << numJets_all << std::endl;
+  }
   histogramJetPt_->Fill(tauJetCand.p4Jet().pt(), weight);
   histogramJetEta_->Fill(tauJetCand.p4Jet().eta(), weight);
   histogramJetPhi_->Fill(tauJetCand.p4Jet().phi(), weight);
   
+  std::cout << " filling " << histogramTauPt_->GetName() << ": tauPt = " << tauJetCand.pt() << "," 
+	    << " tauEta = " << tauJetCand.eta() << ", tauPhi = " << tauJetCand.phi() << std::endl;
   histogramTauPt_->Fill(tauJetCand.pt(), weight);
   histogramTauEta_->Fill(tauJetCand.eta(), weight);
   histogramTauPhi_->Fill(tauJetCand.phi(), weight);

@@ -105,6 +105,8 @@ bool TauFakeRateEventSelector::operator()(const pat::Tau& tauJetCand, pat::strbi
 	//std::cout << " passed." << std::endl;
       }
 
+      tauIdDiscriminators_passed &= (tauJetCand.pt() > 15.0); // require tauPt > 15 GeV, in order to compare with "old" HPS/TaNC results
+
       //std::cout << "tauIdDiscriminatorCut = ";
       //if      ( tauIdDiscriminatorCut_ == kNotApplied     ) std::cout << "not applied.";
       //else if ( tauIdDiscriminatorCut_ == kSignalLike     ) std::cout << "signal-like.";
