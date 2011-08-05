@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.23 $
+ * \version $Revision: 1.24 $
  *
- * $Id: fitTauIdEff.cc,v 1.23 2011/08/02 15:16:09 veelken Exp $
+ * $Id: fitTauIdEff.cc,v 1.24 2011/08/03 15:35:31 veelken Exp $
  *
  */
 
@@ -342,10 +342,22 @@ void fitUsingRooFit(std::map<std::string, std::map<std::string, TH1*> >& distrib
     TH1* templateFittedShape_passed = ( morphSysUncertaintyUp != morphSysUncertaintyDown ) ?
       compFittedTemplateShape(template_passed, pdf[*process]["PASSED"]) : template_passed;
     templatesAll[*process]["PASSED"][getKey(fitVariable, tauId, "passed").append("_fittedShape")] = templateFittedShape_passed;
+    std::cout << "key_passed_fittedShape = " << getKey(fitVariable, tauId, "passed").append("_fittedShape") << std::endl;
     TH1* template_failed = templatesAll[*process]["FAILED"][getKey(fitVariable, tauId, "failed")];
     TH1* templateFittedShape_failed = ( morphSysUncertaintyUp != morphSysUncertaintyDown ) ?
       compFittedTemplateShape(template_failed, pdf[*process]["FAILED"]) : template_failed;
     templatesAll[*process]["FAILED"][getKey(fitVariable, tauId, "failed").append("_fittedShape")] = templateFittedShape_failed;
+    std::cout << "key_failed_fittedShape = " << getKey(fitVariable, tauId, "failed").append("_fittedShape") << std::endl;
+    TH1* templateFittedShape_all = templatesAll[*process]["ALL"][getKey(fitVariable, tauId)];
+    if ( morphSysUncertaintyUp != morphSysUncertaintyDown ) {
+      std::string templateFittedShapeName_all = std::string(templateFittedShape_all->GetName()).append("_fittedShape");
+      TH1* templateFittedShape_all = (TH1*)templateFittedShape_passed->Clone(templateFittedShapeName_all.data());
+      templateFittedShape_all->Scale(normFactors_fitted[*process]["PASSED"]);
+      templateFittedShape_all->Add(templateFittedShape_failed, normFactors_fitted[*process]["FAILED"]);
+      if ( templateFittedShape_all->Integral() > 0. ) templateFittedShape_all->Scale(1./templateFittedShape_all->Integral());
+    }
+    templatesAll[*process]["ALL"][getKey(fitVariable, tauId).append("_fittedShape")] = templateFittedShape_passed;
+    std::cout << "key_all_fittedShape = " << getKey(fitVariable, tauId).append("_fittedShape") << std::endl;
   }
 
   if ( verbosity ) {
@@ -469,8 +481,12 @@ int main(int argc, const char* argv[])
   vstring loadSysUncertaintyNames = cfgFitTauIdEff.getParameter<vstring>("loadSysUncertainties");
   for ( vstring::const_iterator sysUncertaintyName = loadSysUncertaintyNames.begin();
 	sysUncertaintyName != loadSysUncertaintyNames.end(); ++sysUncertaintyName ) {
-    loadSysShifts.push_back(std::string(*sysUncertaintyName).append("Up"));
-    loadSysShifts.push_back(std::string(*sysUncertaintyName).append("Down"));
+    if ( (*sysUncertaintyName) == "sysAddPUsmearing" ) {
+      loadSysShifts.push_back(*sysUncertaintyName);
+    } else {
+      loadSysShifts.push_back(std::string(*sysUncertaintyName).append("Up"));
+      loadSysShifts.push_back(std::string(*sysUncertaintyName).append("Down"));
+    } 
   }
 
   bool runClosureTest = cfgFitTauIdEff.getParameter<bool>("runClosureTest");
@@ -678,11 +694,12 @@ int main(int argc, const char* argv[])
 	  std::string histogramTitle = "";
 	  std::string outputFileName = std::string("controlPlotsTauIdEff_");
 	  outputFileName.append(*region).append("_").append(key->first).append(".png");
-	  drawHistograms(templatesZtautau[*region][key->first], -1.,
-			 templatesZmumu[*region][key->first], -1.,
-			 templatesQCD[*region][key->first], -1.,
-			 templatesWplusJets[*region][key->first], -1.,
-			 templatesTTplusJets[*region][key->first], -1.,
+	  std::cout << "region = " << (*region) << ", key = " << key->first << std::endl;
+	  drawHistograms(templatesAll["Ztautau"][*region][key->first], -1.,
+			 templatesAll["Zmumu"][*region][key->first], -1.,
+			 templatesAll["QCD"][*region][key->first], -1.,
+			 templatesAll["WplusJets"][*region][key->first], -1.,
+			 templatesAll["TTplusJets"][*region][key->first], -1.,
 			 distributionsData[*region][key->first],
 			 histogramTitle, xAxisTitles[getObservable(key->first)],
 			 outputFileName);
@@ -745,41 +762,42 @@ int main(int argc, const char* argv[])
   if ( makeControlPlots ) {
     for ( vstring::const_iterator region = regionsToDraw.begin();
 	  region != regionsToDraw.end(); ++region ) {
-      for ( std::map<std::string, TH1*>::const_iterator key = distributionsData[*region].begin();
-	    key != distributionsData[*region].end(); ++key ) {
-	for ( std::vector<std::string>::const_iterator tauId = tauIds.begin();
-	      tauId != tauIds.end(); ++tauId ) {
-	  if ( !(key->first.find(*tauId) != std::string::npos) ) continue;
-	  for ( std::vector<std::string>::const_iterator fitVariable = fitVariables.begin();
-		fitVariable != fitVariables.end(); ++fitVariable ) {
-	    if ( !isSystematicShift(key->first) ) {
-	      //std::string histogramTitle = std::string("Region ").append(*region).append(": ").append(key->first);
-	      //histogramTitle.append(" (scaled by normalization det. by fit)");
-	      std::string histogramTitle = "";
-	      std::string outputFileName = std::string("controlPlotsTauIdEff_").append(*region).append("_").append(key->first);
-	      outputFileName.append("_fitted_").append(*fitVariable).append(".png");
-	      std::string key_mc = std::string(key->first).append("_fittedShape");
-	      drawHistograms(
-	        templatesZtautau[*region][key_mc], 
-		getTemplateNorm_fitted("Ztautau", *region, key->first, *tauId, *fitVariable, normFactorsAll_fitted, fittedFractions),
-		templatesZmumu[*region][key_mc], 
-		getTemplateNorm_fitted("Zmumu", *region, key->first, *tauId, *fitVariable, normFactorsAll_fitted, fittedFractions),
-		templatesQCD[*region][key_mc], 
-		getTemplateNorm_fitted("QCD", *region, key->first, *tauId, *fitVariable, normFactorsAll_fitted, fittedFractions),
-		templatesWplusJets[*region][key_mc], 
-		getTemplateNorm_fitted("WplusJets", *region, key->first, *tauId, *fitVariable, normFactorsAll_fitted, fittedFractions),
-		templatesTTplusJets[*region][key_mc], 
-		getTemplateNorm_fitted("TTplusJets", *region, key->first, *tauId, *fitVariable, normFactorsAll_fitted, fittedFractions),
-		distributionsData[*region][key->first],
-		histogramTitle, xAxisTitles[getObservable(key->first)],
-		outputFileName, true);
-	    }
-	  }
+      for ( std::vector<std::string>::const_iterator tauId = tauIds.begin();
+	    tauId != tauIds.end(); ++tauId ) {
+	for ( std::vector<std::string>::const_iterator fitVariable = fitVariables.begin();
+	      fitVariable != fitVariables.end(); ++fitVariable ) {
+	  //std::string histogramTitle = std::string("Region ").append(*region).append(": ").append(key->first);
+	  //histogramTitle.append(" (scaled by normalization det. by fit)");
+	  std::string histogramTitle = "";
+	  std::string outputFileName = std::string("controlPlotsTauIdEff_").append(*region).append("_").append(*tauId);
+	  outputFileName.append("_fitted_").append(*fitVariable).append(".png");
+	  std::string tauIdValue = "";
+	  if      ( (*region) == "PASSED" ) tauIdValue = "passed";
+	  else if ( (*region) == "FAILED" ) tauIdValue = "failed";
+	  else if ( (*region) == "ALL"    ) tauIdValue = "all";
+	  else assert(0);
+	  std::string key = getKey(*fitVariable, *tauId, tauIdValue);
+	  std::string key_fittedShape = std::string(key).append("_fittedShape");
+	  std::cout << "region = " << (*region) << ", key = " << key << ", key_fittedShape = " << key_fittedShape << std::endl;
+	  drawHistograms(
+	    templatesAll["Ztautau"][*region][key_fittedShape], 
+	    getTemplateNorm_fitted("Ztautau", *region, key, *tauId, *fitVariable, normFactorsAll_fitted, fittedFractions),
+	    templatesAll["Zmumu"][*region][key_fittedShape], 
+	    getTemplateNorm_fitted("Zmumu", *region, key, *tauId, *fitVariable, normFactorsAll_fitted, fittedFractions),
+	    templatesAll["QCD"][*region][key_fittedShape], 
+	    getTemplateNorm_fitted("QCD", *region, key, *tauId, *fitVariable, normFactorsAll_fitted, fittedFractions),
+	    templatesAll["WplusJets"][*region][key_fittedShape], 
+	    getTemplateNorm_fitted("WplusJets", *region, key, *tauId, *fitVariable, normFactorsAll_fitted, fittedFractions),
+	    templatesAll["TTplusJets"][*region][key_fittedShape], 
+	    getTemplateNorm_fitted("TTplusJets", *region, key, *tauId, *fitVariable, normFactorsAll_fitted, fittedFractions),
+	    distributionsData[*region][key],
+	    histogramTitle, xAxisTitles[*fitVariable],
+	    outputFileName, true);
 	}
       }
     }
   }
-      
+        
   for ( std::vector<std::string>::const_iterator tauId = tauIds.begin();
 	tauId != tauIds.end(); ++tauId ) {
     std::cout << "Efficiency of Tau id. = " << (*tauId) << ":" << std::endl;
