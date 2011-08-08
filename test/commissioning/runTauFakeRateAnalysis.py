@@ -28,8 +28,8 @@ eventSelectionsToAnalyze = [
     # modify in case you want to submit jobs for some of the event selections only...
 ]
 
-skipFWLiteTauFakeRateAnalyzer = False
-#skipFWLiteTauFakeRateAnalyzer = True
+#skipFWLiteTauFakeRateAnalyzer = False
+skipFWLiteTauFakeRateAnalyzer = True
 
 intLumiData = recoSampleDefinitionsTauIdCommissioning_7TeV['TARGET_LUMI']
 

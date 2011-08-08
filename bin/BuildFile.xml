@@ -17,6 +17,7 @@
   <use   name="DataFormats/FWLite"/>
   <use   name="DataFormats/Luminosity"/>
   <use   name="DataFormats/StdDictionaries"/>
+  <use   name="DataFormats/TrackReco"/>
   <use   name="DataFormats/WrappedStdDictionaries"/>
   <use   name="FWCore/FWLite"/>
   <use   name="FWCore/ParameterSet"/>

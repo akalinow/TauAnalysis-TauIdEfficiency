@@ -1,5 +1,5 @@
-#ifndef TauAnalysis_GenSimTools_tauFakeRateAuxFunctions_h
-#define TauAnalysis_GenSimTools_tauFakeRateAuxFunctions_h
+#ifndef TauAnalysis_TauIdEfficiency_tauFakeRateAuxFunctions_h
+#define TauAnalysis_TauIdEfficiency_tauFakeRateAuxFunctions_h
 
 #include "TauAnalysis/DQMTools/interface/histogramAuxFunctions.h"
 

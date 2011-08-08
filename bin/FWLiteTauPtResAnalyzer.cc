@@ -5,9 +5,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.4 $
+ * \version $Revision: 1.1 $
  *
- * $Id: FWLiteTauPtResAnalyzer.cc,v 1.4 2011/08/02 15:16:09 veelken Exp $
+ * $Id: FWLiteTauPtResAnalyzer.cc,v 1.1 2011/08/05 16:47:15 veelken Exp $
  *
  */
 
@@ -28,11 +28,15 @@
 #include "DataFormats/FWLite/interface/OutputFiles.h"
 
 #include "DataFormats/PatCandidates/interface/Tau.h"
+#include "DataFormats/TauReco/interface/PFTauDecayMode.h"
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
 #include "DataFormats/HepMCCandidate/interface/GenParticleFwd.h"
+#include "DataFormats/VertexReco/interface/Vertex.h"
+#include "DataFormats/VertexReco/interface/VertexFwd.h"
 #include "DataFormats/Common/interface/Handle.h"
 
 #include "TauAnalysis/TauIdEfficiency/interface/TauPtResHistManager.h"
+#include "TauAnalysis/TauIdEfficiency/bin/tauPtResAuxFunctions.h"
 
 #include <TFile.h>
 #include <TTree.h>
@@ -42,6 +46,7 @@
 
 #include <vector>
 #include <string>
+#include <fstream>
 
 typedef std::vector<std::string> vstring;
 
@@ -74,9 +79,12 @@ int main(int argc, char* argv[])
 
   edm::InputTag srcTauJetCandidates = cfgTauFakeRateAnalyzer.getParameter<edm::InputTag>("srcTauJetCandidates");
   edm::InputTag srcGenParticles = cfgTauFakeRateAnalyzer.getParameter<edm::InputTag>("srcGenParticles");
+  edm::InputTag srcVertices = cfgTauFakeRateAnalyzer.getParameter<edm::InputTag>("srcVertices");
 
   std::string directory = cfgTauFakeRateAnalyzer.getParameter<std::string>("directory");
   
+  std::string selEventsFileName = cfgTauFakeRateAnalyzer.getParameter<std::string>("selEventsFileName");
+
   fwlite::InputSource inputFiles(cfg); 
   int maxEvents = inputFiles.maxEvents();
 
@@ -88,6 +96,8 @@ int main(int argc, char* argv[])
   TauPtResHistManager histManager(cfgTauPtResHistManager);
   TFileDirectory dir = ( directory != "" ) ? fs.mkdir(directory) : fs;
   histManager.bookHistograms(dir);
+
+  std::ofstream* selEventsFile = new std::ofstream(selEventsFileName.data(), std::ios::out);
 
   int    numEvents_processed         = 0; 
   double numEventsWeighted_processed = 0.;
@@ -110,8 +120,8 @@ int main(int argc, char* argv[])
     fwlite::Event evt(inputFile);
     for ( evt.toBegin(); !(evt.atEnd() || maxEvents_processed); ++evt ) {
 
-      //std::cout << "processing run = " << evt.id().run() << ":" 
-      //	  << " ls = " << evt.luminosityBlock() << ", event = " << evt.id().event() << std::endl;
+      std::cout << "processing run = " << evt.id().run() << ":" 
+		<< " ls = " << evt.luminosityBlock() << ", event = " << evt.id().event() << std::endl;
 
       double evtWeight = 1.0; // vertex multiplicity reweighting not yet implemented...
 
@@ -120,6 +130,11 @@ int main(int argc, char* argv[])
       numEventsWeighted_processed += evtWeight;
       if ( maxEvents > 0 && numEvents_processed >= maxEvents ) maxEvents_processed = true;
 
+      edm::Handle<reco::VertexCollection> vertices;
+      evt.getByLabel(srcVertices, vertices);
+      if ( !(vertices->size() >= 1) ) continue;
+      const reco::Vertex& theEventVertex = vertices->at(0);
+      
       edm::Handle<pat::TauCollection> tauJetCandidates;
       evt.getByLabel(srcTauJetCandidates, tauJetCandidates);
 
@@ -138,6 +153,20 @@ int main(int argc, char* argv[])
 	     tauJetCand->tauID("byLooseIsolation")     > 0.5 &&
 	     tauJetCand->tauID("againstElectronLoose") > 0.5 &&
 	     tauJetCand->tauID("againstMuonTight")     > 0.5 ) {
+	  if ( tauJetCand->genJet() && 
+	       tauJetCand->genJet()->pt() > 20. && tauJetCand->genJet()->pt() < 40. &&
+	       (tauJetCand->pt()/tauJetCand->genJet()->pt()) < 0.5 &&
+               (tauJetCand->decayMode() == reco::PFTauDecayMode::tauDecay1ChargedPion1PiZero ||
+		tauJetCand->decayMode() == reco::PFTauDecayMode::tauDecay1ChargedPion2PiZero) ) {
+	    std::cout << "run = " << evt.id().run() << "," 
+		      << " ls = " << evt.luminosityBlock() << ", event = " << evt.id().event() << ":" << std::endl;
+	    printPatTau(*tauJetCand);
+	    printRecoPFJet(*tauJetCand->pfJetRef(), theEventVertex);
+	    std::cout << std::endl;
+
+	    (*selEventsFile) << evt.id().run() << ":" << evt.luminosityBlock() << ":" << evt.id().event() << std::endl;
+	  }
+
 	  histManager.fillHistograms(*tauJetCand, *genParticles, evtWeight);
 	}
       }
@@ -146,6 +175,11 @@ int main(int argc, char* argv[])
 //--- close input file
     delete inputFile;
   }
+
+//--- close ASCII file containing 
+//     run:lumi-section:event 
+//    numbers of events with PtRes < 0.5
+  delete selEventsFile;
 
   std::cout << "<FWLiteTauPtResAnalyzer>:" << std::endl;
   std::cout << " numEvents_processed: " << numEvents_processed 
