@@ -5,9 +5,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.1 $
+ * \version $Revision: 1.2 $
  *
- * $Id: FWLiteTauPtResAnalyzer.cc,v 1.1 2011/08/05 16:47:15 veelken Exp $
+ * $Id: FWLiteTauPtResAnalyzer.cc,v 1.2 2011/08/08 14:28:37 veelken Exp $
  *
  */
 
@@ -36,7 +36,7 @@
 #include "DataFormats/Common/interface/Handle.h"
 
 #include "TauAnalysis/TauIdEfficiency/interface/TauPtResHistManager.h"
-#include "TauAnalysis/TauIdEfficiency/bin/tauPtResAuxFunctions.h"
+#include "TauAnalysis/TauIdEfficiency/interface/tauPtResAuxFunctions.h"
 
 #include <TFile.h>
 #include <TTree.h>
@@ -120,8 +120,8 @@ int main(int argc, char* argv[])
     fwlite::Event evt(inputFile);
     for ( evt.toBegin(); !(evt.atEnd() || maxEvents_processed); ++evt ) {
 
-      std::cout << "processing run = " << evt.id().run() << ":" 
-		<< " ls = " << evt.luminosityBlock() << ", event = " << evt.id().event() << std::endl;
+      //std::cout << "processing run = " << evt.id().run() << ":" 
+      //	  << " ls = " << evt.luminosityBlock() << ", event = " << evt.id().event() << std::endl;
 
       double evtWeight = 1.0; // vertex multiplicity reweighting not yet implemented...
 
@@ -152,22 +152,27 @@ int main(int argc, char* argv[])
 	     tauJetCand->tauID("decayModeFinding")     > 0.5 &&
 	     tauJetCand->tauID("byLooseIsolation")     > 0.5 &&
 	     tauJetCand->tauID("againstElectronLoose") > 0.5 &&
-	     tauJetCand->tauID("againstMuonTight")     > 0.5 ) {
-	  if ( tauJetCand->genJet() && 
-	       tauJetCand->genJet()->pt() > 20. && tauJetCand->genJet()->pt() < 40. &&
-	       (tauJetCand->pt()/tauJetCand->genJet()->pt()) < 0.5 &&
-               (tauJetCand->decayMode() == reco::PFTauDecayMode::tauDecay1ChargedPion1PiZero ||
-		tauJetCand->decayMode() == reco::PFTauDecayMode::tauDecay1ChargedPion2PiZero) ) {
-	    std::cout << "run = " << evt.id().run() << "," 
-		      << " ls = " << evt.luminosityBlock() << ", event = " << evt.id().event() << ":" << std::endl;
-	    printPatTau(*tauJetCand);
-	    printRecoPFJet(*tauJetCand->pfJetRef(), theEventVertex);
-	    std::cout << std::endl;
-
-	    (*selEventsFile) << evt.id().run() << ":" << evt.luminosityBlock() << ":" << evt.id().event() << std::endl;
+	     tauJetCand->tauID("againstMuonTight")     > 0.5 ) {	  
+	  std::string genTauDecayMode = getGenTauDecayMode(*tauJetCand, *genParticles);
+	  if ( (genTauDecayMode == "oneProng1Pi0" ||
+		genTauDecayMode == "oneProng2Pi0") &&
+	       tauJetCand->genJet() && 
+	       tauJetCand->genJet()->pt() > 20. && tauJetCand->genJet()->pt() < 40. ) {
+	    double tauPtManCorr = (tauJetCand->pt() + getTauPtManCorr(*tauJetCand, theEventVertex, 3));
+	    if ( tauPtManCorr < (0.5*tauJetCand->genJet()->pt()) ) {
+	      std::cout << "run = " << evt.id().run() << "," 
+			<< " ls = " << evt.luminosityBlock() << ", event = " << evt.id().event() << ":" << std::endl;
+	      printPatTau(*tauJetCand);
+	      std::cout << "tauPtManCorr = " << tauPtManCorr << std::endl;
+	      std::cout << std::endl;
+	      printRecoPFJet(*tauJetCand->pfJetRef(), theEventVertex);
+	      std::cout << std::endl;
+	      
+	      (*selEventsFile) << evt.id().run() << ":" << evt.luminosityBlock() << ":" << evt.id().event() << std::endl;
+	    }
 	  }
 
-	  histManager.fillHistograms(*tauJetCand, *genParticles, evtWeight);
+	  histManager.fillHistograms(*tauJetCand, *genParticles, theEventVertex, evtWeight);
 	}
       }
     }

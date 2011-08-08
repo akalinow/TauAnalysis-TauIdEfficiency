@@ -1,18 +1,51 @@
 #include "TauAnalysis/TauIdEfficiency/interface/TauPtResHistManager.h"
 
-#include "PhysicsTools/JetMCUtils/interface/JetMCTag.h"
-
-#include "DataFormats/ParticleFlowCandidate/interface/PFCandidate.h"
-
-#include "TauAnalysis/CandidateTools/interface/candidateAuxFunctions.h"
 #include "TauAnalysis/Core/interface/histManagerAuxFunctions.h"
+#include "TauAnalysis/TauIdEfficiency/interface/tauPtResAuxFunctions.h"
 
 #include <TMath.h>
 
-TauPtResHistManager::TauPtResHistManager(const edm::ParameterSet& cfg)
+TauPtResHistManager::tauPtResManCorrHistograms::tauPtResManCorrHistograms(int level)
+  : level_(level)
+{}
+
+void TauPtResHistManager::tauPtResManCorrHistograms::bookHistograms(TFileDirectory& dir)
 {
-// nothing to be done yet...
+  histogramTauPtRes_                  = TauPtResHistManager::book1D(
+    dir, Form("tauPtResManCorrLev%i", level_),                  "tauPtRes",                               40, 0., 2.);
+  histogramTauPtResGenOneProng0Pi0_   = TauPtResHistManager::book1D(
+    dir, Form("tauPtResManCorrLev%iGenOneProng0Pi0", level_),   "tauPtRes (gen. one-prong, 0 #pi^{0})",   40, 0., 2.);
+  histogramTauPtResGenOneProng1Pi0_   = TauPtResHistManager::book1D(
+    dir, Form("tauPtResManCorrLev%iGenOneProng1Pi0", level_),   "tauPtRes (gen. one-prong, 1 #pi^{0})",   40, 0., 2.);
+  histogramTauPtResGenOneProng2Pi0_   = TauPtResHistManager::book1D(
+    dir, Form("tauPtResManCorrLev%iGenOneProng2Pi0", level_),   "tauPtRes (gen. one-prong, 2 #pi^{0})",   40, 0., 2.);
+  histogramTauPtResGenThreeProng0Pi0_ = TauPtResHistManager::book1D(
+    dir, Form("tauPtResManCorrLev%iGenThreeProng0Pi0", level_), "tauPtRes (gen. three-prong, 0 #pi^{0})", 40, 0., 2.);
+  histogramTauPtResGenThreeProng1Pi0_ = TauPtResHistManager::book1D(
+    dir, Form("tauPtResManCorrLev%iGenThreeProng1Pi0", level_), "tauPtRes (gen. three-prong, 1 #pi^{0})", 40, 0., 2.);
 }
+
+void TauPtResHistManager::tauPtResManCorrHistograms::fillHistograms(
+  const pat::Tau& patTau, const std::string& genTauDecayMode, double genVisPt, const reco::Vertex& vertex, double weight)
+{
+  double tauPtResManCorr = (patTau.pt() + getTauPtManCorr(patTau, vertex, level_))/genVisPt;
+  histogramTauPtRes_->Fill(tauPtResManCorr, weight);
+  if ( genTauDecayMode == "oneProng0Pi0"   ) histogramTauPtResGenOneProng0Pi0_->Fill(tauPtResManCorr, weight);
+  if ( genTauDecayMode == "oneProng1Pi0"   ) histogramTauPtResGenOneProng1Pi0_->Fill(tauPtResManCorr, weight);
+  if ( genTauDecayMode == "oneProng2Pi0"   ) histogramTauPtResGenOneProng2Pi0_->Fill(tauPtResManCorr, weight);
+  if ( genTauDecayMode == "threeProng0Pi0" ) histogramTauPtResGenThreeProng0Pi0_->Fill(tauPtResManCorr, weight);
+  if ( genTauDecayMode == "threeProng1Pi0" ) histogramTauPtResGenThreeProng1Pi0_->Fill(tauPtResManCorr, weight);
+}
+
+//
+//-------------------------------------------------------------------------------
+//
+
+TauPtResHistManager::TauPtResHistManager(const edm::ParameterSet& cfg)
+  : histogramsTauPtResManCorrLev1_(1),
+    histogramsTauPtResManCorrLev2_(2),
+    histogramsTauPtResManCorrLev3_(3)
+{}
 
 TauPtResHistManager::~TauPtResHistManager()
 {
@@ -28,19 +61,10 @@ void TauPtResHistManager::bookHistograms(TFileDirectory& dir)
   histogramTauPtResGenThreeProng0Pi0_ = book1D(dir, "tauPtResGenThreeProng0Pi0", "tauPtRes (gen. three-prong, 0 #pi^{0})", 40, 0., 2.);
   histogramTauPtResGenThreeProng1Pi0_ = book1D(dir, "tauPtResGenThreeProng1Pi0", "tauPtRes (gen. three-prong, 1 #pi^{0})", 40, 0., 2.);
 
-  histogramTauPtResExclK0s_                  
-    = book1D(dir, "tauPtResExclK0s",                  "tauPtResExclK0s",                               40, 0., 2.);
-  histogramTauPtResExclK0sGenOneProng0Pi0_   
-    = book1D(dir, "tauPtResExclK0sGenOneProng0Pi0",   "tauPtResExclK0s (gen. one-prong, 0 #pi^{0})",   40, 0., 2.);
-  histogramTauPtResExclK0sGenOneProng1Pi0_   
-    = book1D(dir, "tauPtResExclK0sGenOneProng1Pi0",   "tauPtResExclK0s (gen. one-prong, 1 #pi^{0})",   40, 0., 2.);
-  histogramTauPtResExclK0sGenOneProng2Pi0_   
-    = book1D(dir, "tauPtResExclK0sGenOneProng2Pi0",   "tauPtResExclK0s (gen. one-prong, 2 #pi^{0})",   40, 0., 2.);
-  histogramTauPtResExclK0sGenThreeProng0Pi0_ 
-    = book1D(dir, "tauPtResExclK0sGenThreeProng0Pi0", "tauPtResExclK0s (gen. three-prong, 0 #pi^{0})", 40, 0., 2.);
-  histogramTauPtResExclK0sGenThreeProng1Pi0_ 
-    = book1D(dir, "tauPtResExclK0sGenThreeProng1Pi0", "tauPtResExclK0s (gen. three-prong, 1 #pi^{0})", 40, 0., 2.);
-
+  histogramsTauPtResManCorrLev1_.bookHistograms(dir);
+  histogramsTauPtResManCorrLev2_.bookHistograms(dir);
+  histogramsTauPtResManCorrLev3_.bookHistograms(dir);
+ 
   histogramJetPtRes_                  = book1D(dir, "jetPtRes",                  "jetPtRes",                               40, 0., 2.);
   histogramJetPtResGenOneProng0Pi0_   = book1D(dir, "jetPtResGenOneProng0Pi0",   "jetPtRes (gen. one-prong, 0 #pi^{0})",   40, 0., 2.);
   histogramJetPtResGenOneProng1Pi0_   = book1D(dir, "jetPtResGenOneProng1Pi0",   "jetPtRes (gen. one-prong, 1 #pi^{0})",   40, 0., 2.);
@@ -51,34 +75,17 @@ void TauPtResHistManager::bookHistograms(TFileDirectory& dir)
   histogramRecVsGenTauDecayMode_ = book2D(dir, "recVsGenTauDecayMode", "rec. vs. gen. Tau decay mode", 20, -0.5, 19.5, 20, -0.5, 19.5);
   setAxisLabelsGenTauDecayMode(histogramRecVsGenTauDecayMode_->GetXaxis());
   setAxisLabelsRecTauDecayMode(histogramRecVsGenTauDecayMode_->GetYaxis());
-
-  histogramSumPFNeutralHadronPtVsTauPtRes_ = 
-    book2D(dir, "sumPFNeutralHadronPtVsTauPtRes", 
-	   "#Sigma PFNeutralHadron P_{T} vs. tauPtRes", 40, 0., 2., 40, 0., 2.);
-  histogramSumPFNeutralHadronPtVsTauPtResGenOneProng0Pi0_ = 
-    book2D(dir, "sumPFNeutralHadronPtVsTauPtResGenOneProng0Pi0", 
-	   "#Sigma PFNeutralHadron P_{T} vs. tauPtRes (gen. one-prong, 0 #pi^{0})", 40, 0., 2., 40, 0., 2.);
-  histogramSumPFNeutralHadronPtVsTauPtResGenOneProng1Pi0_ = 
-    book2D(dir, "sumPFNeutralHadronPtVsTauPtResGenOneProng1Pi0", 
-	   "#Sigma PFNeutralHadron P_{T} vs. tauPtRes (gen. one-prong, 1 #pi^{0})", 40, 0., 2., 40, 0., 2.);
-  histogramSumPFNeutralHadronPtVsTauPtResGenOneProng2Pi0_ = 
-    book2D(dir, "sumPFNeutralHadronPtVsTauPtResGenOneProng2Pi0", 
-	   "#Sigma PFNeutralHadron P_{T} vs. tauPtRes (gen. one-prong, 2 #pi^{0})", 40, 0., 2., 40, 0., 2.);
-  histogramSumPFNeutralHadronPtVsTauPtResGenThreeProng0Pi0_ = 
-    book2D(dir, "sumPFNeutralHadronPtVsTauPtResGenThreeProng0Pi0", 
-	   "#Sigma PFNeutralHadron P_{T} vs. tauPtRes (gen. three-prong, 0 #pi^{0})", 40, 0., 2., 40, 0., 2.);
-  histogramSumPFNeutralHadronPtVsTauPtResGenThreeProng1Pi0_ = 
-    book2D(dir, "sumPFNeutralHadronPtVsTauPtResGenThreeProng1Pi0", 
-	   "#Sigma PFNeutralHadron P_{T} vs. tauPtRes (gen. three-prong, 1 #pi^{0})", 40, 0., 2., 40, 0., 2.);
 }
 
-void TauPtResHistManager::fillHistograms(const pat::Tau& patTau, const reco::GenParticleCollection& genParticles, double weight)
+void TauPtResHistManager::fillHistograms(
+       const pat::Tau& patTau, const reco::GenParticleCollection& genParticles, const reco::Vertex& vertex, double weight)
 {
-  std::string genTauDecayMode;
-  const reco::GenParticle* genTau = findGenParticle(patTau.p4(), genParticles);
-  if      ( genTau          ) genTauDecayMode = getGenTauDecayMode(genTau);
-  else if ( patTau.genJet() ) genTauDecayMode = JetMCTagUtils::genTauDecayMode(*patTau.genJet());
-  else return;
+  std::string genTauDecayMode = getGenTauDecayMode(patTau, genParticles);
+  if ( !(genTauDecayMode == "oneProng0Pi0"   ||
+	 genTauDecayMode == "oneProng1Pi0"   ||
+	 genTauDecayMode == "oneProng2Pi0"   ||
+	 genTauDecayMode == "threeProng0Pi0" ||
+	 genTauDecayMode == "threeProng1Pi0") ) return;
 
   double genVisPt;
   if ( patTau.genJet() ) genVisPt = patTau.genJet()->pt();
@@ -93,21 +100,10 @@ void TauPtResHistManager::fillHistograms(const pat::Tau& patTau, const reco::Gen
   if ( genTauDecayMode == "oneProng2Pi0"   ) histogramTauPtResGenOneProng2Pi0_->Fill(tauPtRes, weight);
   if ( genTauDecayMode == "threeProng0Pi0" ) histogramTauPtResGenThreeProng0Pi0_->Fill(tauPtRes, weight);
   if ( genTauDecayMode == "threeProng1Pi0" ) histogramTauPtResGenThreeProng1Pi0_->Fill(tauPtRes, weight);
-  
-  bool isGenK0s = false;
-  std::vector<const reco::GenParticle*> genTauJetConstituents = patTau.genJet()->getGenConstituents();
-  for ( std::vector<const reco::GenParticle*>::const_iterator genTauJetConstituent = genTauJetConstituents.begin();
-	genTauJetConstituent != genTauJetConstituents.end(); ++genTauJetConstituent ) {
-    if ( (*genTauJetConstituent)->pdgId() == 310 ) isGenK0s = true;
-  }
-  if ( !isGenK0s ) {
-    histogramTauPtResExclK0s_->Fill(tauPtRes, weight);
-    if ( genTauDecayMode == "oneProng0Pi0"   ) histogramTauPtResExclK0sGenOneProng0Pi0_->Fill(tauPtRes, weight);
-    if ( genTauDecayMode == "oneProng1Pi0"   ) histogramTauPtResExclK0sGenOneProng1Pi0_->Fill(tauPtRes, weight);
-    if ( genTauDecayMode == "oneProng2Pi0"   ) histogramTauPtResExclK0sGenOneProng2Pi0_->Fill(tauPtRes, weight);
-    if ( genTauDecayMode == "threeProng0Pi0" ) histogramTauPtResExclK0sGenThreeProng0Pi0_->Fill(tauPtRes, weight);
-    if ( genTauDecayMode == "threeProng1Pi0" ) histogramTauPtResExclK0sGenThreeProng1Pi0_->Fill(tauPtRes, weight);
-  }
+
+  histogramsTauPtResManCorrLev1_.fillHistograms(patTau, genTauDecayMode, genVisPt, vertex, weight);
+  histogramsTauPtResManCorrLev2_.fillHistograms(patTau, genTauDecayMode, genVisPt, vertex, weight);
+  histogramsTauPtResManCorrLev3_.fillHistograms(patTau, genTauDecayMode, genVisPt, vertex, weight);
 
   double recJetPt = patTau.p4Jet().pt();
   double jetPtRes = recJetPt/genVisPt;
@@ -120,25 +116,6 @@ void TauPtResHistManager::fillHistograms(const pat::Tau& patTau, const reco::Gen
     
   int recTauDecayMode = patTau.decayMode();
   histogramRecVsGenTauDecayMode_->Fill(genTauDecayMode.data(), recTauDecayMode, weight);
-
-  double pfNeutralHadronPtSum = 0.;
-  std::vector<reco::PFCandidatePtr> pfJetConstituents = patTau.pfJetRef()->getPFConstituents();
-  for ( std::vector<reco::PFCandidatePtr>::const_iterator pfJetConstituent = pfJetConstituents.begin();
-	pfJetConstituent != pfJetConstituents.end(); ++pfJetConstituent ) {
-    if ( (*pfJetConstituent)->particleId() == reco::PFCandidate::h0 ) pfNeutralHadronPtSum += (*pfJetConstituent)->pt();
-  }
-  pfNeutralHadronPtSum /= genVisPt;
-  histogramSumPFNeutralHadronPtVsTauPtRes_->Fill(tauPtRes, pfNeutralHadronPtSum, weight);
-  if ( genTauDecayMode == "oneProng0Pi0"   ) 
-    histogramSumPFNeutralHadronPtVsTauPtResGenOneProng0Pi0_->Fill(tauPtRes, pfNeutralHadronPtSum, weight);
-  if ( genTauDecayMode == "oneProng1Pi0"   ) 
-    histogramSumPFNeutralHadronPtVsTauPtResGenOneProng1Pi0_->Fill(tauPtRes, pfNeutralHadronPtSum, weight);
-  if ( genTauDecayMode == "oneProng2Pi0"   ) 
-    histogramSumPFNeutralHadronPtVsTauPtResGenOneProng2Pi0_->Fill(tauPtRes, pfNeutralHadronPtSum, weight);
-  if ( genTauDecayMode == "threeProng0Pi0" ) 
-    histogramSumPFNeutralHadronPtVsTauPtResGenThreeProng0Pi0_->Fill(tauPtRes, pfNeutralHadronPtSum, weight);
-  if ( genTauDecayMode == "threeProng1Pi0" ) 
-    histogramSumPFNeutralHadronPtVsTauPtResGenThreeProng1Pi0_->Fill(tauPtRes, pfNeutralHadronPtSum, weight);
 }
 
 TH1* TauPtResHistManager::book1D(TFileDirectory& dir,
