@@ -159,7 +159,8 @@ bool TauIdEffEventSelector::operator()(const PATMuTauPair& muTauPair, pat::strbi
        muTauPairChargeProd >  muTauPairChargeProdMin_ && muTauPairChargeProd     <  muTauPairChargeProdMax_ && 
        visMass             >  visMassCutoffMin_       && visMass                 <  visMassCutoffMax_       &&
        Mt                  >  MtCutoffMin_            && Mt                      <  MtCutoffMax_            ) {
-    bool MtAndPzetaDiffCut_passed = (Mt > MtMin_ && Mt < MtMax_ && PzetaDiff > PzetaDiffMin_ && PzetaDiff < PzetaDiffMax_);
+    //bool MtAndPzetaDiffCut_passed = (Mt > MtMin_ && Mt < MtMax_ && PzetaDiff > PzetaDiffMin_ && PzetaDiff < PzetaDiffMax_);
+    bool MtAndPzetaDiffCut_passed = (Mt > MtMin_ && Mt < MtMax_);
 
     bool tauIdDiscriminators_passed = true;
     for ( vstring::const_iterator tauIdDiscriminator = tauIdDiscriminators_.begin();

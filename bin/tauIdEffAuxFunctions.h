@@ -234,7 +234,7 @@ void drawCMSprelimaryLabels(double xOffset = 0.150, double yOffset = 0.8075)
   static TPaveText* cmsLuminosityLabel = 0;
   if ( !cmsLuminosityLabel ) {
     cmsLuminosityLabel = new TPaveText(xOffset + 0.005, yOffset, xOffset + 0.32, yOffset + 0.0400, "NDC");
-    cmsLuminosityLabel->AddText("#sqrt{s} = 7 TeV, L = 879.6 pb^{-1}");
+    cmsLuminosityLabel->AddText("#sqrt{s} = 7 TeV, L = 1.1 fb^{-1}");
     cmsLuminosityLabel->SetTextAlign(13);
     cmsLuminosityLabel->SetTextSize(0.045);
     cmsLuminosityLabel->SetFillStyle(0);

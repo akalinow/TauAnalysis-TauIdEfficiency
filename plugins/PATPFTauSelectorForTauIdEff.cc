@@ -143,10 +143,16 @@ bool PATPFTauSelectorForTauIdEff::filter(edm::Event& evt, const edm::EventSetup&
 //    applied in PFTau reconstruction
     trackQualityCuts_->setPV(theVertex);
     std::vector<reco::PFCandidatePtr> pfChargedJetConstituents = reco::tau::pfChargedCands(*pfJet);
+    unsigned numTracks = 0;
+    unsigned numSelTracks = 0;
     std::vector<reco::PFCandidatePtr> selPFChargedHadrons;
     for ( std::vector<reco::PFCandidatePtr>::const_iterator pfChargedJetConstituent = pfChargedJetConstituents.begin();
 	  pfChargedJetConstituent != pfChargedJetConstituents.end(); ++pfChargedJetConstituent ) {
-      if ( trackQualityCuts_->filter(**pfChargedJetConstituent) ) selPFChargedHadrons.push_back(*pfChargedJetConstituent);
+      if ( TMath::Abs((*pfChargedJetConstituent)->charge()) > 0.5 ) ++numTracks;
+      if ( trackQualityCuts_->filter(**pfChargedJetConstituent) ) {
+	++numSelTracks;
+	selPFChargedHadrons.push_back(*pfChargedJetConstituent);
+      }
     }
 
 //--- find highest Pt "leading" PFChargedHadron
@@ -237,8 +243,9 @@ bool PATPFTauSelectorForTauIdEff::filter(edm::Event& evt, const edm::EventSetup&
 //    to jet-energy corrected four-vector of associated PFJet
     pfTau_output.setP4(p4PFJetCorrected);
 
-//--- store number of tracks passing quality criteria
-    pfTau_output.addUserFloat("numTracks", selPFChargedHadrons.size());
+//--- store number of tracks/number of tracks passing quality criteria
+    pfTau_output.addUserFloat("numTracks",    numTracks);
+    pfTau_output.addUserFloat("numSelTracks", numSelTracks);
 
 //--- store Pt and charge of "leading" track
     if ( leadPFChargedHadron ) {

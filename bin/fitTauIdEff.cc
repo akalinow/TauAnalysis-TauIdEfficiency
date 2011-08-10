@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.25 $
+ * \version $Revision: 1.26 $
  *
- * $Id: fitTauIdEff.cc,v 1.25 2011/08/05 12:57:13 veelken Exp $
+ * $Id: fitTauIdEff.cc,v 1.26 2011/08/05 16:47:15 veelken Exp $
  *
  */
 
@@ -609,7 +609,7 @@ int main(int argc, const char* argv[])
 	  
 	  std::string histogramNameQCD_failed = templatesQCD[region_failed][keyQCD_failed]->GetName();
 	  double normQCD_failed = getIntegral(templatesQCD[region_failed][keyQCD_failed], true, true);
-	  templatesQCD[region_passed][keyQCD_failed] = 
+	  templatesQCD[region_failed][keyQCD_failed] = 
 	    normalize(distributionsData[regionQCDtemplateFromData_failed][keyData_failed], normQCD_failed);
 	  templatesQCD[region_failed][keyQCD_failed]->SetName(histogramNameQCD_failed.data());
 	}

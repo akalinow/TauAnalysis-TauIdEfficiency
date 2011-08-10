@@ -3,13 +3,16 @@
 import os
 
 hltPaths = [
-    'HLT_Mu15_v*',    # for QCD muon enriched 
-    'HLT_IsoMu17_v*', # for W --> mu nu, Z --> mu+ mu-
-    'HLT_Jet30_v*',   # for QCD multi-jet
-    'HLT_Jet60_v*',
-    'HLT_Jet80_v*',
-    'HLT_Jet110_v*',
-    'HLT_Jet150_v*'
+    'HLT_L1SingleMuOpen_v*',
+    'HLT_L1SingleMuOpen_DT_v*',
+    #'HLT_IsoMu12_v*',
+    #'HLT_Mu15_v*',    # for QCD muon enriched 
+    #'HLT_IsoMu17_v*', # for W --> mu nu, Z --> mu+ mu-
+    #'HLT_Jet30_v*',   # for QCD multi-jet
+    #'HLT_Jet60_v*',
+    #'HLT_Jet80_v*',
+    #'HLT_Jet110_v*',
+    #'HLT_Jet150_v*'
 ]
 
 jsonFile = \

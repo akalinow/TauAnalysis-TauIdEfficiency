@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.18 $
+ * \version $Revision: 1.19 $
  *
- * $Id: FWLiteTauIdEffAnalyzer.cc,v 1.18 2011/07/24 16:37:57 veelken Exp $
+ * $Id: FWLiteTauIdEffAnalyzer.cc,v 1.19 2011/08/03 15:35:31 veelken Exp $
  *
  */
 
@@ -50,6 +50,10 @@
 #include <TROOT.h>
 #include <TBenchmark.h>
 
+#include <vector>
+#include <string>
+#include <fstream>
+
 typedef std::vector<std::string> vstring;
 
 struct histManagerEntryType
@@ -89,7 +93,8 @@ struct regionEntryType
 		  const std::string& process, const std::string& region, 
 		  const vstring& tauIdDiscriminators, const std::string& tauIdName, const std::string& sysShift,
 		  const edm::ParameterSet& cfgBinning, const std::string& svFitMassHypothesis, 
-		  const std::string& tauChargeMode, bool disableTauCandPreselCuts)
+		  const std::string& tauChargeMode, bool disableTauCandPreselCuts,
+		  const std::string& selEventsFileName)
     : process_(process),
       region_(region),
       tauIdDiscriminators_(tauIdDiscriminators),
@@ -98,7 +103,8 @@ struct regionEntryType
       selector_(0),
       histogramsUnbinned_(0),
       numMuTauPairs_selected_(0),
-      numMuTauPairsWeighted_selected_(0.)
+      numMuTauPairsWeighted_selected_(0.),
+      selEventsFile_(0)
   {
     edm::ParameterSet cfgSelector;
     cfgSelector.addParameter<vstring>("tauIdDiscriminators", tauIdDiscriminators_);
@@ -138,6 +144,18 @@ struct regionEntryType
 	histogramEntriesBinned_.push_back(histManagerEntry);
       }
     }
+
+    if ( selEventsFileName != "" ) {
+      size_t idx = selEventsFileName.rfind(".");
+      if ( idx != std::string::npos ) {
+	std::string selEventsFileName_region = std::string(selEventsFileName, 0, idx);
+	selEventsFileName_region.append("_").append(region_);
+	selEventsFileName_region.append(std::string(selEventsFileName, idx));
+	//std::cout << "selEventsFileName_region = " << selEventsFileName_region << std::endl;
+	selEventsFile_ = new std::ofstream(selEventsFileName_region.data(), std::ios::out);
+      } else throw cms::Exception("regionEntryType")
+	  << "Invalid selEventsFileName = " << selEventsFileName << " !!\n";
+    }
   }
   ~regionEntryType()
   {
@@ -149,8 +167,10 @@ struct regionEntryType
 	  it != histogramEntriesBinned_.end(); ++it ) {
       delete (*it);
     }
+    
+    delete selEventsFile_;
   }
-  void analyze(const PATMuTauPair& muTauPair, size_t numVertices, double evtWeight)
+  void analyze(const fwlite::Event& evt, const PATMuTauPair& muTauPair, size_t numVertices, double evtWeight)
   {
     pat::strbitset evtSelFlags;
     if ( selector_->operator()(muTauPair, evtSelFlags) ) {
@@ -175,6 +195,9 @@ struct regionEntryType
 	(*histManagerEntry)->fillHistograms(x, muTauPair, numVertices, evtWeight);
       }
  
+      if ( selEventsFile_ ) 
+	(*selEventsFile_) << evt.id().run() << ":" << evt.luminosityBlock() << ":" << evt.id().event() << std::endl;
+
       ++numMuTauPairs_selected_;
       numMuTauPairsWeighted_selected_ += evtWeight;
     }
@@ -194,6 +217,8 @@ struct regionEntryType
 
   int numMuTauPairs_selected_;
   double numMuTauPairsWeighted_selected_;
+
+  std::ofstream* selEventsFile_;
 };
 
 int main(int argc, char* argv[]) 
@@ -237,6 +262,9 @@ int main(int argc, char* argv[])
     cfgTauIdEffAnalyzer.getParameter<std::string>("sysShift") : "CENTRAL_VALUE";
   edm::InputTag srcEventCounter = cfgTauIdEffAnalyzer.getParameter<edm::InputTag>("srcEventCounter");
 
+  std::string selEventsFileName = ( cfgTauIdEffAnalyzer.exists("selEventsFileName") ) ? 
+    cfgTauIdEffAnalyzer.getParameter<std::string>("selEventsFileName") : "";
+
   fwlite::InputSource inputFiles(cfg); 
   int maxEvents = inputFiles.maxEvents();
 
@@ -264,7 +292,7 @@ int main(int argc, char* argv[])
       std::string tauIdName = cfgTauIdDiscriminator->getParameter<std::string>("name");
       regionEntryType* regionEntry = 
 	new regionEntryType(fs, process, *region, tauIdDiscriminators, tauIdName, 
-			    sysShift, cfgBinning, svFitMassHypothesis, tauChargeMode, disableTauCandPreselCuts);
+			    sysShift, cfgBinning, svFitMassHypothesis, tauChargeMode, disableTauCandPreselCuts, selEventsFileName);
       regionEntries.push_back(regionEntry);
     }
   }
@@ -422,7 +450,7 @@ int main(int argc, char* argv[])
 	    muTauPair != muTauPairs->end(); ++muTauPair ) {
 	for ( std::vector<regionEntryType*>::iterator regionEntry = regionEntries.begin();
 	      regionEntry != regionEntries.end(); ++regionEntry ) {	  
-	  (*regionEntry)->analyze(*muTauPair, numVertices, evtWeight);
+	  (*regionEntry)->analyze(evt, *muTauPair, numVertices, evtWeight);
 
 	  //pat::strbitset evtSelFlags;
 	  //if ( (*regionEntry)->region_ == "D1p" && (*regionEntry)->selector_->operator()(*muTauPair, evtSelFlags) ) {
@@ -486,6 +514,12 @@ int main(int argc, char* argv[])
 	      << " " << (*regionEntry)->numMuTauPairs_selected_ 
 	      << " (weighted = " << (*regionEntry)->numMuTauPairsWeighted_selected_ << ")" << std::endl;
     lastTauIdName = (*regionEntry)->tauIdName_;
+  }
+
+//--- close ASCII files containing run + event numbers of events selected in different regions
+  for ( std::vector<regionEntryType*>::iterator it = regionEntries.begin();
+	it != regionEntries.end(); ++it ) {
+    delete (*it);
   }
   
   if ( isData ) {

@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.2 $
+ * \version $Revision: 1.3 $
  *
- * $Id: FWLiteTauChargeMisIdPreselNumbers.cc,v 1.2 2011/08/03 15:35:31 veelken Exp $
+ * $Id: FWLiteTauChargeMisIdPreselNumbers.cc,v 1.3 2011/08/04 07:37:03 veelken Exp $
  *
  */
 
@@ -72,10 +72,27 @@ struct cutFlowEntryType
     std::string labelTauHadMatchedCorrectCharge = std::string(label).append("TauHadMatchedCorrectCharge");
     cfgTauHadMatchedCorrectCharge.addParameter<std::string>("label", labelTauHadMatchedCorrectCharge);
     cutFlowTauHadMatchedCorrectCharge_ = new TauIdEffCutFlowTable(cfgTauHadMatchedCorrectCharge);
+    edm::ParameterSet cfgOneProngMatchedCorrectCharge = cfg;
+    std::string labelOneProngMatchedCorrectCharge = std::string(label).append("OneProngMatchedCorrectCharge");
+    cfgOneProngMatchedCorrectCharge.addParameter<std::string>("label", labelOneProngMatchedCorrectCharge);
+    cutFlowOneProngMatchedCorrectCharge_ = new TauIdEffCutFlowTable(cfgOneProngMatchedCorrectCharge);
+    edm::ParameterSet cfgThreeProngMatchedCorrectCharge = cfg;
+    std::string labelThreeProngMatchedCorrectCharge = std::string(label).append("ThreeProngMatchedCorrectCharge");
+    cfgThreeProngMatchedCorrectCharge.addParameter<std::string>("label", labelThreeProngMatchedCorrectCharge);
+    cutFlowThreeProngMatchedCorrectCharge_ = new TauIdEffCutFlowTable(cfgThreeProngMatchedCorrectCharge);
+
     edm::ParameterSet cfgTauHadMatchedWrongCharge = cfg;
     std::string labelTauHadMatchedWrongCharge = std::string(label).append("TauHadMatchedWrongCharge");
     cfgTauHadMatchedWrongCharge.addParameter<std::string>("label", labelTauHadMatchedWrongCharge);
     cutFlowTauHadMatchedWrongCharge_ = new TauIdEffCutFlowTable(cfgTauHadMatchedWrongCharge);
+    edm::ParameterSet cfgOneProngMatchedWrongCharge = cfg;
+    std::string labelOneProngMatchedWrongCharge = std::string(label).append("OneProngMatchedWrongCharge");
+    cfgOneProngMatchedWrongCharge.addParameter<std::string>("label", labelOneProngMatchedWrongCharge);
+    cutFlowOneProngMatchedWrongCharge_ = new TauIdEffCutFlowTable(cfgOneProngMatchedWrongCharge);
+    edm::ParameterSet cfgThreeProngMatchedWrongCharge = cfg;
+    std::string labelThreeProngMatchedWrongCharge = std::string(label).append("ThreeProngMatchedWrongCharge");
+    cfgThreeProngMatchedWrongCharge.addParameter<std::string>("label", labelThreeProngMatchedWrongCharge);
+    cutFlowThreeProngMatchedWrongCharge_ = new TauIdEffCutFlowTable(cfgThreeProngMatchedWrongCharge);
 
     edm::ParameterSet cfgFakeTauMatched = cfg;
     std::string labelFakeTauMatched = std::string(label).append("FakeTauMatched");
@@ -91,7 +108,11 @@ struct cutFlowEntryType
   {
     delete cutFlowTauHadMatched_;
     delete cutFlowTauHadMatchedCorrectCharge_;
+    delete cutFlowOneProngMatchedCorrectCharge_;
+    delete cutFlowThreeProngMatchedCorrectCharge_;
     delete cutFlowTauHadMatchedWrongCharge_;
+    delete cutFlowOneProngMatchedWrongCharge_;
+    delete cutFlowThreeProngMatchedWrongCharge_;
     delete cutFlowFakeTauMatched_;
     delete cutFlowNoMatchingApplied_;
   }
@@ -99,21 +120,42 @@ struct cutFlowEntryType
   {
     cutFlowTauHadMatched_->bookCutFlowTable(dir);
     cutFlowTauHadMatchedCorrectCharge_->bookCutFlowTable(dir);
+    cutFlowOneProngMatchedCorrectCharge_->bookCutFlowTable(dir);
+    cutFlowThreeProngMatchedCorrectCharge_->bookCutFlowTable(dir);
     cutFlowTauHadMatchedWrongCharge_->bookCutFlowTable(dir);
+    cutFlowOneProngMatchedWrongCharge_->bookCutFlowTable(dir);
+    cutFlowThreeProngMatchedWrongCharge_->bookCutFlowTable(dir);
     cutFlowFakeTauMatched_->bookCutFlowTable(dir);
     cutFlowNoMatchingApplied_->bookCutFlowTable(dir);
   }
   void fillCutFlowTables(double x, 
 			 const vbool& selectionFlags, 
-			 int genMatchType, double genTauCharge, double recTauCharge,
+			 int genMatchType, double genTauCharge, const std::string& genTauDecayMode, double recTauCharge,
 			 double evtWeight)
   {
     if        ( genMatchType == kTauHadMatched  ) {
       cutFlowTauHadMatched_->fillCutFlowTable(x, selectionFlags, evtWeight);
-      if      ( (genTauCharge*recTauCharge) > +0.5 ) 
+      
+      bool isOneProngMatched = 
+	( genTauDecayMode == "oneProng0Pi0"    ||
+	  genTauDecayMode == "oneProng1Pi0"    ||
+	  genTauDecayMode == "oneProng2Pi0"    ||
+	  genTauDecayMode == "oneProngOther"   );
+      bool isThreeProngMatched = 
+	( genTauDecayMode == "threeProng0Pi0"  ||
+	  genTauDecayMode == "threeProngOther" ||
+	  genTauDecayMode == "threeProngOther" );
+
+      if      ( (genTauCharge*recTauCharge) > +0.5 ) {
 	cutFlowTauHadMatchedCorrectCharge_->fillCutFlowTable(x, selectionFlags, evtWeight);
-      else if ( (genTauCharge*recTauCharge) < -0.5 ) 
+	if ( isOneProngMatched   ) cutFlowOneProngMatchedCorrectCharge_->fillCutFlowTable(x, selectionFlags, evtWeight);
+	if ( isThreeProngMatched ) cutFlowThreeProngMatchedCorrectCharge_->fillCutFlowTable(x, selectionFlags, evtWeight);
+      }
+      else if ( (genTauCharge*recTauCharge) < -0.5 ) {
 	cutFlowTauHadMatchedWrongCharge_->fillCutFlowTable(x, selectionFlags, evtWeight);
+	if ( isOneProngMatched   ) cutFlowOneProngMatchedWrongCharge_->fillCutFlowTable(x, selectionFlags, evtWeight);
+	if ( isThreeProngMatched ) cutFlowThreeProngMatchedWrongCharge_->fillCutFlowTable(x, selectionFlags, evtWeight);
+      }
     } else if ( genMatchType == kFakeTauMatched ) {
       cutFlowFakeTauMatched_->fillCutFlowTable(x, selectionFlags, evtWeight);
     }
@@ -125,7 +167,11 @@ struct cutFlowEntryType
 
   TauIdEffCutFlowTable* cutFlowTauHadMatched_;
   TauIdEffCutFlowTable* cutFlowTauHadMatchedCorrectCharge_;
+  TauIdEffCutFlowTable* cutFlowOneProngMatchedCorrectCharge_;
+  TauIdEffCutFlowTable* cutFlowThreeProngMatchedCorrectCharge_;
   TauIdEffCutFlowTable* cutFlowTauHadMatchedWrongCharge_;
+  TauIdEffCutFlowTable* cutFlowOneProngMatchedWrongCharge_;
+  TauIdEffCutFlowTable* cutFlowThreeProngMatchedWrongCharge_;
   TauIdEffCutFlowTable* cutFlowFakeTauMatched_;
   TauIdEffCutFlowTable* cutFlowNoMatchingApplied_;
 };
@@ -213,7 +259,7 @@ struct regionEntryType
     }
   }
   void analyze(const PATMuTauPair& muTauPair, 
-	       int genMatchType, double genTauCharge, double recTauCharge,
+	       int genMatchType, double genTauCharge, const std::string& genTauDecayMode, double recTauCharge,
 	       size_t numVertices, 
 	       double evtWeight)
   {
@@ -239,7 +285,7 @@ struct regionEntryType
 //--- fill histograms for "inclusive" tau id. efficiency measurement
       cutFlowUnbinned_->fillCutFlowTables(0., 
 					  tauIdFlags_, 
-					  genMatchType, genTauCharge, recTauCharge,
+					  genMatchType, genTauCharge, genTauDecayMode, recTauCharge,
 					  evtWeight);
 
 //--- fill histograms for tau id. efficiency measurement as function of:
@@ -259,7 +305,7 @@ struct regionEntryType
 	  << "Invalid binVariable = " << (*cutFlowEntry)->binVariable_ << " !!\n";
 	(*cutFlowEntry)->fillCutFlowTables(x, 
 					   tauIdFlags_, 
-					   genMatchType, genTauCharge, recTauCharge,
+					   genMatchType, genTauCharge, genTauDecayMode, recTauCharge,
 					   evtWeight);
       }
 
@@ -291,7 +337,7 @@ struct regionEntryType
 };
 
 int getGenMatchType(const PATMuTauPair& muTauPair, const reco::GenParticleCollection& genParticles,
-		    double& genTauCharge, double& recTauCharge)
+		    double& genTauCharge, std::string& genTauDecayMode, double& recTauCharge)
 {
 //--- check if reconstructed tau-jet candidate matches "true" hadronic tau decay on generator level,
 //    is a "fake" tau (i.e. matches a quark/gluon/e/mu/photon on generator level)
@@ -310,7 +356,7 @@ int getGenMatchType(const PATMuTauPair& muTauPair, const reco::GenParticleCollec
     matchingGenParticle->charge() : 0.;
   recTauCharge = muTauPair.leg2()->charge();
 
-  std::string genTauDecayMode = ( matchingGenParticle && matchingGenParticleAbsPdgId == 15 ) ?
+  genTauDecayMode = ( matchingGenParticle && matchingGenParticleAbsPdgId == 15 ) ?
     getGenTauDecayMode(matchingGenParticle) : "";
   //std::cout << " genTauDecayMode = " << genTauDecayMode << std::endl;
 
@@ -510,7 +556,8 @@ int main(int argc, char* argv[])
       for ( PATMuTauPairCollection::const_iterator muTauPair = muTauPairs->begin();
 	    muTauPair != muTauPairs->end(); ++muTauPair, ++muTauPairIdx ) {
 	double genTauCharge, recTauCharge;
-	int genMatchType = getGenMatchType(*muTauPair, *genParticles, genTauCharge, recTauCharge);
+	std::string genTauDecayMode;
+	int genMatchType = getGenMatchType(*muTauPair, *genParticles, genTauCharge, genTauDecayMode, recTauCharge);
 	for ( std::vector<regionEntryType*>::iterator regionEntry = regionEntries.begin();
 	      regionEntry != regionEntries.end(); ++regionEntry ) {   
 /*
@@ -530,7 +577,7 @@ int main(int argc, char* argv[])
           }
  */
 	  (*regionEntry)->analyze(*muTauPair, 
-				  genMatchType, genTauCharge, recTauCharge, 
+				  genMatchType, genTauCharge, genTauDecayMode, recTauCharge, 
 				  numVertices, 
 				  evtWeight);
 

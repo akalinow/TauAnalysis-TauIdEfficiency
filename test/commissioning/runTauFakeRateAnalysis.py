@@ -135,7 +135,7 @@ eventSelections = {
         'legendEntry'            : 'Z #rightarrow #mu^{+} #mu^{-}',
         'markerStyleData'        : 33,
         'markerStyleSim'         : 27,
-        'color'                  : color_lightBlue.value()
+        'color'                  : color_violett.value()
     }
 }
 

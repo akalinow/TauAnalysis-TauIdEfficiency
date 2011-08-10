@@ -14,7 +14,7 @@ version = 'V6'
 
 inputFilePath = '/data2/veelken/CMSSW_4_2_x/PATtuples/TauIdEffMeas/%s/%s/' % (jobId, version) \
                + 'user/v/veelken/CMSSW_4_2_x/PATtuples/TauIdEffMeas/'
-outputFilePath = '/data1/veelken/tmp/muonPtGt20/V6/'
+outputFilePath = '/data1/veelken/tmp/muonPtGt20_noPzetaCut/V6'
 
 samplesToAnalyze = [
     # modify in case you want to submit jobs for some of the samples only...

@@ -69,7 +69,7 @@ process.tauIdEffAnalyzer = cms.PSet(
         ##'C',
         ##'C1',
         'C1p',
-        ##'C1f',
+        'C1f',
         ##'C2',
         ##'C2p',
         ##'C2f',
@@ -232,6 +232,8 @@ process.tauIdEffAnalyzer = cms.PSet(
     ),
 
     sysShift = cms.string('CENTRAL_VALUE'),
+
+    selEventsFileName = cms.string(os.path.join(outputFilePath, "selEvents_tauIdEff_%s.txt" % sampleToAnalyze)),
 
     srcTrigger = cms.InputTag('patTriggerEvent'),
     hltPaths = cms.vstring(

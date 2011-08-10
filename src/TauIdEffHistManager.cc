@@ -19,23 +19,25 @@ TauIdEffHistManager::~TauIdEffHistManager()
 
 void TauIdEffHistManager::bookHistograms(TFileDirectory& dir)
 {
-  histogramMuonPt_       = book1D(dir, "muonPt",          "P_{T}^{#mu}",                           40,          0. ,         100.);
-  histogramMuonEta_      = book1D(dir, "muonEta",         "#eta_{#mu}",                            50,         -2.5,         +2.5);
-  histogramMuonPhi_      = book1D(dir, "muonPhi",         "#phi_{#mu}",                            36, -TMath::Pi(), +TMath::Pi());
+  histogramMuonPt_          = book1D(dir, "muonPt",             "P_{T}^{#mu}",                           40,          0. ,         100.);
+  histogramMuonEta_         = book1D(dir, "muonEta",            "#eta_{#mu}",                            50,         -2.5,         +2.5);
+  histogramMuonPhi_         = book1D(dir, "muonPhi",            "#phi_{#mu}",                            36, -TMath::Pi(), +TMath::Pi());
   
-  histogramTauPt_        = book1D(dir, "tauJetPt",        "P_{T}^{#tau}",                          40,          0. ,         100.);
-  histogramTauEta_       = book1D(dir, "tauJetEta",       "#eta_{#tau}",                           50,         -2.5,         +2.5);
-  histogramTauPhi_       = book1D(dir, "tauJetPhi",       "#phi_{#tau}",                           36, -TMath::Pi(), +TMath::Pi());
-  histogramTauNumTracks_ = book1D(dir, "tauJetNumTracks", "Num. Tracks #tau-Jet",                  25,         -0.5,         24.5);
-  
-  histogramVisMass_      = book1D(dir, "diTauVisMass",    "M_{vis}(#mu + #tau_{had})",             36,         20.0,        200.0);
-  if ( svFitMassHypothesis_ != "" )
-    histogramSVfitMass_  = book1D(dir, "diTauSVfitMass",  "SVfit Mass",                            42,         40.0,        250.0);
-  histogramMt_           = book1D(dir, "diTauMt",         "M_{T}(#mu + MET)",                      24,          0.0,        120.0);
-  histogramPzetaDiff_    = book1D(dir, "diTauPzetaDiff",  "P_{#zeta} - 1.5 #cdot P_{#zeta}^{vis}", 24,        -80.0,        +40.0);
+  histogramTauPt_           = book1D(dir, "tauJetPt",           "P_{T}^{#tau}",                          40,          0. ,         100.);
+  histogramTauEta_          = book1D(dir, "tauJetEta",          "#eta_{#tau}",                           50,         -2.5,         +2.5);
+  histogramTauPhi_          = book1D(dir, "tauJetPhi",          "#phi_{#tau}",                           36, -TMath::Pi(), +TMath::Pi());
+  histogramTauNumTracks_    = book1D(dir, "tauJetNumTracks",    "Num. Tracks #tau-Jet",                  25,         -0.5,         24.5);
+  histogramTauNumSelTracks_ = book1D(dir, "tauJetNumSelTracks", "Num. selected Tracks #tau-Jet",         25,         -0.5,         24.5);
 
-  histogramSumEt_        = book1D(dir, "sumEt",           "#Sigma E_{T}^{PF}",                     50,          0.,         500.0);
-  histogramNumVertices_  = book1D(dir, "numVertices",     "Num. Vertices",                         20,         -0.5,         19.5);
+  histogramVisMass_         = book1D(dir, "diTauVisMass",       "M_{vis}(#mu + #tau_{had})",             36,         20.0,        200.0);
+  if ( svFitMassHypothesis_ != "" )
+    histogramSVfitMass_     = book1D(dir, "diTauSVfitMass",     "SVfit Mass",                            42,         40.0,        250.0);
+  histogramMt_              = book1D(dir, "diTauMt",            "M_{T}(#mu + MET)",                      24,          0.0,        120.0);
+  histogramPzetaDiff_       = book1D(dir, "diTauPzetaDiff",     "P_{#zeta} - 1.5 #cdot P_{#zeta}^{vis}", 24,        -80.0,        +40.0);
+
+  histogramMEt_             = book1D(dir, "met",                "E_{T}^{miss}",                          20,          0.0,        100.0);
+  histogramSumEt_           = book1D(dir, "sumEt",              "#Sigma E_{T}^{PF}",                     50,          0.,         500.0);
+  histogramNumVertices_     = book1D(dir, "numVertices",        "Num. Vertices",                         20,         -0.5,         19.5);
 }
 
 void TauIdEffHistManager::fillHistograms(const PATMuTauPair& muTauPair, size_t numVertices, double weight)
@@ -48,6 +50,7 @@ void TauIdEffHistManager::fillHistograms(const PATMuTauPair& muTauPair, size_t n
   histogramTauEta_->Fill(muTauPair.leg2()->eta(), weight);
   histogramTauPhi_->Fill(muTauPair.leg2()->phi(), weight);
   histogramTauNumTracks_->Fill(muTauPair.leg2()->userFloat("numTracks"), weight);
+  histogramTauNumSelTracks_->Fill(muTauPair.leg2()->userFloat("numSelTracks"), weight);
   
   histogramVisMass_->Fill((muTauPair.leg1()->p4() + muTauPair.leg2()->p4()).mass(), weight); 
   if ( svFitMassHypothesis_ != "" ) {
@@ -58,6 +61,7 @@ void TauIdEffHistManager::fillHistograms(const PATMuTauPair& muTauPair, size_t n
   histogramMt_->Fill(muTauPair.mt1MET(), weight);
   histogramPzetaDiff_->Fill(muTauPair.pZeta() - 1.5*muTauPair.pZetaVis(), weight);
 
+  histogramMEt_->Fill(muTauPair.met()->pt(), weight);
   histogramSumEt_->Fill(muTauPair.met()->sumEt(), weight);
   histogramNumVertices_->Fill(numVertices, weight);
 }
