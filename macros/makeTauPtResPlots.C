@@ -125,9 +125,9 @@ void makeTauPtResPlots()
 		     "Default/tauPtResManCorrLev2", 3, "corr. Level 2",
 		     "Default/tauPtResManCorrLev3", 4, "corr. Level 3");
 
-    makeTauPtResPlot(canvas, inputFile, "", tauDecayModeToPlot, Form("tauPtRes_nuclIntEnRecovery_%s.png", tauDecayModeToPlot.Data()),
+    makeTauPtResPlot(canvas, inputFile, "", tauDecayModeToPlot, Form("tauPtRes_combImprovements_%s.png", tauDecayModeToPlot.Data()),
 		     "Default/tauPtRes", 1, "def. Tau P_{T}",
-		     "noEleTrackQcutsDefault/tauPtResManCorrLev1", 2, "impr. Tau P_{T}",
+		     "noEleTrackQcutsDefault/tauPtResManCorrLev2", 2, "impr. Tau P_{T}",
 		     "Default/jetPtRes", 3, "Jet P_{T}");
   }
  
