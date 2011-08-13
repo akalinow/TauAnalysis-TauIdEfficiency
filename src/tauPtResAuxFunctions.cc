@@ -52,7 +52,7 @@ bool isTauSignalPFCandidate(const pat::Tau& patTau, const reco::PFCandidatePtr& 
   return retVal;
 }
 
-double getTauPtManCorr(const pat::Tau& patTau, const reco::Vertex& vertex, int corrLevel)
+double getTauPtManCorr(const pat::Tau& patTau, const reco::Vertex& vertex, unsigned corrLevel)
 {
   double retVal = 0.;
 
@@ -62,6 +62,11 @@ double getTauPtManCorr(const pat::Tau& patTau, const reco::Vertex& vertex, int c
 	pfJetConstituent != pfJetConstituents.end(); ++pfJetConstituent ) {
     const reco::TrackBaseRef track = getTrack(**pfJetConstituent);
     if ( track.isNonnull() ) {
+      double dIP = TMath::Abs(track->dxy(vertex.position()));
+      double dZ = TMath::Abs(track->dz(vertex.position()));
+      if ( corrLevel & 1 && track->pt() > 2.0 && TMath::Abs(patTau.eta() - (*pfJetConstituent)->eta()) < 0.10 &&
+	   !isTauSignalPFCandidate(patTau, *pfJetConstituent) && (dZ < 0.2 || dIP > 0.10) ) needsManCorr = true;
+
       double trackPt = track->pt();
       double trackPtErr = track->ptError();
       double caloEn = (*pfJetConstituent)->ecalEnergy() + (*pfJetConstituent)->hcalEnergy();
@@ -69,13 +74,8 @@ double getTauPtManCorr(const pat::Tau& patTau, const reco::Vertex& vertex, int c
       double caloEnErr = caloEnRes*TMath::Sqrt(caloEn);
       double caloEt = caloEn*TMath::Sin((*pfJetConstituent)->theta());
       double caloEtErr = caloEnErr*TMath::Sin((*pfJetConstituent)->theta());
-      if ( corrLevel >= 1 && trackPt > 2.0 && TMath::Abs(patTau.eta() - (*pfJetConstituent)->eta()) < 0.10 &&
+      if ( corrLevel & 2 && trackPt > 2.0 && TMath::Abs(patTau.eta() - (*pfJetConstituent)->eta()) < 0.10 &&
 	   trackPt > (caloEt + 2.0*TMath::Sqrt(trackPtErr*trackPtErr + caloEtErr*caloEtErr)) ) needsManCorr = true;
-      
-      double dIP = TMath::Abs(track->dxy(vertex.position()));
-      double dZ = TMath::Abs(track->dz(vertex.position()));
-      if ( corrLevel >= 2 && trackPt > 2.0 && TMath::Abs(patTau.eta() - (*pfJetConstituent)->eta()) < 0.10 &&
-	   !isTauSignalPFCandidate(patTau, *pfJetConstituent) && (dZ < 0.2 || dIP > 0.10) ) needsManCorr = true;
     }
   }
 
@@ -85,7 +85,7 @@ double getTauPtManCorr(const pat::Tau& patTau, const reco::Vertex& vertex, int c
     if ( TMath::Abs(patTau.eta() - (*pfJetConstituent)->eta()) < 0.10 &&
 	 !isTauSignalPFCandidate(patTau, *pfJetConstituent) ) unaccountedPFCandPtSum += (*pfJetConstituent)->pt();
   }
-  if ( corrLevel >= 3 && unaccountedPFCandPtSum > (0.50*patTau.pt()) ) needsManCorr = true;
+  if ( corrLevel & 4 && unaccountedPFCandPtSum > (0.50*patTau.pt()) ) needsManCorr = true;
 
   if ( needsManCorr ) {
     for ( std::vector<reco::PFCandidatePtr>::const_iterator pfJetConstituent = pfJetConstituents.begin();
