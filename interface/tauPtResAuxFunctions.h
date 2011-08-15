@@ -18,7 +18,7 @@ std::string getGenTauDecayMode(const pat::Tau&, const reco::GenParticleCollectio
 std::string getPFCandidateType(const reco::PFCandidate&);
 const reco::TrackBaseRef getTrack(const reco::PFCandidate&);
 
-double getTauPtManCorr(const pat::Tau&, const reco::Vertex&, int);
+double getTauPtManCorr(const pat::Tau&, const reco::Vertex&, unsigned);
 
 void printPatTau(const pat::Tau&);
 void printRecoPFJet(const reco::PFJet&, const reco::Vertex&);

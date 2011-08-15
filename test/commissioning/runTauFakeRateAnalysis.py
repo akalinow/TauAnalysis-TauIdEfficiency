@@ -346,7 +346,7 @@ for sampleToAnalyze in samplesToAnalyze:
                 fileNames_FWLiteTauFakeRateAnalyzer[sampleToAnalyze][eventSelectionToAnalyze]['bsubScriptFileNames'].append(
                 bsubScriptFileName)
 
-                bsubJobName = "tauFRana%s%s%i" % (sampleToAnalyze, eventSelectionToAnalyze, i)
+                bsubJobName = "tauFRana%s%s_%i" % (sampleToAnalyze, eventSelectionToAnalyze, i)
                 bsubJobNames_FWLiteTauFakeRateAnalyzer[sampleToAnalyze][eventSelectionToAnalyze].append(bsubJobName)
 
             bjobListFileName = \
@@ -443,11 +443,11 @@ for sampleToAnalyze in samplesToAnalyze:
         jobNameInRecoSampleDef = eventSelections[eventSelectionToAnalyze]['jobNameInRecoSampleDef']
         if jobNameInRecoSampleDef in recoSampleDefinitionsTauIdCommissioning_7TeV['RECO_SAMPLES'][sampleToAnalyze]['jobs']:
             for final_harvest_file in bsubFileNames_harvesting[sampleToAnalyze][eventSelectionToAnalyze]['final_harvest_files']:
-            # CV:
-            #    (1) file name of final harvesting output file is stored at index[1] in final_harvest_file-tuple
-            #       (cf. TauAnalysis/Configuration/python/tools/harvestingLXBatch.py)
-            #    (2) assume that .root files containing histograms for single sample and single event selection
-            #        are copied to local disk via rfcp prior to running 'hadd'
+                # CV:
+                #    (1) file name of final harvesting output file is stored at index[1] in final_harvest_file-tuple
+                #       (cf. TauAnalysis/Configuration/python/tools/harvestingLXBatch.py)
+                #    (2) assume that .root files containing histograms for single sample and single event selection
+                #        are copied to local disk via rfcp prior to running 'hadd'
                 haddInputFileNames.append(os.path.join(outputFilePath, os.path.basename(final_harvest_file[1])))
 haddShellFileName = os.path.join(configFilePath, 'harvestTauFakeRateHistograms_%s.csh' % version)
 haddOutputFileName = os.path.join(outputFilePath, 'analyzeTauFakeRateHistograms_all_%s.root' % version)
@@ -559,7 +559,7 @@ for sampleToAnalyze in samplesToAnalyze:
                       (executable_bsub,
                        bsubQueue,
                        bsubJobEntry[i],
-                    fileNameEntry['bsubScriptFileNames'][i]))
+                       fileNameEntry['bsubScriptFileNames'][i]))
             else:
                 fileNames_FWLiteTauFakeRateAnalyzer[sampleToAnalyze][eventSelectionToAnalyze]['outputFileNames'] = []
             makeFile.write("\n")

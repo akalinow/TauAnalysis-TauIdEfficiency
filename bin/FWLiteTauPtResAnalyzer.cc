@@ -5,9 +5,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.2 $
+ * \version $Revision: 1.3 $
  *
- * $Id: FWLiteTauPtResAnalyzer.cc,v 1.2 2011/08/08 14:28:37 veelken Exp $
+ * $Id: FWLiteTauPtResAnalyzer.cc,v 1.3 2011/08/08 16:58:01 veelken Exp $
  *
  */
 
@@ -153,12 +153,13 @@ int main(int argc, char* argv[])
 	     tauJetCand->tauID("byLooseIsolation")     > 0.5 &&
 	     tauJetCand->tauID("againstElectronLoose") > 0.5 &&
 	     tauJetCand->tauID("againstMuonTight")     > 0.5 ) {	  
+/*
 	  std::string genTauDecayMode = getGenTauDecayMode(*tauJetCand, *genParticles);
 	  if ( (genTauDecayMode == "oneProng1Pi0" ||
 		genTauDecayMode == "oneProng2Pi0") &&
 	       tauJetCand->genJet() && 
 	       tauJetCand->genJet()->pt() > 20. && tauJetCand->genJet()->pt() < 40. ) {
-	    double tauPtManCorr = (tauJetCand->pt() + getTauPtManCorr(*tauJetCand, theEventVertex, 3));
+	    double tauPtManCorr = (tauJetCand->pt() + getTauPtManCorr(*tauJetCand, theEventVertex, 7));
 	    if ( tauPtManCorr < (0.5*tauJetCand->genJet()->pt()) ) {
 	      std::cout << "run = " << evt.id().run() << "," 
 			<< " ls = " << evt.luminosityBlock() << ", event = " << evt.id().event() << ":" << std::endl;
@@ -171,7 +172,7 @@ int main(int argc, char* argv[])
 	      (*selEventsFile) << evt.id().run() << ":" << evt.luminosityBlock() << ":" << evt.id().event() << std::endl;
 	    }
 	  }
-
+ */
 	  histManager.fillHistograms(*tauJetCand, *genParticles, theEventVertex, evtWeight);
 	}
       }

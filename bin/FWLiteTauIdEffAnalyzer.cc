@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.19 $
+ * \version $Revision: 1.20 $
  *
- * $Id: FWLiteTauIdEffAnalyzer.cc,v 1.19 2011/08/03 15:35:31 veelken Exp $
+ * $Id: FWLiteTauIdEffAnalyzer.cc,v 1.20 2011/08/10 16:23:07 veelken Exp $
  *
  */
 
@@ -312,7 +312,7 @@ int main(int argc, char* argv[])
   
   int allEvents_DBS = cfgTauIdEffAnalyzer.getParameter<int>("allEvents_DBS");
   if ( allEvents_DBS > 0 ) {
-    histogramEventCounter->SetBinContent(1, cfgTauIdEffAnalyzer.getParameter<int>("allEvents_DBS"));
+    histogramEventCounter->SetBinContent(1, allEvents_DBS);
   } else {
     histogramEventCounter->SetBinContent(1, -1.);
   }
@@ -353,9 +353,6 @@ int main(int argc, char* argv[])
     fwlite::Event evt(inputFile);
     for ( evt.toBegin(); !(evt.atEnd() || maxEvents_processed); ++evt ) {
 
-      //std::cout << "processing run = " << evt.id().run() << ":" 
-      //	  << " ls = " << evt.luminosityBlock() << ", event = " << evt.id().event() << std::endl;
-
 //--- compute event weight
 //   (pile-up reweighting, Data/MC correction factors,...)
       double evtWeight = 1.0;
@@ -365,6 +362,14 @@ int main(int argc, char* argv[])
 	evt.getByLabel(*srcWeight, weight);
 	evtWeight *= (*weight);
       }
+
+//--- quit event loop if maximal number of events to be processed is reached 
+      ++numEvents_processed;
+      numEventsWeighted_processed += evtWeight;
+      if ( maxEvents > 0 && numEvents_processed >= maxEvents ) maxEvents_processed = true;
+
+      //std::cout << "processing run = " << evt.id().run() << ":" 
+      //	  << " ls = " << evt.luminosityBlock() << ", event = " << evt.id().event() << std::endl;
 
 //--- check if new luminosity section has started;
 //    if so, retrieve number of events contained in this luminosity section before skimming
@@ -386,11 +391,6 @@ int main(int argc, char* argv[])
 
 //--- fill "dummy" histogram counting number of processed events
       histogramEventCounter->Fill(2);
-
-//--- quit event loop if maximal number of events to be processed is reached 
-      ++numEvents_processed;
-      numEventsWeighted_processed += evtWeight;
-      if ( maxEvents > 0 && numEvents_processed >= maxEvents ) maxEvents_processed = true;
 
 //--- check that event has passed triggers
       edm::Handle<pat::TriggerEvent> hltEvent;

@@ -7,7 +7,7 @@ import subprocess
 import shlex
 
 # Get all the skim files from the castor directory
-sourceFilePath = "/castor/cern.ch/user/v/veelken/CMSSW_4_2_x/PATtuples/TauPtRes"
+sourceFilePath = "/castor/cern.ch/user/v/veelken/CMSSW_4_2_x/PATtuples/TauPtRes/V1c/"
 source_files = [ file_info['path'] for file_info in castor.nslsl(sourceFilePath) ]
 
 targetFilePath = "/data2/veelken/CMSSW_4_2_x/PATtuples/TauPtRes/V1c/"
