@@ -62,6 +62,8 @@ TauIdEfficiencySpecific_RECO_SAMPLES = {
         'type' : 'Data',
         'drawOption' : styles.drawOption_Data,
         'hlt_paths' : {
+            'HLT_Mu15_v2'    : '160431:MIN-163261:MAX',
+            'HLT_Mu15_v3'    : '163270:MIN-163869:MAX',
             'HLT_IsoMu17_v5' : '160431:MIN-163261:MAX',
             'HLT_IsoMu17_v6' : '163270:MIN-163869:MAX'
         },
@@ -82,6 +84,8 @@ TauIdEfficiencySpecific_RECO_SAMPLES = {
         'type' : 'Data',
         'drawOption' : styles.drawOption_Data,
         'hlt_paths' : {
+            'HLT_Mu15_v4'     : '165088:MIN-167043:MAX',
+            'HLT_Mu15_v5'     : '167078:MIN-167913:MAX',
             'HLT_IsoMu17_v8'  : '165088:MIN-165633:MAX',
             'HLT_IsoMu17_v9'  : '165970:MIN-167043:MAX',
             'HLT_IsoMu17_v10' : '166346:MIN-166346:MAX',

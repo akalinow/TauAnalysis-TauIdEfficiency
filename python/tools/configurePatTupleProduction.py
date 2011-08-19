@@ -326,7 +326,7 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
     #
     # NOTE: needed for evaluating jetId for Calo/TCTaus and PFTaus
     #
-    jec = [ 'L1Offset', 'L2Relative', 'L3Absolute' ]
+    jec = [ 'L1FastJet', 'L2Relative', 'L3Absolute' ]
     if not isMC:
         jec.extend([ 'L2L3Residual' ])
     addJetCollection(process, cms.InputTag('ak5PFJets'),

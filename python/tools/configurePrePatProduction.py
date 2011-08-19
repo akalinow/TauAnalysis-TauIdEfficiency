@@ -92,6 +92,9 @@ def configurePrePatProduction(process, pfCandidateCollection = "particleFlow",
     process.prePatProductionSequence += process.selectedPrimaryVertexQuality
     process.prePatProductionSequence += process.selectedPrimaryVertexPosition
     process.prePatProductionSequence += process.selectedPrimaryVertexHighestPtTrackSum
-    process.load("TauAnalysis.RecoTools.vertexMultiplicityReweight_cfi")
+    process.selectedPrimaryVerticesTrackPtSumGt10 = cms.EDFilter("VertexByTrackPtSumSelector",
+        src = cms.InputTag('selectedPrimaryVertexPosition'),
+        trackPtSumMin = cms.double(10.)
+    )
     process.prePatProductionSequence += process.selectedPrimaryVerticesTrackPtSumGt10
     #--------------------------------------------------------------------------------

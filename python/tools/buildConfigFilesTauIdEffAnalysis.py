@@ -198,7 +198,17 @@ process.tauIdEffAnalyzer = cms.PSet(
 
     srcTrigger = cms.InputTag('patTriggerEvent'),
     hltPaths = cms.vstring(
-        'HLT_IsoMu17_v5', 'HLT_IsoMu17_v6', 'HLT_IsoMu17_v8', 'HLT_IsoMu17_v9', 'HLT_IsoMu17_v11'
+        'HLT_Mu15_v1',
+        'HLT_Mu15_v2',
+        'HLT_Mu15_v3',
+        'HLT_Mu15_v4',
+        'HLT_Mu15_v5',
+        'HLT_Mu15_v6'
+        #'HLT_IsoMu17_v5',
+        #'HLT_IsoMu17_v6',
+        #'HLT_IsoMu17_v8',
+        #'HLT_IsoMu17_v9',
+        #'HLT_IsoMu17_v11'
     ),
     
     srcGoodMuons = cms.InputTag('patGoodMuons'),

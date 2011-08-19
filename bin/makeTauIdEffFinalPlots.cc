@@ -337,6 +337,8 @@ int main(int argc, const char* argv[])
   delete bottomPad;
   delete canvas;
 
+  delete inputFile;
+
 //--print time that it took macro to run
   std::cout << "finished executing makeTauIdEffFinalPlots macro:" << std::endl;
   std::cout << " #tauIdDiscr.  = " << tauIds.size() << std::endl;

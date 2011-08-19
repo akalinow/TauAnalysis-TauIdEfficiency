@@ -70,7 +70,7 @@ _millibarns = 1.0e+9
 _picobarns =  1.0
 _femtobarns = 1.0e-3
 
-TARGET_LUMI = 1.1/_femtobarns # for runs 160404 - 167913 ("golden" quality) and unprescaled triggers
+TARGET_LUMI = 1.1/_femtobarns # for runs 160404 - 167913 ("golden" quality EPS dataset) and unprescaled triggers
 
 RECO_SAMPLES = {
     # JetMET datasets
