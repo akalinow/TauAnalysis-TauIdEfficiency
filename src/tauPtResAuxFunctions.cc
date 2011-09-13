@@ -52,7 +52,13 @@ bool isTauSignalPFCandidate(const pat::Tau& patTau, const reco::PFCandidatePtr& 
   return retVal;
 }
 
-double getTauPtManCorr(const pat::Tau& patTau, const reco::Vertex& vertex, unsigned corrLevel)
+double square(double x)
+{
+  return x*x;
+}
+
+double getTauPtManCorr(const pat::Tau& patTau, const reco::Vertex& vertex, 
+		       const reco::tau::RecoTauQualityCuts& qualityCuts, unsigned corrLevel)
 {
   double retVal = 0.;
 
@@ -103,6 +109,41 @@ double getTauPtManCorr(const pat::Tau& patTau, const reco::Vertex& vertex, unsig
 	}
       }
     }
+  }
+
+  double leadTrackMom = 0.;
+  double leadTrackMomErr = 0.;
+  double jetCaloEn = 0.;
+
+  for ( std::vector<reco::PFCandidatePtr>::const_iterator pfJetConstituent = pfJetConstituents.begin();
+	pfJetConstituent != pfJetConstituents.end(); ++pfJetConstituent ) {
+    const reco::TrackBaseRef track = getTrack(**pfJetConstituent);
+    if ( track.isNonnull() ) {
+      double trackPt = track->pt();
+      double trackPtErr = track->ptError();
+      if ( qualityCuts.filter(**pfJetConstituent) && 
+	   trackPtErr < (0.20*trackPt) && track->normalizedChi2() < 5.0 && track->hitPattern().numberOfValidPixelHits() >= 1 &&
+	   (trackPt - 3.*trackPtErr) > (*pfJetConstituent)->pt() && trackPt < (3.*patTau.pfJetRef()->pt()) ) {
+	if ( track->p() > leadTrackMom ) {
+	  leadTrackMom = track->p();
+	  leadTrackMomErr = leadTrackMom*(trackPtErr/trackPt);
+	}
+      }
+    }
+
+    double caloEn = (*pfJetConstituent)->ecalEnergy() + (*pfJetConstituent)->hcalEnergy();
+    jetCaloEn += caloEn;
+  }
+
+  if ( corrLevel & 8 && leadTrackMom > patTau.p() ) {
+    const double chargedPionMass = 0.13957; // GeV
+    double leadTrackEn = TMath::Sqrt(square(leadTrackMom) + square(chargedPionMass));
+    double jetCaloEnErr = 1.00*TMath::Sqrt(TMath::Max(jetCaloEn, leadTrackEn));
+    double combEn = ((1./square(jetCaloEnErr))*jetCaloEn + (1./square(leadTrackMomErr))*leadTrackEn)/
+                    ((1./square(jetCaloEnErr)) + (1./square(leadTrackMomErr)));
+    //retVal = TMath::Max(retVal, leadTrackEn*TMath::Sin(patTau.theta()) - patTau.pt());
+    //retVal = TMath::Max(retVal, jetCaloEn*TMath::Sin(patTau.theta()) - patTau.pt());
+    retVal = TMath::Max(retVal, combEn*TMath::Sin(patTau.theta()) - patTau.pt());
   }
 
   return retVal;

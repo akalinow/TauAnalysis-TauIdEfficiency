@@ -8,13 +8,13 @@ import os
 
 channel = 'ZtoMuTau_tauIdEff'
 #jobId = getJobId(channel)
-jobId = '2011Jul23'
+jobId = '2011Aug18'
 
-version = 'V6'
+version = 'V8'
 
 inputFilePath = '/data2/veelken/CMSSW_4_2_x/PATtuples/TauIdEffMeas/%s/%s/' % (jobId, version) \
                + 'user/v/veelken/CMSSW_4_2_x/PATtuples/TauIdEffMeas/'
-outputFilePath = '/data1/veelken/tmp/muonPtGt20_noPzetaCut/V6'
+outputFilePath = '/data1/veelken/tmp/muonPtGt20_noPzetaCut/%s' % version
 
 samplesToAnalyze = [
     # modify in case you want to submit jobs for some of the samples only...

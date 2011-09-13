@@ -15,7 +15,7 @@ TauPtResHistManager::tauPtResManCorrHistograms::tauPtResManCorrHistograms(int le
 void TauPtResHistManager::tauPtResManCorrHistograms::bookHistograms(TFileDirectory& dir)
 {
   std::ostringstream level_string;
-  for ( unsigned iBit = 0; iBit < 3; ++iBit ) {
+  for ( unsigned iBit = 0; iBit < 8; ++iBit ) {
     if ( level_ & (1 << iBit) ) level_string << (iBit + 1);
   }
   //std::cout << "level = " << level_ << ": level_string = " << level_string.str() << std::endl;
@@ -35,9 +35,10 @@ void TauPtResHistManager::tauPtResManCorrHistograms::bookHistograms(TFileDirecto
 }
 
 void TauPtResHistManager::tauPtResManCorrHistograms::fillHistograms(
-  const pat::Tau& patTau, const std::string& genTauDecayMode, double genVisPt, const reco::Vertex& vertex, double weight)
+       const pat::Tau& patTau, const std::string& genTauDecayMode, double genVisPt, const reco::Vertex& vertex, 
+       const reco::tau::RecoTauQualityCuts& qualityCuts, double weight)
 {
-  double tauPtResManCorr = (patTau.pt() + getTauPtManCorr(patTau, vertex, level_))/genVisPt;
+  double tauPtResManCorr = (patTau.pt() + getTauPtManCorr(patTau, vertex, qualityCuts, level_))/genVisPt;
   histogramTauPtRes_->Fill(tauPtResManCorr, weight);
   if ( genTauDecayMode == "oneProng0Pi0"   ) histogramTauPtResGenOneProng0Pi0_->Fill(tauPtResManCorr, weight);
   if ( genTauDecayMode == "oneProng1Pi0"   ) histogramTauPtResGenOneProng1Pi0_->Fill(tauPtResManCorr, weight);
@@ -54,7 +55,8 @@ TauPtResHistManager::TauPtResHistManager(const edm::ParameterSet& cfg)
   : histogramsTauPtResManCorrLev1_(1),
     histogramsTauPtResManCorrLev2_(2),
     histogramsTauPtResManCorrLev12_(3),
-    histogramsTauPtResManCorrLev123_(7)
+    histogramsTauPtResManCorrLev123_(7),
+    histogramsTauPtResManCorrLev14_(9)
 {}
 
 TauPtResHistManager::~TauPtResHistManager()
@@ -75,6 +77,7 @@ void TauPtResHistManager::bookHistograms(TFileDirectory& dir)
   histogramsTauPtResManCorrLev2_.bookHistograms(dir);
   histogramsTauPtResManCorrLev12_.bookHistograms(dir);
   histogramsTauPtResManCorrLev123_.bookHistograms(dir);
+  histogramsTauPtResManCorrLev14_.bookHistograms(dir);
  
   histogramJetPtRes_                  = book1D(dir, "jetPtRes",                  "jetPtRes",                               40, 0., 2.);
   histogramJetPtResGenOneProng0Pi0_   = book1D(dir, "jetPtResGenOneProng0Pi0",   "jetPtRes (gen. one-prong, 0 #pi^{0})",   40, 0., 2.);
@@ -89,7 +92,8 @@ void TauPtResHistManager::bookHistograms(TFileDirectory& dir)
 }
 
 void TauPtResHistManager::fillHistograms(
-       const pat::Tau& patTau, const reco::GenParticleCollection& genParticles, const reco::Vertex& vertex, double weight)
+       const pat::Tau& patTau, const reco::GenParticleCollection& genParticles, const reco::Vertex& vertex, 
+       const reco::tau::RecoTauQualityCuts& qualityCuts, double weight)
 {
   std::string genTauDecayMode = getGenTauDecayMode(patTau, genParticles);
   if ( !(genTauDecayMode == "oneProng0Pi0"   ||
@@ -112,10 +116,11 @@ void TauPtResHistManager::fillHistograms(
   if ( genTauDecayMode == "threeProng0Pi0" ) histogramTauPtResGenThreeProng0Pi0_->Fill(tauPtRes, weight);
   if ( genTauDecayMode == "threeProng1Pi0" ) histogramTauPtResGenThreeProng1Pi0_->Fill(tauPtRes, weight);
 
-  histogramsTauPtResManCorrLev1_.fillHistograms(patTau, genTauDecayMode, genVisPt, vertex, weight);
-  histogramsTauPtResManCorrLev2_.fillHistograms(patTau, genTauDecayMode, genVisPt, vertex, weight);
-  histogramsTauPtResManCorrLev12_.fillHistograms(patTau, genTauDecayMode, genVisPt, vertex, weight);
-  histogramsTauPtResManCorrLev123_.fillHistograms(patTau, genTauDecayMode, genVisPt, vertex, weight);
+  histogramsTauPtResManCorrLev1_.fillHistograms(patTau, genTauDecayMode, genVisPt, vertex, qualityCuts, weight);
+  histogramsTauPtResManCorrLev2_.fillHistograms(patTau, genTauDecayMode, genVisPt, vertex, qualityCuts, weight);
+  histogramsTauPtResManCorrLev12_.fillHistograms(patTau, genTauDecayMode, genVisPt, vertex, qualityCuts, weight);
+  histogramsTauPtResManCorrLev123_.fillHistograms(patTau, genTauDecayMode, genVisPt, vertex, qualityCuts, weight);
+  histogramsTauPtResManCorrLev14_.fillHistograms(patTau, genTauDecayMode, genVisPt, vertex, qualityCuts, weight);
 
   double recJetPt = patTau.p4Jet().pt();
   double jetPtRes = recJetPt/genVisPt;

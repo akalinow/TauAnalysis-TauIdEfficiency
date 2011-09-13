@@ -282,60 +282,61 @@ def buildSequenceTauIdEffMeasSpecific(process,
         addPUsmearing = cms.double(0.)                          
     )
     setattr(process, smearedMETmoduleName, smearedMETmodule)
+    smearedMETconfigurator_systematics = {
+        "sysMuonPtUp" : {
+            "smearedParticles.muons.srcOriginal"       : \
+                cms.InputTag(composeModuleName([patMuonCollectionName, "cumulative"])),
+            "smearedParticles.muons.srcSmeared"        : \
+                cms.InputTag(composeModuleName([patMuonCollectionName, "sysMuonPtUp", "cumulative"]))
+        },
+        "sysMuonPtDown" : {
+            "smearedParticles.muons.srcOriginal"       : \
+                cms.InputTag(composeModuleName([patMuonCollectionName, "cumulative"])),
+            "smearedParticles.muons.srcSmeared"        : \
+                cms.InputTag(composeModuleName([patMuonCollectionName, "sysMuonPtDown", "cumulative"]))
+        },
+        "sysTauJetEnUp" : {
+            "smearedParticles.taus.srcOriginal"       : \
+                cms.InputTag(composeModuleName([selTauCollectionName, "cumulative"])),
+            "smearedParticles.taus.srcSmeared"        : \
+                cms.InputTag(composeModuleName([selTauCollectionName, "sysTauJetEnUp", "cumulative"]))
+        },
+        "sysTauJetEnDown" : {
+            "smearedParticles.taus.srcOriginal"       : \
+                cms.InputTag(composeModuleName([selTauCollectionName, "cumulative"])),
+            "smearedParticles.taus.srcSmeared"        : \
+                cms.InputTag(composeModuleName([selTauCollectionName, "sysTauJetEnDown", "cumulative"]))
+        },
+        "sysJetEnUp" : {
+            "smearedParticles.jetsTypeI.srcOriginal"  : \
+                cms.InputTag(selectedPatJetsForMEtTypeIcorrModuleName),
+            "smearedParticles.jetsTypeI.srcSmeared"   : \
+                cms.InputTag(selectedPatJetsForMEtTypeIcorrSysJetEnUpModuleName),
+            "smearedParticles.jetsTypeII.srcOriginal" : \
+                cms.InputTag(selectedPatJetsForMEtTypeIIcorrModuleName),
+            "smearedParticles.jetsTypeII.srcSmeared"  : \
+                cms.InputTag(selectedPatJetsForMEtTypeIIcorrSysJetEnUpModuleName),
+            "smearedParticles.jetsTypeII.smearByResolutionUncertainty" : smearMEtUnclustedEnergyResolution
+        },
+        "sysJetEnDown" : {
+            "smearedParticles.jetsTypeI.srcOriginal"  : \
+                cms.InputTag(selectedPatJetsForMEtTypeIcorrModuleName),
+            "smearedParticles.jetsTypeI.srcSmeared"   : \
+                cms.InputTag(selectedPatJetsForMEtTypeIcorrSysJetEnDownModuleName),
+            "smearedParticles.jetsTypeII.srcOriginal" : \
+                cms.InputTag(selectedPatJetsForMEtTypeIIcorrModuleName),
+            "smearedParticles.jetsTypeII.srcSmeared"  : \
+                cms.InputTag(selectedPatJetsForMEtTypeIIcorrSysJetEnDownModuleName),
+            "smearedParticles.jetsTypeII.smearByResolutionUncertainty" : smearMEtUnclustedEnergyResolution
+        },
+        "sysAddPUsmearing" : {
+            "addPUsmearing" : cms.double(10.) 
+        }
+    }
     smearedMETconfigurator = objProdConfigurator(
         smearedMETmodule,
         pyModuleName = __name__,
-        systematics = {
-            "sysMuonPtUp" : {
-                "smearedParticles.muons.srcOriginal"       : \
-                    cms.InputTag(composeModuleName([patMuonCollectionName, "cumulative"])),
-                "smearedParticles.muons.srcSmeared"        : \
-                    cms.InputTag(composeModuleName([patMuonCollectionName, "sysMuonPtUp", "cumulative"]))
-            },
-            "sysMuonPtDown" : {
-                "smearedParticles.muons.srcOriginal"       : \
-                    cms.InputTag(composeModuleName([patMuonCollectionName, "cumulative"])),
-                "smearedParticles.muons.srcSmeared"        : \
-                    cms.InputTag(composeModuleName([patMuonCollectionName, "sysMuonPtDown", "cumulative"]))
-            },
-            "sysTauJetEnUp" : {
-                "smearedParticles.taus.srcOriginal"       : \
-                    cms.InputTag(composeModuleName([selTauCollectionName, "cumulative"])),
-                "smearedParticles.taus.srcSmeared"        : \
-                    cms.InputTag(composeModuleName([selTauCollectionName, "sysTauJetEnUp", "cumulative"]))
-            },
-            "sysTauJetEnDown" : {
-                "smearedParticles.taus.srcOriginal"       : \
-                    cms.InputTag(composeModuleName([selTauCollectionName, "cumulative"])),
-                "smearedParticles.taus.srcSmeared"        : \
-                    cms.InputTag(composeModuleName([selTauCollectionName, "sysTauJetEnDown", "cumulative"]))
-            },
-            "sysJetEnUp" : {
-                "smearedParticles.jetsTypeI.srcOriginal"  : \
-                    cms.InputTag(selectedPatJetsForMEtTypeIcorrModuleName),
-                "smearedParticles.jetsTypeI.srcSmeared"   : \
-                    cms.InputTag(selectedPatJetsForMEtTypeIcorrSysJetEnUpModuleName),
-                "smearedParticles.jetsTypeII.srcOriginal" : \
-                    cms.InputTag(selectedPatJetsForMEtTypeIIcorrModuleName),
-                "smearedParticles.jetsTypeII.srcSmeared"  : \
-                    cms.InputTag(selectedPatJetsForMEtTypeIIcorrSysJetEnUpModuleName),
-                "smearedParticles.jetsTypeII.smearByResolutionUncertainty" : smearMEtUnclustedEnergyResolution
-            },
-            "sysJetEnDown" : {
-                "smearedParticles.jetsTypeI.srcOriginal"  : \
-                    cms.InputTag(selectedPatJetsForMEtTypeIcorrModuleName),
-                "smearedParticles.jetsTypeI.srcSmeared"   : \
-                    cms.InputTag(selectedPatJetsForMEtTypeIcorrSysJetEnDownModuleName),
-                "smearedParticles.jetsTypeII.srcOriginal" : \
-                    cms.InputTag(selectedPatJetsForMEtTypeIIcorrModuleName),
-                "smearedParticles.jetsTypeII.srcSmeared"  : \
-                    cms.InputTag(selectedPatJetsForMEtTypeIIcorrSysJetEnDownModuleName),
-                "smearedParticles.jetsTypeII.smearByResolutionUncertainty" : smearMEtUnclustedEnergyResolution
-            },
-            "sysAddPUsmearing" : {
-                "addPUsmearing" : cms.double(10.) 
-            }
-        }
+        systematics = smearedMETconfigurator_systematics
     )
     prodSmearedMETsequenceName = composeModuleName(["prodSmearedMET", "".join(tauIdAlgorithmName)])
     prodSmearedMETsequence = smearedMETconfigurator.configure(process = process)
@@ -347,7 +348,7 @@ def buildSequenceTauIdEffMeasSpecific(process,
     # **without** Z-recoil corrections applied
     #--------------------------------------------------------------------------------
 
-     #--------------------------------------------------------------------------------
+    #--------------------------------------------------------------------------------
     # define selection of Muon + Tau-jet candidate pairs
     #--------------------------------------------------------------------------------
 
@@ -377,11 +378,7 @@ def buildSequenceTauIdEffMeasSpecific(process,
         setattr(allMuTauPairsModule, "srcGenParticles", cms.InputTag(''))
     setattr(process, allMuTauPairsModuleName, allMuTauPairsModule)
     sequence += allMuTauPairsModule
-    muTauPairProdConfigurator = objProdConfigurator(
-        allMuTauPairsModule,
-        pyModuleName = __name__
-    )
-    setattr(muTauPairProdConfigurator, "systematics", {
+    muTauPairProdConfigurator_systematics = {
         "sysMuonPtUp" : {
             "srcLeg1" : cms.InputTag(composeModuleName([patMuonCollectionName, "sysMuonPtUp",     "cumulative"])),
             "srcMET"  : cms.InputTag(composeModuleName([smearedMETmoduleName,  "sysMuonPtUp"]))
@@ -407,7 +404,13 @@ def buildSequenceTauIdEffMeasSpecific(process,
         "sysAddPUsmearing" : {
             "srcMET"  : cms.InputTag(composeModuleName([smearedMETmoduleName,  "sysAddPUsmearing"]))
         }
-    })
+    }
+    muTauPairProdConfigurator = objProdConfigurator(
+        allMuTauPairsModule,
+        pyModuleName = __name__,
+        systematics = muTauPairProdConfigurator_systematics
+    )
+
     prodMuTauPairSequenceName = composeModuleName(["prodMu", "".join(tauIdAlgorithmName), "PairsForTauIdEff"])
     prodMuTauPairSequence = muTauPairProdConfigurator.configure(process = process)
     setattr(process, prodMuTauPairSequenceName, prodMuTauPairSequence)

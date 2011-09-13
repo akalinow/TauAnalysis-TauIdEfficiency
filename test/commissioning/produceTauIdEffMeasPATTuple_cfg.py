@@ -13,8 +13,8 @@ isEmbedded = False # use for everything except for Ztautau samples produced via 
 HLTprocessName = "HLT" # use for Summer'11 MC
 pfCandidateCollection = "particleFlow" # pile-up removal disabled
 ##pfCandidateCollection = "pfNoPileUp" # pile-up removal enabled
-applyZrecoilCorrection = False
-#applyZrecoilCorrection = True
+#applyZrecoilCorrection = False
+applyZrecoilCorrection = True
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------

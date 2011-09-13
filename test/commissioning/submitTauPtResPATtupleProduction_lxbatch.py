@@ -6,20 +6,21 @@ from TauAnalysis.Configuration.userRegistry import getAnalysisFilePath, getJobId
 import TauAnalysis.Configuration.tools.castor as castor
 
 import os
+import re
 import subprocess
 
 channel = 'ZtoMuTau_tauIdEff'
 configFile = 'produceTauPtResPATTuple_cfg.py'
 analysisFilePath = getAnalysisFilePath(channel)
-jobId = '2011Jul23'
+jobId = '2011Aug18'
 
-version = 'V1c'
+version = 'V2exp'
 
 samplesToAnalyze = [
     'Ztautau_powheg'
 ]
 
-outputFilePath = "/castor/cern.ch/user/v/veelken/CMSSW_4_2_x/PATtuples/TauPtRes/V1c/"
+outputFilePath = "/castor/cern.ch/user/v/veelken/CMSSW_4_2_x/PATtuples/TauPtRes/V2exp/"
 
 # Get all the skim files from the castor directory
 skimFilePath = getBatchHarvestLocation(channel)
@@ -33,12 +34,16 @@ if not os.path.isdir("lxbatch_pat_log"):
     print 'Creating directory to store the lxbatch logs: lxbatch_pat_log'
     os.mkdir('lxbatch_pat_log')
 
+inputFile_regex = \
+  r"[a-zA-Z0-9_/:.]*skim_ZtoMuTau_tauIdEff_(?P<sample>\w+)_%s_chunk_(?P<gridJob>\d*)_(?P<gridTry>\d*).root" % jobId
+inputFile_matcher = re.compile(inputFile_regex)
 
 # Function that maps a sample name to its skim file
 def input_mapper(channel, sample, jobId):
     for input_file in skim_files:
         #print " unmatched file: %s" % input_file
-        if input_file.find('skim_' + sample + '_chunk') != -1:
+        if inputFile_matcher.match(input_file) and \
+           inputFile_matcher.match(input_file).group('sample') == sample:
             #print "--> matched file: %s" % input_file
             yield input_file
 

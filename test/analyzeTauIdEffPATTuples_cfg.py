@@ -7,14 +7,16 @@ from TauAnalysis.CandidateTools.tools.composeModuleName import composeModuleName
 import os
 import re
 
-inputFilePath = '/data2/veelken/CMSSW_4_2_x/PATtuples/TauIdEffMeas/2011Jul23/V6/user/v/veelken/CMSSW_4_2_x/PATtuples/TauIdEffMeas/'
+inputFilePath = \
+  '/data2/veelken/CMSSW_4_2_x/PATtuples/TauIdEffMeas/2011Aug18/V7noZrecoilCorr/'
+  'user/v/veelken/CMSSW_4_2_x/PATtuples/TauIdEffMeas/2011Aug18'
 sampleToAnalyze = 'Ztautau_powheg'
-jobId = '2011Jul23V6'
+jobId = '2011Aug18'
 
 inputFile_regex = \
   r"tauIdEffMeasPATTuple_%s_%s_(?P<gridJob>\d*)(_(?P<gridTry>\d*))*_(?P<hash>[a-zA-Z0-9]*).root" % (sampleToAnalyze, jobId)
 
-outputFilePath = '/data1/veelken/tmp/muonPtGt20/V6/'
+outputFilePath = '/data1/veelken/tmp/muonPtGt20/V7noZrecoilCorr/'
 
 # check if inputFile is PAT-tuple and
 # matches sampleToAnalyze, jobId
@@ -63,11 +65,11 @@ process.tauIdEffAnalyzer = cms.PSet(
         ##'A1p',
         ##'A1f',
         ##'B',
-        ##'B1',
-        ##'B1p',
-        ##'B1f',
+        'B1',
+        'B1p',
+        'B1f',
         ##'C',
-        ##'C1',
+        'C1',
         'C1p',
         'C1f',
         ##'C2',
@@ -87,62 +89,62 @@ process.tauIdEffAnalyzer = cms.PSet(
             ),
             name = cms.string("tauDiscrHPSloose")
         ),
-##         cms.PSet(
-##             discriminators = cms.vstring(
-##                 'decayModeFinding',
-##                 'byMediumIsolation'
-##             ),
-##             name = cms.string("tauDiscrHPSmedium")
-##         ),
-##         cms.PSet(
-##             discriminators = cms.vstring(
-##                 'decayModeFinding',
-##                 'byTightIsolation'
-##             ),
-##             name = cms.string("tauDiscrHPStight")
-##         ),     
-##         cms.PSet(
-##             discriminators = cms.vstring(
-##                 'decayModeFinding',
-##                 'byLooseIsolationDeltaBetaCorr'
-##             ),
-##             name = cms.string("tauDiscrHPSlooseDBcorr")
-##         ),
-##         cms.PSet(
-##             discriminators = cms.vstring(
-##                 'decayModeFinding',
-##                 'byMediumIsolationDeltaBetaCorr'
-##             ),
-##             name = cms.string("tauDiscrHPSmediumDBcorr")
-##         ),
-##         cms.PSet(
-##             discriminators = cms.vstring(
-##                 'decayModeFinding',
-##                 'byTightIsolationDeltaBetaCorr'
-##             ),
-##             name = cms.string("tauDiscrHPStightDBcorr")
-##         ),     
-##         cms.PSet(
-##             discriminators = cms.vstring(
-##                 'decayModeFinding',
-##                 'byLooseCombinedIsolationDeltaBetaCorr'
-##             ),
-##             name = cms.string("tauDiscrHPScombLooseDBcorr")
-##         ),
-##         cms.PSet(
-##             discriminators = cms.vstring(
-##                 'decayModeFinding',
-##                 'byMediumCombinedIsolationDeltaBetaCorr'
-##             ),
-##             name = cms.string("tauDiscrHPScombMediumDBcorr")
-##         ),
-##         cms.PSet(
-##             discriminators = cms.vstring(
-##                 'decayModeFinding',
-##                 'byTightCombinedIsolationDeltaBetaCorr'
-##             ),
-##             name = cms.string("tauDiscrHPScombTightDBcorr")
-##         )             
+        cms.PSet(
+            discriminators = cms.vstring(
+                'decayModeFinding',
+                'byMediumIsolation'
+            ),
+            name = cms.string("tauDiscrHPSmedium")
+        ),
+        cms.PSet(
+            discriminators = cms.vstring(
+                'decayModeFinding',
+                'byTightIsolation'
+            ),
+            name = cms.string("tauDiscrHPStight")
+        ),     
+        cms.PSet(
+            discriminators = cms.vstring(
+                'decayModeFinding',
+                'byLooseIsolationDeltaBetaCorr'
+            ),
+            name = cms.string("tauDiscrHPSlooseDBcorr")
+        ),
+        cms.PSet(
+            discriminators = cms.vstring(
+                'decayModeFinding',
+                'byMediumIsolationDeltaBetaCorr'
+            ),
+            name = cms.string("tauDiscrHPSmediumDBcorr")
+        ),
+        cms.PSet(
+            discriminators = cms.vstring(
+                'decayModeFinding',
+                'byTightIsolationDeltaBetaCorr'
+            ),
+            name = cms.string("tauDiscrHPStightDBcorr")
+        ),     
+        cms.PSet(
+            discriminators = cms.vstring(
+                'decayModeFinding',
+                'byLooseCombinedIsolationDeltaBetaCorr'
+            ),
+            name = cms.string("tauDiscrHPScombLooseDBcorr")
+        ),
+        cms.PSet(
+            discriminators = cms.vstring(
+                'decayModeFinding',
+                'byMediumCombinedIsolationDeltaBetaCorr'
+            ),
+            name = cms.string("tauDiscrHPScombMediumDBcorr")
+        ),
+        cms.PSet(
+            discriminators = cms.vstring(
+                'decayModeFinding',
+                'byTightCombinedIsolationDeltaBetaCorr'
+            ),
+            name = cms.string("tauDiscrHPScombTightDBcorr")
+        )             
     ),
 
     binning = cms.PSet(
@@ -237,7 +239,12 @@ process.tauIdEffAnalyzer = cms.PSet(
 
     srcTrigger = cms.InputTag('patTriggerEvent'),
     hltPaths = cms.vstring(
-        'HLT_IsoMu17_v5', 'HLT_IsoMu17_v6', 'HLT_IsoMu17_v8', 'HLT_IsoMu17_v9', 'HLT_IsoMu17_v11'
+        'HLT_IsoMu17_v5',
+        'HLT_IsoMu17_v6',
+        'HLT_IsoMu17_v8',
+        'HLT_IsoMu17_v9',
+        'HLT_IsoMu17_v10',
+        'HLT_IsoMu17_v11'
     ),
     
     srcGoodMuons = cms.InputTag('patGoodMuons'),
@@ -245,7 +252,8 @@ process.tauIdEffAnalyzer = cms.PSet(
     srcMuTauPairs = cms.InputTag('selectedMuPFTauHPSpairsDzForTauIdEffCumulative'),
     svFitMassHypothesis = cms.string('psKine_MEt_logM_fit'),
     tauChargeMode = cms.string("tauSignalChargedHadronSum"),
-    disableTauCandPreselCuts = cms.bool(True),
+    disableTauCandPreselCuts = cms.bool(False),
+    #disableTauCandPreselCuts = cms.bool(True),
 
     srcVertices = cms.InputTag('offlinePrimaryVertices'),
 

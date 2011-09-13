@@ -136,16 +136,19 @@ def buildConfigFile_FWLiteTauIdEffAnalyzer(sampleToAnalyze, jobId, inputFilePath
             outputFileName = 'analyzeTauIdEffHistograms_%s_%s.root' % (sampleToAnalyze, jobId)
         outputFileName_full = os.path.join(outputFilePath, outputFileName)
 
-        srcMuTauPairs = None
+        srcMuTauPairs = 'selectedMuPFTauHPSpairsDzForTauIdEff'
+        if recoSampleDefinitions['RECO_SAMPLES'][sampleToAnalyze]['applyZrecoilCorrection']:
+            srcMuTauPairs = composeModuleName([ srcMuTauPairs, ZllRecoilCorrected ])
         if sysUncertainty != "CENTRAL_VALUE":  
-            srcMuTauPairs = composeModuleName([ 'selectedMuPFTauHPSpairsDzForTauIdEff', sysUncertainty, "cumulative" ])            
+            srcMuTauPairs = composeModuleName([ srcMuTauPairs, sysUncertainty, "cumulative" ])            
         else:
-            srcMuTauPairs = 'selectedMuPFTauHPSpairsDzForTauIdEffCumulative'
+            srcMuTauPairs = composeModuleName([ srcMuTauPairs, "cumulative" ])
 
         weights_string = ""
         if not recoSampleDefinitions['MERGE_SAMPLES'][process_matched]['type'] == 'Data':
-            weights_string += "".join(["'", "ntupleProducer:tauIdEffNtuple#addPileupInfo#vtxMultReweight", "'"])
-            #weights_string += "".join(["'", "ntupleProducer:tauIdEffNtuple#selectedPatMuonsForTauIdEffTrkIPcumulative#muonHLTeff", "'"])
+            #weights_string += "".join(["'", "ntupleProducer:tauIdEffNtuple#addPileupInfo#vtxMultReweight", "'"])
+            weights_string += "".join(["'", "vertexMultiplicityReweight", "'"])
+            weights_string += "".join(["'", "vertexMultiplicityVsRhoPFNeutralReweight", "'"])
 
         allEvents_DBS = -1
         xSection = 0.0
@@ -198,17 +201,18 @@ process.tauIdEffAnalyzer = cms.PSet(
 
     srcTrigger = cms.InputTag('patTriggerEvent'),
     hltPaths = cms.vstring(
-        'HLT_Mu15_v1',
-        'HLT_Mu15_v2',
-        'HLT_Mu15_v3',
-        'HLT_Mu15_v4',
-        'HLT_Mu15_v5',
-        'HLT_Mu15_v6'
-        #'HLT_IsoMu17_v5',
-        #'HLT_IsoMu17_v6',
-        #'HLT_IsoMu17_v8',
-        #'HLT_IsoMu17_v9',
-        #'HLT_IsoMu17_v11'
+        #'HLT_Mu15_v1',
+        #'HLT_Mu15_v2',
+        #'HLT_Mu15_v3',
+        #'HLT_Mu15_v4',
+        #'HLT_Mu15_v5',
+        #'HLT_Mu15_v6'
+        'HLT_IsoMu17_v5',
+        'HLT_IsoMu17_v6',
+        'HLT_IsoMu17_v8',
+        'HLT_IsoMu17_v9',
+        'HLT_IsoMu17_v10',
+        'HLT_IsoMu17_v11'
     ),
     
     srcGoodMuons = cms.InputTag('patGoodMuons'),

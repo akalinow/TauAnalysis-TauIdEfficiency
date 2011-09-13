@@ -5,9 +5,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.3 $
+ * \version $Revision: 1.4 $
  *
- * $Id: FWLiteTauPtResAnalyzer.cc,v 1.3 2011/08/08 16:58:01 veelken Exp $
+ * $Id: FWLiteTauPtResAnalyzer.cc,v 1.4 2011/08/15 17:11:04 veelken Exp $
  *
  */
 
@@ -34,6 +34,8 @@
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 #include "DataFormats/Common/interface/Handle.h"
+
+#include "RecoTauTag/RecoTau/interface/RecoTauQualityCuts.h"
 
 #include "TauAnalysis/TauIdEfficiency/interface/TauPtResHistManager.h"
 #include "TauAnalysis/TauIdEfficiency/interface/tauPtResAuxFunctions.h"
@@ -80,6 +82,9 @@ int main(int argc, char* argv[])
   edm::InputTag srcTauJetCandidates = cfgTauFakeRateAnalyzer.getParameter<edm::InputTag>("srcTauJetCandidates");
   edm::InputTag srcGenParticles = cfgTauFakeRateAnalyzer.getParameter<edm::InputTag>("srcGenParticles");
   edm::InputTag srcVertices = cfgTauFakeRateAnalyzer.getParameter<edm::InputTag>("srcVertices");
+
+  edm::ParameterSet cfgQualityCuts = cfgTauFakeRateAnalyzer.getParameter<edm::ParameterSet>("qualityCuts");
+  reco::tau::RecoTauQualityCuts qualityCuts(cfgQualityCuts);
 
   std::string directory = cfgTauFakeRateAnalyzer.getParameter<std::string>("directory");
   
@@ -135,6 +140,8 @@ int main(int argc, char* argv[])
       if ( !(vertices->size() >= 1) ) continue;
       const reco::Vertex& theEventVertex = vertices->at(0);
       
+      qualityCuts.setPV(reco::VertexRef(vertices, 0));
+
       edm::Handle<pat::TauCollection> tauJetCandidates;
       evt.getByLabel(srcTauJetCandidates, tauJetCandidates);
 
@@ -155,11 +162,12 @@ int main(int argc, char* argv[])
 	     tauJetCand->tauID("againstMuonTight")     > 0.5 ) {	  
 /*
 	  std::string genTauDecayMode = getGenTauDecayMode(*tauJetCand, *genParticles);
-	  if ( (genTauDecayMode == "oneProng1Pi0" ||
-		genTauDecayMode == "oneProng2Pi0") &&
+	  if (  genTauDecayMode == "oneProng0Pi0" && 
+		//(genTauDecayMode == "oneProng1Pi0" ||
+		// genTauDecayMode == "oneProng2Pi0") &&
 	       tauJetCand->genJet() && 
 	       tauJetCand->genJet()->pt() > 20. && tauJetCand->genJet()->pt() < 40. ) {
-	    double tauPtManCorr = (tauJetCand->pt() + getTauPtManCorr(*tauJetCand, theEventVertex, 7));
+	    double tauPtManCorr = (tauJetCand->pt() + getTauPtManCorr(*tauJetCand, theEventVertex, qualityCuts, 9));
 	    if ( tauPtManCorr < (0.5*tauJetCand->genJet()->pt()) ) {
 	      std::cout << "run = " << evt.id().run() << "," 
 			<< " ls = " << evt.luminosityBlock() << ", event = " << evt.id().event() << ":" << std::endl;
@@ -172,8 +180,8 @@ int main(int argc, char* argv[])
 	      (*selEventsFile) << evt.id().run() << ":" << evt.luminosityBlock() << ":" << evt.id().event() << std::endl;
 	    }
 	  }
- */
-	  histManager.fillHistograms(*tauJetCand, *genParticles, theEventVertex, evtWeight);
+ */ 
+	  histManager.fillHistograms(*tauJetCand, *genParticles, theEventVertex, qualityCuts, evtWeight);
 	}
       }
     }

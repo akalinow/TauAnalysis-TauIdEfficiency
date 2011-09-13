@@ -8,27 +8,28 @@ from TauAnalysis.Configuration.tools.jobtools import make_bsub_script
 from TauAnalysis.Configuration.tools.harvesting import castor_source
 from TauAnalysis.TauIdEfficiency.tools.buildConfigFilesTauIdEffAnalysis import buildConfigFile_hadd
 
-jobId = "2011Jul23" # jobId defined by submitTauIdEffMeasPATTupleProduction_noTauSel_lxbatch.py
-version = 'V1c'
+jobId = "2011Aug18" # jobId defined by submitTauIdEffMeasPATTupleProduction_noTauSel_lxbatch.py
+version = 'V2exp'
 
-inputFilePath  = '/data2/veelken/CMSSW_4_2_x/PATtuples/TauPtRes/V1c/user/v/veelken/CMSSW_4_2_x/PATtuples/TauPtRes/V1c/'
-outputFilePath = '/data1/veelken/tmp/tauPtResStudies/V1cA/'
+inputFilePath  = '/data2/veelken/CMSSW_4_2_x/PATtuples/TauPtRes/V2exp/user/v/veelken/CMSSW_4_2_x/PATtuples/TauPtRes/V2exp/'
+outputFilePath = '/data1/veelken/tmp/tauPtResStudies/V2exp/'
 
 sampleZtautau = 'Ztautau_powheg'
 
 tauPtResOptions = [
-    'Default',
-    'Seed05Add00Strip05',
-    'noEleTrackQcutsDefault',
-    'noEleTrackQcutsSeed00Add00Strip05',
-    'noEleTrackQcutsSeed00Add00Strip10',
-    'noEleTrackQcutsSeed05Add00Strip05',
-    'noEleTrackQcutsSeed05Add00Strip10',
-    'noEleTrackQcutsSeed05Add00Strip15',
-    'noEleTrackQcutsSeed05Add00Strip20',
-    'noEleTrackQcutsSeed05Add00Strip25',
-    'noEleTrackQcutsSeed05Add05Strip05',
-    'noEleTrackQcutsSeed05Add05Strip10'
+    '', # "regular" patTau collection
+    #'Default',
+    #'Seed05Add00Strip05',
+    #'noEleTrackQcutsDefault',
+    #'noEleTrackQcutsSeed00Add00Strip05',
+    #'noEleTrackQcutsSeed00Add00Strip10',
+    #'noEleTrackQcutsSeed05Add00Strip05',
+    #'noEleTrackQcutsSeed05Add00Strip10',
+    #'noEleTrackQcutsSeed05Add00Strip15',
+    #'noEleTrackQcutsSeed05Add00Strip20',
+    #'noEleTrackQcutsSeed05Add00Strip25',
+    #'noEleTrackQcutsSeed05Add05Strip05',
+    #'noEleTrackQcutsSeed05Add05Strip10'
 ]
 
 execDir = "%s/bin/%s/" % (os.environ['CMSSW_BASE'], os.environ['SCRAM_ARCH'])
@@ -71,6 +72,8 @@ for tauPtResOption in tauPtResOptions:
 """
 import FWCore.ParameterSet.Config as cms
 
+from RecoTauTag.RecoTau.PFRecoTauQualityCuts_cfi import PFTauQualityCuts
+
 process = cms.PSet()
 
 process.fwliteInput = cms.PSet(
@@ -92,6 +95,8 @@ process.tauPtResAnalyzer = cms.PSet(
     srcGenParticles = cms.InputTag('genParticles'),
 
     srcVertices = cms.InputTag('offlinePrimaryVerticesWithBS'),
+
+    qualityCuts = PFTauQualityCuts.signalQualityCuts,
 
     selEventsFileName = cms.string('%s')
 )
@@ -147,7 +152,7 @@ for tauPtResOption in tauPtResOptions:
 makeFile.write("all: %s %s\n" %
   (make_MakeFile_vstring(outputFileNames_makeTauPtResPlots),
    haddOutputFileName))
-makeFile.write("\techo 'Finished running TauFakeRateAnalysis.'\n")
+makeFile.write("\techo 'Finished running TauPtResAnalysis.'\n")
 makeFile.write("\n")
 for tauPtResOption in tauPtResOptions:
     makeFile.write("%s: %s\n" %

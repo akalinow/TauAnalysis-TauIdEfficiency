@@ -6,16 +6,16 @@ from TauAnalysis.Configuration.userRegistry import getAnalysisFilePath, getJobId
 import TauAnalysis.Configuration.tools.castor as castor
 
 import os
+import re
 import subprocess
 
 channel = 'ZtoMuTau_tauIdEff'
 configFile = 'produceTauIdEffMeasPATTuple_cfg.py'
 analysisFilePath = getAnalysisFilePath(channel)
 #jobId = getJobId(channel)
-jobId = '2011Jul23'
-#jobId = '2011Jul06_mauro'
+jobId = '2011Aug18'
 
-version = "V6"
+version = "V8"
 
 lxbatch_queue = '1nw'
 
@@ -23,24 +23,25 @@ pfCandidateCollection = "particleFlow" # pile-up removal disabled
 #pfCandidateCollection = "pfNoPileUp"   # pile-up removal enabled
 
 samplesToAnalyze = [
-    #'data_SingleMu_Run2011A_May10ReReco_v1',
-    #'data_SingleMu_Run2011A_PromptReco_v4',
-    #'Ztautau_powheg',
+    'data_SingleMu_Run2011A_May10ReReco_v1',
+    'data_SingleMu_Run2011A_PromptReco_v4',
+    'Ztautau_powheg',
     'Ztautau_embedded_part1',
     'Ztautau_embedded_part2',
-    #'Zmumu_powheg',
-    #'PPmuXptGt20Mu15',
-    #'WplusJets_madgraph',
-    #'TTplusJets_madgraph'
+    'Zmumu_powheg',
+    'PPmuXptGt20Mu15',
+    'WplusJets_madgraph',
+    'TTplusJets_madgraph'
 ]
 
 #outputFilePath = "/castor/cern.ch/user/m/mverzett/tagprobe/patTuples_v6"
 #outputFilePath = "/castor/cern.ch/user/m/mverzett/tagprobe/"
-outputFilePath = "/castor/cern.ch/user/v/veelken/CMSSW_4_2_x/PATtuples/TauIdEffMeas"
+outputFilePath = "/castor/cern.ch/user/v/veelken/CMSSW_4_2_x/PATtuples/TauIdEffMeas/%s" % jobId
 
 # Get all the skim files from the castor directory
 skimFilePath = getBatchHarvestLocation(channel)
 skim_files = [ file_info['path'] for file_info in castor.nslsl(skimFilePath) ]
+#print "skim_files = %s" %  skim_files
 
 if not os.path.isdir("lxbatch_pattuple"):
     print 'Creating directory to store the lxbatch jobs: lxbatch_pattuple'
@@ -50,12 +51,13 @@ if not os.path.isdir("lxbatch_pat_log"):
     print 'Creating directory to store the lxbatch logs: lxbatch_pat_log'
     os.mkdir('lxbatch_pat_log')
 
-
 # Function that maps a sample name to its skim file
 def input_mapper(channel, sample, jobId):
-    for input_file in skim_files:
+    skim_regex = r"[a-zA-Z0-9_./]*skim_(?P<sample>\w+?)_chunk_(?P<jobId>\d*)_(?P<hash>[a-zA-Z0-9]*).root"
+    skim_matcher = re.compile(skim_regex)
+    for input_file in skim_files:        
         #print " unmatched file: %s" % input_file
-        if input_file.find('skim_' + sample + '_chunk') != -1:
+        if skim_matcher.match(input_file):
             #print "--> matched file: %s" % input_file
             yield input_file
 
@@ -114,7 +116,7 @@ for sampleToAnalyze in samplesToAnalyze:
       submitAnalysisToLXBatch(configFile = configFile_customized, channel = channel,
                               samples = recoSampleDefinitionsTauIdEfficiency_7TeV,
                               samplesToAnalyze = [ sampleToAnalyze ],
-                              disableFactorization = True, disableSysUncertainties = True, disableZrecoilCorrections = True,
+                              disableFactorization = True, disableSysUncertainties = True,
                               # Options for local running
                               cfgdir = 'lxbatch_pattuple', 
                               inputFileMap = input_mapper,

@@ -37,7 +37,7 @@ void makeTauPtResPlot(TCanvas* canvas, TFile* inputFile,
 		      const TString& meName5 = "", int color5 = 0, const TString& legendEntry5 = "")
 {
   TH1* me1 = dynamic_cast<TH1*>(inputFile->Get(TString(meName1).Append(tauDecayMode)));
-  //std::cout << "meName1 = " << meName1 << ": me1 = " << me1 << std::endl;
+  std::cout << "meName1 = " << meName1 << ": me1 = " << me1 << std::endl;
   assert(me1);
   if ( title != "" ) me1->SetTitle(title);
   me1->GetXaxis()->SetTitle("P_{T}^{rec} / P_{T}^{gen}");
@@ -50,7 +50,7 @@ void makeTauPtResPlot(TCanvas* canvas, TFile* inputFile,
   unsigned numHistograms = 1;
 
   TH1* me2 = dynamic_cast<TH1*>(inputFile->Get(TString(meName2).Append(tauDecayMode)));
-  //std::cout << "meName2 = " << meName2 << ": me2 = " << me2 << std::endl;
+  std::cout << "meName2 = " << meName2 << ": me2 = " << me2 << std::endl;
   assert(me2);
   drawHistogram(canvas, me2, color2, "sames", 0.25);
   ++numHistograms;
@@ -100,7 +100,7 @@ void makeTauPtResPlot(TCanvas* canvas, TFile* inputFile,
 
 void makeTauPtResPlots()
 {
-  TString inputFileName = "/data1/veelken/tmp/tauPtResStudies/V1cA/analyzeTauPtResHistograms_all_Ztautau_powheg_V1c.root";
+  TString inputFileName = "/data1/veelken/tmp/tauPtResStudies/V2exp/analyzeTauPtResHistograms_all_Ztautau_powheg_V2exp.root";
   TFile* inputFile = new TFile(inputFileName);
   //std::cout << "inputFileName = " << inputFileName << ": inputFile = " << inputFile << std::endl;
 
@@ -125,6 +125,12 @@ void makeTauPtResPlots()
     canvas->SetLogy(true);
 
     makeTauPtResPlot(canvas, inputFile, "", 1.e1, 1.e-4, tauDecayModeToPlot, 
+		     Form("tauPtRes_newTags_%s_log.eps", tauDecayModeToPlot.Data()),
+		     "tauPtRes", 1, "def. Tau P_{T}",
+		     "jetPtRes", 3, "Jet P_{T}");
+
+/*
+    makeTauPtResPlot(canvas, inputFile, "", 1.e1, 1.e-4, tauDecayModeToPlot, 
 		     Form("tauPtRes_addLowEtPhotons_%s_log.png", tauDecayModeToPlot.Data()),
 		     "Default/tauPtRes", 1, "default",
 		     "Seed05Add00Strip05/tauPtRes", 2, "add PFGamma");
@@ -134,18 +140,23 @@ void makeTauPtResPlots()
 		     "Default/tauPtRes", 1, "default",
 		     "noEleTrackQcutsDefault/tauPtRes", 2, "no e Track Qcuts");
 
+    //makeTauPtResPlot(canvas, inputFile, "", 1.e1, 1.e-4, tauDecayModeToPlot, 
+    //		       Form("tauPtRes_nuclIntEnRecovery_%s_log.png", tauDecayModeToPlot.Data()),
+    //		       "Default/tauPtRes", 1, "default",
+    //		       "Default/tauPtResManCorrLev1", 2, "corr. Level 1",
+    //		       "Default/tauPtResManCorrLev2", 3, "corr. Level 2",
+    //		       "Default/tauPtResManCorrLev12", 4, "corr. Level 1+2",
+    //		       "Default/tauPtResManCorrLev123", 6, "corr. Level 1+2+3");
     makeTauPtResPlot(canvas, inputFile, "", 1.e1, 1.e-4, tauDecayModeToPlot, 
 		     Form("tauPtRes_nuclIntEnRecovery_%s_log.png", tauDecayModeToPlot.Data()),
 		     "Default/tauPtRes", 1, "default",
 		     "Default/tauPtResManCorrLev1", 2, "corr. Level 1",
-		     "Default/tauPtResManCorrLev2", 3, "corr. Level 2",
-		     "Default/tauPtResManCorrLev12", 4, "corr. Level 1+2",
-		     "Default/tauPtResManCorrLev123", 6, "corr. Level 1+2+3");
+		     "Default/tauPtResManCorrLev14", 4, "corr. Level 1+4");
 
     makeTauPtResPlot(canvas, inputFile, "", 1.e1, 1.e-4, tauDecayModeToPlot, 
 		     Form("tauPtRes_combImprovements_%s_log.png", tauDecayModeToPlot.Data()),
 		     "Default/tauPtRes", 1, "def. Tau P_{T}",
-		     "noEleTrackQcutsDefault/tauPtResManCorrLev1", 2, "impr. Tau P_{T} (eTr+1)",
+		     "noEleTrackQcutsDefault/tauPtResManCorrLev14", 2, "impr. Tau P_{T} (eTr+1+4)",
 		     "Default/jetPtRes", 3, "Jet P_{T}");
 
     canvas->SetLogy(false);
@@ -153,8 +164,9 @@ void makeTauPtResPlots()
     makeTauPtResPlot(canvas, inputFile, "", 0.50, 0., tauDecayModeToPlot, 
 		     Form("tauPtRes_combImprovements_%s_linear.png", tauDecayModeToPlot.Data()),
 		     "Default/tauPtRes", 1, "def. Tau P_{T}",
-		     "noEleTrackQcutsDefault/tauPtResManCorrLev1", 2, "impr. Tau P_{T} (eTr+1)",
+		     "noEleTrackQcutsDefault/tauPtResManCorrLev14", 2, "impr. Tau P_{T} (eTr+1+4)",
 		     "Default/jetPtRes", 3, "Jet P_{T}");
+ */
   }
  
   delete inputFile;

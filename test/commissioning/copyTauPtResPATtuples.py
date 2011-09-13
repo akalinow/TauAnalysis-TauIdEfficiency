@@ -7,13 +7,13 @@ import subprocess
 import shlex
 
 # Get all the skim files from the castor directory
-sourceFilePath = "/castor/cern.ch/user/v/veelken/CMSSW_4_2_x/PATtuples/TauPtRes/V1c/"
+sourceFilePath = "/castor/cern.ch/user/v/veelken/CMSSW_4_2_x/PATtuples/TauPtRes/V2exp/"
 source_files = [ file_info['path'] for file_info in castor.nslsl(sourceFilePath) ]
 
-targetFilePath = "/data2/veelken/CMSSW_4_2_x/PATtuples/TauPtRes/V1c/"
+targetFilePath = "/data2/veelken/CMSSW_4_2_x/PATtuples/TauPtRes/V2exp/"
 
-jobId = "2011Jul23"
-version = "V1c"
+jobId = "2011Aug18"
+version = "V2exp"
 
 samplesToCopy = [
     # modify in case you want to submit jobs for some of the samples only...

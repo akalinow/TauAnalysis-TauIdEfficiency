@@ -33,18 +33,18 @@ process.maxEvents = cms.untracked.PSet(
 )
 
 process.load('RecoTauTag.Configuration.RecoPFTauTag_cff')
-import RecoTauTag.RecoTau.RecoTauPiZeroBuilderPlugins_cfi as builders
-modStrips = copy.deepcopy(builders.strips)
-modStrips.plugin = cms.string('RecoTauPiZeroStripPlugin2')
-#modStrips.qualityCuts.signalQualityCuts.minGammaEt = cms.double(0.)
-modStrips.minGammaEtStripSeed = cms.double(0.5)
-modStrips.minGammaEtStripAdd = cms.double(0.)
-modStrips.minStripEt = cms.double(1.0)
-modStrips.updateStripAfterEachDaughter = cms.bool(False)
-modStrips.maxStripBuildIterations = cms.int32(-1)
-process.ak5PFJetsLegacyHPSPiZeros.builders = cms.VPSet(
-    modStrips
-)
+## import RecoTauTag.RecoTau.RecoTauPiZeroBuilderPlugins_cfi as builders
+## modStrips = copy.deepcopy(builders.strips)
+## modStrips.plugin = cms.string('RecoTauPiZeroStripPlugin2')
+## #modStrips.qualityCuts.signalQualityCuts.minGammaEt = cms.double(0.)
+## modStrips.minGammaEtStripSeed = cms.double(0.5)
+## modStrips.minGammaEtStripAdd = cms.double(0.)
+## modStrips.minStripEt = cms.double(1.0)
+## modStrips.updateStripAfterEachDaughter = cms.bool(False)
+## modStrips.maxStripBuildIterations = cms.int32(-1)
+## process.ak5PFJetsLegacyHPSPiZeros.builders = cms.VPSet(
+##     modStrips
+## )
 
 process.load('RecoJets.Configuration.RecoPFJets_cff')
 process.kt6PFJets.rParam = cms.double(0.6)
@@ -57,129 +57,129 @@ switchToPFTauHPS(process)
 process.patTaus.userIsolation = cms.PSet()
 process.patTaus.isoDeposits = cms.PSet()
 
-import PhysicsTools.PatAlgos.tools.helpers as configtools
-process.allTauPtResSequences = cms.Sequence()
+## import PhysicsTools.PatAlgos.tools.helpers as configtools
+## process.allTauPtResSequences = cms.Sequence()
 
 process.tauPtResSequence = cms.Sequence(
     process.recoTauClassicHPSSequence
    + process.tauMatch + process.tauGenJetMatch + process.patTaus
 )
 
-tauPtResOptions = {
-    'Default' : {
-        'applyElecTrackQcuts'          : True,
-        'minGammaEtStripSeed'          : 0.5,
-        'minGammaEtStripAdd'           : 0.5,
-        'minStripEt'                   : 0.5,
-        'updateStripAfterEachDaughter' : True,
-        'maxStripBuildIterations'      :  1
-    },
-    'Seed05Add00Strip05' : {
-        'applyElecTrackQcuts'          : True,
-        'minGammaEtStripSeed'          : 0.5,
-        'minGammaEtStripAdd'           : 0.0,
-        'minStripEt'                   : 0.5,
-        'updateStripAfterEachDaughter' : False,
-        'maxStripBuildIterations'      : -1
-    },
-    'noEleTrackQcutsDefault' : {
-        'applyElecTrackQcuts'          : False,
-        'minGammaEtStripSeed'          : 0.5,
-        'minGammaEtStripAdd'           : 0.5,
-        'minStripEt'                   : 0.5,
-        'updateStripAfterEachDaughter' : True,
-        'maxStripBuildIterations'      :  1
-    },
-    'noEleTrackQcutsSeed00Add00Strip05' : {
-        'applyElecTrackQcuts'          : False,
-        'minGammaEtStripSeed'          : 0.0,
-        'minGammaEtStripAdd'           : 0.0,
-        'minStripEt'                   : 0.5,
-        'updateStripAfterEachDaughter' : False,
-        'maxStripBuildIterations'      : -1
-    },
-    'noEleTrackQcutsSeed00Add00Strip10' : {
-        'applyElecTrackQcuts'          : False,
-        'minGammaEtStripSeed'          : 0.0,
-        'minGammaEtStripAdd'           : 0.0,
-        'minStripEt'                   : 1.0,
-        'updateStripAfterEachDaughter' : False,
-        'maxStripBuildIterations'      : -1
-    },
-    'noEleTrackQcutsSeed05Add00Strip05' : {
-        'applyElecTrackQcuts'          : False,
-        'minGammaEtStripSeed'          : 0.5,
-        'minGammaEtStripAdd'           : 0.0,
-        'minStripEt'                   : 0.5,
-        'updateStripAfterEachDaughter' : False,
-        'maxStripBuildIterations'      : -1
-    },
-    'noEleTrackQcutsSeed05Add00Strip10' : {
-        'applyElecTrackQcuts'          : False,
-        'minGammaEtStripSeed'          : 0.5,
-        'minGammaEtStripAdd'           : 0.0,
-        'minStripEt'                   : 1.0,
-        'updateStripAfterEachDaughter' : False,
-        'maxStripBuildIterations'      : -1
-    },
-    'noEleTrackQcutsSeed05Add00Strip15' : {
-        'applyElecTrackQcuts'          : False,
-        'minGammaEtStripSeed'          : 0.5,
-        'minGammaEtStripAdd'           : 0.0,
-        'minStripEt'                   : 1.5,
-        'updateStripAfterEachDaughter' : False,
-        'maxStripBuildIterations'      : -1
-    },
-    'noEleTrackQcutsSeed05Add00Strip20' : {
-        'applyElecTrackQcuts'          : False,
-        'minGammaEtStripSeed'          : 0.5,
-        'minGammaEtStripAdd'           : 0.0,
-        'minStripEt'                   : 2.0,
-        'updateStripAfterEachDaughter' : False,
-        'maxStripBuildIterations'      : -1
-    },
-    'noEleTrackQcutsSeed05Add00Strip25' : {
-        'applyElecTrackQcuts'          : False,
-        'minGammaEtStripSeed'          : 0.5,
-        'minGammaEtStripAdd'           : 0.0,
-        'minStripEt'                   : 2.5,
-        'updateStripAfterEachDaughter' : False,
-        'maxStripBuildIterations'      : -1
-    },
-    'noEleTrackQcutsSeed05Add05Strip05' : {
-        'applyElecTrackQcuts'          : False,
-        'minGammaEtStripSeed'          : 0.5,
-        'minGammaEtStripAdd'           : 0.5,
-        'minStripEt'                   : 0.5,
-        'updateStripAfterEachDaughter' : False,
-        'maxStripBuildIterations'      : -1
-    },
-    'noEleTrackQcutsSeed05Add05Strip10' : {
-        'applyElecTrackQcuts'          : False,
-        'minGammaEtStripSeed'          : 0.5,
-        'minGammaEtStripAdd'           : 0.5,
-        'minStripEt'                   : 1.0,
-        'updateStripAfterEachDaughter' : True,
-        'maxStripBuildIterations'      : -1
-    }
-}
+## tauPtResOptions = {
+##     'Default' : {
+##         'applyElecTrackQcuts'          : True,
+##         'minGammaEtStripSeed'          : 0.5,
+##         'minGammaEtStripAdd'           : 0.5,
+##         'minStripEt'                   : 0.5,
+##         'updateStripAfterEachDaughter' : True,
+##         'maxStripBuildIterations'      :  1
+##     },
+##     'Seed05Add00Strip05' : {
+##         'applyElecTrackQcuts'          : True,
+##         'minGammaEtStripSeed'          : 0.5,
+##         'minGammaEtStripAdd'           : 0.0,
+##         'minStripEt'                   : 0.5,
+##         'updateStripAfterEachDaughter' : False,
+##         'maxStripBuildIterations'      : -1
+##     },
+##     'noEleTrackQcutsDefault' : {
+##         'applyElecTrackQcuts'          : False,
+##         'minGammaEtStripSeed'          : 0.5,
+##         'minGammaEtStripAdd'           : 0.5,
+##         'minStripEt'                   : 0.5,
+##         'updateStripAfterEachDaughter' : True,
+##         'maxStripBuildIterations'      :  1
+##     },
+##     'noEleTrackQcutsSeed00Add00Strip05' : {
+##         'applyElecTrackQcuts'          : False,
+##         'minGammaEtStripSeed'          : 0.0,
+##         'minGammaEtStripAdd'           : 0.0,
+##         'minStripEt'                   : 0.5,
+##         'updateStripAfterEachDaughter' : False,
+##         'maxStripBuildIterations'      : -1
+##     },
+##     'noEleTrackQcutsSeed00Add00Strip10' : {
+##         'applyElecTrackQcuts'          : False,
+##         'minGammaEtStripSeed'          : 0.0,
+##         'minGammaEtStripAdd'           : 0.0,
+##         'minStripEt'                   : 1.0,
+##         'updateStripAfterEachDaughter' : False,
+##         'maxStripBuildIterations'      : -1
+##     },
+##     'noEleTrackQcutsSeed05Add00Strip05' : {
+##         'applyElecTrackQcuts'          : False,
+##         'minGammaEtStripSeed'          : 0.5,
+##         'minGammaEtStripAdd'           : 0.0,
+##         'minStripEt'                   : 0.5,
+##         'updateStripAfterEachDaughter' : False,
+##         'maxStripBuildIterations'      : -1
+##     },
+##     'noEleTrackQcutsSeed05Add00Strip10' : {
+##         'applyElecTrackQcuts'          : False,
+##         'minGammaEtStripSeed'          : 0.5,
+##         'minGammaEtStripAdd'           : 0.0,
+##         'minStripEt'                   : 1.0,
+##         'updateStripAfterEachDaughter' : False,
+##         'maxStripBuildIterations'      : -1
+##     },
+##     'noEleTrackQcutsSeed05Add00Strip15' : {
+##         'applyElecTrackQcuts'          : False,
+##         'minGammaEtStripSeed'          : 0.5,
+##         'minGammaEtStripAdd'           : 0.0,
+##         'minStripEt'                   : 1.5,
+##         'updateStripAfterEachDaughter' : False,
+##         'maxStripBuildIterations'      : -1
+##     },
+##     'noEleTrackQcutsSeed05Add00Strip20' : {
+##         'applyElecTrackQcuts'          : False,
+##         'minGammaEtStripSeed'          : 0.5,
+##         'minGammaEtStripAdd'           : 0.0,
+##         'minStripEt'                   : 2.0,
+##         'updateStripAfterEachDaughter' : False,
+##         'maxStripBuildIterations'      : -1
+##     },
+##     'noEleTrackQcutsSeed05Add00Strip25' : {
+##         'applyElecTrackQcuts'          : False,
+##         'minGammaEtStripSeed'          : 0.5,
+##         'minGammaEtStripAdd'           : 0.0,
+##         'minStripEt'                   : 2.5,
+##         'updateStripAfterEachDaughter' : False,
+##         'maxStripBuildIterations'      : -1
+##     },
+##     'noEleTrackQcutsSeed05Add05Strip05' : {
+##         'applyElecTrackQcuts'          : False,
+##         'minGammaEtStripSeed'          : 0.5,
+##         'minGammaEtStripAdd'           : 0.5,
+##         'minStripEt'                   : 0.5,
+##         'updateStripAfterEachDaughter' : False,
+##         'maxStripBuildIterations'      : -1
+##     },
+##     'noEleTrackQcutsSeed05Add05Strip10' : {
+##         'applyElecTrackQcuts'          : False,
+##         'minGammaEtStripSeed'          : 0.5,
+##         'minGammaEtStripAdd'           : 0.5,
+##         'minStripEt'                   : 1.0,
+##         'updateStripAfterEachDaughter' : True,
+##         'maxStripBuildIterations'      : -1
+##     }
+## }
 
-for tauPtResName, tauPtResConfig in tauPtResOptions.items():
+## for tauPtResName, tauPtResConfig in tauPtResOptions.items():
 
-    modStrips.applyElecTrackQcuts = cms.bool(tauPtResConfig['applyElecTrackQcuts'])
-    modStrips.minGammaEtStripSeed = cms.double(tauPtResConfig['minGammaEtStripSeed'])
-    modStrips.minGammaEtStripAdd = cms.double(tauPtResConfig['minGammaEtStripAdd'])
-    modStrips.minStripEt = cms.double(tauPtResConfig['minStripEt'])
-    modStrips.updateStripAfterEachDaughter = cms.bool(tauPtResConfig['updateStripAfterEachDaughter'])
-    modStrips.maxStripBuildIterations = cms.int32(tauPtResConfig['maxStripBuildIterations'])
+##     modStrips.applyElecTrackQcuts = cms.bool(tauPtResConfig['applyElecTrackQcuts'])
+##     modStrips.minGammaEtStripSeed = cms.double(tauPtResConfig['minGammaEtStripSeed'])
+##     modStrips.minGammaEtStripAdd = cms.double(tauPtResConfig['minGammaEtStripAdd'])
+##     modStrips.minStripEt = cms.double(tauPtResConfig['minStripEt'])
+##     modStrips.updateStripAfterEachDaughter = cms.bool(tauPtResConfig['updateStripAfterEachDaughter'])
+##     modStrips.maxStripBuildIterations = cms.int32(tauPtResConfig['maxStripBuildIterations'])
     
-    configtools.cloneProcessingSnippet(process, process.tauPtResSequence, tauPtResName)
+##     configtools.cloneProcessingSnippet(process, process.tauPtResSequence, tauPtResName)
 
-    process.allTauPtResSequences *= getattr(process, "%s%s" % ("tauPtResSequence", tauPtResName))
+##     process.allTauPtResSequences *= getattr(process, "%s%s" % ("tauPtResSequence", tauPtResName))
 
-process.ak5PFJetsLegacyHPSPiZeros.builders = cms.VPSet(
-    builders.strips
-)
+## process.ak5PFJetsLegacyHPSPiZeros.builders = cms.VPSet(
+##     builders.strips
+## )
 
 # before starting to process 1st event, print event content
 process.printEventContent = cms.EDAnalyzer("EventContentAnalyzer")
@@ -193,7 +193,7 @@ process.p = cms.Path(
     process.kt6PFJets
    + process.PFTau
    + process.patDefaultSequence
-   + process.allTauPtResSequences
+   ##+ process.allTauPtResSequences
 )
 
 process.patTupleOutputModule = cms.OutputModule("PoolOutputModule",
@@ -219,5 +219,5 @@ process.patTupleOutputModule = cms.OutputModule("PoolOutputModule",
 
 process.q = cms.EndPath(process.patTupleOutputModule)
 
-processDumpFile = open('testTauPtRes.dump' , 'w')
+processDumpFile = open('produceTauPtResPATTuple.dump' , 'w')
 print >> processDumpFile, process.dumpPython()
