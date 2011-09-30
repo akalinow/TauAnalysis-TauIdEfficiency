@@ -10,12 +10,11 @@ import re
 # define auxiliary functions
 #
 def make_inputFileNames_vstring(list_of_strings):
-    retVal = "'"
+    retVal = ""
     for i, string_i in enumerate(list_of_strings):
         if i > 0:
-            retVal += "', '"
-        retVal += string_i
-    retVal += "'"
+            retVal += ","
+        retVal += "".join([ "'", string_i, "'" ])        
     return retVal
 
 def make_tauIds_string(tauIds):
@@ -54,7 +53,7 @@ def getStringRep_bool(flag):
 #--------------------------------------------------------------------------------
 
 def buildConfigFile_FWLiteTauIdEffAnalyzer(sampleToAnalyze, jobId, inputFilePath, tauIds, binning, sysUncertainties, outputFilePath,
-                                           recoSampleDefinitions, regions, passed_region, failed_region,
+                                           recoSampleDefinitions, regions, passed_region, failed_region, hltPaths,
                                            tauChargeMode, disableTauCandPreselCuts):
 
     """Build cfg.py file to run FWLiteTauIdEffAnalyzer macro to run on PAT-tuples,
@@ -123,6 +122,15 @@ def buildConfigFile_FWLiteTauIdEffAnalyzer(sampleToAnalyze, jobId, inputFilePath
 
     binning_string = make_binning_string(binning)
 
+    hltPaths_string = make_inputFileNames_vstring(hltPaths)
+
+    srcGenParticles = ''
+    fillGenMatchHistograms = False
+    if processType != 'Data' and \
+      (process_matched.find('Ztautau') != -1 or process_matched.find('Zmumu') != -1 or process_matched.find('ZplusJets') != -1):
+        srcGenParticles = 'genParticles'
+        fillGenMatchHistograms = True
+
     configFileNames = []
     outputFileNames = []
     logFileNames    = []
@@ -138,21 +146,22 @@ def buildConfigFile_FWLiteTauIdEffAnalyzer(sampleToAnalyze, jobId, inputFilePath
 
         srcMuTauPairs = 'selectedMuPFTauHPSpairsDzForTauIdEff'
         if recoSampleDefinitions['RECO_SAMPLES'][sampleToAnalyze]['applyZrecoilCorrection']:
-            srcMuTauPairs = composeModuleName([ srcMuTauPairs, ZllRecoilCorrected ])
+            srcMuTauPairs = composeModuleName([ srcMuTauPairs, "ZllRecoilCorrected" ])
         if sysUncertainty != "CENTRAL_VALUE":  
             srcMuTauPairs = composeModuleName([ srcMuTauPairs, sysUncertainty, "cumulative" ])            
         else:
             srcMuTauPairs = composeModuleName([ srcMuTauPairs, "cumulative" ])
 
         weights_string = ""
-        if not recoSampleDefinitions['MERGE_SAMPLES'][process_matched]['type'] == 'Data':
-            #weights_string += "".join(["'", "ntupleProducer:tauIdEffNtuple#addPileupInfo#vtxMultReweight", "'"])
-            weights_string += "".join(["'", "vertexMultiplicityReweight", "'"])
-            weights_string += "".join(["'", "vertexMultiplicityVsRhoPFNeutralReweight", "'"])
+        if not processType == 'Data':
+            weights_string += "".join([
+                "'", "vertexMultiplicityReweight", "'", ","
+                "'", "vertexMultiplicityVsRhoPFNeutralReweight", "'"
+            ])
 
         allEvents_DBS = -1
         xSection = 0.0
-        if not recoSampleDefinitions['MERGE_SAMPLES'][process_matched]['type'] == 'Data':
+        if not processType == 'Data':
             allEvents_DBS = recoSampleDefinitions['RECO_SAMPLES'][sampleToAnalyze]['events_processed']
             xSection = recoSampleDefinitions['RECO_SAMPLES'][sampleToAnalyze]['x_sec']
         intLumiData = recoSampleDefinitions['TARGET_LUMI']
@@ -200,20 +209,7 @@ process.tauIdEffAnalyzer = cms.PSet(
     sysShift = cms.string('%s'),
 
     srcTrigger = cms.InputTag('patTriggerEvent'),
-    hltPaths = cms.vstring(
-        #'HLT_Mu15_v1',
-        #'HLT_Mu15_v2',
-        #'HLT_Mu15_v3',
-        #'HLT_Mu15_v4',
-        #'HLT_Mu15_v5',
-        #'HLT_Mu15_v6'
-        'HLT_IsoMu17_v5',
-        'HLT_IsoMu17_v6',
-        'HLT_IsoMu17_v8',
-        'HLT_IsoMu17_v9',
-        'HLT_IsoMu17_v10',
-        'HLT_IsoMu17_v11'
-    ),
+    hltPaths = cms.vstring(%s),
     
     srcGoodMuons = cms.InputTag('patGoodMuons'),
     
@@ -223,6 +219,10 @@ process.tauIdEffAnalyzer = cms.PSet(
     disableTauCandPreselCuts = cms.bool(%s),
 
     srcVertices = cms.InputTag('offlinePrimaryVertices'),
+
+    srcGenParticles = cms.InputTag('%s'),
+    fillGenMatchHistograms = cms.bool(%s),
+    skipPdgIdsGenParticleMatch = cms.vint32(12, 14, 16),
 
     weights = cms.VInputTag(%s),
 
@@ -237,8 +237,10 @@ process.tauIdEffAnalyzer = cms.PSet(
     srcLumiProducer = cms.InputTag('lumiProducer')
 )
 """ % (inputFileNames_string, outputFileName_full,
-       process_matched, processType, regions_string, passed_region, failed_region, tauIds_string, binning_string, sysUncertainty,
-       srcMuTauPairs, tauChargeMode, disableTauCandPreselCuts_string, weights_string, allEvents_DBS, xSection, intLumiData)
+       process_matched, processType,
+       regions_string, passed_region, failed_region, tauIds_string, binning_string, sysUncertainty, hltPaths_string,
+       srcMuTauPairs, tauChargeMode, disableTauCandPreselCuts_string, srcGenParticles, getStringRep_bool(fillGenMatchHistograms),
+       weights_string, allEvents_DBS, xSection, intLumiData)
 
         outputFileNames.append(outputFileName_full)
 
@@ -266,6 +268,7 @@ process.tauIdEffAnalyzer = cms.PSet(
 
 def buildConfigFile_fitTauIdEff(fitMethod, jobId, directory, inputFileName, tauIds, fitVariables, sysUncertainties, outputFilePath,
                                 regions, passed_region, failed_region, 
+                                regionQCDtemplateFromData_all,
                                 regionQCDtemplateFromData_passed, regionQCDtemplateFromData_failed, makeControlPlots):
 
     """Fit Ztautau signal plus background templates to Mt and visMass distributions
@@ -320,6 +323,7 @@ process.%s = cms.PSet(
     ),
 
     # regions (in Data) from which templates for QCD background are taken
+    regionTakeQCDtemplateFromData_all    = cms.string('%s'),
     regionTakeQCDtemplateFromData_passed = cms.string('%s'),
     regionTakeQCDtemplateFromData_failed = cms.string('%s'),
     #takeQCDfromData = cms.bool(False),
@@ -343,6 +347,7 @@ process.%s = cms.PSet(
         "sysTauJetEn"
     ),
     sysVariedByNsigma = cms.double(3.0),
+    morphQCDinABD = cms.bool(False),
     
     loadSysUncertainties = cms.vstring(
 %s
@@ -359,7 +364,9 @@ process.%s = cms.PSet(
 )
 """ % (inputFileName, outputFileName_full,
        fitMethod, directory,
-       regions_string, regionQCDtemplateFromData_passed, regionQCDtemplateFromData_failed, passed_region, failed_region, 
+       regions_string,
+       regionQCDtemplateFromData_all, regionQCDtemplateFromData_passed, regionQCDtemplateFromData_failed,
+       passed_region, failed_region, 
        tauIds, fitVariables, loadSysUncertainties_string, varySysUncertainties_string, makeControlPlots_string)
 
     configFileName = outputFileName.replace('.root', '_cfg.py')
@@ -379,7 +386,7 @@ process.%s = cms.PSet(
     return retVal
 
 def buildConfigFile_FWLiteTauIdEffPreselNumbers(inputFilePath, sampleZtautau, jobId, tauIds, binning, outputFilePath,
-                                                keyword_compTauIdEffPreselNumbers):
+                                                hltPaths, keyword_compTauIdEffPreselNumbers):
 
     """Compute preselection efficiencies and purities in regions C1p, C1f"""
 
@@ -394,6 +401,8 @@ def buildConfigFile_FWLiteTauIdEffPreselNumbers(inputFilePath, sampleZtautau, jo
     tauIds_string = make_tauIds_string(tauIds)
 
     binning_string = make_binning_string(binning)
+
+    hltPaths_string = make_inputFileNames_vstring(hltPaths)
 
     outputFileName = '%s_%s_%s.root' % (keyword_compTauIdEffPreselNumbers, sampleZtautau, jobId)
     outputFileName_full = os.path.join(outputFilePath, outputFileName)
@@ -437,9 +446,7 @@ process.%s = cms.PSet(
     sysShift = cms.string('CENTRAL_VALUE'),
 
     srcTrigger = cms.InputTag('patTriggerEvent'),
-    hltPaths = cms.vstring(
-        'HLT_IsoMu17_v5', 'HLT_IsoMu17_v6', 'HLT_IsoMu17_v8', 'HLT_IsoMu17_v9', 'HLT_IsoMu17_v11'
-    ),
+    hltPaths = cms.vstring(%s),
     
     srcGoodMuons = cms.InputTag('patGoodMuons'),
     
@@ -449,10 +456,13 @@ process.%s = cms.PSet(
 
     srcVertices = cms.InputTag('offlinePrimaryVertices'),
 
-    weights = cms.VInputTag('ntupleProducer:tauIdEffNtuple#addPileupInfo#vtxMultReweight')
+    weights = cms.VInputTag(
+        'vertexMultiplicityReweight',
+        'vertexMultiplicityVsRhoPFNeutralReweight'
+    )
 )
 """ % (inputFileNames_string, outputFileName_full, keyword_compTauIdEffPreselNumbers,
-       tauIds_string, binning_string)
+       tauIds_string, binning_string, hltPaths_string)
 
     configFileName = outputFileName.replace('.root', '_cfg.py')
     configFileName_full = os.path.join(outputFilePath, configFileName)    
