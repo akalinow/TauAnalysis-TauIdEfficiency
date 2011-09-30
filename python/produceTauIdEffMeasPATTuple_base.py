@@ -9,7 +9,7 @@ def produceTauIdEffMeasPATTuple_base(process, isMC, isEmbedded, HLTprocessName, 
     # of electrons, muons and tau-jets with non-standard isolation cones
     process.load('Configuration/StandardSequences/Services_cff')
     process.load('FWCore/MessageService/MessageLogger_cfi')
-    process.MessageLogger.cerr.FwkReport.reportEvery = 100
+    process.MessageLogger.cerr.FwkReport.reportEvery = 1000
     #process.MessageLogger.cerr.threshold = cms.untracked.string('INFO')
     #process.MessageLogger.suppressInfo = cms.untracked.vstring()
     process.MessageLogger.suppressWarning = cms.untracked.vstring("PATTriggerProducer",)

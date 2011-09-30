@@ -156,6 +156,7 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
         patTauCleanerPrototype = patCaloTauCleanerPrototype,
         triggerMatcherProtoType = process.patTauTriggerMatchHLTprotoType,
         addGenInfo = isMC,
+        applyTauJEC = False,
         applyTauVertexMatch = applyTauVertexMatch
     )
     process.caloTauSequence = retVal_caloTau["sequence"]
@@ -191,6 +192,7 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
         patTauCleanerPrototype = patPFTauCleanerPrototype,
         triggerMatcherProtoType = process.patTauTriggerMatchHLTprotoType,
         addGenInfo = isMC,
+        applyTauJEC = False,
         applyTauVertexMatch = applyTauVertexMatch
     )
     process.pfTauSequenceFixedCone = retVal_pfTauFixedCone["sequence"]
@@ -229,6 +231,7 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
         patTauCleanerPrototype = patPFTauCleanerPrototype,
         triggerMatcherProtoType = process.patTauTriggerMatchHLTprotoType,
         addGenInfo = isMC,
+        applyTauJEC = False,
         applyTauVertexMatch = applyTauVertexMatch
     )
     process.pfTauSequenceShrinkingCone = retVal_pfTauShrinkingCone["sequence"]
@@ -268,6 +271,7 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
         patTauCleanerPrototype = patPFTauCleanerPrototype,
         triggerMatcherProtoType = process.patTauTriggerMatchHLTprotoType,
         addGenInfo = isMC,
+        applyTauJEC = True,
         applyTauVertexMatch = applyTauVertexMatch
     )
     process.pfTauSequenceHPS = retVal_pfTauHPS["sequence"]
@@ -303,6 +307,7 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
         patTauCleanerPrototype = patPFTauCleanerPrototype,
         triggerMatcherProtoType = process.patTauTriggerMatchHLTprotoType,
         addGenInfo = isMC,
+        applyTauJEC = True,
         applyTauVertexMatch = applyTauVertexMatch
     )
     process.pfTauSequenceHPSpTaNC = retVal_pfTauHPSpTaNC["sequence"]
@@ -354,6 +359,13 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
     )
     #--------------------------------------------------------------------------------
 
+    #--------------------------------------------------------------------------------
+    #
+    # configure Jet Energy Corrections
+    #
+    process.load("TauAnalysis.Configuration.jetCorrectionParameters_cfi")
+    #--------------------------------------------------------------------------------
+    
     #--------------------------------------------------------------------------------
     # replace CaloJets by PFJets for "standard" pat::Jet collection
     switchJetCollection(process, jetCollection = cms.InputTag("ak5PFJets"), outputModule = '')

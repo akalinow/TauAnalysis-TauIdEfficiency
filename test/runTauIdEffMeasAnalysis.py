@@ -13,8 +13,8 @@ jobId = '2011Aug18'
 version = 'V8'
 
 inputFilePath = '/data2/veelken/CMSSW_4_2_x/PATtuples/TauIdEffMeas/%s/%s/' % (jobId, version) \
-               + 'user/v/veelken/CMSSW_4_2_x/PATtuples/TauIdEffMeas/'
-outputFilePath = '/data1/veelken/tmp/muonPtGt20_noPzetaCut/%s' % version
+               + 'user/v/veelken/CMSSW_4_2_x/PATtuples/TauIdEffMeas/%s/' % jobId
+outputFilePath = '/data1/veelken/tmp/muonPtGt20_noPzetaCut/%s/HLT_Mu15' % version
 
 samplesToAnalyze = [
     # modify in case you want to submit jobs for some of the samples only...
@@ -33,13 +33,28 @@ samplesToAnalyze = [
 # used to compute preselection efficiencies and purities in C1p and C1f/D1p regions
 sampleZtautau = 'Ztautau_powheg'
 
+hltPaths = [
+    'HLT_Mu15_v1',
+    'HLT_Mu15_v2',
+    'HLT_Mu15_v3',
+    'HLT_Mu15_v4',
+    'HLT_Mu15_v5',
+    'HLT_Mu15_v6'
+    #'HLT_IsoMu17_v5',
+    #'HLT_IsoMu17_v6',
+    #'HLT_IsoMu17_v8',
+    #'HLT_IsoMu17_v9',
+    #'HLT_IsoMu17_v10',
+    #'HLT_IsoMu17_v11'
+]
+
 fitVariables = [
     'diTauVisMass',
     #'diTauVisMassFromJet' # CV: diTauVisMass always computed from PFJet momenta if using PAT-tuple workflow
 ]    
 
-#mode = 'tauIdEfficiency'
-mode = 'tauChargeMisIdRate'
+mode = 'tauIdEfficiency'
+#mode = 'tauChargeMisIdRate'
 
 sysUncertainties = [
     "sysTauJetEn",     # needed for diTauVisMass/diTauVisMassFromJet
@@ -232,6 +247,7 @@ suffix_noTauSel                      = None
 keyword_compTauIdEffPreselNumbers    = None
 passed_region                        = None
 failed_region                        = None
+regionQCDtemplateFromData_all        = None
 regionQCDtemplateFromData_passed     = None
 regionQCDtemplateFromData_failed     = None
 fitMethod                            = None
@@ -269,13 +285,14 @@ if mode == 'tauIdEfficiency':
     ]
     passed_region                        = 'C1p'
     failed_region                        = 'C1f'
+    regionQCDtemplateFromData_all        = 'B1'
     regionQCDtemplateFromData_passed     = 'B1p'
     regionQCDtemplateFromData_failed     = 'B1f'
     fitMethod                            = 'fitTauIdEff_wConstraints'
     tauChargeMode                        = 'tauLeadTrackCharge'
     disableTauCandPreselCuts             = False
     executable_compTauIdEffFinalNumbers  = execDir + 'compTauIdEffFinalNumbers'
-    keyword_compTauIdEffFinalNumbers     = 'compIdEffPreselNumbers'
+    keyword_compTauIdEffFinalNumbers     = 'compTauIdEffFinalNumbers'
     expEff_label                         = 'expEff'
     measEff_label                        = 'measEff'   
 elif mode == 'tauChargeMisIdRate':
@@ -286,15 +303,19 @@ elif mode == 'tauChargeMisIdRate':
         'B1',  # control region used to obtain QCD template from Data
         'B1p',
         'B1f',
+        'B2',
         'C1',
         'C1p',
         'C1f',
+        'C2',
         'D1',
         'D1p',
-        'D1f'
+        'D1f',
+        'D2'
     ]
     passed_region                        = 'C1p'
     failed_region                        = 'D1p'
+    regionQCDtemplateFromData_all        = 'B1'
     regionQCDtemplateFromData_passed     = 'B1p'
     regionQCDtemplateFromData_failed     = 'B1f'
     fitMethod                            = 'fitTauIdEff'
@@ -332,7 +353,8 @@ for sampleToAnalyze in samplesToAnalyze:
       buildConfigFile_FWLiteTauIdEffAnalyzer(sampleToAnalyze, "".join([ jobId, version ]), inputFilePath, tauIds,
                                              binning, sysUncertainties, outputFilePath,
                                              recoSampleDefinitionsTauIdEfficiency_7TeV,
-                                             regions, passed_region, failed_region, tauChargeMode, disableTauCandPreselCuts)
+                                             regions, passed_region, failed_region, hltPaths,
+                                             tauChargeMode, disableTauCandPreselCuts)
 
     if retVal_FWLiteTauIdEffAnalyzer is None:
         continue
@@ -366,6 +388,7 @@ retVal_fitTauIdEff = \
   buildConfigFile_fitTauIdEff(fitMethod, "".join([ jobId, version ]), '', haddOutputFileName_stage1, tauIds.keys(),
                               fitVariables, sysUncertainties, outputFilePath,
                               regions, passed_region, failed_region,
+                              regionQCDtemplateFromData_all,
                               regionQCDtemplateFromData_passed, regionQCDtemplateFromData_failed, True)
 configFileNames_fitTauIdEff.append(retVal_fitTauIdEff['configFileName'])
 outputFileNames_fitTauIdEff.append(retVal_fitTauIdEff['outputFileName'])
@@ -377,6 +400,7 @@ for binVariable in binning.keys():
               buildConfigFile_fitTauIdEff(fitMethod, "".join([ jobId, version ]), binName, haddOutputFileName_stage1, tauIds.keys(),
                                           fitVariables, sysUncertainties, outputFilePath,
                                           regions, passed_region, failed_region,
+                                          regionQCDtemplateFromData_all,
                                           regionQCDtemplateFromData_passed, regionQCDtemplateFromData_failed, False)
             configFileNames_fitTauIdEff.append(retVal_fitTauIdEff['configFileName'])
             outputFileNames_fitTauIdEff.append(retVal_fitTauIdEff['outputFileName'])
@@ -389,7 +413,7 @@ for binVariable in binning.keys():
 #
 retVal_FWLiteTauIdEffPreselNumbers = \
   buildConfigFile_FWLiteTauIdEffPreselNumbers(inputFilePath, sampleZtautau, "".join([ jobId, version, suffix_noTauSel ]), tauIds,
-                                              binning, outputFilePath, keyword_compTauIdEffPreselNumbers)
+                                              binning, outputFilePath, hltPaths, keyword_compTauIdEffPreselNumbers)
 configFileName_FWLiteTauIdEffPreselNumbers = retVal_FWLiteTauIdEffPreselNumbers['configFileName']
 outputFileName_FWLiteTauIdEffPreselNumbers = retVal_FWLiteTauIdEffPreselNumbers['outputFileName']
 logFileName_FWLiteTauIdEffPreselNumbers = retVal_FWLiteTauIdEffPreselNumbers['logFileName']

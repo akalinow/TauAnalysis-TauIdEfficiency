@@ -1,6 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 
-process = cms.Process("prodTauIdEffMeasPATTuple")
+process = cms.Process("prodTauIdEffMeasPATTupleNoTauSel")
 
 #--------------------------------------------------------------------------------
 # define configuration parameter default values

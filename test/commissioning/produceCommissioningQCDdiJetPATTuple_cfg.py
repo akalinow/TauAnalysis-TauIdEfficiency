@@ -52,9 +52,9 @@ applyEventSelection = True
 #--------------------------------------------------------------------------------
 # define GlobalTag to be used for event reconstruction
 if isMC:
-    process.GlobalTag.globaltag = cms.string('START42_V12::All')
+    process.GlobalTag.globaltag = cms.string('START42_V13::All')
 else:
-    process.GlobalTag.globaltag = cms.string('GR_R_42_V14::All')
+    process.GlobalTag.globaltag = cms.string('GR_R_42_V20::All')
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------

@@ -5,9 +5,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.4 $
+ * \version $Revision: 1.5 $
  *
- * $Id: FWLiteTauPtResAnalyzer.cc,v 1.4 2011/08/15 17:11:04 veelken Exp $
+ * $Id: FWLiteTauPtResAnalyzer.cc,v 1.5 2011/09/13 12:19:05 veelken Exp $
  *
  */
 
@@ -51,6 +51,14 @@
 #include <fstream>
 
 typedef std::vector<std::string> vstring;
+
+TauPtResHistManager* addHistManager(const edm::ParameterSet& cfg, TFileDirectory& dir, const std::string& subdirectory)
+{
+  TFileDirectory subdir = ( subdirectory != "" ) ? dir.mkdir(subdirectory) : dir;
+  TauPtResHistManager* histManager = new TauPtResHistManager(cfg);
+  histManager->bookHistograms(subdir);
+  return histManager;
+}
 
 int main(int argc, char* argv[]) 
 {
@@ -98,10 +106,14 @@ int main(int argc, char* argv[])
 
 //--- book histograms
   edm::ParameterSet cfgTauPtResHistManager;
-  TauPtResHistManager histManager(cfgTauPtResHistManager);
   TFileDirectory dir = ( directory != "" ) ? fs.mkdir(directory) : fs;
-  histManager.bookHistograms(dir);
-
+  TauPtResHistManager* histManager                     = addHistManager(cfgTauPtResHistManager, dir, "");
+  TauPtResHistManager* histManagerVtxMultiplicityLe2   = addHistManager(cfgTauPtResHistManager, dir, "vtxMultiplicityLe2");
+  TauPtResHistManager* histManagerVtxMultiplicity3to5  = addHistManager(cfgTauPtResHistManager, dir, "vtxMultiplicity3to5");
+  TauPtResHistManager* histManagerVtxMultiplicity6to8  = addHistManager(cfgTauPtResHistManager, dir, "vtxMultiplicity6to8");
+  TauPtResHistManager* histManagerVtxMultiplicity9to11 = addHistManager(cfgTauPtResHistManager, dir, "vtxMultiplicity9to11");
+  TauPtResHistManager* histManagerVtxMultiplicityGe12  = addHistManager(cfgTauPtResHistManager, dir, "vtxMultiplicityGe12");
+  
   std::ofstream* selEventsFile = new std::ofstream(selEventsFileName.data(), std::ios::out);
 
   int    numEvents_processed         = 0; 
@@ -138,6 +150,7 @@ int main(int argc, char* argv[])
       edm::Handle<reco::VertexCollection> vertices;
       evt.getByLabel(srcVertices, vertices);
       if ( !(vertices->size() >= 1) ) continue;
+      size_t vtxMultiplicity = vertices->size();
       const reco::Vertex& theEventVertex = vertices->at(0);
       
       qualityCuts.setPV(reco::VertexRef(vertices, 0));
@@ -181,7 +194,18 @@ int main(int argc, char* argv[])
 	    }
 	  }
  */ 
-	  histManager.fillHistograms(*tauJetCand, *genParticles, theEventVertex, qualityCuts, evtWeight);
+	  histManager->fillHistograms(*tauJetCand, *genParticles, theEventVertex, qualityCuts, evtWeight);
+
+	  if      ( vtxMultiplicity <=  2 ) 
+	    histManagerVtxMultiplicityLe2->fillHistograms(*tauJetCand, *genParticles, theEventVertex, qualityCuts, evtWeight);
+	  else if ( vtxMultiplicity <=  5 ) 
+	    histManagerVtxMultiplicity3to5->fillHistograms(*tauJetCand, *genParticles, theEventVertex, qualityCuts, evtWeight);
+	  else if ( vtxMultiplicity <=  8 ) 
+	    histManagerVtxMultiplicity6to8->fillHistograms(*tauJetCand, *genParticles, theEventVertex, qualityCuts, evtWeight);
+	  else if ( vtxMultiplicity <= 11 ) 
+	    histManagerVtxMultiplicity9to11->fillHistograms(*tauJetCand, *genParticles, theEventVertex, qualityCuts, evtWeight);
+	  else 
+	    histManagerVtxMultiplicityGe12->fillHistograms(*tauJetCand, *genParticles, theEventVertex, qualityCuts, evtWeight);	  
 	}
       }
     }
@@ -189,6 +213,13 @@ int main(int argc, char* argv[])
 //--- close input file
     delete inputFile;
   }
+
+  delete histManager;
+  delete histManagerVtxMultiplicityLe2;
+  delete histManagerVtxMultiplicity3to5;
+  delete histManagerVtxMultiplicity6to8;
+  delete histManagerVtxMultiplicity9to11;
+  delete histManagerVtxMultiplicityGe12;
 
 //--- close ASCII file containing 
 //     run:lumi-section:event 

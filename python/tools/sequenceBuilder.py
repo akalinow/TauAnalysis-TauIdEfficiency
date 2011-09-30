@@ -21,6 +21,7 @@ def buildTauSequence(
     patTauCleanerPrototype = None,
     triggerMatcherProtoType = None,
     addGenInfo = False,
+    applyTauJEC = False,
     applyTauVertexMatch = True):
     '''
     blah
@@ -39,7 +40,7 @@ def buildTauSequence(
     #       and disable requirement on transverse momentum
     #       of generated and reconstructed tau-jets 
     #
-    outputSequence = None
+    outputSequence = cms.Sequence()
     if addGenInfo:
         patTauGenParticleMatch = process.tauMatch.clone(
             src = patTauProducer.tauSource
@@ -60,18 +61,32 @@ def buildTauSequence(
         patTauProducer.genParticleMatch = cms.InputTag(patTauGenParticleMatchName)
         patTauProducer.genJetMatch = cms.InputTag(patTauGenJetMatchName)
     
-        outputSequence = cms.Sequence(
-            patTauGenParticleMatch + patTauGenJetMatch
-           + patTauProducer
-        )
+        outputSequence += getattr(process, patTauGenParticleMatchName)
+        outputSequence += getattr(process, patTauGenJetMatchName)
     else:
         patTauProducer.addGenMatch = cms.bool(False)
         patTauProducer.addGenJetMatch = cms.bool(False)
-        
-        outputSequence = cms.Sequence(
-            patTauProducer
-        )
 
+    # configure tau-jet energy corrections
+    if applyTauJEC:
+        patTauJetCorrFactors = process.patTauJetCorrFactors.clone(
+            src = patTauProducer.tauSource
+        )
+        patTauJetCorrFactorsName = collectionName[0] + "TauJetCorrFactors" + collectionName[1]
+        setattr(process, patTauJetCorrFactorsName, patTauJetCorrFactors)
+
+        print("enabling tau-JEC for %s" % patTauProducerName)
+        patTauProducer.tauJetCorrFactorsSource = cms.VInputTag(cms.InputTag(patTauJetCorrFactorsName))
+        patTauProducer.addTauJetCorrFactors = cms.bool(True)
+        
+        outputSequence += getattr(process, patTauJetCorrFactorsName)
+    else:
+        print("disabling tau-JEC for %s" % patTauProducerName)
+        patTauProducer.addTauJetCorrFactors = cms.bool(False)
+
+    # add pat::Tau producer module to sequence
+    outputSequence += patTauProducer
+         
     # configure matching of basic pat::Tau collection
     # to trigger primitives;
     # produce new collection of pat::Taus with trigger primitives embedded
@@ -200,6 +215,7 @@ def buildQCDdiJetTauSequence(
     patTauCleanerPrototype = None,
     triggerMatcherProtoType = None,
     addGenInfo = False,
+    applyTauJEC = False,
     applyTauVertexMatch = True):
     '''
     blah
@@ -216,6 +232,7 @@ def buildQCDdiJetTauSequence(
         patTauCleanerPrototype = patTauCleanerPrototype,
         triggerMatcherProtoType = triggerMatcherProtoType,
         addGenInfo = addGenInfo,
+        applyTauJEC = applyTauJEC,
         applyTauVertexMatch = applyTauVertexMatch
     )
 
@@ -257,6 +274,7 @@ def buildGenericTauSequence(
     patTauCleanerPrototype = None,
     triggerMatcherProtoType = None,
     addGenInfo = False,
+    applyTauJEC = False,
     applyTauVertexMatch = True):
     '''
     blah
@@ -273,6 +291,7 @@ def buildGenericTauSequence(
         patTauCleanerPrototype = patTauCleanerPrototype,
         triggerMatcherProtoType = triggerMatcherProtoType,
         addGenInfo = addGenInfo,
+        applyTauJEC = applyTauJEC,
         applyTauVertexMatch = applyTauVertexMatch
     )
 

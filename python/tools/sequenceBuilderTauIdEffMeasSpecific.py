@@ -9,12 +9,9 @@ from TauAnalysis.CandidateTools.tools.objProdConfigurator import objProdConfigur
 
 def buildSequenceTauIdEffMeasSpecific(process,
                                       patMuonCollectionName = "selectedPatMuonsForTauIdEffTrkIP",
-                                      tauIdAlgorithmName = None, patTauCollectionName = "patTaus",
+                                      tauIdAlgorithmName = None, patTauCollectionName = "patTaus", applyTauJEC = False,
                                       savePatTaus = None,
                                       patMEtCollectionName = "patPFMETs",
-                                      patTauProducerPrototype = None,
-                                      patTauCleanerPrototype = None,
-                                      patTauTriggerMatcherProtoType = None,
                                       isMC = False, isEmbedded = False,
                                       applyZrecoilCorrection = False, runSVfit = False):
 

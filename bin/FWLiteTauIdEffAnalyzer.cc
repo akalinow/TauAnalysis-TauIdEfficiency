@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.20 $
+ * \version $Revision: 1.21 $
  *
- * $Id: FWLiteTauIdEffAnalyzer.cc,v 1.20 2011/08/10 16:23:07 veelken Exp $
+ * $Id: FWLiteTauIdEffAnalyzer.cc,v 1.21 2011/08/15 17:11:04 veelken Exp $
  *
  */
 
@@ -34,12 +34,17 @@
 #include "DataFormats/PatCandidates/interface/TriggerAlgorithm.h"
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
+#include "DataFormats/HepMCCandidate/interface/GenParticle.h"
+#include "DataFormats/HepMCCandidate/interface/GenParticleFwd.h"
 #include "DataFormats/Common/interface/MergeableCounter.h"
 #include "DataFormats/Luminosity/interface/LumiSummary.h"
 #include "DataFormats/Common/interface/Handle.h"
 
+#include "PhysicsTools/JetMCUtils/interface/JetMCTag.h"
+
 #include "TauAnalysis/TauIdEfficiency/interface/TauIdEffEventSelector.h"
 #include "TauAnalysis/TauIdEfficiency/interface/TauIdEffHistManager.h"
+#include "TauAnalysis/TauIdEfficiency/interface/tauIdEffAuxFunctions.h"
 
 #include "AnalysisDataFormats/TauAnalysis/interface/CompositePtrCandidateT1T2MEt.h"
 #include "AnalysisDataFormats/TauAnalysis/interface/CompositePtrCandidateT1T2MEtFwd.h"
@@ -58,23 +63,56 @@ typedef std::vector<std::string> vstring;
 
 struct histManagerEntryType
 {
-  histManagerEntryType(const edm::ParameterSet& cfg, 
+  histManagerEntryType(const edm::ParameterSet& cfg, bool fillGenMatchHistograms,
 		       const std::string& binVariable = "", double min = -0.5, double max = +0.5)
     : binVariable_(binVariable),
       min_(min),
-      max_(max)
+      max_(max),
+      fillGenMatchHistograms_(fillGenMatchHistograms)
   {
     histManager_ = new TauIdEffHistManager(cfg);
+
+    if ( fillGenMatchHistograms_ ) {
+      const std::string& label = cfg.getParameter<std::string>("label");
+
+      edm::ParameterSet cfgJetToTauFake(cfg);
+      std::string labelJetToTauFake = std::string(label).append("_").append("JetToTauFake");
+      cfgJetToTauFake.addParameter<std::string>("label", labelJetToTauFake);
+      histManagerJetToTauFake_ = new TauIdEffHistManager(cfgJetToTauFake);
+
+      edm::ParameterSet cfgMuToTauFake(cfg);
+      std::string labelMuToTauFake = std::string(label).append("_").append("MuToTauFake");
+      cfgMuToTauFake.addParameter<std::string>("label", labelMuToTauFake);
+      histManagerMuToTauFake_ = new TauIdEffHistManager(cfgMuToTauFake);
+
+      edm::ParameterSet cfgGenTau(cfg);
+      std::string labelGenTau = std::string(label).append("_").append("GenTau");
+      cfgGenTau.addParameter<std::string>("label", labelGenTau);
+      histManagerGenTau_ = new TauIdEffHistManager(cfgGenTau);
+    }
   }
   ~histManagerEntryType() {}
   void bookHistograms(TFileDirectory& dir)
   {
     histManager_->bookHistograms(dir);
+
+    if ( fillGenMatchHistograms_ ) {
+      histManagerJetToTauFake_->bookHistograms(dir);
+      histManagerMuToTauFake_->bookHistograms(dir);
+      histManagerGenTau_->bookHistograms(dir);
+    }
   }
-  void fillHistograms(double x, const PATMuTauPair& muTauPair, size_t numVertices, double weight)
+  void fillHistograms(double x, const PATMuTauPair& muTauPair, size_t numVertices, int genMatchType, double weight)
   {
     if ( x > min_ && x <= max_ ) {
       histManager_->fillHistograms(muTauPair, numVertices, weight);
+
+      if ( fillGenMatchHistograms_ ) {
+	if      ( genMatchType == kJetToTauFakeMatched ) histManagerJetToTauFake_->fillHistograms(muTauPair, numVertices, weight);
+	else if ( genMatchType == kMuToTauFakeMatched  ) histManagerMuToTauFake_->fillHistograms(muTauPair, numVertices, weight);
+	else if ( genMatchType == kGenTauHadMatched    ||
+		  genMatchType == kGenTauOtherMatched  ) histManagerGenTau_->fillHistograms(muTauPair, numVertices, weight);
+      }
     }
   }
 
@@ -84,6 +122,12 @@ struct histManagerEntryType
   double max_;
 
   TauIdEffHistManager* histManager_;
+
+  bool fillGenMatchHistograms_;
+
+  TauIdEffHistManager* histManagerJetToTauFake_;
+  TauIdEffHistManager* histManagerMuToTauFake_;
+  TauIdEffHistManager* histManagerGenTau_;
 };
 
 
@@ -93,7 +137,7 @@ struct regionEntryType
 		  const std::string& process, const std::string& region, 
 		  const vstring& tauIdDiscriminators, const std::string& tauIdName, const std::string& sysShift,
 		  const edm::ParameterSet& cfgBinning, const std::string& svFitMassHypothesis, 
-		  const std::string& tauChargeMode, bool disableTauCandPreselCuts,
+		  const std::string& tauChargeMode, bool disableTauCandPreselCuts, bool fillGenMatchHistograms,
 		  const std::string& selEventsFileName)
     : process_(process),
       region_(region),
@@ -125,7 +169,7 @@ struct regionEntryType
     cfgHistManager.addParameter<std::string>("label", label_);
     cfgHistManager.addParameter<std::string>("svFitMassHypothesis", svFitMassHypothesis);
 
-    histogramsUnbinned_ = new histManagerEntryType(cfgHistManager);
+    histogramsUnbinned_ = new histManagerEntryType(cfgHistManager, fillGenMatchHistograms);
     histogramsUnbinned_->bookHistograms(fs);
 
     typedef std::vector<edm::ParameterSet> vParameterSet;
@@ -137,7 +181,8 @@ struct regionEntryType
 	    cfgBinVariableBin != cfgBinVariableBins.end(); ++cfgBinVariableBin ) {
 	double min = cfgBinVariableBin->getParameter<double>("min");
 	double max = cfgBinVariableBin->getParameter<double>("max");
-	histManagerEntryType* histManagerEntry = new histManagerEntryType(cfgHistManager, *binVariableName, min, max);
+	histManagerEntryType* histManagerEntry = new histManagerEntryType(cfgHistManager, fillGenMatchHistograms, 
+									  *binVariableName, min, max);
 	std::string dir_string = cfgBinVariableBin->getParameter<std::string>("subdir");
 	TFileDirectory dir = fs.mkdir(dir_string);
 	histManagerEntry->bookHistograms(dir);
@@ -170,12 +215,12 @@ struct regionEntryType
     
     delete selEventsFile_;
   }
-  void analyze(const fwlite::Event& evt, const PATMuTauPair& muTauPair, size_t numVertices, double evtWeight)
+  void analyze(const fwlite::Event& evt, const PATMuTauPair& muTauPair, size_t numVertices, int genMatchType, double evtWeight)
   {
     pat::strbitset evtSelFlags;
     if ( selector_->operator()(muTauPair, evtSelFlags) ) {
 //--- fill histograms for "inclusive" tau id. efficiency measurement
-      histogramsUnbinned_->fillHistograms(0., muTauPair, numVertices, evtWeight);
+      histogramsUnbinned_->fillHistograms(0., muTauPair, numVertices, genMatchType, evtWeight);
 
 //--- fill histograms for tau id. efficiency measurement as function of 
 //   o tau-jet transverse momentum
@@ -192,7 +237,7 @@ struct regionEntryType
 	else if ( (*histManagerEntry)->binVariable_ == "sumEt"       ) x = muTauPair.met()->sumEt();
 	else throw cms::Exception("regionEntryType::analyze")
 	  << "Invalid binVariable = " << (*histManagerEntry)->binVariable_ << " !!\n";
-	(*histManagerEntry)->fillHistograms(x, muTauPair, numVertices, evtWeight);
+	(*histManagerEntry)->fillHistograms(x, muTauPair, numVertices, genMatchType, evtWeight);
       }
  
       if ( selEventsFile_ ) 
@@ -256,6 +301,10 @@ int main(int argc, char* argv[])
   vstring hltPaths = cfgTauIdEffAnalyzer.getParameter<vstring>("hltPaths");
   edm::InputTag srcGoodMuons = cfgTauIdEffAnalyzer.getParameter<edm::InputTag>("srcGoodMuons");
   edm::InputTag srcVertices = cfgTauIdEffAnalyzer.getParameter<edm::InputTag>("srcVertices");
+  edm::InputTag srcGenParticles = cfgTauIdEffAnalyzer.getParameter<edm::InputTag>("srcGenParticles");
+  bool fillGenMatchHistograms = cfgTauIdEffAnalyzer.getParameter<bool>("fillGenMatchHistograms");
+  typedef std::vector<int> vint;
+  vint skipPdgIdsGenParticleMatch = cfgTauIdEffAnalyzer.getParameter<vint>("skipPdgIdsGenParticleMatch");
   typedef std::vector<edm::InputTag> vInputTag;
   vInputTag srcWeights = cfgTauIdEffAnalyzer.getParameter<vInputTag>("weights");
   std::string sysShift = cfgTauIdEffAnalyzer.exists("sysShift") ?
@@ -292,7 +341,8 @@ int main(int argc, char* argv[])
       std::string tauIdName = cfgTauIdDiscriminator->getParameter<std::string>("name");
       regionEntryType* regionEntry = 
 	new regionEntryType(fs, process, *region, tauIdDiscriminators, tauIdName, 
-			    sysShift, cfgBinning, svFitMassHypothesis, tauChargeMode, disableTauCandPreselCuts, selEventsFileName);
+			    sysShift, cfgBinning, svFitMassHypothesis, 
+			    tauChargeMode, disableTauCandPreselCuts, fillGenMatchHistograms, selEventsFileName);
       regionEntries.push_back(regionEntry);
     }
   }
@@ -448,9 +498,20 @@ int main(int argc, char* argv[])
 //    fill histograms for that region
       for ( PATMuTauPairCollection::const_iterator muTauPair = muTauPairs->begin();
 	    muTauPair != muTauPairs->end(); ++muTauPair ) {
+
+//--- determine type of particle matching reconstructed tau-jet candidate
+//    on generator level (used in case of Ztautau or Zmumu Monte Carlo samples only,
+//    in order to distinguish between jet --> tau fakes, muon --> tau fakes and genuine taus)
+	int genMatchType = kUnmatched;
+	if ( fillGenMatchHistograms ) {
+	  edm::Handle<reco::GenParticleCollection> genParticles;
+	  evt.getByLabel(srcGenParticles, genParticles);	  
+	  genMatchType = getGenMatchType(*muTauPair, *genParticles);
+	}
+
 	for ( std::vector<regionEntryType*>::iterator regionEntry = regionEntries.begin();
 	      regionEntry != regionEntries.end(); ++regionEntry ) {	  
-	  (*regionEntry)->analyze(evt, *muTauPair, numVertices, evtWeight);
+	  (*regionEntry)->analyze(evt, *muTauPair, numVertices, genMatchType, evtWeight);
 
 	  //pat::strbitset evtSelFlags;
 	  //if ( (*regionEntry)->region_ == "D1p" && (*regionEntry)->selector_->operator()(*muTauPair, evtSelFlags) ) {

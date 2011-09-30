@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.26 $
+ * \version $Revision: 1.27 $
  *
- * $Id: fitTauIdEff.cc,v 1.26 2011/08/05 16:47:15 veelken Exp $
+ * $Id: fitTauIdEff.cc,v 1.27 2011/08/10 16:23:07 veelken Exp $
  *
  */
 
@@ -44,7 +44,6 @@
 #include <TFile.h>
 #include <TFractionFitter.h>
 #include <TH1.h>
-#include <THStack.h>
 #include <TLegend.h>
 #include <TMath.h>
 #include <TObjArray.h>

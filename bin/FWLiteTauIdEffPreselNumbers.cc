@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.11 $
+ * \version $Revision: 1.12 $
  *
- * $Id: FWLiteTauIdEffPreselNumbers.cc,v 1.11 2011/08/03 15:35:31 veelken Exp $
+ * $Id: FWLiteTauIdEffPreselNumbers.cc,v 1.12 2011/08/04 07:37:03 veelken Exp $
  *
  */
 
@@ -38,7 +38,7 @@
 
 #include "TauAnalysis/TauIdEfficiency/interface/TauIdEffEventSelector.h"
 #include "TauAnalysis/TauIdEfficiency/interface/TauIdEffCutFlowTable.h"
-#include "TauAnalysis/CandidateTools/interface/candidateAuxFunctions.h"
+#include "TauAnalysis/TauIdEfficiency/interface/tauIdEffAuxFunctions.h"
 #include "TauAnalysis/CandidateTools/interface/generalAuxFunctions.h"
 
 #include "AnalysisDataFormats/TauAnalysis/interface/CompositePtrCandidateT1T2MEt.h"
@@ -52,8 +52,6 @@
 
 typedef std::vector<std::string> vstring;
 typedef std::vector<bool> vbool;
-
-enum { kUnmatched, kTauHadMatched, kFakeTauMatched };
 
 struct cutFlowEntryType
 {
@@ -118,13 +116,13 @@ struct cutFlowEntryType
 			 int genMatchType, double genTauCharge, double recTauCharge,
 			 double evtWeight)
   {
-    if        ( genMatchType == kTauHadMatched  ) {
+    if        ( genMatchType == kGenTauHadMatched   ) {
       cutFlowTauHadMatched_->fillCutFlowTable(x, selectionFlags, evtWeight);
       cutFlowTauHadMatchedReversed_->fillCutFlowTable(x, selectionFlagsReversed, evtWeight);
-    } else if ( genMatchType == kFakeTauMatched ) {
+    } else if ( genMatchType == kGenTauOtherMatched ) {
       cutFlowFakeTauMatched_->fillCutFlowTable(x, selectionFlags, evtWeight);
       cutFlowFakeTauMatchedReversed_->fillCutFlowTable(x, selectionFlagsReversed, evtWeight);
-    }
+    } 
 
     cutFlowNoMatchingApplied_->fillCutFlowTable(x, selectionFlags, evtWeight);
     cutFlowNoMatchingAppliedReversed_->fillCutFlowTable(x, selectionFlagsReversed, evtWeight);
@@ -134,6 +132,7 @@ struct cutFlowEntryType
 
   TauIdEffCutFlowTable* cutFlowTauHadMatched_;
   TauIdEffCutFlowTable* cutFlowTauHadMatchedReversed_;
+
   TauIdEffCutFlowTable* cutFlowFakeTauMatched_;
   TauIdEffCutFlowTable* cutFlowFakeTauMatchedReversed_;
   TauIdEffCutFlowTable* cutFlowNoMatchingApplied_;
@@ -359,47 +358,6 @@ struct regionEntryType
   double numMuTauPairsWeighted_selected_;
 };
 
-int getGenMatchType(const PATMuTauPair& muTauPair, const reco::GenParticleCollection& genParticles,
-		    double& genTauCharge, double& recTauCharge)
-{
-//--- check if reconstructed tau-jet candidate matches "true" hadronic tau decay on generator level,
-//    is a "fake" tau (i.e. matches a quark/gluon/e/mu/photon on generator level)
-//    or fails to be matched to any generator level object
-//
-//    NOTE: code to perform matching taken from TauAnalysis/Core/plugins/TauHistManager.cc
-//
-  //std::cout << "<getGenMatchType>:" << std::endl;
-
-  const reco::GenParticle* matchingGenParticle = findGenParticle(muTauPair.leg2()->p4(), genParticles);
-  int matchingGenParticleAbsPdgId = ( matchingGenParticle ) ?
-    TMath::Abs(matchingGenParticle->pdgId()) : 0;
-  //std::cout << " matchingGenParticleAbsPdgId = " << matchingGenParticleAbsPdgId << std::endl;
-  
-  genTauCharge = ( matchingGenParticle ) ?
-    matchingGenParticle->charge() : 0.;
-  recTauCharge = muTauPair.leg2()->charge();
-
-  std::string genTauDecayMode = ( matchingGenParticle && matchingGenParticleAbsPdgId == 15 ) ?
-    getGenTauDecayMode(matchingGenParticle) : "";
-  //std::cout << " genTauDecayMode = " << genTauDecayMode << std::endl;
-
-  if ( matchingGenParticleAbsPdgId == 15 &&
-       (genTauDecayMode == "oneProng0Pi0"    ||
-	genTauDecayMode == "oneProng1Pi0"    ||
-	genTauDecayMode == "oneProng2Pi0"    ||
-	genTauDecayMode == "oneProngOther"   ||
-	genTauDecayMode == "threeProng0Pi0"  ||
-	genTauDecayMode == "threeProngOther" ||
-	genTauDecayMode == "threeProngOther" ||
-	genTauDecayMode == "rare"            ) ) return kTauHadMatched;    
-  else if ( (matchingGenParticleAbsPdgId >=  1 && matchingGenParticleAbsPdgId <=  6) ||
-	     matchingGenParticleAbsPdgId == 11 || matchingGenParticleAbsPdgId == 13  ||
-	    (matchingGenParticleAbsPdgId == 15 && (genTauDecayMode == "electron" || genTauDecayMode == "muon")) ||
-	     matchingGenParticleAbsPdgId == 21 ||
-	     matchingGenParticleAbsPdgId == 22 ) return kFakeTauMatched;
-  else                                           return kUnmatched;
-}
-
 int main(int argc, char* argv[]) 
 {
 //--- parse command-line arguments
@@ -579,13 +537,13 @@ int main(int argc, char* argv[])
       for ( PATMuTauPairCollection::const_iterator muTauPair = muTauPairs->begin();
 	    muTauPair != muTauPairs->end(); ++muTauPair, ++muTauPairIdx ) {
 	double genTauCharge, recTauCharge;
-	int genMatchType = getGenMatchType(*muTauPair, *genParticles, genTauCharge, recTauCharge);
+	int genMatchType = getGenMatchType(*muTauPair, *genParticles, &genTauCharge, &recTauCharge);
 	for ( std::vector<regionEntryType*>::iterator regionEntry = regionEntries.begin();
 	      regionEntry != regionEntries.end(); ++regionEntry ) {   
 /*
           if ( (*regionEntry)->region_ == "C1" ) {
             pat::strbitset evtSelFlags;
-	    if ( genMatchType == kTauHadMatched || (*regionEntry)->selector_->operator()(*muTauPair, evtSelFlags) ) {
+	    if ( genMatchType == kGenTauHadMatched || (*regionEntry)->selector_->operator()(*muTauPair, evtSelFlags) ) {
 	      std::cout << "muTauPair #" << muTauPairIdx << std::endl;
 	      std::cout << " leg1: Pt = " << muTauPair->leg1()->pt() << "," 
 	    	        << " eta = " << muTauPair->leg1()->eta() << ", phi = " << muTauPair->leg1()->phi() << std::endl;

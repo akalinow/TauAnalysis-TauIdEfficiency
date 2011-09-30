@@ -9,7 +9,7 @@ hltPaths = [
     'HLT_IsoMu15_v*',
     #'HLT_IsoMu12_v*',
     #'HLT_Mu15_v*',    # for QCD muon enriched 
-    #'HLT_IsoMu17_v*', # for W --> mu nu, Z --> mu+ mu-
+    'HLT_IsoMu17_v*', # for W --> mu nu, Z --> mu+ mu-
     #'HLT_Jet30_v*',   # for QCD multi-jet
     #'HLT_Jet60_v*',
     #'HLT_Jet80_v*',
@@ -18,8 +18,8 @@ hltPaths = [
 ]
 
 jsonFile = \
-  '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions11/7TeV/Prompt/Cert_160404-172802_7TeV_PromptReco_Collisions11_JSON_v3.txt'
-#'/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions11/7TeV/Prompt/Cert_160404-167913_7TeV_PromptReco_Collisions11_JSON.txt'
+  '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions11/7TeV/Prompt/Cert_160404-167913_7TeV_PromptReco_Collisions11_JSON.txt'
+#'/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions11/7TeV/Prompt/Cert_160404-172802_7TeV_PromptReco_Collisions11_JSON_v3.txt'
 
 executable_lumiCalc = '/afs/cern.ch/user/v/veelken/scratch0/CMSSW_4_2_4_patch1/src/RecoLuminosity/LumiDB/scripts/lumiCalc2.py'
 executable_analyzeLumiCalcOutput = './analyzeLumiCalcOutput.py'

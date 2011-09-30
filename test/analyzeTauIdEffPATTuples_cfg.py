@@ -8,7 +8,9 @@ import os
 import re
 
 inputFilePath = \
-  '/data2/veelken/CMSSW_4_2_x/PATtuples/TauIdEffMeas/2011Aug18/V7noZrecoilCorr/'
+  '/data2/veelken/CMSSW_4_2_x/PATtuples/TauIdEffMeas/2011Jul23/V6/user/v/veelken/CMSSW_4_2_x/PATtuples/TauIdEffMeas/tauIdEffMeasPATTuple_Ztautau_powheg_2011Jul23V6_5_75fd.root
+
+  /data2/veelken/CMSSW_4_2_x/PATtuples/TauIdEffMeas/2011Aug18/V7noZrecoilCorr/'
   'user/v/veelken/CMSSW_4_2_x/PATtuples/TauIdEffMeas/2011Aug18'
 sampleToAnalyze = 'Ztautau_powheg'
 jobId = '2011Aug18'

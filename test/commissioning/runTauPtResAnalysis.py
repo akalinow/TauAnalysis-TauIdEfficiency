@@ -12,7 +12,7 @@ jobId = "2011Aug18" # jobId defined by submitTauIdEffMeasPATTupleProduction_noTa
 version = 'V2exp'
 
 inputFilePath  = '/data2/veelken/CMSSW_4_2_x/PATtuples/TauPtRes/V2exp/user/v/veelken/CMSSW_4_2_x/PATtuples/TauPtRes/V2exp/'
-outputFilePath = '/data1/veelken/tmp/tauPtResStudies/V2exp/'
+outputFilePath = '/data1/veelken/tmp/tauPtResStudies/V2exp_a/'
 
 sampleZtautau = 'Ztautau_powheg'
 

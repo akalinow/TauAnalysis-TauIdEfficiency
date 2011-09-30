@@ -22,7 +22,6 @@
 #include <TFile.h>
 #include <TFractionFitter.h>
 #include <TH1.h>
-#include <THStack.h>
 #include <TLegend.h>
 #include <TMath.h>
 #include <TObjArray.h>

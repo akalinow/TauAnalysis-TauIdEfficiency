@@ -73,6 +73,22 @@ void TauPtResHistManager::bookHistograms(TFileDirectory& dir)
   histogramTauPtResGenThreeProng0Pi0_ = book1D(dir, "tauPtResGenThreeProng0Pi0", "tauPtRes (gen. three-prong, 0 #pi^{0})", 40, 0., 2.);
   histogramTauPtResGenThreeProng1Pi0_ = book1D(dir, "tauPtResGenThreeProng1Pi0", "tauPtRes (gen. three-prong, 1 #pi^{0})", 40, 0., 2.);
 
+  histogramEtaPhiForTauPtResLt05GenOneProng0Pi0_ = 
+    book2D(dir, "etaPhiForTauPtResLt05GenOneProng0Pi0", 
+	   "#eta vs. #phi (tauPtRes < 0.5, gen. one-prong, 0 #pi^{0})", 25, -2.5, +2.5, 36, -TMath::Pi(), +TMath::Pi());
+  histogramEtaPhiForTauPtResLt05GenOneProng1Pi0_ = 
+    book2D(dir, "etaPhiForTauPtResLt05GenOneProng1Pi0", 
+	   "#eta vs. #phi (tauPtRes < 0.5, gen. one-prong, 1 #pi^{0})", 25, -2.5, +2.5, 36, -TMath::Pi(), +TMath::Pi());
+  histogramEtaPhiForTauPtResLt05GenOneProng2Pi0_ = 
+    book2D(dir, "etaPhiForTauPtResLt05GenOneProng2Pi0", 
+	   "#eta vs. #phi (tauPtRes < 0.5, gen. one-prong, 2 #pi^{0})", 25, -2.5, +2.5, 36, -TMath::Pi(), +TMath::Pi());
+  histogramEtaPhiForTauPtResLt05GenThreeProng0Pi0_ = 
+    book2D(dir, "etaPhiForTauPtResLt05GenThreeProng0Pi0", 
+	   "#eta vs. #phi (tauPtRes < 0.5, gen. three-prong, 0 #pi^{0})", 25, -2.5, +2.5, 36, -TMath::Pi(), +TMath::Pi());
+  histogramEtaPhiForTauPtResLt05GenThreeProng1Pi0_ = 
+    book2D(dir, "etaPhiForTauPtResLt05GenThreeProng1Pi0", 
+	   "#eta vs. #phi (tauPtRes < 0.5, gen. three-prong, 1 #pi^{0})", 25, -2.5, +2.5, 36, -TMath::Pi(), +TMath::Pi());
+
   histogramsTauPtResManCorrLev1_.bookHistograms(dir);
   histogramsTauPtResManCorrLev2_.bookHistograms(dir);
   histogramsTauPtResManCorrLev12_.bookHistograms(dir);
@@ -115,6 +131,16 @@ void TauPtResHistManager::fillHistograms(
   if ( genTauDecayMode == "oneProng2Pi0"   ) histogramTauPtResGenOneProng2Pi0_->Fill(tauPtRes, weight);
   if ( genTauDecayMode == "threeProng0Pi0" ) histogramTauPtResGenThreeProng0Pi0_->Fill(tauPtRes, weight);
   if ( genTauDecayMode == "threeProng1Pi0" ) histogramTauPtResGenThreeProng1Pi0_->Fill(tauPtRes, weight);
+
+  if ( tauPtRes < 0.5 ) {
+    double eta = genVisPt = patTau.genJet()->eta();
+    double phi = genVisPt = patTau.genJet()->phi();
+    if ( genTauDecayMode == "oneProng0Pi0"   ) histogramEtaPhiForTauPtResLt05GenOneProng0Pi0_->Fill(eta, phi, weight);
+    if ( genTauDecayMode == "oneProng1Pi0"   ) histogramEtaPhiForTauPtResLt05GenOneProng1Pi0_->Fill(eta, phi, weight);
+    if ( genTauDecayMode == "oneProng2Pi0"   ) histogramEtaPhiForTauPtResLt05GenOneProng2Pi0_->Fill(eta, phi, weight);
+    if ( genTauDecayMode == "threeProng0Pi0" ) histogramEtaPhiForTauPtResLt05GenThreeProng0Pi0_->Fill(eta, phi, weight);
+    if ( genTauDecayMode == "threeProng1Pi0" ) histogramEtaPhiForTauPtResLt05GenThreeProng1Pi0_->Fill(eta, phi, weight);
+  }
 
   histogramsTauPtResManCorrLev1_.fillHistograms(patTau, genTauDecayMode, genVisPt, vertex, qualityCuts, weight);
   histogramsTauPtResManCorrLev2_.fillHistograms(patTau, genTauDecayMode, genVisPt, vertex, qualityCuts, weight);

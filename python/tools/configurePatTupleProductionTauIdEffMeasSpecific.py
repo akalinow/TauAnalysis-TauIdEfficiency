@@ -214,7 +214,7 @@ def configurePatTupleProductionTauIdEffMeasSpecific(process, patSequenceBuilder 
     retVal_pfTauFixedCone = \
         buildSequenceTauIdEffMeasSpecific(process,
                                           'selectedPatMuonsForTauIdEffTrkIP',
-                                          [ "PFTau", "FixedCone" ], patTupleConfig["pfTauCollectionFixedCone"],
+                                          [ "PFTau", "FixedCone" ], patTupleConfig["pfTauCollectionFixedCone"], False,
                                           None,
                                           'patPFMETs',
                                           isMC = isMC, isEmbedded = isEmbedded,
@@ -223,7 +223,7 @@ def configurePatTupleProductionTauIdEffMeasSpecific(process, patSequenceBuilder 
     retVal_pfTauShrinkingCone = \
         buildSequenceTauIdEffMeasSpecific(process,
                                           'selectedPatMuonsForTauIdEffTrkIP',
-                                          [ "PFTau", "ShrinkingCone" ], patTupleConfig["pfTauCollectionShrinkingCone"],
+                                          [ "PFTau", "ShrinkingCone" ], patTupleConfig["pfTauCollectionShrinkingCone"], False,
                                           None,
                                           'patPFMETs',
                                           isMC = isMC, isEmbedded = isEmbedded,
@@ -242,7 +242,7 @@ def configurePatTupleProductionTauIdEffMeasSpecific(process, patSequenceBuilder 
     retVal_pfTauHPS = \
         buildSequenceTauIdEffMeasSpecific(process,
                                           'selectedPatMuonsForTauIdEffTrkIP',
-                                          [ "PFTau", "HPS" ], patTupleConfig["pfTauCollectionHPS"],
+                                          [ "PFTau", "HPS" ], patTupleConfig["pfTauCollectionHPS"], True,
                                           savePFTauHPS,
                                           'patPFMETs',
                                           isMC = isMC, isEmbedded = isEmbedded,
@@ -259,7 +259,7 @@ def configurePatTupleProductionTauIdEffMeasSpecific(process, patSequenceBuilder 
     retVal_pfTauHPSpTaNC = \
         buildSequenceTauIdEffMeasSpecific(process,
                                           'selectedPatMuonsForTauIdEffTrkIP',
-                                          [ "PFTau", "HPSpTaNC" ], patTupleConfig["pfTauCollectionHPSpTaNC"],
+                                          [ "PFTau", "HPSpTaNC" ], patTupleConfig["pfTauCollectionHPSpTaNC"], True,
                                           savePFTauHPSpTaNC,
                                           'patPFMETs',
                                           isMC = isMC, isEmbedded = isEmbedded,

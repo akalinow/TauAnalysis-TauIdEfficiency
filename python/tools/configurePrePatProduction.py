@@ -9,8 +9,13 @@ def configurePrePatProduction(process, pfCandidateCollection = "particleFlow",
     process.pfPileUp.Enable = cms.bool(True)
     process.prePatProductionSequence = cms.Sequence(process.pfNoPileUpSequence)
 
+    
     process.load("RecoJets.JetProducers.ak5PFJets_cfi")
     process.ak5PFJets.src = cms.InputTag(pfCandidateCollection)
+    # CV: need to enable jet area computation for 'ak5PFJets' module,
+    #     in order for L1FastJet corrections to work
+    #    (L1FastjetCorrector::correction function always returns 1.0 if jet area is not set)
+    process.ak5PFJets.doAreaFastjet = cms.bool(True)
     process.prePatProductionSequence += process.ak5PFJets
     #--------------------------------------------------------------------------------
 

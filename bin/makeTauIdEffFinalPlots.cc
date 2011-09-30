@@ -235,9 +235,9 @@ int main(int argc, const char* argv[])
 	    tauId != tauIds.end(); ++tauId ) {
 	double x, diff;
 	diffEffGraphs[tauId->name_]->GetPoint(iBin, x, diff);
-	if ( diff > maxDiff ) maxDiff = diff;
 	double err = diffEffGraphs[tauId->name_]->GetErrorY(iBin);
-	if ( err  > maxDiff ) maxDiff = err;
+	diff = TMath::Max(TMath::Abs(diff + err), TMath::Abs(diff - err));
+	if ( diff > maxDiff ) maxDiff = diff;
       }
     }
 
