@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.21 $
+ * \version $Revision: 1.22 $
  *
- * $Id: FWLiteTauIdEffAnalyzer.cc,v 1.21 2011/08/15 17:11:04 veelken Exp $
+ * $Id: FWLiteTauIdEffAnalyzer.cc,v 1.22 2011/09/30 12:26:40 veelken Exp $
  *
  */
 
@@ -129,7 +129,6 @@ struct histManagerEntryType
   TauIdEffHistManager* histManagerMuToTauFake_;
   TauIdEffHistManager* histManagerGenTau_;
 };
-
 
 struct regionEntryType
 {
