@@ -16,6 +16,7 @@
   <use   name="DataFormats/Common"/>
   <use   name="DataFormats/FWLite"/>
   <use   name="DataFormats/Luminosity"/>
+  <use   name="DataFormats/PatCandidates"/>
   <use   name="DataFormats/StdDictionaries"/>
   <use   name="DataFormats/TrackReco"/>
   <use   name="DataFormats/WrappedStdDictionaries"/>
@@ -46,6 +47,7 @@
   <use   name="DataFormats/Common"/>
   <use   name="DataFormats/FWLite"/>
   <use   name="DataFormats/Luminosity"/>
+  <use   name="DataFormats/PatCandidates"/>
   <use   name="DataFormats/StdDictionaries"/>
   <use   name="DataFormats/WrappedStdDictionaries"/>
   <use   name="FWCore/FWLite"/>
@@ -59,6 +61,7 @@
   <use   name="DataFormats/Common"/>
   <use   name="DataFormats/FWLite"/>
   <use   name="DataFormats/HepMCCandidate"/>
+  <use   name="DataFormats/PatCandidates"/>
   <use   name="DataFormats/StdDictionaries"/>
   <use   name="DataFormats/WrappedStdDictionaries"/>
   <use   name="FWCore/FWLite"/>
@@ -85,6 +88,7 @@
   <use   name="DataFormats/FWLite"/>
   <use   name="DataFormats/HepMCCandidate"/>
   <use   name="DataFormats/Luminosity"/>
+  <use   name="DataFormats/PatCandidates"/>
   <use   name="DataFormats/StdDictionaries"/>
   <use   name="DataFormats/WrappedStdDictionaries"/>
   <use   name="FWCore/FWLite"/>
@@ -102,6 +106,7 @@
   <use   name="DataFormats/Common"/>
   <use   name="DataFormats/FWLite"/>
   <use   name="DataFormats/HepMCCandidate"/>
+  <use   name="DataFormats/PatCandidates"/>
   <use   name="DataFormats/StdDictionaries"/>
   <use   name="DataFormats/WrappedStdDictionaries"/>
   <use   name="FWCore/FWLite"/>
@@ -166,4 +171,19 @@
   <use   name="TauAnalysis/CandidateTools"/>
   <use   name="TauAnalysis/DQMTools"/>
   <use   name="root"/>
+</bin>
+<bin   file="FWLiteMuonIsolationAnalyzer.cc" name="FWLiteMuonIsolationAnalyzer">
+  <use   name="DataFormats/Common"/>
+  <use   name="DataFormats/FWLite"/>
+  <use   name="DataFormats/PatCandidates"/>
+  <use   name="DataFormats/StdDictionaries"/>
+  <use   name="DataFormats/WrappedStdDictionaries"/>
+  <use   name="DataFormats/VertexReco"/>
+  <use   name="FWCore/FWLite"/>
+  <use   name="FWCore/ParameterSet"/>
+  <use   name="FWCore/PythonParameterSet"/>
+  <use   name="FWCore/Utilities"/>
+  <use   name="PhysicsTools/FWLite"/>
+  <use   name="TauAnalysis/CandidateTools"/>
+  <use   name="TauAnalysis/TauIdEfficiency"/>
 </bin>
