@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.6 $
+ * \version $Revision: 1.1 $
  *
- * $Id: FWLiteTauPtResAnalyzer.cc,v 1.6 2011/09/30 12:26:40 veelken Exp $
+ * $Id: FWLiteMuonIsolationAnalyzer.cc,v 1.1 2011/10/19 14:37:00 veelken Exp $
  *
  */
 
@@ -40,6 +40,7 @@
 #include "TauAnalysis/CandidateTools/interface/generalAuxFunctions.h"
 
 #include "TauAnalysis/TauIdEfficiency/interface/MuonIsolationHistManager.h"
+#include "TauAnalysis/RecoTools/interface/PATObjectLUTvalueExtractorFromKNN.h"
 
 #include <TFile.h>
 #include <TTree.h>
@@ -68,17 +69,29 @@ double getUserFloat(const T& lepton, const std::string& userFloatName)
 
 struct histManagerEntryType
 {
-  histManagerEntryType(const edm::ParameterSet& cfg, const std::string& triggerPath, double muonIsoThreshold_loose, double muonIsoThreshold_tight)
+  histManagerEntryType(const edm::ParameterSet& cfg, 
+		       const std::string& triggerPath, double muonIsoThreshold_loose, double muonIsoThreshold_tight)
     : triggerPath_(triggerPath),
       muonIsoThreshold_loose_(muonIsoThreshold_loose),
       muonIsoThreshold_tight_(muonIsoThreshold_tight),
+      histManager_all_weighted_(0),
+      muonIsoProbExtractor_(0),
       ntuple_(0)
   {
-    histManager_all_    = new MuonIsolationHistManager(cfg);
+    histManager_all_ = new MuonIsolationHistManager(cfg);
     histManager_passed_ = new MuonIsolationHistManager(cfg);
     histManager_failed_ = new MuonIsolationHistManager(cfg);
+
+    if ( cfg.exists("muonIsoProbExtractor") ) {
+      edm::ParameterSet cfgMuonIsoProbExtractor = cfg.getParameter<edm::ParameterSet>("muonIsoProbExtractor");
+      muonIsoProbExtractor_ = new PATMuonLUTvalueExtractorFromKNN(cfgMuonIsoProbExtractor);
+      histManager_all_weighted_ = new MuonIsolationHistManager(cfg);
+    }
   }
-  ~histManagerEntryType() {}
+  ~histManagerEntryType() 
+  {
+    delete muonIsoProbExtractor_;
+  }
   void bookHistograms(TFileDirectory& dir)
   {
     std::string subdirectory = Form("%s_loose%02.0f_tight%02.0f", triggerPath_.data(), muonIsoThreshold_loose_*10., muonIsoThreshold_tight_*10.);
@@ -90,11 +103,17 @@ struct histManagerEntryType
     TFileDirectory subdir_failed = subdir.mkdir("failed");
     histManager_failed_->bookHistograms(subdir_failed);
 
+    if ( histManager_all_weighted_ ) {
+      TFileDirectory subdir_all_weighted = subdir.mkdir("all_weighted");
+      histManager_all_weighted_->bookHistograms(subdir_all_weighted);
+    }
+    
     ntuple_ = subdir_all.make<TTree>("ntuple", "Muon Isolation Ntuple");
     ntuple_->Branch("muonPt",  &muonPt_,  "muonPt/F");
     ntuple_->Branch("muonEta", &muonEta_, "muonEta/F");
     ntuple_->Branch("muonIso", &muonIso_, "muonIso/F");
     ntuple_->Branch("sumEt",   &sumEt_,   "sumEt/F");
+    ntuple_->Branch("weight",  &weight_,  "weight/F");
   }
   void fillHistograms(const PATMuTauPair& muTauPair, size_t numVertices, double weight)
   {
@@ -106,18 +125,28 @@ struct histManagerEntryType
       // ( User1Iso = pfAllChargedHadrons(noPileUp), User2Iso = pfAllChargedHadronsPileUp
       //   as defined in TauAnalysis/TauIdEfficiency/test/commissioning/produceMuonIsolationPATtuple_cfg.py )
       double muonIsoPtSum1 = muon.userIsolation(pat::User1Iso) 
-	                    + TMath::Max(0., muon.userIsolation(pat::PfNeutralHadronIso) + muon.userIsolation(pat::PfGammaIso) - 0.5*muon.userIsolation(pat::User2Iso));
+	                    + TMath::Max(0., muon.userIsolation(pat::PfNeutralHadronIso) + muon.userIsolation(pat::PfGammaIso) 
+                                            - 0.5*muon.userIsolation(pat::User2Iso));
       //double muonIsoPtSum2 = getUserFloat(muon, "pfLooseIsoPt04");
       //std::cout << "muonIsoPtSum1 = " << muonIsoPtSum1 << ", muonIsoPtSum2 = " << muonIsoPtSum2 << std::endl;
       if ( muonIsoPtSum1 < (muonIsoThreshold_loose_*muonPt) ) {
 	histManager_all_->fillHistograms(muTauPair, numVertices, muonIsoPtSum1, weight);
-	if ( muonIsoPtSum1 < (muonIsoThreshold_tight_*muonPt) ) histManager_passed_->fillHistograms(muTauPair, numVertices, muonIsoPtSum1, weight);
-	else histManager_failed_->fillHistograms(muTauPair, numVertices, muonIsoPtSum1, weight);
+	if ( muonIsoPtSum1 < (muonIsoThreshold_tight_*muonPt) ) {
+	  histManager_passed_->fillHistograms(muTauPair, numVertices, muonIsoPtSum1, weight);
+	} else {
+	  histManager_failed_->fillHistograms(muTauPair, numVertices, muonIsoPtSum1, weight);
+	}
+
+	if ( histManager_all_weighted_ && muonIsoProbExtractor_ ) {
+	  double muonIsoProbValue = (*muonIsoProbExtractor_)(muon);
+	  histManager_all_weighted_->fillHistograms(muTauPair, numVertices, muonIsoPtSum1, weight*muonIsoProbValue);
+	}
 
 	muonPt_ = muonPt;
 	muonEta_ = muon.eta();
 	muonIso_ = muonIsoPtSum1;
-	sumEt_ = muTauPair.met()->sumEt();
+	sumEt_ = muTauPair.met()->sumEt() - (muTauPair.leg1()->pt() + muTauPair.leg2()->pt());
+	weight_ = weight;
 	ntuple_->Fill();
       }
     }
@@ -132,11 +161,15 @@ struct histManagerEntryType
   MuonIsolationHistManager* histManager_passed_;
   MuonIsolationHistManager* histManager_failed_;
 
+  MuonIsolationHistManager* histManager_all_weighted_;
+  PATMuonLUTvalueExtractorFromKNN* muonIsoProbExtractor_;
+
   TTree* ntuple_;
   Float_t muonPt_;
   Float_t muonEta_;
   Float_t muonIso_;
   Float_t sumEt_;
+  Float_t weight_;
 };
 
 int main(int argc, char* argv[]) 
@@ -185,6 +218,10 @@ int main(int argc, char* argv[])
 //--- book histograms
   TFileDirectory dir = ( directory != "" ) ? fs.mkdir(directory) : fs;
   edm::ParameterSet cfgMuonIsolationHistManager;
+  if ( cfgMuonIsolationAnalyzer.exists("muonIsoProbExtractor") ) {
+    edm::ParameterSet cfgMuonIsoProbExtractor = cfgMuonIsolationAnalyzer.getParameter<edm::ParameterSet>("muonIsoProbExtractor");
+    cfgMuonIsolationHistManager.addParameter<edm::ParameterSet>("muonIsoProbExtractor", cfgMuonIsoProbExtractor);
+  }
   std::vector<histManagerEntryType*> histManagerEntries;
   vstring triggerPaths = cfgMuonIsolationAnalyzer.getParameter<vstring>("triggerPaths");
   vdouble muonIsoThresholds_loose = cfgMuonIsolationAnalyzer.getParameter<vdouble>("muonIsoThresholdsLoose");
@@ -195,15 +232,22 @@ int main(int argc, char* argv[])
 	  muonIsoThreshold_loose != muonIsoThresholds_loose.end(); ++muonIsoThreshold_loose ) {
       for ( vdouble::const_iterator muonIsoThreshold_tight = muonIsoThresholds_tight.begin();
 	    muonIsoThreshold_tight != muonIsoThresholds_tight.end(); ++muonIsoThreshold_tight ) {
-	histManagerEntryType* histManagerEntry = new histManagerEntryType(cfgMuonIsolationHistManager, *triggerPath, *muonIsoThreshold_loose, *muonIsoThreshold_tight);
+	histManagerEntryType* histManagerEntry = 
+	  new histManagerEntryType(cfgMuonIsolationHistManager, *triggerPath, *muonIsoThreshold_loose, *muonIsoThreshold_tight);
 	histManagerEntry->bookHistograms(dir);
 	histManagerEntries.push_back(histManagerEntry);
       }
     }
   }
 
-  int    numEvents_processed         = 0; 
-  double numEventsWeighted_processed = 0.;
+  int    numEvents_processed                = 0; 
+  double numEventsWeighted_processed        = 0.;
+  int    numEvents_passedPresel             = 0;
+  double numEventsWeighted_passedPresel     = 0.;
+  int    numEvents_passedDiMuonVeto         = 0;
+  double numEventsWeighted_passedDiMuonVeto = 0.;
+  int    numEvents_passedMuTauPair          = 0;
+  double numEventsWeighted_passedMuTauPair  = 0.;
 
   bool maxEvents_processed = false;
   for ( vstring::const_iterator inputFileName = inputFiles.files().begin();
@@ -229,6 +273,8 @@ int main(int argc, char* argv[])
       edm::Handle<PATMuTauPairCollection> testObject;
       evt.getByLabel(srcMuTauPairs, testObject);
       if ( !testObject.isValid() ) continue;
+      ++numEvents_passedPresel;
+      //numEventsWeighted_passedPresel += evtWeight;
 
 //--- compute event weight
 //   (pile-up reweighting, Data/MC correction factors,...)
@@ -251,6 +297,8 @@ int main(int argc, char* argv[])
       edm::Handle<pat::MuonCollection> muonsLooseIdSel;
       evt.getByLabel(srcMuonsLooseId, muonsLooseIdSel);
       if ( muonsLooseIdSel->size() >= 2 ) continue;
+      ++numEvents_passedDiMuonVeto;
+      numEventsWeighted_passedDiMuonVeto += evtWeight;
 
       edm::Handle<pat::MuonCollection> muonsTightIdSel;
       evt.getByLabel(srcMuonsTightId, muonsTightIdSel);
@@ -264,12 +312,14 @@ int main(int argc, char* argv[])
       const PATMuTauPair* bestMuTauPair = 0;
       for ( PATMuTauPairCollection::const_iterator muTauPair = muTauPairs->begin();
 	    muTauPair != muTauPairs->end(); ++muTauPair ) {
-	if ( muTauPair->leg2()->pt() > 20. && TMath::Abs(muTauPair->leg2()->eta()) < 2.3 &&
+	if ( muTauPair->leg2()->pfJetRef()->pt() > 20. && TMath::Abs(muTauPair->leg2()->pfJetRef()->eta()) < 2.3 &&
 	     TMath::Abs(muTauPair->leg1()->vertex().z() - muTauPair->leg2()->vertex().z()) < 0.2 ) {
 	  if ( !bestMuTauPair ) bestMuTauPair = &(*muTauPair); // CV: simply take first object passing selection criteria for now...
 	}
       }
       if ( !bestMuTauPair ) continue;
+      ++numEvents_passedMuTauPair;
+      numEventsWeighted_passedMuTauPair += evtWeight;
 
 //--- determine number of vertices reconstructed in the event
 //   (needed to parametrize dependency of tau id. efficiency on number of pile-up interactions)
@@ -295,7 +345,13 @@ int main(int argc, char* argv[])
   std::cout << "<FWLiteMuonIsolationAnalyzer>:" << std::endl;
   std::cout << " numEvents_processed: " << numEvents_processed 
 	    << " (weighted = " << numEventsWeighted_processed << ")" << std::endl;
-
+  std::cout << " numEvents_passedPresel: " << numEvents_passedPresel
+	    << " (weighted = " << numEventsWeighted_passedPresel << ")" << std::endl;
+  std::cout << " numEvents_passedDiMuonVeto: " << numEvents_passedDiMuonVeto 
+	    << " (weighted = " << numEventsWeighted_passedDiMuonVeto << ")" << std::endl;
+  std::cout << " numEvents_passedMuTauPair: " << numEvents_passedMuTauPair 
+	    << " (weighted = " << numEventsWeighted_passedMuTauPair << ")" << std::endl;
+  
   clock.Show("FWLiteMuonIsolationAnalyzer");
 
   return 0;
