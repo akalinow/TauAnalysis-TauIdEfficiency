@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.22 $
+ * \version $Revision: 1.23 $
  *
- * $Id: FWLiteTauIdEffAnalyzer.cc,v 1.22 2011/09/30 12:26:40 veelken Exp $
+ * $Id: FWLiteTauIdEffAnalyzer.cc,v 1.23 2011/10/19 14:34:31 veelken Exp $
  *
  */
 
@@ -45,6 +45,7 @@
 #include "TauAnalysis/TauIdEfficiency/interface/TauIdEffEventSelector.h"
 #include "TauAnalysis/TauIdEfficiency/interface/TauIdEffHistManager.h"
 #include "TauAnalysis/TauIdEfficiency/interface/tauIdEffAuxFunctions.h"
+#include "TauAnalysis/RecoTools/interface/PATObjectLUTvalueExtractorFromKNN.h"
 
 #include "AnalysisDataFormats/TauAnalysis/interface/CompositePtrCandidateT1T2MEt.h"
 #include "AnalysisDataFormats/TauAnalysis/interface/CompositePtrCandidateT1T2MEtFwd.h"
@@ -180,8 +181,9 @@ struct regionEntryType
 	    cfgBinVariableBin != cfgBinVariableBins.end(); ++cfgBinVariableBin ) {
 	double min = cfgBinVariableBin->getParameter<double>("min");
 	double max = cfgBinVariableBin->getParameter<double>("max");
-	histManagerEntryType* histManagerEntry = new histManagerEntryType(cfgHistManager, fillGenMatchHistograms, 
-									  *binVariableName, min, max);
+	histManagerEntryType* histManagerEntry = 
+	  new histManagerEntryType(cfgHistManager, fillGenMatchHistograms, 
+				   *binVariableName, min, max);
 	std::string dir_string = cfgBinVariableBin->getParameter<std::string>("subdir");
 	TFileDirectory dir = fs.mkdir(dir_string);
 	histManagerEntry->bookHistograms(dir);
@@ -254,6 +256,9 @@ struct regionEntryType
   std::string sysShift_;
   std::string label_;
 
+  bool applyMuonIsoWeights;
+  bool appyTauFakeRateWeights;
+
   TauIdEffEventSelector* selector_;
 
   histManagerEntryType* histogramsUnbinned_;
@@ -310,6 +315,12 @@ int main(int argc, char* argv[])
     cfgTauIdEffAnalyzer.getParameter<std::string>("sysShift") : "CENTRAL_VALUE";
   edm::InputTag srcEventCounter = cfgTauIdEffAnalyzer.getParameter<edm::InputTag>("srcEventCounter");
 
+  PATMuonLUTvalueExtractorFromKNN* muonIsoProbExtractor = 0;
+  if ( cfgTauIdEffAnalyzer.exists("muonIsoProbExtractor") ) {
+    edm::ParameterSet cfgMuonIsoProbExtractor = cfgTauIdEffAnalyzer.getParameter<edm::ParameterSet>("muonIsoProbExtractor");
+    muonIsoProbExtractor = new PATMuonLUTvalueExtractorFromKNN(cfgMuonIsoProbExtractor);
+  }
+
   std::string selEventsFileName = ( cfgTauIdEffAnalyzer.exists("selEventsFileName") ) ? 
     cfgTauIdEffAnalyzer.getParameter<std::string>("selEventsFileName") : "";
 
@@ -338,11 +349,27 @@ int main(int argc, char* argv[])
 	  region != regions.end(); ++region ) {
       vstring tauIdDiscriminators = cfgTauIdDiscriminator->getParameter<vstring>("discriminators");
       std::string tauIdName = cfgTauIdDiscriminator->getParameter<std::string>("name");
+
+      // all tau charges
       regionEntryType* regionEntry = 
 	new regionEntryType(fs, process, *region, tauIdDiscriminators, tauIdName, 
 			    sysShift, cfgBinning, svFitMassHypothesis, 
 			    tauChargeMode, disableTauCandPreselCuts, fillGenMatchHistograms, selEventsFileName);
       regionEntries.push_back(regionEntry);
+
+      // tau+ candidates only
+      regionEntryType* regionEntry_plus = 
+	new regionEntryType(fs, process, std::string(*region).append("+"), tauIdDiscriminators, tauIdName, 
+			    sysShift, cfgBinning, svFitMassHypothesis, 
+			    tauChargeMode, disableTauCandPreselCuts, fillGenMatchHistograms, selEventsFileName);
+      regionEntries.push_back(regionEntry_plus);
+
+      // tau- candidates only
+      regionEntryType* regionEntry_minus = 
+	new regionEntryType(fs, process, std::string(*region).append("-"), tauIdDiscriminators, tauIdName, 
+			    sysShift, cfgBinning, svFitMassHypothesis, 
+			    tauChargeMode, disableTauCandPreselCuts, fillGenMatchHistograms, selEventsFileName);
+      regionEntries.push_back(regionEntry_minus);
     }
   }
 
@@ -510,7 +537,10 @@ int main(int argc, char* argv[])
 
 	for ( std::vector<regionEntryType*>::iterator regionEntry = regionEntries.begin();
 	      regionEntry != regionEntries.end(); ++regionEntry ) {	  
-	  (*regionEntry)->analyze(evt, *muTauPair, numVertices, genMatchType, evtWeight);
+	  double evtWeight_region = evtWeight;
+	  if ( muonIsoProbExtractor && (*regionEntry)->region_.find("_mW") != std::string::npos ) 
+	    evtWeight_region *= (*muonIsoProbExtractor)(*muTauPair->leg1());
+	  (*regionEntry)->analyze(evt, *muTauPair, numVertices, genMatchType, evtWeight_region);
 
 	  //pat::strbitset evtSelFlags;
 	  //if ( (*regionEntry)->region_ == "D1p" && (*regionEntry)->selector_->operator()(*muTauPair, evtSelFlags) ) {
@@ -575,6 +605,8 @@ int main(int argc, char* argv[])
 	      << " (weighted = " << (*regionEntry)->numMuTauPairsWeighted_selected_ << ")" << std::endl;
     lastTauIdName = (*regionEntry)->tauIdName_;
   }
+
+  delete muonIsoProbExtractor;
 
 //--- close ASCII files containing run + event numbers of events selected in different regions
   for ( std::vector<regionEntryType*>::iterator it = regionEntries.begin();
