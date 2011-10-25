@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.1 $
+ * \version $Revision: 1.2 $
  *
- * $Id: FWLiteMuonIsolationAnalyzer.cc,v 1.1 2011/10/19 14:37:00 veelken Exp $
+ * $Id: FWLiteMuonIsolationAnalyzer.cc,v 1.2 2011/10/24 08:21:40 veelken Exp $
  *
  */
 
@@ -124,27 +124,25 @@ struct histManagerEntryType
       //   muonIsoPtSum = pfChargedParticles(noPileUp) + pfNeutralHadrons + pfGammas - deltaBetaCorr, deltaBetaCorr = 0.5*pfChargedParticlesPileUp
       // ( User1Iso = pfAllChargedHadrons(noPileUp), User2Iso = pfAllChargedHadronsPileUp
       //   as defined in TauAnalysis/TauIdEfficiency/test/commissioning/produceMuonIsolationPATtuple_cfg.py )
-      double muonIsoPtSum1 = muon.userIsolation(pat::User1Iso) 
-	                    + TMath::Max(0., muon.userIsolation(pat::PfNeutralHadronIso) + muon.userIsolation(pat::PfGammaIso) 
-                                            - 0.5*muon.userIsolation(pat::User2Iso));
-      //double muonIsoPtSum2 = getUserFloat(muon, "pfLooseIsoPt04");
-      //std::cout << "muonIsoPtSum1 = " << muonIsoPtSum1 << ", muonIsoPtSum2 = " << muonIsoPtSum2 << std::endl;
-      if ( muonIsoPtSum1 < (muonIsoThreshold_loose_*muonPt) ) {
-	histManager_all_->fillHistograms(muTauPair, numVertices, muonIsoPtSum1, weight);
-	if ( muonIsoPtSum1 < (muonIsoThreshold_tight_*muonPt) ) {
-	  histManager_passed_->fillHistograms(muTauPair, numVertices, muonIsoPtSum1, weight);
+      double muonIsoPtSum = muon.userIsolation(pat::User1Iso) 
+	                   + TMath::Max(0., muon.userIsolation(pat::PfNeutralHadronIso) + muon.userIsolation(pat::PfGammaIso) 
+                                           - 0.5*muon.userIsolation(pat::User2Iso));
+      if ( muonIsoPtSum < (muonIsoThreshold_loose_*muonPt) ) {
+	histManager_all_->fillHistograms(muTauPair, numVertices, muonIsoPtSum, weight);
+	if ( muonIsoPtSum < (muonIsoThreshold_tight_*muonPt) ) {
+	  histManager_passed_->fillHistograms(muTauPair, numVertices, muonIsoPtSum, weight);
 	} else {
-	  histManager_failed_->fillHistograms(muTauPair, numVertices, muonIsoPtSum1, weight);
+	  histManager_failed_->fillHistograms(muTauPair, numVertices, muonIsoPtSum, weight);
 	}
 
 	if ( histManager_all_weighted_ && muonIsoProbExtractor_ ) {
 	  double muonIsoProbValue = (*muonIsoProbExtractor_)(muon);
-	  histManager_all_weighted_->fillHistograms(muTauPair, numVertices, muonIsoPtSum1, weight*muonIsoProbValue);
+	  histManager_all_weighted_->fillHistograms(muTauPair, numVertices, muonIsoPtSum, weight*muonIsoProbValue);
 	}
 
 	muonPt_ = muonPt;
 	muonEta_ = muon.eta();
-	muonIso_ = muonIsoPtSum1;
+	muonIso_ = muonIsoPtSum;
 	sumEt_ = muTauPair.met()->sumEt() - (muTauPair.leg1()->pt() + muTauPair.leg2()->pt());
 	weight_ = weight;
 	ntuple_->Fill();
