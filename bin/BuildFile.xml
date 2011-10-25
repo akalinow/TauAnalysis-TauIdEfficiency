@@ -99,6 +99,7 @@
   <use   name="PhysicsTools/JetMCUtils"/>
   <use   name="TauAnalysis/CandidateTools"/>
   <use   name="TauAnalysis/GenSimTools"/>
+  <use   name="TauAnalysis/RecoTools"/>
   <use   name="TauAnalysis/TauIdEfficiency"/>
   <use   name="AnalysisDataFormats/TauAnalysis"/>
 </bin>
@@ -118,6 +119,17 @@
   <use   name="TauAnalysis/CandidateTools"/>
   <use   name="TauAnalysis/TauIdEfficiency"/>
   <use   name="AnalysisDataFormats/TauAnalysis"/>
+</bin>
+<bin   file="makeTauIdEffQCDtemplate.cc" name="makeTauIdEffQCDtemplate">
+  <use   name="DataFormats/FWLite"/>
+  <use   name="FWCore/FWLite"/>
+  <use   name="FWCore/ParameterSet"/>
+  <use   name="FWCore/PythonParameterSet"/>
+  <use   name="PhysicsTools/FWLite"/>
+  <use   name="TauAnalysis/CandidateTools"/>
+  <use   name="TauAnalysis/DQMTools"/>
+  <use   name="roofit"/>
+  <use   name="root"/>
 </bin>
 <bin   file="fitTauIdEff_wConstraints.cc" name="fitTauIdEff_wConstraints">
   <use   name="DataFormats/FWLite"/>
@@ -185,5 +197,6 @@
   <use   name="FWCore/Utilities"/>
   <use   name="PhysicsTools/FWLite"/>
   <use   name="TauAnalysis/CandidateTools"/>
+  <use   name="TauAnalysis/RecoTools"/>
   <use   name="TauAnalysis/TauIdEfficiency"/>
 </bin>
