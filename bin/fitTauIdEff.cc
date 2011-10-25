@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.27 $
+ * \version $Revision: 1.28 $
  *
- * $Id: fitTauIdEff.cc,v 1.27 2011/08/10 16:23:07 veelken Exp $
+ * $Id: fitTauIdEff.cc,v 1.28 2011/09/30 12:26:40 veelken Exp $
  *
  */
 
@@ -39,18 +39,13 @@
 #include "RooRealVar.h"
 #include "RooSimultaneous.h"
 
-#include <TCanvas.h>
-#include <TChain.h>
 #include <TFile.h>
-#include <TFractionFitter.h>
 #include <TH1.h>
-#include <TLegend.h>
-#include <TMath.h>
 #include <TObjArray.h>
 #include <TROOT.h>
 #include <TString.h>
-#include <TTree.h>
-#include <TVirtualFitter.h>
+#include <TBenchmark.h>
+#include <TMatrixD.h>
 
 #include <iostream>
 #include <iomanip>

@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.20 $
+ * \version $Revision: 1.21 $
  *
- * $Id: fitTauIdEff_wConstraints.cc,v 1.20 2011/07/27 12:40:36 veelken Exp $
+ * $Id: fitTauIdEff_wConstraints.cc,v 1.21 2011/08/02 15:16:09 veelken Exp $
  *
  */
 
@@ -44,21 +44,12 @@
 #include "RooMinuit.h"
 #include "RooFitResult.h"
 
-#include <TCanvas.h>
-#include <TChain.h>
 #include <TFile.h>
 #include <TH1.h>
-#include <THStack.h>
-#include <TLegend.h>
-#include <TMath.h>
 #include <TObjArray.h>
 #include <TROOT.h>
 #include <TString.h>
-#include <TTree.h>
-#include <TPolyMarker3D.h>
-#include <TPaveText.h>
 #include <TBenchmark.h>
-#include <TSystem.h>
 #include <TMatrixD.h>
 
 #include <fstream>
