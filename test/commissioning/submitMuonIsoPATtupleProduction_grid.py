@@ -10,7 +10,7 @@ import subprocess
 channel = 'muonIsoPATtuple'
 configFile = 'produceMuonIsolationPATtuple_cfg.py'
 jobId = getJobId(channel)
-outputFilePath = '/castor/cern.ch/user/v/veelken/CMSSW_4_2_x/PATtuples/MuonIsolation/2011Oct10/v3/'
+outputFilePath = '/castor/cern.ch/user/v/veelken/CMSSW_4_2_x/PATtuples/MuonIsolation/2011Oct10/v5/'
 
 samplesToAnalyze = [
     # modify in case you want to submit crab jobs for some of the samples only...   

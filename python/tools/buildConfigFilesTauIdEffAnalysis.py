@@ -155,7 +155,7 @@ def buildConfigFile_FWLiteTauIdEffAnalyzer(sampleToAnalyze, jobId, inputFilePath
         weights_string = ""
         if not processType == 'Data':
             weights_string += "".join([
-                "'", "vertexMultiplicityReweight", "'", ","
+                "'", "vertexMultiplicityReweight3d", "'", ","
                 "'", "vertexMultiplicityVsRhoPFNeutralReweight", "'"
             ])
 
@@ -191,12 +191,6 @@ process.tauIdEffAnalyzer = cms.PSet(
     regions = cms.vstring(
 %s
     ),
-
-    passed_region = cms.string('%s'),
-    failed_region = cms.string('%s'),
-
-    regionQCDtemplateFromData_passed = cms.string('B1p'),
-    regionQCDtemplateFromData_failed = cms.string('B1f'),
     
     tauIds = cms.VPSet(
 %s
@@ -225,6 +219,25 @@ process.tauIdEffAnalyzer = cms.PSet(
     skipPdgIdsGenParticleMatch = cms.vint32(12, 14, 16),
 
     weights = cms.VInputTag(%s),
+
+    muonIsoProbExtractor = cms.PSet(
+        inputFileName = cms.FileInPath('TauAnalysis/TauIdEfficiency/data/train_kNNmuonIsolation_kNN.weights.xml'),
+        parametrization = cms.VPSet(            
+            cms.PSet(
+                name = cms.string('logMuonPt'),
+                expression = cms.string('log(pt)')
+            ),
+            cms.PSet(
+                name = cms.string('absMuonEta'),
+                expression = cms.string('abs(eta)')
+            )
+        ),
+        selection = cms.string(
+            '(userIsolation("pat::User1Iso")' + \
+            ' + max(0., userIsolation("pat::PfNeutralHadronIso") + userIsolation("pat::PfGammaIso")' + \
+            '          - 0.5*userIsolation("pat::User2Iso"))) > 0.20*pt'
+        )
+    ),
 
     # CV: 'srcEventCounter' is defined in TauAnalysis/Skimming/test/skimTauIdEffSample_cfg.py
     srcEventCounter = cms.InputTag('totalEventsProcessed'),
@@ -457,7 +470,7 @@ process.%s = cms.PSet(
     srcVertices = cms.InputTag('offlinePrimaryVertices'),
 
     weights = cms.VInputTag(
-        'vertexMultiplicityReweight',
+        'vertexMultiplicityReweight3d',
         'vertexMultiplicityVsRhoPFNeutralReweight'
     )
 )

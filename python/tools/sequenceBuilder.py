@@ -68,21 +68,21 @@ def buildTauSequence(
         patTauProducer.addGenJetMatch = cms.bool(False)
 
     # configure tau-jet energy corrections
-    if applyTauJEC:
-        patTauJetCorrFactors = process.patTauJetCorrFactors.clone(
-            src = patTauProducer.tauSource
-        )
-        patTauJetCorrFactorsName = collectionName[0] + "TauJetCorrFactors" + collectionName[1]
-        setattr(process, patTauJetCorrFactorsName, patTauJetCorrFactors)
-
-        print("enabling tau-JEC for %s" % patTauProducerName)
-        patTauProducer.tauJetCorrFactorsSource = cms.VInputTag(cms.InputTag(patTauJetCorrFactorsName))
-        patTauProducer.addTauJetCorrFactors = cms.bool(True)
-        
-        outputSequence += getattr(process, patTauJetCorrFactorsName)
-    else:
-        print("disabling tau-JEC for %s" % patTauProducerName)
-        patTauProducer.addTauJetCorrFactors = cms.bool(False)
+    ##if applyTauJEC:
+    ##    patTauJetCorrFactors = process.patTauJetCorrFactors.clone(
+    ##        src = patTauProducer.tauSource
+    ##    )
+    ##    patTauJetCorrFactorsName = collectionName[0] + "TauJetCorrFactors" + collectionName[1]
+    ##    setattr(process, patTauJetCorrFactorsName, patTauJetCorrFactors)
+    ##
+    ##    print("enabling tau-JEC for %s" % patTauProducerName)
+    ##    patTauProducer.tauJetCorrFactorsSource = cms.VInputTag(cms.InputTag(patTauJetCorrFactorsName))
+    ##    patTauProducer.addTauJetCorrFactors = cms.bool(True)
+    ##    
+    ##    outputSequence += getattr(process, patTauJetCorrFactorsName)
+    ##else:
+    print("disabling tau-JEC for %s" % patTauProducerName)
+    patTauProducer.addTauJetCorrFactors = cms.bool(False)
 
     # add pat::Tau producer module to sequence
     outputSequence += patTauProducer

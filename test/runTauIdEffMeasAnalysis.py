@@ -10,11 +10,11 @@ channel = 'ZtoMuTau_tauIdEff'
 #jobId = getJobId(channel)
 jobId = '2011Aug18'
 
-version = 'V8'
+version = 'V9'
 
 inputFilePath = '/data2/veelken/CMSSW_4_2_x/PATtuples/TauIdEffMeas/%s/%s/' % (jobId, version) \
                + 'user/v/veelken/CMSSW_4_2_x/PATtuples/TauIdEffMeas/%s/' % jobId
-outputFilePath = '/data1/veelken/tmp/muonPtGt20_noPzetaCut/%s/HLT_Mu15' % version
+outputFilePath = '/data1/veelken/tmp/muonPtGt20_noPzetaCut/%s/' % version
 
 samplesToAnalyze = [
     # modify in case you want to submit jobs for some of the samples only...
@@ -34,23 +34,22 @@ samplesToAnalyze = [
 sampleZtautau = 'Ztautau_powheg'
 
 hltPaths = [
-    'HLT_Mu15_v1',
-    'HLT_Mu15_v2',
-    'HLT_Mu15_v3',
-    'HLT_Mu15_v4',
-    'HLT_Mu15_v5',
-    'HLT_Mu15_v6'
-    #'HLT_IsoMu17_v5',
-    #'HLT_IsoMu17_v6',
-    #'HLT_IsoMu17_v8',
-    #'HLT_IsoMu17_v9',
-    #'HLT_IsoMu17_v10',
-    #'HLT_IsoMu17_v11'
+    #'HLT_Mu15_v1',
+    #'HLT_Mu15_v2',
+    #'HLT_Mu15_v3',
+    #'HLT_Mu15_v4',
+    #'HLT_Mu15_v5',
+    #'HLT_Mu15_v6'
+    'HLT_IsoMu17_v5',
+    'HLT_IsoMu17_v6',
+    'HLT_IsoMu17_v8',
+    'HLT_IsoMu17_v9',
+    'HLT_IsoMu17_v10',
+    'HLT_IsoMu17_v11'
 ]
 
 fitVariables = [
-    'diTauVisMass',
-    #'diTauVisMassFromJet' # CV: diTauVisMass always computed from PFJet momenta if using PAT-tuple workflow
+    'diTauVisMass'
 ]    
 
 mode = 'tauIdEfficiency'
@@ -258,19 +257,29 @@ keyword_compTauIdEffFinalNumbers     = None
 expEff_label                         = None                
 measEff_label                        = None  
 if mode == 'tauIdEfficiency':
-    executable_compTauIdEffPreselNumbers = execDir + 'FWLiteTauIdEffPreselNumbers'
+    executable_compTauIdEffPreselNumbers = 'nice ' + execDir + 'FWLiteTauIdEffPreselNumbers'
     keyword_compTauIdEffPreselNumbers    = 'compTauIdEffPreselNumbers'
     suffix_noTauSel                      = '_noTauSel'
     regions                              = [
         'ABCD',
         'A',
         'A1',  # QCD enriched control region (OS, loose muon isolation, Mt && Pzeta cuts applied)
+        'A1_mW',
+        #'A1_mW_tW',
         'A1p',
         'A1f',
+        'AWj',
+        'AWj_mW',
+        #'AWj_mW_tW',
         'B',
         'B1',  # QCD enriched control region (SS, loose muon isolation, Mt && Pzeta cuts applied)
+        'B1_mW',
+        #'B1_mW_tW',
         'B1p',
         'B1f',
+        'BWj',
+        'BWj_mW',
+        #'BWj_mW_tW',
         'C',
         'C1',
         'C1p',
@@ -283,11 +292,12 @@ if mode == 'tauIdEfficiency':
         'D1p',
         'D1f'
     ]
+    all_region                           = 'C1'
     passed_region                        = 'C1p'
     failed_region                        = 'C1f'
     regionQCDtemplateFromData_all        = 'B1'
-    regionQCDtemplateFromData_passed     = 'B1p'
-    regionQCDtemplateFromData_failed     = 'B1f'
+    regionQCDtemplateFromData_passed     = 'C1_qcd'
+    regionQCDtemplateFromData_failed     = 'D1_qcd'
     fitMethod                            = 'fitTauIdEff_wConstraints'
     tauChargeMode                        = 'tauLeadTrackCharge'
     disableTauCandPreselCuts             = False
@@ -296,7 +306,7 @@ if mode == 'tauIdEfficiency':
     expEff_label                         = 'expEff'
     measEff_label                        = 'measEff'   
 elif mode == 'tauChargeMisIdRate':
-    executable_compTauIdEffPreselNumbers = execDir + 'FWLiteTauChargeMisIdPreselNumbers'
+    executable_compTauIdEffPreselNumbers = 'nice ' + execDir + 'FWLiteTauChargeMisIdPreselNumbers'
     keyword_compTauIdEffPreselNumbers    = 'compTauChargeMisIdPreselNumbers'
     suffix_noTauSel                      = ''
     regions                              = [
@@ -313,6 +323,7 @@ elif mode == 'tauChargeMisIdRate':
         'D1f',
         'D2'
     ]
+    all_region                           = ''
     passed_region                        = 'C1p'
     failed_region                        = 'D1p'
     regionQCDtemplateFromData_all        = 'B1'
@@ -328,7 +339,7 @@ elif mode == 'tauChargeMisIdRate':
 else:
     raise ValueError("Invalid mode = %s !!" % mode)
 
-executable_FWLiteTauIdEffAnalyzer = execDir + 'FWLiteTauIdEffAnalyzer'
+executable_FWLiteTauIdEffAnalyzer = 'nice ' + execDir + 'FWLiteTauIdEffAnalyzer'
 executable_hadd = 'hadd -f'
 executable_fitTauIdEff = execDir + fitMethod
 executable_makeTauIdEffFinalPlots = execDir + 'makeTauIdEffFinalPlots'

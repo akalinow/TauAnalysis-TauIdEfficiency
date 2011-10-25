@@ -6,6 +6,7 @@ from TauAnalysis.CandidateTools.tools.objSelConfigurator import objSelConfigurat
 from TauAnalysis.TauIdEfficiency.tools.configurePatTupleProduction import configurePatTupleProduction
 from TauAnalysis.TauIdEfficiency.tools.sequenceBuilder import buildGenericTauSequence
 from TauAnalysis.TauIdEfficiency.tools.sequenceBuilderTauIdEffMeasSpecific import buildSequenceTauIdEffMeasSpecific
+import PhysicsTools.PatAlgos.tools.helpers as patutils
 
 def configurePatTupleProductionTauIdEffMeasSpecific(process, patSequenceBuilder = buildGenericTauSequence,
                                                     hltProcess = "HLT",
@@ -38,10 +39,20 @@ def configurePatTupleProductionTauIdEffMeasSpecific(process, patSequenceBuilder 
 
     patTupleConfig = configurePatTupleProduction(process, patSequenceBuilder,
                                                  patPFTauCleanerPrototype, patCaloTauCleanerPrototype, True, hltProcess, isMC, False)
+
+    process.selectedPatMuonsForTauIdEffPFRelIso = cms.EDFilter("PATMuonSelector",
+        src = cms.InputTag('selectedPatMuonsVBTFid'),                                                      
+        cut = cms.string(
+            '(userIsolation("pat::User1Iso")' + \
+            ' + max(0., userIsolation("pat::PfNeutralHadronIso") + userIsolation("pat::PfGammaIso")' + \
+            '          - 0.5*userIsolation("pat::User2Iso"))) < 0.50*pt'
+        ),
+        filter = cms.bool(False)
+    )
    
     process.producePatTupleTauIdEffMeasSpecific = cms.Sequence(
         process.patDefaultSequence
-       + process.patMuonsLoosePFIsoEmbedded
+       + process.selectedPatMuonsForTauIdEffPFRelIso
        + process.caloTauSequence
        # store TaNC inputs as discriminators
        + process.produceTancMVAInputDiscriminators
@@ -60,24 +71,19 @@ def configurePatTupleProductionTauIdEffMeasSpecific(process, patSequenceBuilder 
     # produce collections of "global" and "stand-alone" Muons for di-Muon veto
     #--------------------------------------------------------------------------------
 
-    process.patMuonsGlobal = cms.EDFilter("PATMuonSelector",
-        src = cms.InputTag('patMuons'),                                            
-        cut = cms.string('isGlobalMuon()'),
-        filter = cms.bool(False)
+    process.selectedPatMuonsLoose = cms.EDFilter("PATMuonSelector",
+        src = cms.InputTag('patMuons'),                                  
+        cut = cms.string('(isGlobalMuon() | isStandAloneMuon() | isTrackerMuon()) & pt > 5.0'),
+        filter = cms.bool(False)                                
     )
-    process.producePatTupleTauIdEffMeasSpecific += process.patMuonsGlobal
-
-    process.patGoodMuons = process.patMuonsGlobal.clone(
-        cut = cms.string('(isGlobalMuon() | isStandAloneMuon() | isTrackerMuon()) & abs(eta) < 2.5 & pt > 5.0')
-    )
-    process.producePatTupleTauIdEffMeasSpecific += process.patGoodMuons
-
+    process.producePatTupleTauIdEffMeasSpecific += process.selectedPatMuonsLoose
+    
     #--------------------------------------------------------------------------------
     # define Muon momentum scale corrections
     #--------------------------------------------------------------------------------
 
     process.load("TauAnalysis.RecoTools.patMuonMomentumCorrection_cfi")
-    process.patMuonsMuScleFitCorrectedMomentum.MuonLabel = cms.InputTag('patMuonsLoosePFIsoEmbedded06')
+    process.patMuonsMuScleFitCorrectedMomentum.MuonLabel = cms.InputTag('selectedPatMuonsForTauIdEffPFRelIso')
     process.producePatTupleTauIdEffMeasSpecific += process.patMuonsMuScleFitCorrectedMomentum
 
     process.load("TauAnalysis.RecoTools.patLeptonSystematics_cff")
@@ -85,75 +91,6 @@ def configurePatTupleProductionTauIdEffMeasSpecific(process, patSequenceBuilder 
     process.patMuonsMuScleFitCorrectedMomentumShiftDown.MuonLabel = process.patMuonsMuScleFitCorrectedMomentum.MuonLabel
     process.producePatTupleTauIdEffMeasSpecific += process.patMuonsMuScleFitCorrectedMomentumShiftUp
     process.producePatTupleTauIdEffMeasSpecific += process.patMuonsMuScleFitCorrectedMomentumShiftDown
-            
-    #--------------------------------------------------------------------------------
-    # define Muon selection
-    #--------------------------------------------------------------------------------
-
-    process.load("TauAnalysis.RecoTools.patLeptonSelection_cff")
-    process.selectedPatMuonsForTauIdEffGlobal   = process.selectedPatMuonsGlobal.clone(
-        cut = cms.string('isGlobalMuon()')
-    )
-    process.selectedPatMuonsForTauIdEffEta21    = process.selectedPatMuonsEta21.clone(
-        cut = cms.string('abs(eta) < 2.1')
-    )
-    process.selectedPatMuonsForTauIdEffPt15     = process.selectedPatMuonsPt15.clone(
-        cut = cms.string('pt > 15.')
-    )
-    process.selectedPatMuonsForTauIdEffVbTfId   = process.selectedPatMuonsVbTfId.clone(
-        beamSpotSource = cms.InputTag("offlineBeamSpot"),
-        maxIPxy = cms.double(0.045), # 450 microns
-        maxIPz = cms.double(0.200), # 2mm
-        IPtrackType = cms.string('innerTrack'),
-        IPrefType = cms.string('vertex'),
-        vertexSource = cms.InputTag('selectedPrimaryVertexHighestPtTrackSum')
-    )
-    process.selectedPatMuonsForTauIdEffPFRelIso = process.selectedPatMuonsPFRelIso.clone(
-        chargedHadronIso = process.patMuonsLoosePFIsoEmbedded03.chargedHadronIso,
-        neutralHadronIso = process.patMuonsLoosePFIsoEmbedded03.neutralHadronIso,
-        photonIso        = process.patMuonsLoosePFIsoEmbedded03.photonIso,
-        sumPtMax         = cms.double(0.30),
-        sumPtMethod      = cms.string("relative")
-    )
-    process.selectedPatMuonsForTauIdEffTrk      = process.selectedPatMuonsTrk.clone(
-        cut = cms.string('innerTrack.isNonnull')
-    )
-    process.selectedPatMuonsForTauIdEffTrkIP    = process.selectedPatMuonsTrkIP.clone(
-        vertexSource = cms.InputTag("selectedPrimaryVertexHighestPtTrackSum"),
-        IpMax = cms.double(0.05)
-    )
-    
-    patMuonSelConfiguratorForTauIdEff = objSelConfigurator(
-        [ process.selectedPatMuonsForTauIdEffGlobal,
-          process.selectedPatMuonsForTauIdEffEta21,
-          process.selectedPatMuonsForTauIdEffPt15,
-          process.selectedPatMuonsForTauIdEffVbTfId,
-          process.selectedPatMuonsForTauIdEffPFRelIso,
-          process.selectedPatMuonsForTauIdEffTrk,
-          process.selectedPatMuonsForTauIdEffTrkIP ],
-        src = "patMuonsMuScleFitCorrectedMomentum",
-        pyModuleName = __name__,
-        doSelIndividual = False
-    )
-    setattr(patMuonSelConfiguratorForTauIdEff, "systematics", muonSystematics)
-    process.selectPatMuonsForTauIdEff = patMuonSelConfiguratorForTauIdEff.configure(process = process)
-    process.producePatTupleTauIdEffMeasSpecific += process.selectPatMuonsForTauIdEff
- 
-    process.patMuonForTauIdEffCounter = cms.EDAnalyzer("PATCandViewCountAnalyzer",
-        src = cms.VInputTag(
-            'patMuonsMuScleFitCorrectedMomentum',
-            'selectedPatMuonsForTauIdEffGlobalCumulative',
-            'selectedPatMuonsForTauIdEffEta21Cumulative',
-            'selectedPatMuonsForTauIdEffPt15Cumulative',
-            'selectedPatMuonsForTauIdEffVbTfIdCumulative',
-            'selectedPatMuonsForTauIdEffPFRelIsoCumulative',
-            'selectedPatMuonsForTauIdEffTrkCumulative',
-            'selectedPatMuonsForTauIdEffTrkIPcumulative'
-        ),      
-        minNumEntries = cms.int32(1),
-        maxNumEntries = cms.int32(1000)                                   
-    )
-    process.producePatTupleTauIdEffMeasSpecific += process.patMuonForTauIdEffCounter
 
     #--------------------------------------------------------------------------------
     # define Muon selection for di-Muon veto
@@ -161,15 +98,15 @@ def configurePatTupleProductionTauIdEffMeasSpecific(process, patSequenceBuilder 
 
     process.selectedPatMuonsForTauIdEffZmumuHypotheses = cms.EDFilter("PATMuonSelector",
         src = cms.InputTag("patMuons"),
-        cut = cms.string('pt > 10 & (isGlobalMuon() | isTrackerMuon() | isStandAloneMuon())'),
+        cut = cms.string('isGlobalMuon() | isTrackerMuon() | isStandAloneMuon()'),
         filter = cms.bool(False)
     )
     
     process.allDiMuPairForTauIdEffZmumuHypotheses = cms.EDProducer("PATDiMuPairProducer",
         useLeadingTausOnly = cms.bool(False),
-        srcLeg1 = cms.InputTag('selectedPatMuonsForTauIdEffTrkIPcumulative'),
+        srcLeg1 = cms.InputTag('selectedPatMuonsForTauIdEffPFRelIso'),
         srcLeg2 = cms.InputTag('selectedPatMuonsForTauIdEffZmumuHypotheses'),
-        dRmin12 = cms.double(0.3),
+        dRmin12 = cms.double(0.01),
         srcMET = cms.InputTag(''),
         recoMode = cms.string(""),
         verbosity = cms.untracked.int32(0)
@@ -191,7 +128,8 @@ def configurePatTupleProductionTauIdEffMeasSpecific(process, patSequenceBuilder 
     #--------------------------------------------------------------------------------
     # define Electron selection (needed for pat::Jet overlap removal)
     #--------------------------------------------------------------------------------
-
+    
+    process.load("TauAnalysis/RecoTools/patLeptonSelection_cff")
     process.producePatTupleTauIdEffMeasSpecific += process.selectPatElectrons
 
     #--------------------------------------------------------------------------------

@@ -156,7 +156,11 @@ process.patMuons.userIsolation = cms.PSet(
 
 # "clean" tau-jet candidate collection (i.e. remove tau-jets overlapping with muons)
 # and require Pt > 15 GeV && |eta| < 2.5
-process.load("PhysicsTools.PatAlgos.cleaningLayer1.tauCleaner_cfi")
+process.load("RecoTauTag/Configuration/RecoPFTauTag_cff")
+
+from PhysicsTools.PatAlgos.tools.tauTools import *
+switchToPFTauHPS(process)
+
 process.cleanPatTaus.preselection = cms.string('')
 process.cleanPatTaus.checkOverlaps = cms.PSet(
     muons = cms.PSet(
@@ -267,7 +271,7 @@ process.preselectedPatMuons = cms.EDFilter("PATMuonSelector",
     filter = cms.bool(True)
 )
 process.selectedPatMuonsTight = cms.EDFilter("PATMuonIdSelector",
-    src = cms.InputTag('patMuons'),
+    src = cms.InputTag('preselectedPatMuons'),
     vertexSource = cms.InputTag('selectedPrimaryVertexPosition'),
     beamSpotSource = cms.InputTag('offlineBeamSpot'),                                         
     filter = cms.bool(True)                                         
@@ -429,6 +433,7 @@ process.p = cms.Path(
    + process.pfNoPileUpSequence
    + process.pfParticleSelectionSequence
    + process.muonPFIsolationSequence
+   + process.PFTau
    + process.patDefaultSequence 
    + process.patPFMETs
    + process.preselectedPatMuons
@@ -440,7 +445,13 @@ process.p = cms.Path(
    + process.mcToDataReweightFactors
 )
 
-process.muonIsoSkimPath = cms.Path(process.hltMu + process.dataQualityFilters + process.selectedPatMuons)
+process.muonIsoSkimPath = cms.Path(
+    process.hltMu
+   + process.dataQualityFilters
+   + process.preselectedPatMuons
+   + process.selectedPatMuonsTight
+   + process.selectedPatMuonsLoose
+)
 
 process.o = cms.EndPath(process.patTupleOutputModule)
 

@@ -8,15 +8,15 @@ import os
 import re
 
 inputFilePath = \
-  '/data2/veelken/CMSSW_4_2_x/PATtuples/MuonIsolation/2011Oct10/user/v/veelken/CMSSW_4_2_x/PATtuples/MuonIsolation/2011Oct10/'
+  '/data2/veelken/CMSSW_4_2_x/PATtuples/MuonIsolation/2011Oct10/v4/user/v/veelken/CMSSW_4_2_x/PATtuples/MuonIsolation/2011Oct10/v4/'
 
 sampleToAnalyze = 'PPmuXptGt20Mu15'
-jobId = '2011Oct10ii'
+jobId = '2011Oct10v3'
 
 inputFile_regex = \
   r"muonIsolationPATtuple_%s_%s_(?P<gridJob>\d*)(_(?P<gridTry>\d*))*_(?P<hash>[a-zA-Z0-9]*).root" % (sampleToAnalyze, jobId)
 
-outputFilePath = '/data1/veelken/tmp/muonIsoStudy/'
+outputFilePath = '/data1/veelken/tmp/muonIsoStudy/v4/'
 
 # check if inputFile is PAT-tuple and
 # matches sampleToAnalyze, jobId
@@ -28,8 +28,7 @@ for file in files:
         inputFileNames.append(os.path.join(inputFilePath, file))
 #print "inputFileNames = %s" % inputFileNames 
 ##inputFileNames = [
-##    
-##    '/afs/cern.ch/user/v/veelken/scratch0/CMSSW_4_2_4_patch1/src/TauAnalysis/TauIdEfficiency/test/commissioning/muonIsolationPATtuple.root'
+##    inputFileNames[0] # for TESTING only !!
 ##]
 
 # find name of associated "process"
@@ -64,6 +63,25 @@ process.muonIsolationAnalyzer = cms.PSet(
     triggerPaths = cms.vstring('HLT_IsoMu12', 'HLT_IsoMu15'),
     muonIsoThresholdsLoose = cms.vdouble(0.5, 1.0),
     muonIsoThresholdsTight = cms.vdouble(0.10),
+
+    muonIsoProbExtractor = cms.PSet(
+        inputFileName = cms.FileInPath('TauAnalysis/TauIdEfficiency/data/train_kNNmuonIsolation_kNN.weights.xml'),
+        parametrization = cms.VPSet(            
+            cms.PSet(
+                name = cms.string('logMuonPt'),
+                expression = cms.string('log(pt)')
+            ),
+            cms.PSet(
+                name = cms.string('absMuonEta'),
+                expression = cms.string('abs(eta)')
+            )
+        ),
+        selection = cms.string(
+            '(userIsolation("pat::User1Iso")' + \
+            ' + max(0., userIsolation("pat::PfNeutralHadronIso") + userIsolation("pat::PfGammaIso")' + \
+            '          - 0.5*userIsolation("pat::User2Iso"))) > 0.20*pt'
+        )
+    ),
 
     srcMuonsTightId = cms.InputTag('selectedPatMuonsTightPFIso04'),
     srcMuonsLooseId = cms.InputTag('selectedPatMuonsLoose'),

@@ -14,7 +14,9 @@
 
 void train_kNNmuonIsolation()
 {
-  TString inputFilePath  = "/data1/veelken/tmp/muonIsoStudy/v3b/";
+  gROOT->SetBatch(true);
+
+  TString inputFilePath  = "/data1/veelken/tmp/muonIsoStudy/v4/";
   TString inputFileName  = "analyzeMuonIsoHistograms_PPmuXptGt20Mu15_2011Oct10v3.root";
 
   TString inputFileName_full = TString(inputFilePath).Append(inputFileName);
@@ -55,7 +57,7 @@ void train_kNNmuonIsolation()
     //logSumEt = ( sumEt > 1. ) ? TMath::Log(sumEt) : 0.;
 
     if ( muonIso < (0.10*muonPt) ) passTree->Fill();
-    else failTree->Fill();
+    else if ( muonIso > (0.20*muonPt) ) failTree->Fill();
   }
 
   TString outputFileName = "train_kNNmuonIsolation_plots.root"; // for TMVA control plots

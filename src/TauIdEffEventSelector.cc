@@ -6,7 +6,7 @@
 
 // define flag for Mt && Pzeta cut (not appplied, Mt && Pzeta cut passed, Mt || Pzeta cut failed) 
 // and tau id. discriminators      (no tau id. discriminators applied, all discriminators passed, at least one discriminator failed)
-enum { kNotApplied, kSignalLike, kBackgroundLike };
+enum { kNotApplied, kSignalLike, kBackgroundLike, kWplusJetBackgroundLike };
 
 // define flag indicating whether to take charge of tau-jet candidate 
 // from "leading track" or from all "signal" charged hadrons
@@ -32,7 +32,7 @@ TauIdEffEventSelector::TauIdEffEventSelector(const edm::ParameterSet& cfg)
   muonEtaMin_               =  -2.1;
   muonEtaMax_               =  +2.1; 
   muonRelIsoMin_            =  -1.e+3;
-  muonRelIsoMax_            =   0.30;
+  muonRelIsoMax_            =   0.50;
   tauPtMin_                 =  20.0; // CV: cut is actually applied on PFJet Pt, not PFTau Pt
   tauPtMax_                 =  +1.e+3; 
   tauEtaMin_                =  -2.3;
@@ -40,6 +40,8 @@ TauIdEffEventSelector::TauIdEffEventSelector(const edm::ParameterSet& cfg)
   tauLeadTrackPtMin_        =   5.0; 
   tauAbsIsoMin_             =  -1.e+3;
   tauAbsIsoMax_             =   2.5;
+  tauChargeMin_             =  -1.e+3;
+  tauChargeMax_             =  +1.e+3;
   //muTauPairAbsDzMax_        =  +1.e+3;
   muTauPairAbsDzMax_        =   0.2; // 2mm
   muTauPairChargeProdMin_   =  -1.e+3;
@@ -68,10 +70,10 @@ TauIdEffEventSelector::TauIdEffEventSelector(const edm::ParameterSet& cfg)
     // nothing to be done yet...
     // (simply use default cuts)
   } else if ( region_.find("A") != std::string::npos ) {
-    muonRelIsoMin_          =   0.10;
+    muonRelIsoMin_          =   0.20;
     muTauPairChargeProdMax_ =  -0.5;
   } else if ( region_.find("B") != std::string::npos ) {
-    muonRelIsoMin_          =   0.10;
+    muonRelIsoMin_          =   0.20;
     muTauPairChargeProdMin_ =  +0.5;
   } else if ( region_.find("C") != std::string::npos ) {
     muonRelIsoMax_          =   0.10;
@@ -84,11 +86,15 @@ TauIdEffEventSelector::TauIdEffEventSelector(const edm::ParameterSet& cfg)
       << "Invalid region = " << region_ << " !!\n";
   }
 
-  if      ( region_.find("1") != std::string::npos ) MtAndPzetaDiffCut_ = kSignalLike;
-  else if ( region_.find("2") != std::string::npos ) MtAndPzetaDiffCut_ = kBackgroundLike;
+  if      ( region_.find("1")  != std::string::npos ) MtAndPzetaDiffCut_ = kSignalLike;
+  else if ( region_.find("2")  != std::string::npos ) MtAndPzetaDiffCut_ = kBackgroundLike;
+  else if ( region_.find("Wj") != std::string::npos ) MtAndPzetaDiffCut_ = kWplusJetBackgroundLike;
 
   if      ( region_.find("p") != std::string::npos ) tauIdDiscriminatorCut_ = kSignalLike;
   else if ( region_.find("f") != std::string::npos ) tauIdDiscriminatorCut_ = kBackgroundLike;
+
+  if      ( region_.find("+") != std::string::npos ) tauChargeMin_ = +0.5;
+  else if ( region_.find("-") != std::string::npos ) tauChargeMax_ = -0.5;
 }
 
 TauIdEffEventSelector::~TauIdEffEventSelector()
@@ -98,9 +104,10 @@ TauIdEffEventSelector::~TauIdEffEventSelector()
 
 std::string getCutStatus_string(int cut)
 {
-  if      ( cut == kNotApplied     ) return "not applied";
-  else if ( cut == kSignalLike     ) return "signal-like";
-  else if ( cut == kBackgroundLike ) return "background-like";
+  if      ( cut == kNotApplied             ) return "not applied";
+  else if ( cut == kSignalLike             ) return "signal-like";
+  else if ( cut == kBackgroundLike         ) return "background-like";
+  else if ( cut == kWplusJetBackgroundLike ) return "W+jet background-like";
   else assert(0);
 }
 
@@ -123,16 +130,24 @@ bool TauIdEffEventSelector::operator()(const PATMuTauPair& muTauPair, pat::strbi
 
   double muonPt              = muTauPair.leg1()->pt();
   double muonEta             = muTauPair.leg1()->eta();
-  double muonIso             = muTauPair.leg1()->userFloat("pfLooseIsoPt04");
+  // compute deltaBeta corrected isolation Pt sum "by hand":
+  //   muonIsoPtSum = pfChargedParticles(noPileUp) + pfNeutralHadrons + pfGammas - deltaBetaCorr, deltaBetaCorr = 0.5*pfChargedParticlesPileUp
+  // ( User1Iso = pfAllChargedHadrons(noPileUp), User2Iso = pfAllChargedHadronsPileUp
+  //   as defined in TauAnalysis/TauIdEfficiency/test/commissioning/produceMuonIsolationPATtuple_cfg.py )
+  double muonIso             = muTauPair.leg1()->userIsolation(pat::User1Iso) 
+  	                      + TMath::Max(0., muTauPair.leg1()->userIsolation(pat::PfNeutralHadronIso) 
+                                              + muTauPair.leg1()->userIsolation(pat::PfGammaIso) 
+                                              - 0.5*muTauPair.leg1()->userIsolation(pat::User2Iso));
   double tauPt               = muTauPair.leg2()->pt();
   double tauEta              = muTauPair.leg2()->eta();
   double tauLeadTrackPt      = muTauPair.leg2()->userFloat("leadTrackPt");
   double tauIso              = muTauPair.leg2()->userFloat("preselLoosePFIsoPt");
-  double muTauPairAbsDz      = TMath::Abs(muTauPair.leg1()->vertex().z() - muTauPair.leg2()->vertex().z());
-  double muTauPairChargeProd = muTauPair.leg1()->charge();
-  if      ( tauChargeMode_ == kLeadTrackCharge        ) muTauPairChargeProd *= muTauPair.leg2()->userFloat("leadTrackCharge");
-  else if ( tauChargeMode_ == kSignalChargedHadronSum ) muTauPairChargeProd *= muTauPair.leg2()->charge();
+  double tauCharge           = 0.;
+  if      ( tauChargeMode_ == kLeadTrackCharge        ) tauCharge = muTauPair.leg2()->userFloat("leadTrackCharge");
+  else if ( tauChargeMode_ == kSignalChargedHadronSum ) tauCharge = muTauPair.leg2()->charge();
   else assert(0);
+  double muTauPairAbsDz      = TMath::Abs(muTauPair.leg1()->vertex().z() - muTauPair.leg2()->vertex().z());
+  double muTauPairChargeProd = muTauPair.leg1()->charge()*tauCharge;
   double visMass             = (muTauPair.leg1()->p4() + muTauPair.leg2()->p4()).mass();
   double Mt                  = muTauPair.mt1MET();
   double PzetaDiff           = muTauPair.pZeta() - 1.5*muTauPair.pZetaVis();
@@ -152,6 +167,7 @@ bool TauIdEffEventSelector::operator()(const PATMuTauPair& muTauPair, pat::strbi
        muonIso             > (muonRelIsoMin_*muonPt)  && muonIso                 < (muonRelIsoMax_*muonPt)  && 
        tauPt               >  tauPtMin_               && tauPt                   <  tauPtMax_               &&
        tauEta              >  tauEtaMin_              && tauEta                  <  tauEtaMax_              &&
+       tauCharge           >  tauChargeMin_           && tauCharge               <  tauChargeMax_           &&
        ((tauLeadTrackPt    >  tauLeadTrackPtMin_      &&
          tauIso            >  tauAbsIsoMin_           && tauIso                  <  tauAbsIsoMax_           ) ||
         disableTauCandPreselCuts_                                                                           ) &&
@@ -171,12 +187,13 @@ bool TauIdEffEventSelector::operator()(const PATMuTauPair& muTauPair, pat::strbi
 	     tauIdDiscriminator_value < tauIdDiscriminatorMax_) ) tauIdDiscriminators_passed = false;
     }
 
-    if ( ( MtAndPzetaDiffCut_ == kNotApplied                                         ||
-	  (MtAndPzetaDiffCut_ == kSignalLike         &&  MtAndPzetaDiffCut_passed)   ||
-	  (MtAndPzetaDiffCut_ == kBackgroundLike     && !MtAndPzetaDiffCut_passed)   ) &&
-	 ( tauIdDiscriminatorCut_ == kNotApplied                                     ||
-	  (tauIdDiscriminatorCut_ == kSignalLike     &&  tauIdDiscriminators_passed) ||
-	  (tauIdDiscriminatorCut_ == kBackgroundLike && !tauIdDiscriminators_passed) ) ) return true;
+    if ( ( MtAndPzetaDiffCut_ == kNotApplied                                           ||
+	  (MtAndPzetaDiffCut_ == kSignalLike             &&  MtAndPzetaDiffCut_passed) ||
+	  (MtAndPzetaDiffCut_ == kBackgroundLike         && !MtAndPzetaDiffCut_passed) ||
+	  (MtAndPzetaDiffCut_ == kWplusJetBackgroundLike &&  Mt > 60.                ) ) &&
+	 ( tauIdDiscriminatorCut_ == kNotApplied                                       ||
+	  (tauIdDiscriminatorCut_ == kSignalLike     &&  tauIdDiscriminators_passed)   ||
+	  (tauIdDiscriminatorCut_ == kBackgroundLike && !tauIdDiscriminators_passed)   ) ) return true;
   }
 
   return false;

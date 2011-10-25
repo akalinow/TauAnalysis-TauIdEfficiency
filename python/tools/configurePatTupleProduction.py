@@ -5,6 +5,7 @@ from PhysicsTools.PatAlgos.tools.tauTools import *
 from PhysicsTools.PatAlgos.tools.jetTools import *
 from PhysicsTools.PatAlgos.tools.trigTools import switchOnTrigger
 from PhysicsTools.PatAlgos.tools.coreTools import removeMCMatching
+import PhysicsTools.PatAlgos.tools.helpers as patutils
 
 from TauAnalysis.Configuration.tools.metTools import *
 
@@ -81,64 +82,163 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
     #--------------------------------------------------------------------------------
     # compute Pt sum of charged + neutral hadrons and photons within isolation cones of size dR = 0.4/0.6
 
-    process.load("CommonTools.ParticleFlow.pfNoPileUp_cff")
-
-    process.patMuonsLoosePFIsoEmbedded03 = cms.EDProducer("PATMuonPFIsolationEmbedder",
-        src = cms.InputTag('patMuons'),                                       
-        userFloatName = cms.string('pfLooseIsoPt03'),
-        pfCandidateSource = cms.InputTag('pfNoPileUp'),
-        chargedHadronIso = cms.PSet(
-            ptMin = cms.double(0.5),        
-            dRvetoCone = cms.double(-1.),
-            dRisoCone = cms.double(0.3)
-        ),
-        neutralHadronIso = cms.PSet(
-            ptMin = cms.double(1.0),        
-            dRvetoCone = cms.double(0.08),        
-            dRisoCone = cms.double(0.3)
-        ),
-        photonIso = cms.PSet(
-            ptMin = cms.double(1.0),        
-            dPhiVeto = cms.double(-1.),
-            dEtaVeto = cms.double(-1.),
-            dRvetoCone = cms.double(0.05),
-            dRisoCone = cms.double(0.3)
-        )
-    )
-    process.patMuonsLoosePFIsoEmbedded04 = process.patMuonsLoosePFIsoEmbedded03.clone(
-        src = cms.InputTag('patMuonsLoosePFIsoEmbedded03'),
-        userFloatName = cms.string('pfLooseIsoPt04'),
-        pfCandidateSource = cms.InputTag('pfNoPileUp'),
-        chargedHadronIso = process.patMuonsLoosePFIsoEmbedded03.chargedHadronIso.clone(
-            dRisoCone = cms.double(0.4)
-        ),
-        neutralHadronIso = process.patMuonsLoosePFIsoEmbedded03.neutralHadronIso.clone(
-            dRisoCone = cms.double(0.4)
-        ),
-        photonIso = process.patMuonsLoosePFIsoEmbedded03.photonIso.clone(
-            dRisoCone = cms.double(0.4)
-        )
-    )
-    process.patMuonsLoosePFIsoEmbedded06 = process.patMuonsLoosePFIsoEmbedded03.clone(
-        src = cms.InputTag('patMuonsLoosePFIsoEmbedded04'),
-        userFloatName = cms.string('pfLooseIsoPt06'),
-        pfCandidateSource = cms.InputTag('pfNoPileUp'),
-        chargedHadronIso = process.patMuonsLoosePFIsoEmbedded03.chargedHadronIso.clone(
-            dRisoCone = cms.double(0.6)
-        ),
-        neutralHadronIso = process.patMuonsLoosePFIsoEmbedded03.neutralHadronIso.clone(
-            dRisoCone = cms.double(0.6)
-        ),
-        photonIso = process.patMuonsLoosePFIsoEmbedded03.photonIso.clone(
-            dRisoCone = cms.double(0.6)
+    process.load("RecoMuon/MuonIsolation/muonPFIsolation_cff")    
+    patutils.massSearchReplaceAnyInputTag(process.muonPFIsolationDepositsSequence, cms.InputTag('muons1stStep'), cms.InputTag('muons'))
+    process.patMuons.isoDeposits = cms.PSet(
+        # CV: strings for IsoDeposits defined in PhysicsTools/PatAlgos/plugins/PATMuonProducer.cc
+        pfChargedHadrons = cms.InputTag("muPFIsoDepositCharged"),
+        pfNeutralHadrons = cms.InputTag("muPFIsoDepositNeutral"),
+        pfPhotons = cms.InputTag("muPFIsoDepositGamma"),
+        user = cms.VInputTag(
+            cms.InputTag("muPFIsoDepositChargedAll"),
+            cms.InputTag("muPFIsoDepositPU")
         )
     )
 
-    process.patMuonsLoosePFIsoEmbedded = cms.Sequence(
-        process.pfNoPileUpSequence
-       * process.patMuonsLoosePFIsoEmbedded03 * process.patMuonsLoosePFIsoEmbedded04 * process.patMuonsLoosePFIsoEmbedded06
+    process.patMuons.userIsolation = cms.PSet(
+        # CV: strings for Isolation values defined in PhysicsTools/PatAlgos/src/MultiIsolator.cc
+        pfChargedHadron = cms.PSet(
+            deltaR = cms.double(0.4),
+            src = process.patMuons.isoDeposits.pfChargedHadrons,
+            vetos = process.muPFIsoValueCharged04.deposits[0].vetos,
+            skipDefaultVeto = process.muPFIsoValueCharged04.deposits[0].skipDefaultVeto
+        ),
+        pfNeutralHadron = cms.PSet(
+            deltaR = cms.double(0.4),
+            src = process.patMuons.isoDeposits.pfNeutralHadrons,
+            vetos = process.muPFIsoValueNeutral04.deposits[0].vetos,
+            skipDefaultVeto = process.muPFIsoValueNeutral04.deposits[0].skipDefaultVeto
+        ),
+        pfGamma = cms.PSet(
+            deltaR = cms.double(0.4),
+            src = process.patMuons.isoDeposits.pfPhotons,
+            vetos = process.muPFIsoValueGamma04.deposits[0].vetos,
+            skipDefaultVeto = process.muPFIsoValueGamma04.deposits[0].skipDefaultVeto
+        ),
+        user = cms.VPSet(
+            cms.PSet(
+                deltaR = cms.double(0.4),
+                src = process.patMuons.isoDeposits.user[0],
+                vetos = process.muPFIsoValueChargedAll04.deposits[0].vetos,
+                skipDefaultVeto = process.muPFIsoValueChargedAll04.deposits[0].skipDefaultVeto
+            ),
+            cms.PSet(
+                deltaR = cms.double(0.4),
+                src = process.patMuons.isoDeposits.user[1],
+                vetos = process.muPFIsoValuePU04.deposits[0].vetos,
+                skipDefaultVeto = process.muPFIsoValuePU04.deposits[0].skipDefaultVeto
+            )
+        ) 
+    )
+
+    process.patMuonsWithinAcc = cms.EDFilter("PATMuonSelector",
+        src = cms.InputTag('patMuons'),
+        cut = cms.string("pt > 15. & abs(eta) < 2.1"),
+        filter = cms.bool(False)
+    )
+    process.selectedPatMuonsVBTFid = cms.EDFilter("PATMuonIdSelector",
+        src = cms.InputTag('patMuonsWithinAcc'),
+        vertexSource = cms.InputTag('selectedPrimaryVertexPosition'),
+        beamSpotSource = cms.InputTag('offlineBeamSpot'),                                         
+        filter = cms.bool(False)                                         
     )
     #--------------------------------------------------------------------------------
+
+    #--------------------------------------------------------------------------------
+    #
+    # produce collections of pat::Jets for CaloJets and PFJets
+    #
+    # NOTE: needed for evaluating jetId for Calo/TCTaus and PFTaus
+    #   
+    jec = [ 'L1FastJet', 'L2Relative', 'L3Absolute' ]
+    if not isMC:
+        jec.extend([ 'L2L3Residual' ])
+
+    addJetCollection(process, cms.InputTag('ak5PFJets'),
+                     'AK5', 'PF',
+                     doJTA            = False,
+                     doBTagging       = False,
+                     jetCorrLabel     = ('AK5PF', cms.vstring(jec)),
+                     doType1MET       = False,
+                     genJetCollection = cms.InputTag("ak5GenJets"),
+                     doJetID          = True,
+                     jetIdLabel       = "ak5",
+                     outputModule     = ''
+    )
+
+    process.selectedPatJetsAK5PFAntiOverlapWithMuonsVeto = cms.EDFilter("PATJetAntiOverlapSelector",
+        src = cms.InputTag('patJets'),                                                       
+        srcNotToBeFiltered = cms.VInputTag('selectedPatMuonsVBTFid'),
+        dRmin = cms.double(0.5)
+    )
+    process.patJetProductionSequence = cms.Sequence(process.selectedPatJetsAK5PFAntiOverlapWithMuonsVeto)
+    
+    if isMC:
+        process.selectedPatJetsAK5PFsmearedAntiOverlapWithMuonsVeto = cms.EDProducer("SmearedPATJetProducer",
+            src = cms.InputTag('selectedPatJetsAK5PFAntiOverlapWithMuonsVeto'),
+            inputFileName = cms.FileInPath("TauAnalysis/RecoTools/data/pfJetResolutionMCtoDataCorrLUT.root"),
+            lutName = cms.string('pfJetResolutionMCtoDataCorrLUT')
+        )
+        process.patJetProductionSequence += process.patJetsAK5PFsmearedAntiOverlapWithMuonsVeto
+    
+    addJetCollection(process, cms.InputTag('ak5CaloJets'),
+                     'AK5', 'Calo',
+                     doJTA            = False,
+                     doBTagging       = False,
+                     jetCorrLabel     = ('AK5Calo', cms.vstring(jec)),
+                     doType1MET       = False,
+                     genJetCollection = cms.InputTag("ak5GenJets"),
+                     doJetID          = True,
+                     jetIdLabel       = "ak5",
+                     outputModule     = ''
+    )
+    #--------------------------------------------------------------------------------
+
+    #--------------------------------------------------------------------------------
+    #
+    # configure Jet Energy Corrections
+    #
+    process.load("TauAnalysis.Configuration.jetCorrectionParameters_cfi")
+    #--------------------------------------------------------------------------------
+
+    #--------------------------------------------------------------------------------
+    # add pfMET
+    process.patMEtProductionSequence = cms.Sequence()
+    
+    process.patPFMETs = process.patMETs.clone(
+        metSource = cms.InputTag('pfType1CorrectedMet'),
+        addMuonCorrections = cms.bool(False),
+        genMETSource = cms.InputTag('genMetTrue'),
+        addGenMET = cms.bool(False)
+    )
+    process.patMEtProductionSequence += process.patPFMETs
+
+    if isMC:
+        process.patPFMETs.addGenMET = cms.bool(True)
+        
+        process.patPFJetMETsmear = cms.EDProducer("PATJetMETsmearInputProducer",
+            src = cms.InputTag('selectedPatJetsAK5PFAntiOverlapWithMuonsVeto'),
+            inputFileName = cms.FileInPath("TauAnalysis/RecoTools/data/pfJetResolutionMCtoDataCorrLUT.root"),
+            lutName = cms.string('pfJetResolutionMCtoDataCorrLUT')
+        )
+        process.patMEtProductionSequence += process.patPFJetMETsmear
+
+        process.smearedPatPFMETs = cms.EDProducer("CorrectedPATMETProducer",
+            src = cms.InputTag('patPFMETs'),
+            applyType1Corrections = cms.bool(True),
+            srcType1Corrections = cms.VInputTag(
+                cms.InputTag('patPFJetMETsmear')
+            ),
+            applyType2Corrections = cms.bool(False)
+        )
+        process.patMEtProductionSequence += process.smearedPatPFMETs
+    #--------------------------------------------------------------------------------
+
+    pfJetCollection = 'selectedPatJetsAK5PFAntiOverlapWithMuonsVeto'
+    pfMEtCollection = 'patPFMETs'
+    if isMC:
+        pfJetCollection = 'selectedPatJetsAK5PFsmearedAntiOverlapWithMuonsVeto'
+        pfMEtCollection = 'smearedPatPFMETs'
 
     #-------------------------------------------------------------------------------- 
     #
@@ -162,7 +262,7 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
     process.caloTauSequence = retVal_caloTau["sequence"]
 
     process.patMuonCaloTauPairs = process.allMuTauPairs.clone(
-        srcLeg1 = cms.InputTag('patMuonsLoosePFIsoEmbedded06'),
+        srcLeg1 = cms.InputTag('selectedPatMuonsVBTFid'),
         srcLeg2 = cms.InputTag(retVal_caloTau["collection"]),
         srcMET = cms.InputTag('patMETs'),
         srcGenParticles = cms.InputTag(''),
@@ -187,7 +287,7 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
     retVal_pfTauFixedCone = patSequenceBuilder(
         process,
         collectionName = [ "patPFTaus", "FixedCone" ],
-        jetCollectionName = "patJetsAK5PF",
+        jetCollectionName = pfJetCollection,
         patTauProducerPrototype = process.patPFTauProducerFixedCone,
         patTauCleanerPrototype = patPFTauCleanerPrototype,
         triggerMatcherProtoType = process.patTauTriggerMatchHLTprotoType,
@@ -198,9 +298,9 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
     process.pfTauSequenceFixedCone = retVal_pfTauFixedCone["sequence"]
 
     process.patMuonPFTauPairsFixedCone = process.allMuTauPairs.clone(
-        srcLeg1 = cms.InputTag('patMuonsLoosePFIsoEmbedded06'),
+        srcLeg1 = cms.InputTag('selectedPatMuonsVBTFid'),
         srcLeg2 = cms.InputTag(retVal_pfTauFixedCone["collection"]),
-        srcMET = cms.InputTag('patPFMETs'),
+        srcMET = cms.InputTag(pfMEtCollection),
         srcGenParticles = cms.InputTag(''),
         doSVreco = cms.bool(False)
     )
@@ -226,7 +326,7 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
     retVal_pfTauShrinkingCone = patSequenceBuilder(
         process,
         collectionName = [ "patPFTaus", "ShrinkingCone" ],
-        jetCollectionName = "patJetsAK5PF",
+        jetCollectionName = pfJetCollection,
         patTauProducerPrototype = process.patPFTauProducerShrinkingCone,
         patTauCleanerPrototype = patPFTauCleanerPrototype,
         triggerMatcherProtoType = process.patTauTriggerMatchHLTprotoType,
@@ -237,9 +337,9 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
     process.pfTauSequenceShrinkingCone = retVal_pfTauShrinkingCone["sequence"]
 
     process.patMuonPFTauPairsShrinkingCone = process.allMuTauPairs.clone(
-        srcLeg1 = cms.InputTag('patMuonsLoosePFIsoEmbedded06'),
+        srcLeg1 = cms.InputTag('selectedPatMuonsVBTFid'),
         srcLeg2 = cms.InputTag(retVal_pfTauShrinkingCone["collection"]),
-        srcMET = cms.InputTag('patPFMETs'),
+        srcMET = cms.InputTag(pfMEtCollection),
         srcGenParticles = cms.InputTag(''),
         doSVreco = cms.bool(False)
     )
@@ -266,7 +366,7 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
     retVal_pfTauHPS = patSequenceBuilder(
         process,
         collectionName = [ "patPFTaus", "HPS" ],
-        jetCollectionName = "patJetsAK5PF",
+        jetCollectionName = pfJetCollection,
         patTauProducerPrototype = process.patPFTauProducerHPS,
         patTauCleanerPrototype = patPFTauCleanerPrototype,
         triggerMatcherProtoType = process.patTauTriggerMatchHLTprotoType,
@@ -277,9 +377,9 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
     process.pfTauSequenceHPS = retVal_pfTauHPS["sequence"]
 
     process.patMuonPFTauPairsHPS = process.allMuTauPairs.clone(
-        srcLeg1 = cms.InputTag('patMuonsLoosePFIsoEmbedded06'),
+        srcLeg1 = cms.InputTag('selectedPatMuonsVBTFid'),
         srcLeg2 = cms.InputTag(retVal_pfTauHPS["collection"]),
-        srcMET = cms.InputTag('patPFMETs'),
+        srcMET = cms.InputTag(pfMEtCollection),
         srcGenParticles = cms.InputTag(''),
         doSVreco = cms.bool(False)
     )
@@ -302,7 +402,7 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
     retVal_pfTauHPSpTaNC = patSequenceBuilder(
         process,
         collectionName = [ "patPFTaus", "HPSpTaNC" ],
-        jetCollectionName = "patJetsAK5PF",
+        jetCollectionName = pfJetCollection,
         patTauProducerPrototype = process.patPFTauProducerHPSpTaNC,
         patTauCleanerPrototype = patPFTauCleanerPrototype,
         triggerMatcherProtoType = process.patTauTriggerMatchHLTprotoType,
@@ -313,9 +413,9 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
     process.pfTauSequenceHPSpTaNC = retVal_pfTauHPSpTaNC["sequence"]
 
     process.patMuonPFTauPairsHPSpTaNC = process.allMuTauPairs.clone(
-        srcLeg1 = cms.InputTag('patMuonsLoosePFIsoEmbedded06'),
+        srcLeg1 = cms.InputTag('selectedPatMuonsVBTFid'),
         srcLeg2 = cms.InputTag(retVal_pfTauHPSpTaNC["collection"]),
-        srcMET = cms.InputTag('patPFMETs'),
+        srcMET = cms.InputTag(pfMEtCollection),
         srcGenParticles = cms.InputTag(''),
         doSVreco = cms.bool(False)
     )
@@ -325,73 +425,18 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
         delattr(process.patMuonPFTauPairsHPSpTaNC, "pfMEtSign")
     #--------------------------------------------------------------------------------
 
-    #--------------------------------------------------------------------------------
-    #
-    # produce collections of pat::Jets for CaloJets and PFJets
-    #
-    # NOTE: needed for evaluating jetId for Calo/TCTaus and PFTaus
-    #
-    jec = [ 'L1FastJet', 'L2Relative', 'L3Absolute' ]
-    if not isMC:
-        jec.extend([ 'L2L3Residual' ])
-    addJetCollection(process, cms.InputTag('ak5PFJets'),
-                     'AK5', 'PF',
-                     doJTA            = False,
-                     doBTagging       = False,
-                     jetCorrLabel     = ('AK5PF', cms.vstring(jec)),
-                     doType1MET       = False,
-                     genJetCollection = cms.InputTag("ak5GenJets"),
-                     doJetID          = True,
-                     jetIdLabel       = "ak5",
-                     outputModule     = ''
-    )
-
-    addJetCollection(process, cms.InputTag('ak5CaloJets'),
-                     'AK5', 'Calo',
-                     doJTA            = False,
-                     doBTagging       = False,
-                     jetCorrLabel     = ('AK5Calo', cms.vstring(jec)),
-                     doType1MET       = False,
-                     genJetCollection = cms.InputTag("ak5GenJets"),
-                     doJetID          = True,
-                     jetIdLabel       = "ak5",
-                     outputModule     = ''
-    )
-    #--------------------------------------------------------------------------------
-
-    #--------------------------------------------------------------------------------
-    #
-    # configure Jet Energy Corrections
-    #
-    process.load("TauAnalysis.Configuration.jetCorrectionParameters_cfi")
-    #--------------------------------------------------------------------------------
-    
-    #--------------------------------------------------------------------------------
-    # replace CaloJets by PFJets for "standard" pat::Jet collection
-    switchJetCollection(process, jetCollection = cms.InputTag("ak5PFJets"), outputModule = '')
-    #
-    # NOTE: need to delete empty sequence produced by call to "switchJetCollection"
-    #       in order to avoid error when calling "process.dumpPython"
-    #      ( cf. https://hypernews.cern.ch/HyperNews/CMS/get/physTools/1688/1/1/1/1/1.html )
-    #
-    del process.patJetMETCorrections
-    #--------------------------------------------------------------------------------
-
-    #--------------------------------------------------------------------------------
-    # add pfMET
-    # set Boolean swich to true in order to apply type-1 corrections
-    addPFMet(process, correct = False)
-    #--------------------------------------------------------------------------------
-
     process.patTupleProductionSequence = cms.Sequence(
-        process.patDefaultSequence
+        process.patDefaultSequence        
        ##+ process.patTrigger + process.patTriggerEvent
-       + process.patMuonsLoosePFIsoEmbedded       
+       + process.muonPFIsolationSequence
+       + process.patMuonsWithinAcc + process.selectedPatMuonsVBTFid
        + process.caloTauSequence
        # store TaNC inputs as discriminators
        + process.produceTancMVAInputDiscriminators
        + process.pfTauSequenceFixedCone + process.pfTauSequenceShrinkingCone + process.pfTauSequenceHPS
        + process.pfTauSequenceHPSpTaNC
+       + process.patJetProductionSequence
+       + process.patMEtProductionSequence
        + process.patMuonCaloTauPairs
        + process.patMuonPFTauPairsFixedCone + process.patMuonPFTauPairsShrinkingCone + process.patMuonPFTauPairsHPS
        + process.patMuonPFTauPairsHPSpTaNC

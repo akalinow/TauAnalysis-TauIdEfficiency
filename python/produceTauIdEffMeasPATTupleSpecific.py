@@ -54,9 +54,12 @@ def produceTauIdEffMeasPATTuple(process, isMC, isEmbedded, HLTprocessName, pfCan
         )
 
         muTauPairProducerModule.doPFMEtSign = cms.bool(True)
-    
+
+        pfJetCollection = 'selectedPatJetsAK5PFAntiOverlapWithMuonsVeto'
+        if isMC:
+            pfJetCollection = 'selectedPatJetsAK5PFsmearedAntiOverlapWithMuonsVeto'
         muTauPairProducerModule.pfMEtSign = cms.PSet(
-            srcPFJets = cms.InputTag('ak5PFJets'),
+            srcPFJets = cms.InputTag(pfJetCollection),
             srcPFCandidates = cms.InputTag('particleFlow'),
             resolution = process.METSignificance_params,
             dRoverlapPFJet = cms.double(0.3),
@@ -106,8 +109,10 @@ def produceTauIdEffMeasPATTuple(process, isMC, isEmbedded, HLTprocessName, pfCan
                 'keep EventAux_*_*_*',
                 'keep LumiSummary_*_*_*',                       
                 'keep edmMergeableCounter_*_*_*',
-                'keep *_selectedPatMuonsForTauIdEffTrkIPcumulative_*_*',
-                'keep *_patGoodMuons_*_*',
+                'keep *_selectedPatMuonsForTauIdEffPFRelIso_*_*',
+                'keep *_selectedPatMuonsForTauIdEffZmumuHypotheses_*_*',
+                'keep *_selectedDiMuPairForTauIdEffZmumuHypotheses_*_*',                                          
+                'keep *_selectedPatJetsAK5PFAntiOverlapWithMuonsVeto_*_*',                                         
                 #'keep *_selectedPatPFTausFixedConeForTauIdEffCumulative_*_*',
                 #'keep *_selectedPatPFTausFixedConeForTauIdEffSysJetEnUpCumulative_*_*',
                 #'keep *_selectedPatPFTausFixedConeForTauIdEffSysJetEnDownCumulative_*_*',
@@ -160,7 +165,7 @@ def produceTauIdEffMeasPATTuple(process, isMC, isEmbedded, HLTprocessName, pfCan
                 # CV: the '*' after "patPFMETs"
                 #     is needed to keep the collections with Z-recoil corrections applied                                            
                 'keep *_patPFMETs*_*_*',
-                'drop *_patPFMETs*_diTauToMEtAssociations_*',
+                'drop *_patPFMETs*_diTauToMEtAssociations_*',                                                            
                 'keep *_smearedMETpFTauHPSsysJetEnUp_*_*',
                 'keep *_smearedMETpFTauHPSsysJetEnDown_*_*',
                 'keep *_smearedMETpFTauHPSsysTauJetEnUp_*_*',
@@ -186,14 +191,19 @@ def produceTauIdEffMeasPATTuple(process, isMC, isEmbedded, HLTprocessName, pfCan
     if isMC:
         process.patTupleOutputModule.outputCommands.extend(
           cms.untracked.vstring(
+                'keep *_selectedPatJetsAK5PFsmearedAntiOverlapWithMuonsVeto_*_*',
+                'keep *_smearedPatPFMETs*_*_*',
+                'drop *_smearedPatPFMETs*_diTauToMEtAssociations_*',
                 'keep *_muonTriggerEfficiencyCorrection_*_*',
-                'keep *_vertexMultiplicityReweight_*_*',
+                'keep *_vertexMultiplicityReweight3d_*_*',
                 'keep *_vertexMultiplicityVsRhoPFNeutralReweight_*_*',
                 'keep *_addPileupInfo_*_*',
                 'keep *_genParticles_*_*',
                 'keep *_tauGenJets_*_*',
                 'keep *_tauGenJetsSelectorAllHadrons_*_*',
-                'keep *_genMetTrue_*_*'
+                'keep *_genMetTrue_*_*',
+                # CV: additional collections needed to run nSVfit algorithm  
+                #'keep *_smearedAK5PFJets_*_*'
             )
         )
     #--------------------------------------------------------------------------------
