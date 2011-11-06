@@ -104,7 +104,7 @@ class CopyWorker(threading.Thread):
         if not os.path.isdir(local_dirname):
             print "Creating local directory %s" % local_dirname
             os.makedirs(local_dirname, 0777)
-        command = ['rfcp', castor_file, local_path]
+        command = ['nice', '--adjustment=15', 'rfcp', castor_file, local_path]
         print "Requesting %s -> %s" % (castor_file, local_path)
         result = subprocess.call(command)
         #result = 0

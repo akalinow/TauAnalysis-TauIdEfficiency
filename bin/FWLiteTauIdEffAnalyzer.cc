@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.23 $
+ * \version $Revision: 1.24 $
  *
- * $Id: FWLiteTauIdEffAnalyzer.cc,v 1.23 2011/10/19 14:34:31 veelken Exp $
+ * $Id: FWLiteTauIdEffAnalyzer.cc,v 1.24 2011/10/25 16:16:23 veelken Exp $
  *
  */
 
@@ -30,8 +30,13 @@
 
 #include "DataFormats/PatCandidates/interface/Tau.h"
 #include "DataFormats/PatCandidates/interface/Muon.h"
-#include "DataFormats/PatCandidates/interface/TriggerEvent.h"
-#include "DataFormats/PatCandidates/interface/TriggerAlgorithm.h"
+#include "DataFormats/PatCandidates/interface/MET.h"
+#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerReadoutRecord.h"
+#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerObjectMapRecord.h"
+#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerObjectMapFwd.h"
+#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerObjectMap.h"
+#include "DataFormats/Common/interface/TriggerResults.h"
+#include "FWCore/Common/interface/TriggerNames.h"
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
@@ -103,16 +108,17 @@ struct histManagerEntryType
       histManagerGenTau_->bookHistograms(dir);
     }
   }
-  void fillHistograms(double x, const PATMuTauPair& muTauPair, size_t numVertices, int genMatchType, double weight)
+  void fillHistograms(double x, const PATMuTauPair& muTauPair, const pat::MET& caloMEt, 
+		      size_t numVertices, int genMatchType, double weight)
   {
     if ( x > min_ && x <= max_ ) {
-      histManager_->fillHistograms(muTauPair, numVertices, weight);
+      histManager_->fillHistograms(muTauPair, caloMEt, numVertices, weight);
 
       if ( fillGenMatchHistograms_ ) {
-	if      ( genMatchType == kJetToTauFakeMatched ) histManagerJetToTauFake_->fillHistograms(muTauPair, numVertices, weight);
-	else if ( genMatchType == kMuToTauFakeMatched  ) histManagerMuToTauFake_->fillHistograms(muTauPair, numVertices, weight);
+	if      ( genMatchType == kJetToTauFakeMatched ) histManagerJetToTauFake_->fillHistograms(muTauPair, caloMEt, numVertices, weight);
+	else if ( genMatchType == kMuToTauFakeMatched  ) histManagerMuToTauFake_->fillHistograms(muTauPair, caloMEt, numVertices, weight);
 	else if ( genMatchType == kGenTauHadMatched    ||
-		  genMatchType == kGenTauOtherMatched  ) histManagerGenTau_->fillHistograms(muTauPair, numVertices, weight);
+		  genMatchType == kGenTauOtherMatched  ) histManagerGenTau_->fillHistograms(muTauPair, caloMEt, numVertices, weight);
       }
     }
   }
@@ -216,12 +222,13 @@ struct regionEntryType
     
     delete selEventsFile_;
   }
-  void analyze(const fwlite::Event& evt, const PATMuTauPair& muTauPair, size_t numVertices, int genMatchType, double evtWeight)
+  void analyze(const fwlite::Event& evt, const PATMuTauPair& muTauPair, const pat::MET& caloMEt, 
+	       size_t numVertices, int genMatchType, double evtWeight)
   {
     pat::strbitset evtSelFlags;
-    if ( selector_->operator()(muTauPair, evtSelFlags) ) {
+    if ( selector_->operator()(muTauPair, caloMEt, evtSelFlags) ) {
 //--- fill histograms for "inclusive" tau id. efficiency measurement
-      histogramsUnbinned_->fillHistograms(0., muTauPair, numVertices, genMatchType, evtWeight);
+      histogramsUnbinned_->fillHistograms(0., muTauPair, caloMEt, numVertices, genMatchType, evtWeight);
 
 //--- fill histograms for tau id. efficiency measurement as function of 
 //   o tau-jet transverse momentum
@@ -238,7 +245,7 @@ struct regionEntryType
 	else if ( (*histManagerEntry)->binVariable_ == "sumEt"       ) x = muTauPair.met()->sumEt();
 	else throw cms::Exception("regionEntryType::analyze")
 	  << "Invalid binVariable = " << (*histManagerEntry)->binVariable_ << " !!\n";
-	(*histManagerEntry)->fillHistograms(x, muTauPair, numVertices, genMatchType, evtWeight);
+	(*histManagerEntry)->fillHistograms(x, muTauPair, caloMEt, numVertices, genMatchType, evtWeight);
       }
  
       if ( selEventsFile_ ) 
@@ -301,8 +308,12 @@ int main(int argc, char* argv[])
   std::string svFitMassHypothesis = cfgTauIdEffAnalyzer.getParameter<std::string>("svFitMassHypothesis");
   std::string tauChargeMode = cfgTauIdEffAnalyzer.getParameter<std::string>("tauChargeMode");
   bool disableTauCandPreselCuts = cfgTauIdEffAnalyzer.getParameter<bool>("disableTauCandPreselCuts");
-  edm::InputTag srcTrigger = cfgTauIdEffAnalyzer.getParameter<edm::InputTag>("srcTrigger");
+  edm::InputTag srcHLTresults = cfgTauIdEffAnalyzer.getParameter<edm::InputTag>("srcHLTresults");
+  edm::InputTag srcL1GtReadoutRecord = cfgTauIdEffAnalyzer.getParameter<edm::InputTag>("srcL1GtReadoutRecord"); 
+  edm::InputTag srcL1GtObjectMapRecord = cfgTauIdEffAnalyzer.getParameter<edm::InputTag>("srcL1GtObjectMapRecord");
   vstring hltPaths = cfgTauIdEffAnalyzer.getParameter<vstring>("hltPaths");
+  vstring l1Bits = cfgTauIdEffAnalyzer.getParameter<vstring>("l1Bits");
+  edm::InputTag srcCaloMEt = cfgTauIdEffAnalyzer.getParameter<edm::InputTag>("srcCaloMEt");
   edm::InputTag srcGoodMuons = cfgTauIdEffAnalyzer.getParameter<edm::InputTag>("srcGoodMuons");
   edm::InputTag srcVertices = cfgTauIdEffAnalyzer.getParameter<edm::InputTag>("srcVertices");
   edm::InputTag srcGenParticles = cfgTauIdEffAnalyzer.getParameter<edm::InputTag>("srcGenParticles");
@@ -434,6 +445,7 @@ int main(int argc, char* argv[])
       double evtWeight = 1.0;
       for ( vInputTag::const_iterator srcWeight = srcWeights.begin();
 	    srcWeight != srcWeights.end(); ++srcWeight ) {
+	std::cout << ">" << srcWeight->label() << "<" << std::endl;
 	edm::Handle<double> weight;
 	evt.getByLabel(*srcWeight, weight);
 	evtWeight *= (*weight);
@@ -469,21 +481,53 @@ int main(int argc, char* argv[])
       histogramEventCounter->Fill(2);
 
 //--- check that event has passed triggers
-      edm::Handle<pat::TriggerEvent> hltEvent;
-      evt.getByLabel(srcTrigger, hltEvent);
-  
-      bool isTriggered = false;
-      for ( vstring::const_iterator hltPathName = hltPaths.begin();
-	    hltPathName != hltPaths.end() && !isTriggered; ++hltPathName ) {
-	if ( (*hltPathName) == "*" ) { // check for wildcard character "*" that accepts all events
-	  isTriggered = true;
-	} else {
-	  const pat::TriggerPath* hltPath = hltEvent->path(*hltPathName);
-	  if ( hltPath && hltPath->wasAccept() ) isTriggered = true;
+      bool anyHLTpath_passed = false;
+      if ( hltPaths.size() == 0 ) {
+	anyHLTpath_passed = true;
+      } else {
+	edm::Handle<edm::TriggerResults> hltResults;
+	evt.getByLabel(srcHLTresults, hltResults);
+	
+	const edm::TriggerNames& triggerNames = evt.triggerNames(*hltResults);
+	
+	for ( vstring::const_iterator hltPath = hltPaths.begin();
+	      hltPath != hltPaths.end(); ++hltPath ) {
+	  bool isHLTpath_passed = false;
+	  unsigned int idx = triggerNames.triggerIndex(*hltPath);
+	  if ( idx < triggerNames.size() ) isHLTpath_passed = hltResults->accept(idx);
+	  if ( isHLTpath_passed ) anyHLTpath_passed = true;
 	}
       }
 
-      if ( !isTriggered ) continue;
+      if ( !anyHLTpath_passed ) continue;
+
+      bool anyL1bit_passed = false;
+      if ( l1Bits.size() == 0 ) {
+	anyL1bit_passed = true;
+      } else {
+	edm::Handle<L1GlobalTriggerReadoutRecord> l1GtReadoutRecord;
+	evt.getByLabel(srcL1GtReadoutRecord, l1GtReadoutRecord);
+	edm::Handle<L1GlobalTriggerObjectMapRecord> l1GtObjectMapRecord;
+	evt.getByLabel(srcL1GtObjectMapRecord, l1GtObjectMapRecord);
+
+	DecisionWord l1GtDecision = l1GtReadoutRecord->decisionWord();
+	const std::vector<L1GlobalTriggerObjectMap>& l1GtObjectMaps = l1GtObjectMapRecord->gtObjectMap();
+
+	for ( vstring::const_iterator l1Bit = l1Bits.begin();
+	      l1Bit != l1Bits.end(); ++l1Bit ) {	  
+	  for ( std::vector<L1GlobalTriggerObjectMap>::const_iterator l1GtObjectMap = l1GtObjectMaps.begin();
+		l1GtObjectMap != l1GtObjectMaps.end(); ++l1GtObjectMap ) {
+	    bool isL1bit_passed = false;
+	    std::string l1Bit_idx = (*l1GtObjectMap).algoName();
+	    int idx = (*l1GtObjectMap).algoBitNumber();	    
+	    if ( l1Bit_idx == (*l1Bit) ) isL1bit_passed = l1GtDecision[idx];
+	    if ( isL1bit_passed ) anyL1bit_passed = true;
+	  }
+	}
+      }
+
+      if ( !anyL1bit_passed ) continue;
+
       ++numEvents_passedTrigger;
       numEventsWeighted_passedTrigger += evtWeight;
 
@@ -501,12 +545,19 @@ int main(int argc, char* argv[])
 //    passing the selection criteria for region "ABCD"
       edm::Handle<PATMuTauPairCollection> muTauPairs;
       evt.getByLabel(srcMuTauPairs, muTauPairs);
+      
+      typedef std::vector<pat::MET> PATMETCollection;
+      edm::Handle<PATMETCollection> caloMEt;
+      evt.getByLabel(srcCaloMEt, caloMEt);
+      if ( caloMEt->size() != 1 )
+	throw cms::Exception("FWLiteTauIdEffAnalyzer")
+	  << "Failed to find unique CaloMEt object !!\n";
 
       unsigned numMuTauPairsABCD = 0;
       for ( PATMuTauPairCollection::const_iterator muTauPair = muTauPairs->begin();
 	    muTauPair != muTauPairs->end(); ++muTauPair ) {
 	pat::strbitset evtSelFlags;
-	if ( selectorABCD->operator()(*muTauPair, evtSelFlags) ) ++numMuTauPairsABCD;
+	if ( selectorABCD->operator()(*muTauPair, caloMEt->front(), evtSelFlags) ) ++numMuTauPairsABCD;
       }
       
       if ( !(numMuTauPairsABCD <= 1) ) continue;
@@ -540,7 +591,7 @@ int main(int argc, char* argv[])
 	  double evtWeight_region = evtWeight;
 	  if ( muonIsoProbExtractor && (*regionEntry)->region_.find("_mW") != std::string::npos ) 
 	    evtWeight_region *= (*muonIsoProbExtractor)(*muTauPair->leg1());
-	  (*regionEntry)->analyze(evt, *muTauPair, numVertices, genMatchType, evtWeight_region);
+	  (*regionEntry)->analyze(evt, *muTauPair, caloMEt->front(), numVertices, genMatchType, evtWeight_region);
 
 	  //pat::strbitset evtSelFlags;
 	  //if ( (*regionEntry)->region_ == "D1p" && (*regionEntry)->selector_->operator()(*muTauPair, evtSelFlags) ) {

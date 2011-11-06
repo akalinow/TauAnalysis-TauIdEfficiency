@@ -13,9 +13,9 @@ import subprocess
 channel = 'ZtoMuTau_tauIdEff'
 
 #jobId = getJobId(channel)
-jobId = '2011Aug18'
+jobId = '2011Oct30'
 
-version = "V9tauEnRecovery"
+version = 'V10_1tauEnRecovery'
 
 lxbatch_queue = '1nw'
 
@@ -23,15 +23,19 @@ pfCandidateCollection = "particleFlow" # pile-up removal disabled
 #pfCandidateCollection = "pfNoPileUp"   # pile-up removal enabled
 
 samplesToAnalyze = [
-    'data_SingleMu_Run2011A_May10ReReco_v1',
-    'data_SingleMu_Run2011A_PromptReco_v4',
-    'Ztautau_powheg',
-    'Ztautau_embedded_part1',
-    'Ztautau_embedded_part2',
-    'Zmumu_powheg',
-    'PPmuXptGt20Mu15',
-    'WplusJets_madgraph',
-    'TTplusJets_madgraph'
+    ##'data_SingleMu_Run2011A_May10ReReco_v1',
+    ##'data_SingleMu_Run2011A_PromptReco_v4',
+    ##'data_SingleMu_Run2011A_Aug05ReReco_v1',
+    ##'data_SingleMu_Run2011A_PromptReco_v6',
+    ##'data_MET_Run2011B_PromptReco_v1',
+    'data_MET_Run2011B_PromptReco_v1a',
+    ##'Ztautau_powheg',
+    #'Ztautau_embedded_part1',
+    #'Ztautau_embedded_part2',
+    ##'Zmumu_powheg',
+    ##'PPmuXptGt20Mu15',
+    ##'WplusJets_madgraph',
+    ##'TTplusJets_madgraph'
 ]
 
 samplesToAnalyze_noTauSel = [
@@ -41,6 +45,10 @@ samplesToAnalyze_noTauSel = [
 numInputFilesPerJob = {
     'data_SingleMu_Run2011A_May10ReReco_v1' : 10,
     'data_SingleMu_Run2011A_PromptReco_v4'  : 10,
+    'data_SingleMu_Run2011A_Aug05ReReco_v1' :  5,
+    'data_SingleMu_Run2011A_PromptReco_v6'  :  5,
+    'data_MET_Run2011B_PromptReco_v1'       :  3,
+    'data_MET_Run2011B_PromptReco_v1a'      :  3,
     'Ztautau_powheg'                        :  3,
     'Ztautau_embedded_part1'                :  5,
     'Ztautau_embedded_part2'                :  5,
@@ -56,7 +64,7 @@ print("inputFilePath = %s" % inputFilePath)
 
 #outputFilePath = "/castor/cern.ch/user/m/mverzett/tagprobe/patTuples_v6"
 #outputFilePath = "/castor/cern.ch/user/m/mverzett/tagprobe/"
-outputFilePath = "/castor/cern.ch/user/v/veelken/CMSSW_4_2_x/PATtuples/TauIdEffMeas/%s" % jobId
+outputFilePath = "/castor/cern.ch/user/v/veelken/CMSSW_4_2_x/PATtuples/TauIdEffMeas/%s/%s" % (jobId, version)
 
 configFile = 'produceTauIdEffMeasPATTuple_cfg.py'
 configFile_noTauSel = 'produceTauIdEffMeasPATTuple_noTauSel_cfg.py'
@@ -115,11 +123,6 @@ def customizeConfigFile(sampleName, jobId, version, inputFileNames, outputFileNa
         HLTprocessName = recoSampleDefinitionsTauIdEfficiency_7TeV['RECO_SAMPLES'][sampleName]['hlt'].getProcessName()
     cfg_modified = cfg_modified.replace("#HLTprocessName#", "'%s'" % HLTprocessName)
     cfg_modified = cfg_modified.replace("#pfCandidateCollection#", "'%s'" % pfCandidateCollection)
-    applyZrecoilCorrection = "False"
-    if 'applyZrecoilCorrection' in recoSampleDefinitionsTauIdEfficiency_7TeV['RECO_SAMPLES'][sampleName].keys() and \
-      recoSampleDefinitionsTauIdEfficiency_7TeV['RECO_SAMPLES'][sampleName]['applyZrecoilCorrection']:
-        applyZrecoilCorrection = "True"                
-    cfg_modified = cfg_modified.replace("#applyZrecoilCorrection#", "%s" % applyZrecoilCorrection)
 
     cfg_modified += "\n"
     cfg_modified += "process.source.fileNames = cms.untracked.vstring(%s)\n" % \
@@ -199,7 +202,7 @@ for sampleToAnalyze in samplesToAnalyze:
 
             bsubScriptFileNames[sampleToAnalyze][bsubId] = bsubScriptFileName
             
-            bsubJobName = "tauIdEffPATtuple%s%s" % (sampleToAnalyze, bsubId)
+            bsubJobName = "tauIdEffPATtuple_%s%s" % (sampleToAnalyze, bsubId)
             bsubJobNames[sampleToAnalyze][bsubId] = bsubJobName
 
 # create "master" shell script

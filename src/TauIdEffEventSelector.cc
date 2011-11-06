@@ -46,6 +46,10 @@ TauIdEffEventSelector::TauIdEffEventSelector(const edm::ParameterSet& cfg)
   muTauPairAbsDzMax_        =   0.2; // 2mm
   muTauPairChargeProdMin_   =  -1.e+3;
   muTauPairChargeProdMax_   =  +1.e+3; 
+  caloMEtPtMin_             =  20.0;
+  caloMEtPtMax_             =  +1.e+2;
+  pfMEtPtMin_               =  20.0;
+  pfMEtPtMax_               =  +1.e+2;
   MtMin_                    =  -1.e+3;
   MtMax_                    =  40.0;
   PzetaDiffMin_             = -20.0;
@@ -124,7 +128,7 @@ void printCutValue(const std::string& variable, double value, double min, double
   std::cout << std::endl;
 }
 
-bool TauIdEffEventSelector::operator()(const PATMuTauPair& muTauPair, pat::strbitset& result)
+bool TauIdEffEventSelector::operator()(const PATMuTauPair& muTauPair, const pat::MET& caloMEt, pat::strbitset& result)
 {
   //std::cout << "<TauIdEffEventSelector::operator()>:" << std::endl;
 
@@ -149,6 +153,8 @@ bool TauIdEffEventSelector::operator()(const PATMuTauPair& muTauPair, pat::strbi
   double muTauPairAbsDz      = TMath::Abs(muTauPair.leg1()->vertex().z() - muTauPair.leg2()->vertex().z());
   double muTauPairChargeProd = muTauPair.leg1()->charge()*tauCharge;
   double visMass             = (muTauPair.leg1()->p4() + muTauPair.leg2()->p4()).mass();
+  double caloMEtPt           = caloMEt.pt();
+  double pfMEtPt             = muTauPair.met()->pt();
   double Mt                  = muTauPair.mt1MET();
   double PzetaDiff           = muTauPair.pZeta() - 1.5*muTauPair.pZetaVis();
 
@@ -174,9 +180,11 @@ bool TauIdEffEventSelector::operator()(const PATMuTauPair& muTauPair, pat::strbi
        muTauPairAbsDz      <  muTauPairAbsDzMax_      &&
        muTauPairChargeProd >  muTauPairChargeProdMin_ && muTauPairChargeProd     <  muTauPairChargeProdMax_ && 
        visMass             >  visMassCutoffMin_       && visMass                 <  visMassCutoffMax_       &&
+       caloMEtPt           >  caloMEtPtMin_           && caloMEtPt               <  caloMEtPtMax_           &&
+       pfMEtPt             >  pfMEtPtMin_             && pfMEtPt                 <  pfMEtPtMax_             &&
        Mt                  >  MtCutoffMin_            && Mt                      <  MtCutoffMax_            ) {
-    //bool MtAndPzetaDiffCut_passed = (Mt > MtMin_ && Mt < MtMax_ && PzetaDiff > PzetaDiffMin_ && PzetaDiff < PzetaDiffMax_);
-    bool MtAndPzetaDiffCut_passed = (Mt > MtMin_ && Mt < MtMax_);
+    bool MtAndPzetaDiffCut_passed = (Mt > MtMin_ && Mt < MtMax_ && PzetaDiff > PzetaDiffMin_ && PzetaDiff < PzetaDiffMax_);
+    //bool MtAndPzetaDiffCut_passed = (Mt > MtMin_ && Mt < MtMax_);
 
     bool tauIdDiscriminators_passed = true;
     for ( vstring::const_iterator tauIdDiscriminator = tauIdDiscriminators_.begin();

@@ -10,9 +10,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.3 $
+ * \version $Revision: 1.4 $
  *
- * $Id: FWLiteTauFakeRateAnalyzer.cc,v 1.3 2011/07/26 14:04:16 veelken Exp $
+ * $Id: FWLiteTauFakeRateAnalyzer.cc,v 1.4 2011/08/02 15:16:09 veelken Exp $
  *
  */
 
@@ -154,6 +154,8 @@ int main(int argc, char* argv[])
   edm::InputTag srcTauJetCandidates = cfgTauFakeRateAnalyzer.getParameter<edm::InputTag>("srcTauJetCandidates");
   edm::InputTag srcVertices = cfgTauFakeRateAnalyzer.getParameter<edm::InputTag>("srcVertices");
   edm::InputTag srcMET = cfgTauFakeRateAnalyzer.getParameter<edm::InputTag>("srcMET");
+  edm::InputTag srcTrigger = cfgTauFakeRateAnalyzer.getParameter<edm::InputTag>("srcTrigger");
+  vstring hltPaths = cfgTauFakeRateAnalyzer.getParameter<vstring>("hltPaths");
   typedef std::vector<edm::InputTag> vInputTag;
   vInputTag srcWeights = cfgTauFakeRateAnalyzer.getParameter<vInputTag>("weights");
   edm::InputTag srcEventCounter = cfgTauFakeRateAnalyzer.getParameter<edm::InputTag>("srcEventCounter");
@@ -211,8 +213,10 @@ int main(int argc, char* argv[])
   double xSection = cfgTauFakeRateAnalyzer.getParameter<double>("xSection");
   double intLumiData = cfgTauFakeRateAnalyzer.getParameter<double>("intLumiData");
 
-  int    numEvents_processed         = 0; 
-  double numEventsWeighted_processed = 0.;
+  int    numEvents_processed             = 0; 
+  double numEventsWeighted_processed     = 0.;
+  int    numEvents_passedTrigger         = 0;
+  double numEventsWeighted_passedTrigger = 0.;
 
   edm::RunNumber_t lastLumiBlock_run = -1;
   edm::LuminosityBlockNumber_t lastLumiBlock_ls = -1;
@@ -277,6 +281,44 @@ int main(int argc, char* argv[])
       numEventsWeighted_processed += evtWeight;
       if ( maxEvents > 0 && numEvents_processed >= maxEvents ) maxEvents_processed = true;
 
+//--- check that event has passed triggers
+//
+//    CV: In order to match pile-up distribution in Monte Carlo with Data,
+//        weight Data events by probability to pass trigger prescales.
+//        Note that this assumes that the prescales of all HLT paths are uncorrelated
+//       (assumption is not valid in case HLT paths share L1 conditions and those L1 conditions are prescaled)
+//     
+      edm::Handle<pat::TriggerEvent> hltEvent;
+      evt.getByLabel(srcTrigger, hltEvent);
+  
+      bool isTriggered = false;
+      double probFailedPrescale = 1.;
+      for ( vstring::const_iterator hltPathName = hltPaths.begin();
+	    hltPathName != hltPaths.end() && !isTriggered; ++hltPathName ) {
+	if ( (*hltPathName) == "*" ) { // check for wildcard character "*" that accepts all events
+	  isTriggered = true;
+	  probFailedPrescale = 0.;
+	  break;
+	} else {
+	  const pat::TriggerPath* hltPath = hltEvent->path(*hltPathName);
+	  if ( hltPath && hltPath->wasAccept() ) {
+	    isTriggered = true;
+	    unsigned prescale = hltPath->prescale();
+	    if ( prescale <= 1 ) probFailedPrescale = 0.;
+	    else probFailedPrescale *= (1. - 1./prescale);
+	    std::cout << "HLT path = " << hltPath->name() << ": prescale = " << prescale << std::endl;
+	  }
+	}
+      }
+      
+      if ( !isTriggered ) continue;
+      ++numEvents_passedTrigger;
+      numEventsWeighted_passedTrigger += evtWeight;
+
+      if ( isData && probFailedPrescale > (1. - 1.e-9) ) continue;
+      double prescaleCorrFactor = ( isData ) ? 1./(1. - probFailedPrescale) : 1.;
+      evtWeight *= prescaleCorrFactor;
+
 //--- determine number of vertices reconstructed in the event
 //   (needed to parametrize dependency of jet --> tau fake-rate on number of pile-up interactions)
       edm::Handle<reco::VertexCollection> vertices;
@@ -340,6 +382,8 @@ int main(int argc, char* argv[])
   std::cout << "<FWLiteTauFakeRateAnalyzer>:" << std::endl;
   std::cout << " numEvents_processed: " << numEvents_processed 
 	    << " (weighted = " << numEventsWeighted_processed << ")" << std::endl;
+  std::cout << " numEvents_passedTrigger: " << numEvents_passedTrigger 
+	    << " (weighted = " << numEventsWeighted_passedTrigger << ")" << std::endl;
   std::string lastTauIdName = "";
   for ( std::vector<regionEntryType*>::iterator regionEntry = regionEntries.begin();
 	regionEntry != regionEntries.end(); ++regionEntry ) {

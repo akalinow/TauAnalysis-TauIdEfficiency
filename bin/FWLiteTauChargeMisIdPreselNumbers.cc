@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.3 $
+ * \version $Revision: 1.4 $
  *
- * $Id: FWLiteTauChargeMisIdPreselNumbers.cc,v 1.3 2011/08/04 07:37:03 veelken Exp $
+ * $Id: FWLiteTauChargeMisIdPreselNumbers.cc,v 1.4 2011/08/10 16:23:07 veelken Exp $
  *
  */
 
@@ -28,6 +28,7 @@
 
 #include "DataFormats/PatCandidates/interface/Tau.h"
 #include "DataFormats/PatCandidates/interface/Muon.h"
+#include "DataFormats/PatCandidates/interface/MET.h"
 #include "DataFormats/PatCandidates/interface/TriggerEvent.h"
 #include "DataFormats/PatCandidates/interface/TriggerAlgorithm.h"
 #include "DataFormats/VertexReco/interface/Vertex.h"
@@ -260,13 +261,14 @@ struct regionEntryType
   }
   void analyze(const PATMuTauPair& muTauPair, 
 	       int genMatchType, double genTauCharge, const std::string& genTauDecayMode, double recTauCharge,
+	       const pat::MET& caloMEt, 
 	       size_t numVertices, 
 	       double evtWeight)
   {
     //std::cout << "<cutFlowEntryType::analyze>:" << std::endl;
 
     pat::strbitset evtSelFlags;
-    if ( selector_->operator()(muTauPair, evtSelFlags) ) {
+    if ( selector_->operator()(muTauPair, caloMEt, evtSelFlags) ) {
 
 //--- set flags indicating whether tau-jet candidate passes 
 //    "leading" track finding, leading track Pt and loose (PF)isolation requirements 
@@ -408,6 +410,7 @@ int main(int argc, char* argv[])
   edm::InputTag srcGenParticles = cfgTauChargeMisIdPreselNumbers.getParameter<edm::InputTag>("srcGenParticles");
   edm::InputTag srcTrigger = cfgTauChargeMisIdPreselNumbers.getParameter<edm::InputTag>("srcTrigger");
   vstring hltPaths = cfgTauChargeMisIdPreselNumbers.getParameter<vstring>("hltPaths");
+  edm::InputTag srcCaloMEt = cfgTauChargeMisIdPreselNumbers.getParameter<edm::InputTag>("srcCaloMEt");
   edm::InputTag srcGoodMuons = cfgTauChargeMisIdPreselNumbers.getParameter<edm::InputTag>("srcGoodMuons");
   edm::InputTag srcVertices = cfgTauChargeMisIdPreselNumbers.getParameter<edm::InputTag>("srcVertices");
   typedef std::vector<edm::InputTag> vInputTag;
@@ -528,11 +531,18 @@ int main(int argc, char* argv[])
       edm::Handle<PATMuTauPairCollection> muTauPairs;
       evt.getByLabel(srcMuTauPairs, muTauPairs);
 
+      typedef std::vector<pat::MET> PATMETCollection;
+      edm::Handle<PATMETCollection> caloMEt;
+      evt.getByLabel(srcCaloMEt, caloMEt);
+      if ( caloMEt->size() != 1 )
+	throw cms::Exception("FWLiteTauChargeMisIdPreselNumbers")
+	  << "Failed to find unique CaloMEt object !!\n";
+
       unsigned numMuTauPairsABCD = 0;
       for ( PATMuTauPairCollection::const_iterator muTauPair = muTauPairs->begin();
 	    muTauPair != muTauPairs->end(); ++muTauPair ) {
 	pat::strbitset evtSelFlags;
-	if ( selectorABCD->operator()(*muTauPair, evtSelFlags) ) ++numMuTauPairsABCD;
+	if ( selectorABCD->operator()(*muTauPair, caloMEt->front(), evtSelFlags) ) ++numMuTauPairsABCD;
       }
       
       if ( !(numMuTauPairsABCD <= 1) ) continue;
@@ -578,6 +588,7 @@ int main(int argc, char* argv[])
  */
 	  (*regionEntry)->analyze(*muTauPair, 
 				  genMatchType, genTauCharge, genTauDecayMode, recTauCharge, 
+				  caloMEt->front(), 
 				  numVertices, 
 				  evtWeight);
 

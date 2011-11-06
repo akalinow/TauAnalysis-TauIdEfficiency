@@ -1,12 +1,13 @@
 import FWCore.ParameterSet.Config as cms
 
+from TauAnalysis.CandidateTools.tools.composeModuleName import composeModuleName
 from TauAnalysis.TauIdEfficiency.produceTauIdEffMeasPATTuple_base import produceTauIdEffMeasPATTuple_base
 from PhysicsTools.PatAlgos.patEventContent_cff import patTriggerEventContent
 
-def produceTauIdEffMeasPATTuple(process, isMC, isEmbedded, HLTprocessName, pfCandidateCollection, applyZrecoilCorrection):
+def produceTauIdEffMeasPATTuple(process, isMC, isEmbedded, HLTprocessName, pfCandidateCollection):
 
     # produce PAT objects common between PAT-tuple and Ntuple production
-    produceTauIdEffMeasPATTuple_base(process, isEmbedded, isMC, HLTprocessName, pfCandidateCollection, applyZrecoilCorrection)
+    produceTauIdEffMeasPATTuple_base(process, isMC, isEmbedded, HLTprocessName, pfCandidateCollection)
 
     #--------------------------------------------------------------------------------
     #
@@ -78,20 +79,15 @@ def produceTauIdEffMeasPATTuple(process, isMC, isEmbedded, HLTprocessName, pfCan
            inputFileName = cms.FileInPath("TauAnalysis/TauIdEfficiency/data/singleMuHLTeff.root"),
            lutName = cms.string('hEff'),
            parametrization = cms.PSet(
-               src = cms.VInputTag('selectedPatMuonsForTauIdEffTrkIPcumulative'),
+               src = cms.VInputTag(composeModuleName(['selectedPatMuonsForTauIdEffPFRelIso', "cumulative"])),
                x = cms.string("eta()"),
                y = cms.string("pt()"),
-               z = cms.string("? pt() > 0. ? userFloat('pfLooseIsoPt03')/pt() : -1.")
+               z = cms.string("0.")
            ),
            noObjectSubstituteValue = cms.double(0.) # weight returned in case all 'src' collections do not contain any entries
         )
         process.producePatTupleTauIdEffMeasSpecific += process.muonTriggerEfficiencyCorrection
         
-        # add reweighting factors to be applied to Monte Carlo simulated events
-        # in order to match vertex multiplicity distribution in Data
-        process.load("TauAnalysis.RecoTools.vertexMultiplicityReweight_cfi")
-        process.producePatTupleTauIdEffMeasSpecific += process.vertexMultiplicityReweight
-
         # add reweighting factors (rho-Neutral correction)
         # to correct for Data/MC differences in modeling out-out-time pile-up
         process.load("TauAnalysis.RecoTools.vertexMultiplicityVsRhoPFNeutralReweight_cfi")
@@ -109,73 +105,30 @@ def produceTauIdEffMeasPATTuple(process, isMC, isEmbedded, HLTprocessName, pfCan
                 'keep EventAux_*_*_*',
                 'keep LumiSummary_*_*_*',                       
                 'keep edmMergeableCounter_*_*_*',
-                'keep *_selectedPatMuonsForTauIdEffPFRelIso_*_*',
+                'keep *_gtDigis_*_*',
+                'keep *_hltL1GtObjectMap_*_*',
+                'keep *_TriggerResults_*_*',                                            
+                'keep *_selectedPatMuonsForTauIdEffPFRelIsoCumulative_*_*',
                 'keep *_selectedPatMuonsForTauIdEffZmumuHypotheses_*_*',
-                'keep *_selectedDiMuPairForTauIdEffZmumuHypotheses_*_*',                                          
-                'keep *_selectedPatJetsAK5PFAntiOverlapWithMuonsVeto_*_*',                                         
-                #'keep *_selectedPatPFTausFixedConeForTauIdEffCumulative_*_*',
-                #'keep *_selectedPatPFTausFixedConeForTauIdEffSysJetEnUpCumulative_*_*',
-                #'keep *_selectedPatPFTausFixedConeForTauIdEffSysJetEnDownCumulative_*_*',
-                #'keep *_selectedPatPFTausFixedConeForTauIdEffSysTauJetEnUpCumulative_*_*',
-                #'keep *_selectedPatPFTausFixedConeForTauIdEffSysTauJetEnDownCumulative_*_*',
-                #'keep *_selectedPatPFTausShrinkingConeForTauIdEffCumulative_*_*',
-                #'keep *_selectedPatPFTausShrinkingConeForTauIdEffSysJetEnUpCumulative_*_*',
-                #'keep *_selectedPatPFTausShrinkingConeForTauIdEffSysJetEnDownCumulative_*_*',
-                #'keep *_selectedPatPFTausShrinkingConeForTauIdEffSysTauJetEnUpCumulative_*_*',
-                #'keep *_selectedPatPFTausShrinkingConeForTauIdEffSysTauJetEnDownCumulative_*_*',
-                'keep *_selectedPatPFTausHPSforTauIdEffCumulative_*_*',
-                'keep *_selectedPatPFTausHPSforTauIdEffSysJetEnUpCumulative_*_*',
-                'keep *_selectedPatPFTausHPSforTauIdEffSysJetEnDownCumulative_*_*',
-                'keep *_selectedPatPFTausHPSforTauIdEffSysTauJetEnUpCumulative_*_*',
-                'keep *_selectedPatPFTausHPSforTauIdEffSysTauJetEnDownCumulative_*_*',
-                'keep *_selectedPatPFTausHPSpTaNCforTauIdEffCumulative_*_*',
-                'keep *_selectedPatPFTausHPSpTaNCforTauIdEffSysJetEnUpCumulative_*_*',
-                'keep *_selectedPatPFTausHPSpTaNCforTauIdEffSysJetEnDownCumulative_*_*',                                            
-                'keep *_selectedPatPFTausHPSpTaNCforTauIdEffSysTauJetEnUpCumulative_*_*',
-                'keep *_selectedPatPFTausHPSpTaNCforTauIdEffSysTauJetEnDownCumulative_*_*',
-                # CV: the '*' after "PairsDzForTauIdEff"
-                #     is needed to keep the collections with Z-recoil corrections applied
-                #'keep *_selectedMuPFTauFixedConePairsDzForTauIdEff*Cumulative_*_*',
-                #'keep *_selectedMuPFTauFixedConePairsDzForTauIdEff*SysJetEnUpCumulative_*_*',
-                #'keep *_selectedMuPFTauFixedConePairsDzForTauIdEff*SysJetEnDownCumulative_*_*',
-                #'keep *_selectedMuPFTauFixedConePairsDzForTauIdEff*SysTauJetEnUpCumulative_*_*',
-                #'keep *_selectedMuPFTauFixedConePairsDzForTauIdEff*SysTauJetEnDownCumulative_*_*',
-                #'keep *_selectedMuPFTauFixedConePairsDzForTauIdEff*SysAddPUsmearingCumulative_*_*',
-                #'keep *_selectedMuPFTauShrinkingConePairsDzForTauIdEff*Cumulative_*_*',
-                #'keep *_selectedMuPFTauShrinkingConePairsDzForTauIdEff*SysJetEnUpCumulative_*_*',
-                #'keep *_selectedMuPFTauShrinkingConePairsDzForTauIdEff*SysJetEnDownCumulative_*_*',
-                #'keep *_selectedMuPFTauShrinkingConePairsDzForTauIdEff*SysTauJetEnUpCumulative_*_*',
-                #'keep *_selectedMuPFTauShrinkingConePairsDzForTauIdEff*SysTauJetEnDownCumulative_*_*',
-                #'keep *_selectedMuPFTauShrinkingConePairsDzForTauIdEff*SysAddPUsmearingCumulative_*_*',
-                'keep *_selectedMuPFTauHPSpairsDzForTauIdEff*Cumulative_*_*',
-                'keep *_selectedMuPFTauHPSpairsDzForTauIdEff*SysJetEnUpCumulative_*_*',
-                'keep *_selectedMuPFTauHPSpairsDzForTauIdEff*SysJetEnDownCumulative_*_*',
-                'keep *_selectedMuPFTauHPSpairsDzForTauIdEff*SysTauJetEnUpCumulative_*_*',
-                'keep *_selectedMuPFTauHPSpairsDzForTauIdEff*SysTauJetEnDownCumulative_*_*',
-                'keep *_selectedMuPFTauHPSpairsDzForTauIdEff*SysAddPUsmearingCumulative_*_*',                                          
-                'keep *_selectedMuPFTauHPSpTaNCpairsDzForTauIdEff*Cumulative_*_*',
-                'keep *_selectedMuPFTauHPSpTaNCpairsDzForTauIdEff*SysJetEnUpCumulative_*_*',
-                'keep *_selectedMuPFTauHPSpTaNCpairsDzForTauIdEff*SysJetEnDownCumulative_*_*',
-                'keep *_selectedMuPFTauHPSpTaNCpairsDzForTauIdEff*SysTauJetEnUpCumulative_*_*',
-                'keep *_selectedMuPFTauHPSpTaNCpairsDzForTauIdEff*SysTauJetEnDownCumulative_*_*',
-                'keep *_selectedMuPFTauHPSpTaNCpairsDzForTauIdEff*SysAddPUsmearingCumulative_*_*',
+                'keep *_selectedDiMuPairForTauIdEffZmumuHypotheses_*_*',
+                'keep *_patJetsAK5PFnotOverlappingWithLeptonsForMEtUncertainty*_*_*',
+                #'keep *_selectedPatPFTausFixedConeForTauIdEff*_*_*',
+                #'keep *_selectedPatPFTausShrinkingConeForTauIdEff*_*_*',
+                'keep *_selectedPatPFTausHPSforTauIdEff*_*_*',
+                'keep *_selectedPatPFTausHPSpTaNCforTauIdEff*_*_*',
+                #'keep *_selectedMuPFTauFixedConePairsDzForTauIdEff*_*_*',
+                #'keep *_selectedMuPFTauShrinkingConePairsDzForTauIdEff*_*_*',
+                'keep *_selectedMuPFTauHPSpairsDzForTauIdEff*_*_*',
+                'keep *_selectedMuPFTauHPSpTaNCpairsDzForTauIdEff*_*_*',
                 'keep *_offlinePrimaryVertices_*_*',
                 'keep *_offlinePrimaryVerticesWithBS_*_*',
                 'keep *_selectedPrimaryVertexHighestPtTrackSum_*_*',
-                # CV: the '*' after "patPFMETs"
-                #     is needed to keep the collections with Z-recoil corrections applied                                            
-                'keep *_patPFMETs*_*_*',
-                'drop *_patPFMETs*_diTauToMEtAssociations_*',                                                            
-                'keep *_smearedMETpFTauHPSsysJetEnUp_*_*',
-                'keep *_smearedMETpFTauHPSsysJetEnDown_*_*',
-                'keep *_smearedMETpFTauHPSsysTauJetEnUp_*_*',
-                'keep *_smearedMETpFTauHPSsysTauJetEnDown_*_*',
-                'keep *_smearedMETpFTauHPSsysAddPUsmearing_*_*',                     
-                'keep *_smearedMETpFTauHPSpTaNCsysJetEnUp_*_*',
-                'keep *_smearedMETpFTauHPSpTaNCsysJetEnDown_*_*',
-                'keep *_smearedMETpFTauHPSpTaNCsysTauJetEnUp_*_*',
-                'keep *_smearedMETpFTauHPSpTaNCsysTauJetEnDown_*_*',
-                'keep *_smearedMETpFTauHPSpTaNCsysAddPUsmearing_*_*',                                            
+                # keep CaloMEt objects                                                            
+                'keep *_patMETs*_*_*',
+                # keep PFMEt objects                                               
+                'keep *_patPFMet*_*_*',
+                'keep *_patType1CorrectedPFMet*_*_*',
+                'keep *_patType1p2CorrectedPFMet*_*_*',
                 # CV: additional collections needed to run nSVfit algorithm                                                        
                 #'keep recoTracks_generalTracks_*_*',                                             
                 #'keep *_ak5PFJets_*_*',
@@ -191,11 +144,10 @@ def produceTauIdEffMeasPATTuple(process, isMC, isEmbedded, HLTprocessName, pfCan
     if isMC:
         process.patTupleOutputModule.outputCommands.extend(
           cms.untracked.vstring(
-                'keep *_selectedPatJetsAK5PFsmearedAntiOverlapWithMuonsVeto_*_*',
-                'keep *_smearedPatPFMETs*_*_*',
-                'drop *_smearedPatPFMETs*_diTauToMEtAssociations_*',
+                'keep *_smearedPatJetsAK5PF*_*_*',
                 'keep *_muonTriggerEfficiencyCorrection_*_*',
-                'keep *_vertexMultiplicityReweight3d_*_*',
+                'keep *_vertexMultiplicityReweight3dRunA_*_*',
+                'keep *_vertexMultiplicityReweight3dRunB_*_*',
                 'keep *_vertexMultiplicityVsRhoPFNeutralReweight_*_*',
                 'keep *_addPileupInfo_*_*',
                 'keep *_genParticles_*_*',
@@ -212,7 +164,6 @@ def produceTauIdEffMeasPATTuple(process, isMC, isEmbedded, HLTprocessName, pfCan
 
     process.p = cms.Path(
         process.prePatProductionSequence
-       + process.patDefaultSequence
        + process.producePatTupleTauIdEffMeasSpecific
      ##+ process.printEventContent
     )

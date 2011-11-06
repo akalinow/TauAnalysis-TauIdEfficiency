@@ -35,12 +35,14 @@ void TauIdEffHistManager::bookHistograms(TFileDirectory& dir)
   histogramMt_              = book1D(dir, "diTauMt",            "M_{T}(#mu + MET)",                      24,          0.0,        120.0);
   histogramPzetaDiff_       = book1D(dir, "diTauPzetaDiff",     "P_{#zeta} - 1.5 #cdot P_{#zeta}^{vis}", 24,        -80.0,        +40.0);
 
-  histogramMEt_             = book1D(dir, "met",                "E_{T}^{miss}",                          20,          0.0,        100.0);
-  histogramSumEt_           = book1D(dir, "sumEt",              "#Sigma E_{T}^{PF}",                     50,          0.,         500.0);
+  histogramPFMEt_           = book1D(dir, "pfMEt",              "pf-E_{T}^{miss}",                       20,          0.0,        100.0);
+  histogramPFSumEt_         = book1D(dir, "pfSumEt",            "#Sigma E_{T}^{PF}",                     50,          0.,         500.0);
+  histogramCaloMEt_         = book1D(dir, "caloMEt",            "calo-E_{T}^{miss}",                     20,          0.0,        100.0);
+  histogramCaloSumEt_       = book1D(dir, "caloSumEt",          "#Sigma E_{T}^{calo}",                   50,          0.,         500.0);
   histogramNumVertices_     = book1D(dir, "numVertices",        "Num. Vertices",                         20,         -0.5,         19.5);
 }
 
-void TauIdEffHistManager::fillHistograms(const PATMuTauPair& muTauPair, size_t numVertices, double weight)
+void TauIdEffHistManager::fillHistograms(const PATMuTauPair& muTauPair, const pat::MET& caloMEt, size_t numVertices, double weight)
 {
   histogramMuonPt_->Fill(muTauPair.leg1()->pt(), weight);
   histogramMuonEta_->Fill(muTauPair.leg1()->eta(), weight);
@@ -61,8 +63,10 @@ void TauIdEffHistManager::fillHistograms(const PATMuTauPair& muTauPair, size_t n
   histogramMt_->Fill(muTauPair.mt1MET(), weight);
   histogramPzetaDiff_->Fill(muTauPair.pZeta() - 1.5*muTauPair.pZetaVis(), weight);
 
-  histogramMEt_->Fill(muTauPair.met()->pt(), weight);
-  histogramSumEt_->Fill(muTauPair.met()->sumEt(), weight);
+  histogramPFMEt_->Fill(muTauPair.met()->pt(), weight);
+  histogramPFSumEt_->Fill(muTauPair.met()->sumEt(), weight);
+  histogramCaloMEt_->Fill(caloMEt.pt(), weight);
+  histogramCaloSumEt_->Fill(caloMEt.sumEt(), weight);
   histogramNumVertices_->Fill(numVertices, weight);
 }
 

@@ -8,10 +8,31 @@ from TauAnalysis.Configuration.tools.harvestingLXBatch import make_harvest_scrip
 from TauAnalysis.Configuration.tools.harvesting import castor_source, clean_by_crab_id
 
 castorFilePath = '/castor/cern.ch/user/v/veelken/TauIdCommissioning/'
-version = 'patV1_3'
+version = 'patV2_0'
 
 SAMPLES_TO_ANALYZE = [
     # modify in case you want to submit jobs for some of the samples only...
+    'data_Jet_Run2011A_May10ReReco_v1',
+    'data_Jet_Run2011A_PromptReco_v4',
+    'data_Jet_Aug05ReReco_v1',
+    'data_Jet_Run2011A_PromptReco_v6', 
+    'data_Jet_Run2011B_PromptReco_v1a', 
+    'data_SingleMu_Run2011A_May10ReReco_v1',
+    'data_SingleMu_Run2011A_PromptReco_v4',
+    'data_SingleMu_Run2011A_Aug05ReReco_v1',
+    'data_SingleMu_Run2011A_PromptReco_v6',
+    'data_SingleMu_Run2011B_PromptReco_v1a',
+    'ZplusJets',
+    'WplusJets',
+    'qcdDiJetPtHat15to30s4',
+    'qcdDiJetPtHat30to50s4',
+    'qcdDiJetPtHat50to80s4',
+    'qcdDiJetPtHat80to120s4',
+    'qcdDiJetPtHat120to170s4',
+    'qcdDiJetPtHat170to300s4',
+    'qcdDiJetPtHat300to470s4',
+    'PPmuXptGt20Mu15',
+    'TTplusJets'
 ]
 
 JOBS_TO_ANALYZE = [

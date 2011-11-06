@@ -165,22 +165,7 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
                      jetIdLabel       = "ak5",
                      outputModule     = ''
     )
-
-    process.selectedPatJetsAK5PFAntiOverlapWithMuonsVeto = cms.EDFilter("PATJetAntiOverlapSelector",
-        src = cms.InputTag('patJets'),                                                       
-        srcNotToBeFiltered = cms.VInputTag('selectedPatMuonsVBTFid'),
-        dRmin = cms.double(0.5)
-    )
-    process.patJetProductionSequence = cms.Sequence(process.selectedPatJetsAK5PFAntiOverlapWithMuonsVeto)
-    
-    if isMC:
-        process.selectedPatJetsAK5PFsmearedAntiOverlapWithMuonsVeto = cms.EDProducer("SmearedPATJetProducer",
-            src = cms.InputTag('selectedPatJetsAK5PFAntiOverlapWithMuonsVeto'),
-            inputFileName = cms.FileInPath("TauAnalysis/RecoTools/data/pfJetResolutionMCtoDataCorrLUT.root"),
-            lutName = cms.string('pfJetResolutionMCtoDataCorrLUT')
-        )
-        process.patJetProductionSequence += process.patJetsAK5PFsmearedAntiOverlapWithMuonsVeto
-    
+                
     addJetCollection(process, cms.InputTag('ak5CaloJets'),
                      'AK5', 'Calo',
                      doJTA            = False,
@@ -203,42 +188,55 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
 
     #--------------------------------------------------------------------------------
     # add pfMET
+    process.load("PhysicsTools.PatUtils.patPFMETCorrections_cff")
+    if isMC:
+        import PhysicsTools.PatAlgos.tools.helpers as configtools
+        configtools.cloneProcessingSnippet(process, process.producePatPFMETCorrections, "NoSmearing")
+        process.selectedPatJetsForMETtype1p2CorrNoSmearing.src = cms.InputTag('patJetsNotOverlappingWithLeptonsForMEtUncertainty')
+        process.selectedPatJetsForMETtype2CorrNoSmearing.src = process.selectedPatJetsForMETtype1p2CorrNoSmearing.src 
+
     process.patMEtProductionSequence = cms.Sequence()
-    
-    process.patPFMETs = process.patMETs.clone(
-        metSource = cms.InputTag('pfType1CorrectedMet'),
-        addMuonCorrections = cms.bool(False),
-        genMETSource = cms.InputTag('genMetTrue'),
-        addGenMET = cms.bool(False)
+    process.patMEtProductionSequence += process.kt6PFJets
+    process.patMEtProductionSequence += process.ak5PFJets
+    process.patMEtProductionSequence += process.patDefaultSequence
+
+    from PhysicsTools.PatUtils.tools.metUncertaintyTools import runMEtUncertainties
+    doSmearJets = None
+    if isMC:
+        doSmearJets = True
+    else:
+        doSmearJets = False
+    runMEtUncertainties(
+        process,
+        electronCollection = '',
+        photonCollection = '',
+        muonCollection = cms.InputTag('selectedPatMuonsVBTFid'),
+        tauCollection = '',
+        jetCollection = cms.InputTag('patJetsAK5PF'),
+        doSmearJets = doSmearJets,
+        # CV: shift Jet energy by 3 standard-deviations,
+        #     so that template morphing remains an interpolation and no extrapolation is needed
+        varyByNsigmas = 3.0, 
+        addToPatDefaultSequence = False
     )
-    process.patMEtProductionSequence += process.patPFMETs
 
     if isMC:
-        process.patPFMETs.addGenMET = cms.bool(True)
-        
-        process.patPFJetMETsmear = cms.EDProducer("PATJetMETsmearInputProducer",
-            src = cms.InputTag('selectedPatJetsAK5PFAntiOverlapWithMuonsVeto'),
-            inputFileName = cms.FileInPath("TauAnalysis/RecoTools/data/pfJetResolutionMCtoDataCorrLUT.root"),
-            lutName = cms.string('pfJetResolutionMCtoDataCorrLUT')
-        )
-        process.patMEtProductionSequence += process.patPFJetMETsmear
-
-        process.smearedPatPFMETs = cms.EDProducer("CorrectedPATMETProducer",
-            src = cms.InputTag('patPFMETs'),
-            applyType1Corrections = cms.bool(True),
-            srcType1Corrections = cms.VInputTag(
-                cms.InputTag('patPFJetMETsmear')
-            ),
-            applyType2Corrections = cms.bool(False)
-        )
-        process.patMEtProductionSequence += process.smearedPatPFMETs
+        process.patPFMet.addGenMET = cms.bool(True)
+        process.patPFJetMETtype1p2Corr.jetCorrLabel = cms.string("L3Absolute")
+    
+        process.patMEtProductionSequence += process.metUncertaintySequence
+    else:
+        process.patPFMet.addGenMET = cms.bool(False)
+        process.patPFJetMETtype1p2Corr.jetCorrLabel = cms.string("L2L3Residual")
+    
+        process.patMEtProductionSequence += process.patJetsAK5PFnotOverlappingWithLeptonsForMEtUncertainty
+        process.patMEtProductionSequence += process.producePatPFMETCorrections
     #--------------------------------------------------------------------------------
 
-    pfJetCollection = 'selectedPatJetsAK5PFAntiOverlapWithMuonsVeto'
-    pfMEtCollection = 'patPFMETs'
+    pfJetCollection = 'patJetsAK5PFnotOverlappingWithLeptonsForMEtUncertainty'
+    pfMEtCollection = 'patPFMet'
     if isMC:
-        pfJetCollection = 'selectedPatJetsAK5PFsmearedAntiOverlapWithMuonsVeto'
-        pfMEtCollection = 'smearedPatPFMETs'
+        pfJetCollection = 'smearedPatJetsAK5PF'
 
     #-------------------------------------------------------------------------------- 
     #
@@ -247,7 +245,7 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
     #
     switchToCaloTau(process)    
     process.patCaloTauProducer = copy.deepcopy(process.patTaus)
-
+    
     retVal_caloTau = patSequenceBuilder(
         process,
         collectionName = [ "patCaloTaus", "" ],
@@ -260,7 +258,7 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
         applyTauVertexMatch = applyTauVertexMatch
     )
     process.caloTauSequence = retVal_caloTau["sequence"]
-
+    
     process.patMuonCaloTauPairs = process.allMuTauPairs.clone(
         srcLeg1 = cms.InputTag('selectedPatMuonsVBTFid'),
         srcLeg2 = cms.InputTag(retVal_caloTau["collection"]),
@@ -281,33 +279,33 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
     # reconstructed by fixed signal cone algorithm
     # (plus combinations of muon + tau-jet pairs)
     #
-    switchToPFTauFixedCone(process)
-    process.patPFTauProducerFixedCone = copy.deepcopy(process.patTaus)
-
-    retVal_pfTauFixedCone = patSequenceBuilder(
-        process,
-        collectionName = [ "patPFTaus", "FixedCone" ],
-        jetCollectionName = pfJetCollection,
-        patTauProducerPrototype = process.patPFTauProducerFixedCone,
-        patTauCleanerPrototype = patPFTauCleanerPrototype,
-        triggerMatcherProtoType = process.patTauTriggerMatchHLTprotoType,
-        addGenInfo = isMC,
-        applyTauJEC = False,
-        applyTauVertexMatch = applyTauVertexMatch
-    )
-    process.pfTauSequenceFixedCone = retVal_pfTauFixedCone["sequence"]
-
-    process.patMuonPFTauPairsFixedCone = process.allMuTauPairs.clone(
-        srcLeg1 = cms.InputTag('selectedPatMuonsVBTFid'),
-        srcLeg2 = cms.InputTag(retVal_pfTauFixedCone["collection"]),
-        srcMET = cms.InputTag(pfMEtCollection),
-        srcGenParticles = cms.InputTag(''),
-        doSVreco = cms.bool(False)
-    )
-    if hasattr(process.patMuonPFTauPairsFixedCone, "nSVfit"):
-        delattr(process.patMuonPFTauPairsFixedCone, "nSVfit")
-    if hasattr(process.patMuonPFTauPairsFixedCone, "pfMEtSign"):
-        delattr(process.patMuonPFTauPairsFixedCone, "pfMEtSign")
+    #switchToPFTauFixedCone(process)
+    #process.patPFTauProducerFixedCone = copy.deepcopy(process.patTaus)
+    #
+    #retVal_pfTauFixedCone = patSequenceBuilder(
+    #    process,
+    #    collectionName = [ "patPFTaus", "FixedCone" ],
+    #    jetCollectionName = pfJetCollection,
+    #    patTauProducerPrototype = process.patPFTauProducerFixedCone,
+    #    patTauCleanerPrototype = patPFTauCleanerPrototype,
+    #    triggerMatcherProtoType = process.patTauTriggerMatchHLTprotoType,
+    #    addGenInfo = isMC,
+    #    applyTauJEC = False,
+    #    applyTauVertexMatch = applyTauVertexMatch
+    #)
+    #process.pfTauSequenceFixedCone = retVal_pfTauFixedCone["sequence"]
+    #
+    #process.patMuonPFTauPairsFixedCone = process.allMuTauPairs.clone(
+    #    srcLeg1 = cms.InputTag('selectedPatMuonsVBTFid'),
+    #    srcLeg2 = cms.InputTag(retVal_pfTauFixedCone["collection"]),
+    #    srcMET = cms.InputTag(pfMEtCollection),
+    #    srcGenParticles = cms.InputTag(''),
+    #    doSVreco = cms.bool(False)
+    #)
+    #if hasattr(process.patMuonPFTauPairsFixedCone, "nSVfit"):
+    #    delattr(process.patMuonPFTauPairsFixedCone, "nSVfit")
+    #if hasattr(process.patMuonPFTauPairsFixedCone, "pfMEtSign"):
+    #    delattr(process.patMuonPFTauPairsFixedCone, "pfMEtSign")
     #--------------------------------------------------------------------------------
 
     #--------------------------------------------------------------------------------
@@ -316,37 +314,37 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
     # reconstructed by shrinking signal cone algorithm
     # (plus combinations of muon + tau-jet pairs) 
     #
-    switchToPFTauShrinkingCone(process)
-    process.patPFTauProducerShrinkingCone = copy.deepcopy(process.patTaus)
-
+    #switchToPFTauShrinkingCone(process)
+    #process.patPFTauProducerShrinkingCone = copy.deepcopy(process.patTaus)
+    #
     # load TaNC inputs into pat::Tau
-    process.load("RecoTauTag.TauTagTools.PFTauMVAInputDiscriminatorTranslator_cfi")
-    loadMVAInputsIntoPatTauDiscriminants(process.patPFTauProducerShrinkingCone)
-
-    retVal_pfTauShrinkingCone = patSequenceBuilder(
-        process,
-        collectionName = [ "patPFTaus", "ShrinkingCone" ],
-        jetCollectionName = pfJetCollection,
-        patTauProducerPrototype = process.patPFTauProducerShrinkingCone,
-        patTauCleanerPrototype = patPFTauCleanerPrototype,
-        triggerMatcherProtoType = process.patTauTriggerMatchHLTprotoType,
-        addGenInfo = isMC,
-        applyTauJEC = False,
-        applyTauVertexMatch = applyTauVertexMatch
-    )
-    process.pfTauSequenceShrinkingCone = retVal_pfTauShrinkingCone["sequence"]
-
-    process.patMuonPFTauPairsShrinkingCone = process.allMuTauPairs.clone(
-        srcLeg1 = cms.InputTag('selectedPatMuonsVBTFid'),
-        srcLeg2 = cms.InputTag(retVal_pfTauShrinkingCone["collection"]),
-        srcMET = cms.InputTag(pfMEtCollection),
-        srcGenParticles = cms.InputTag(''),
-        doSVreco = cms.bool(False)
-    )
-    if hasattr(process.patMuonPFTauPairsShrinkingCone, "nSVfit"):
-        delattr(process.patMuonPFTauPairsShrinkingCone, "nSVfit")
-    if hasattr(process.patMuonPFTauPairsShrinkingCone, "pfMEtSign"):
-        delattr(process.patMuonPFTauPairsShrinkingCone, "pfMEtSign")
+    #process.load("RecoTauTag.TauTagTools.PFTauMVAInputDiscriminatorTranslator_cfi")
+    #loadMVAInputsIntoPatTauDiscriminants(process.patPFTauProducerShrinkingCone)
+    #
+    #retVal_pfTauShrinkingCone = patSequenceBuilder(
+    #    process,
+    #    collectionName = [ "patPFTaus", "ShrinkingCone" ],
+    #    jetCollectionName = pfJetCollection,
+    #    patTauProducerPrototype = process.patPFTauProducerShrinkingCone,
+    #    patTauCleanerPrototype = patPFTauCleanerPrototype,
+    #    triggerMatcherProtoType = process.patTauTriggerMatchHLTprotoType,
+    #    addGenInfo = isMC,
+    #    applyTauJEC = False,
+    #    applyTauVertexMatch = applyTauVertexMatch
+    #)
+    #process.pfTauSequenceShrinkingCone = retVal_pfTauShrinkingCone["sequence"]
+    #
+    #process.patMuonPFTauPairsShrinkingCone = process.allMuTauPairs.clone(
+    #    srcLeg1 = cms.InputTag('selectedPatMuonsVBTFid'),
+    #    srcLeg2 = cms.InputTag(retVal_pfTauShrinkingCone["collection"]),
+    #    srcMET = cms.InputTag(pfMEtCollection),
+    #    srcGenParticles = cms.InputTag(''),
+    #    doSVreco = cms.bool(False)
+    #)
+    #if hasattr(process.patMuonPFTauPairsShrinkingCone, "nSVfit"):
+    #    delattr(process.patMuonPFTauPairsShrinkingCone, "nSVfit")
+    #if hasattr(process.patMuonPFTauPairsShrinkingCone, "pfMEtSign"):
+    #    delattr(process.patMuonPFTauPairsShrinkingCone, "pfMEtSign")
     #--------------------------------------------------------------------------------
 
     #--------------------------------------------------------------------------------
@@ -426,19 +424,22 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
     #--------------------------------------------------------------------------------
 
     process.patTupleProductionSequence = cms.Sequence(
-        process.patDefaultSequence        
+        process.muonPFIsolationSequence
+       + process.patDefaultSequence        
        ##+ process.patTrigger + process.patTriggerEvent
-       + process.muonPFIsolationSequence
        + process.patMuonsWithinAcc + process.selectedPatMuonsVBTFid
+       + process.patMEtProductionSequence 
        + process.caloTauSequence
        # store TaNC inputs as discriminators
-       + process.produceTancMVAInputDiscriminators
-       + process.pfTauSequenceFixedCone + process.pfTauSequenceShrinkingCone + process.pfTauSequenceHPS
-       + process.pfTauSequenceHPSpTaNC
-       + process.patJetProductionSequence
-       + process.patMEtProductionSequence
+       #+ process.produceTancMVAInputDiscriminators
+       #+ process.pfTauSequenceFixedCone
+       #+ process.pfTauSequenceShrinkingCone
+       + process.pfTauSequenceHPS
+       + process.pfTauSequenceHPSpTaNC     
        + process.patMuonCaloTauPairs
-       + process.patMuonPFTauPairsFixedCone + process.patMuonPFTauPairsShrinkingCone + process.patMuonPFTauPairsHPS
+       #+ process.patMuonPFTauPairsFixedCone
+       #+ process.patMuonPFTauPairsShrinkingCone
+       + process.patMuonPFTauPairsHPS
        + process.patMuonPFTauPairsHPSpTaNC
     )
 
@@ -447,10 +448,10 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
     retVal = {}
     retVal["caloTauCollection"] = retVal_caloTau["collection"]
     retVal["muonCaloTauCollection"] = process.patMuonCaloTauPairs.label()
-    retVal["pfTauCollectionFixedCone"] = retVal_pfTauFixedCone["collection"]
-    retVal["muonPFTauCollectionFixedCone"] = process.patMuonPFTauPairsFixedCone.label()
-    retVal["pfTauCollectionShrinkingCone"] = retVal_pfTauShrinkingCone["collection"]
-    retVal["muonPFTauCollectionShrinkingCone"] = process.patMuonPFTauPairsShrinkingCone.label()
+    #retVal["pfTauCollectionFixedCone"] = retVal_pfTauFixedCone["collection"]
+    #retVal["muonPFTauCollectionFixedCone"] = process.patMuonPFTauPairsFixedCone.label()
+    #retVal["pfTauCollectionShrinkingCone"] = retVal_pfTauShrinkingCone["collection"]
+    #retVal["muonPFTauCollectionShrinkingCone"] = process.patMuonPFTauPairsShrinkingCone.label()
     retVal["pfTauCollectionHPS"] = retVal_pfTauHPS["collection"]
     retVal["muonPFTauCollectionHPS"] = process.patMuonPFTauPairsHPS.label()
     retVal["pfTauCollectionHPSpTaNC"] = retVal_pfTauHPSpTaNC["collection"]

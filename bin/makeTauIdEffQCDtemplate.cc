@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.21 $
+ * \version $Revision: 1.1 $
  *
- * $Id: makeTauIdEffQCDtemplate.cc,v 1.21 2011/08/02 15:16:09 veelken Exp $
+ * $Id: makeTauIdEffQCDtemplate.cc,v 1.1 2011/10/25 16:13:24 veelken Exp $
  *
  */
 
@@ -149,7 +149,6 @@ int main(int argc, const char* argv[])
   typedef std::vector<std::string> vstring;
   vstring tauIds = cfgMakeTauIdEffQCDtemplate.getParameter<vstring>("tauIds");
   vstring tauIdValues;
-  tauIdValues.push_back("all");
   tauIdValues.push_back("passed");
   tauIdValues.push_back("failed");
 
@@ -272,9 +271,12 @@ int main(int argc, const char* argv[])
   numEventsMap numEventsAll = // key = (process/"sum", region, observable)
     compNumEvents(templatesAll, processes, distributionsData);
   
+  TFileDirectory histogramOutputDirectory = ( directory != "" ) ?
+    fs.mkdir(directory.data()) : fs;
+
   for ( std::vector<regionEntryType*>::iterator regionEntry = regionEntries.begin();
 	regionEntry != regionEntries.end(); ++regionEntry ) {
-    (*regionEntry)->makeQCDtemplate(fs, distributionsData, templatesAll, numEventsAll);
+    (*regionEntry)->makeQCDtemplate(histogramOutputDirectory, distributionsData, templatesAll, numEventsAll);
   }
 
   delete histogramInputFile;

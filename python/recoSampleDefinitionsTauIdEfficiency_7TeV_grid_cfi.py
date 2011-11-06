@@ -11,11 +11,15 @@ import TauAnalysis.Configuration.recoSampleDefinitionsZtoMuTau_7TeV_grid_cfi as 
 SAMPLES_TO_ANALYZE = [
     'data_SingleMu_Run2011A_May10ReReco_v1',
     'data_SingleMu_Run2011A_PromptReco_v4',
+    'data_SingleMu_Run2011A_Aug05ReReco_v1',
+    'data_SingleMu_Run2011A_PromptReco_v6',
+    'data_MET_Run2011B_PromptReco_v1',
+    'data_MET_Run2011B_PromptReco_v1a',
     #'DYtautauM10to20_powheg',
     #'Ztautau_pythia',
     'Ztautau_powheg',
-    'Ztautau_embedded_part1',
-    'Ztautau_embedded_part2',
+    #'Ztautau_embedded_part1',
+    #'Ztautau_embedded_part2',
     #'qqZll',
     #'DYmumuM10to20_pythia',
     #'Zmumu_pythia',
@@ -39,21 +43,24 @@ _femtobarns = 1.0e-3
 # Integrated luminosity to normalize
 # (computed by lumiCalc)
 TARGET_LUMI = (
-     31721081.742 # HLT_IsoMu17_v5  (160431-163261)
-  + 159796435.413 # HLT_IsoMu17_v6  (163270-163869)
-  +         0.000 # HLT_IsoMu17_v7  (never used ?)
-  + 133197413.435 # HLT_IsoMu17_v8  (165088-165633)
-  + 374195369.821 # HLT_IsoMu17_v9  (165970-167043)
-  +     55375.575 # HLT_IsoMu17_v10 (166346, used only for one run)
-  + 180572068.328 # HLT_IsoMu17_v11 (167078-167913)
-)/_microbarns
+       33.60 # HLT_IsoMu17_v5  (160431-163261)
+  +   168.61 # HLT_IsoMu17_v6  (163270-163869)
+  +     0.00 # HLT_IsoMu17_v7  (never used ?)
+  +   139.03 # HLT_IsoMu17_v8  (165088-165633)
+  +   542.74 # HLT_IsoMu17_v9  (165970-167043)
+  +     4.29 # HLT_IsoMu17_v10 (166346, used only for one run)
+  +   243.01 # HLT_IsoMu17_v11 (167078-167913)
+  +     0.00 # HLT_IsoMu17_v12 (never used ?)
+  +   391.54 # HLT_IsoMu17_v13 (170826-173198)
+##  +     3.39 # HLT_IsoMu17_v14 (173236-177053, WARNING: HLT_IsoMu17 trigger got prescaled !!)  
+)/_picobarns
 
 RECO_SAMPLES = copy.deepcopy(ZtoMuTau.RECO_SAMPLES)
 TauIdEfficiencySpecific_RECO_SAMPLES = {
     'data_SingleMu_Run2011A_May10ReReco_v1' : {
         'datasetpath' : '/SingleMu/Run2011A-May10ReReco-v1/AOD',
         'dbs_url' :  "http://cmsdbsprod.cern.ch/cms_dbs_prod_global/servlet/DBSServlet",
-        'lumi_mask' : "/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions11/7TeV/Reprocessing/Cert_160404-163869_7TeV_May10ReReco_Collisions11_JSON_v2.txt",
+        'lumi_mask' : "/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions11/7TeV/Reprocessing/Cert_160404-163869_7TeV_May10ReReco_Collisions11_JSON_v3.txt",
         'runselection' : "160329-163869",
         'number_of_jobs' : 750,
         'conditions' : 'GR_R_42_V20::All',
@@ -95,6 +102,86 @@ TauIdEfficiencySpecific_RECO_SAMPLES = {
         'enableFakeRates' : True,
         'hlt' : cms.InputTag("TriggerResults", "", "HLT"),
         'SE_black_list' : 'T2_US_UCSD'
+    },
+    'data_SingleMu_Run2011A_Aug05ReReco_v1' : {
+        'datasetpath' : "/SingleMu/Run2011A-05Aug2011-v1/AOD",
+        'dbs_url' :  "http://cmsdbsprod.cern.ch/cms_dbs_prod_global/servlet/DBSServlet",
+        'lumi_mask' : "/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions11/7TeV/Reprocessing/Cert_170249-172619_7TeV_ReReco5Aug_Collisions11_JSON_v3.txt",
+        'runselection' : "170053-172619",
+        'number_of_jobs' : 2500,
+        'conditions' : 'GR_R_42_V20::All',
+        'events_processed' : -1,
+        'skim_eff' : 1.0,
+        'type' : 'Data',
+        'drawOption' : styles.drawOption_Data,
+        'hlt_paths' : {
+            'HLT_IsoMu17_v13' : '170826:MIN-173198:MAX'
+        },
+        'enableSysUncertainties' : False,
+        'enableFakeRates' : True,
+        'hlt' : cms.InputTag("TriggerResults", "", "HLT"),
+        'SE_black_list' : 'T2_US_UCSD'
+    },
+    'data_SingleMu_Run2011A_PromptReco_v6' : {
+        'datasetpath' : "/SingleMu/Run2011A-PromptReco-v6/AOD",
+        'dbs_url' :  "http://cmsdbsprod.cern.ch/cms_dbs_prod_global/servlet/DBSServlet",
+        'lumi_mask' : "/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions11/7TeV/Prompt/Cert_160404-176023_7TeV_PromptReco_Collisions11_JSON.txt",
+        'runselection' : "172620-175770",
+        'number_of_jobs' : 2500,
+        'conditions' : 'GR_R_42_V20::All',
+        'events_processed' : -1,
+        'skim_eff' : 1.0,
+        'type' : 'Data',
+        'drawOption' : styles.drawOption_Data,
+        'hlt_paths' : {
+            'HLT_IsoMu17_v13' : '170826:MIN-173198:MAX'
+        },
+        'enableSysUncertainties' : False,
+        'enableFakeRates' : True,
+        'hlt' : cms.InputTag("TriggerResults", "", "HLT"),
+        'SE_black_list' : 'T2_US_UCSD'
+    },
+    'data_MET_Run2011B_PromptReco_v1' : {
+        'datasetpath' : "/MET/Run2011B-PromptReco-v1/AOD",
+        'dbs_url' :  "http://cmsdbsprod.cern.ch/cms_dbs_prod_global/servlet/DBSServlet",
+        'lumi_mask' : "/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions11/7TeV/Prompt/Cert_160404-179431_7TeV_PromptReco_Collisions11_JSON.txt",
+        'runselection' : "175832-179411",
+        'number_of_jobs' : 2500,
+        'conditions' : 'GR_R_42_V20::All',
+        'events_processed' : -1,
+        'skim_eff' : 1.0,
+        'type' : 'Data',
+        'drawOption' : styles.drawOption_Data,
+        'hlt_paths' : {
+            'HLT_Mu15_L1ETM20_v3'    : '178420:MIN-179411:MAX',
+            'HLT_IsoMu15_L1ETM20_v3' : '178420:MIN-179411:MAX'
+        },
+        'enableSysUncertainties' : False,
+        'enableFakeRates' : True,
+        'hlt' : cms.InputTag("TriggerResults", "", "HLT"),
+        'SE_black_list' : 'T2_US_UCSD'
+    },
+    'data_MET_Run2011B_PromptReco_v1a' : {
+        'datasetpath' : "/MET/Run2011B-PromptReco-v1/AOD",
+        'dbs_url' :  "http://cmsdbsprod.cern.ch/cms_dbs_prod_global/servlet/DBSServlet",
+        'lumi_mask' : "/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions11/7TeV/Prompt/Cert_160404-180252_7TeV_PromptReco_Collisions11_JSON.txt",
+        'runselection' : "179434-180252",
+        'number_of_jobs' : 2500,
+        'conditions' : 'GR_R_42_V20::All',
+        'events_processed' : -1,
+        'skim_eff' : 1.0,
+        'type' : 'Data',
+        'drawOption' : styles.drawOption_Data,
+        'hlt_paths' : {
+            'HLT_Mu15_L1ETM20_v3'    : '178420:MIN-179889:MAX',
+            'HLT_IsoMu15_L1ETM20_v3' : '178420:MIN-179889:MAX',
+            'HLT_Mu15_L1ETM20_v4'    : '179959:MIN-180252:MAX',
+            'HLT_IsoMu15_L1ETM20_v4' : '179959:MIN-180252:MAX'
+        },
+        'enableSysUncertainties' : False,
+        'enableFakeRates' : True,
+        'hlt' : cms.InputTag("TriggerResults", "", "HLT"),
+        'SE_black_list' : 'T2_US_UCSD'
     }
 }
 RECO_SAMPLES.update(TauIdEfficiencySpecific_RECO_SAMPLES)
@@ -105,10 +192,19 @@ RECO_SAMPLES.update(TauIdEfficiencySpecific_RECO_SAMPLES)
 #       when running FWLiteTauIdEffAnalyzer
 #
 MERGE_SAMPLES = {
-    'Data' : {
+    'Data_2011RunA' : {
         'samples' : [
             'data_SingleMu_Run2011A_May10ReReco_v1',
-            'data_SingleMu_Run2011A_PromptReco_v4'
+            'data_SingleMu_Run2011A_PromptReco_v4',
+            'data_SingleMu_Run2011A_Aug05ReReco_v1',
+            'data_SingleMu_Run2011A_PromptReco_v6'
+        ],
+        'type' : 'Data'
+    },
+    'Data_2011RunB' : {
+        'samples' : [
+            'data_MET_Run2011B_PromptReco_v1',
+            'data_MET_Run2011B_PromptReco_v1a'
         ],
         'type' : 'Data'
     },

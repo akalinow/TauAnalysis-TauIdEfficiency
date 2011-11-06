@@ -8,9 +8,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.6 $
+ * \version $Revision: 1.7 $
  *
- * $Id: TauIdEffEventSelector.h,v 1.6 2011/07/26 14:04:16 veelken Exp $
+ * $Id: TauIdEffEventSelector.h,v 1.7 2011/10/25 16:17:42 veelken Exp $
  *
  */
 
@@ -19,6 +19,7 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
 #include "AnalysisDataFormats/TauAnalysis/interface/CompositePtrCandidateT1T2MEt.h"
+#include "DataFormats/PatCandidates/interface/MET.h"
 
 class TauIdEffEventSelector : public EventSelector 
 {
@@ -31,8 +32,8 @@ class TauIdEffEventSelector : public EventSelector
   virtual ~TauIdEffEventSelector();
 
   /// here is where the selection occurs
-  bool operator()(const edm::EventBase& event, pat::strbitset& result) { return true; }
-  bool operator()(const PATMuTauPair& muTauPair, pat::strbitset& result);
+  bool operator()(const edm::EventBase&, pat::strbitset&) { return true; }
+  bool operator()(const PATMuTauPair&, const pat::MET&, pat::strbitset&);
 
   friend class regionEntryType; // allow regionEntryType to overwrite cut values
 
@@ -73,6 +74,10 @@ class TauIdEffEventSelector : public EventSelector
   double muTauPairAbsDzMax_;
   double muTauPairChargeProdMin_;
   double muTauPairChargeProdMax_;
+  double caloMEtPtMin_;
+  double caloMEtPtMax_;
+  double pfMEtPtMin_;
+  double pfMEtPtMax_;
   double MtMin_;
   double MtMax_;
   double PzetaDiffMin_;

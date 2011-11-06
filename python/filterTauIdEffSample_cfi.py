@@ -14,12 +14,21 @@ hltMu = cms.EDFilter("EventSelPluginFilter",
         pluginType = cms.string('TriggerResultEventSelector'),
         src = cms.InputTag('TriggerResults::HLT'),
         triggerPaths = cms.vstring(
+            # use IsoMu17 for 2011 Run A Data/MC                             
             'HLT_IsoMu17_v5',
             'HLT_IsoMu17_v6',
             'HLT_IsoMu17_v8',
             'HLT_IsoMu17_v9',
             'HLT_IsoMu17_v10',
-            'HLT_IsoMu17_v11'
+            'HLT_IsoMu17_v11',
+            'HLT_IsoMu17_v13',
+            'HLT_IsoMu17_v14',
+            # use Mu15/IsoMu15 for 2011 Run B MC                        
+            'HLT_Mu15_v5',                 
+            'HLT_IsoMu15_v5',
+            # use Mu15_L1ETM20/IsoMu15_L1ETM20 for 2011 Run B Data (NOTE: events are in MET dataset)
+            'HLT_IsoMu15_L1ETM20_v3',
+            'HLT_Mu15_L1ETM20_v3'                  
         )
     )
 )

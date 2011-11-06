@@ -7,9 +7,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.6 $
+ * \version $Revision: 1.7 $
  *
- * $Id: TauIdEffHistManager.h,v 1.6 2011/08/05 16:47:16 veelken Exp $
+ * $Id: TauIdEffHistManager.h,v 1.7 2011/08/10 16:23:07 veelken Exp $
  *
  */
 
@@ -18,6 +18,7 @@
 #include "CommonTools/Utils/interface/TFileDirectory.h"
 
 #include "AnalysisDataFormats/TauAnalysis/interface/CompositePtrCandidateT1T2MEt.h"
+#include "DataFormats/PatCandidates/interface/MET.h"
 
 #include <TH1.h>
 
@@ -33,7 +34,7 @@ class TauIdEffHistManager
 
   /// book and fill histograms
   void bookHistograms(TFileDirectory&);
-  void fillHistograms(const PATMuTauPair&, size_t, double);
+  void fillHistograms(const PATMuTauPair&, const pat::MET&, size_t, double);
   
   /// scale all bin-contents/bin-errors by factor given as function argument
   /// (to account for events lost, due to aborted skimming/crab or PAT-tuple production/lxbatch jobs)
@@ -74,8 +75,10 @@ class TauIdEffHistManager
   TH1* histogramMt_;
   TH1* histogramPzetaDiff_;
 
-  TH1* histogramMEt_;
-  TH1* histogramSumEt_;
+  TH1* histogramPFMEt_;
+  TH1* histogramPFSumEt_;
+  TH1* histogramCaloMEt_;
+  TH1* histogramCaloSumEt_;
   TH1* histogramNumVertices_;
   
   std::vector<TH1*> histograms_;

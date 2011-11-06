@@ -28,7 +28,7 @@ def make_drawOptions_string(drawOptions, namesToPlot):
 #--------------------------------------------------------------------------------
 
 def buildConfigFile_FWLiteTauFakeRateAnalyzer(sampleToAnalyze, evtSel, version, inputFilePath, tauIds, 
-                                              tauJetCandSelection, srcTauJetCandidates, srcMET,
+                                              tauJetCandSelection, srcTauJetCandidates, srcMET, hltPaths, 
                                               configFilePath, logFilePath, outputFilePath, recoSampleDefinitions):
 
     """Build cfg.py file to run FWLiteTauFakeRateAnalyzer macro to run on PAT-tuples,
@@ -76,6 +76,8 @@ def buildConfigFile_FWLiteTauFakeRateAnalyzer(sampleToAnalyze, evtSel, version, 
     processType = recoSampleDefinitions['RECO_SAMPLES'][sampleToAnalyze]['type']
 
     tauIds_string = make_tauIds_string(tauIds)
+
+    hltPaths_string = make_inputFileNames_vstring(hltPaths[processType])
 
     configFileNames = []
     outputFileNames = []
@@ -141,6 +143,9 @@ process.tauFakeRateAnalyzer = cms.PSet(
     tauJetCandSelection = cms.vstring(
 %s
     ),
+
+    srcTrigger = cms.InputTag('patTriggerEvent'),
+    hltPaths = cms.vstring(%s),
     
     srcMET = cms.InputTag('%s'),
 
@@ -160,7 +165,8 @@ process.tauFakeRateAnalyzer = cms.PSet(
 )
 """ % (inputFileName_sample, outputFileName,
        process_matched, processType, evtSel,
-       tauIds_string, srcTauJetCandidates, tauJetCandSelection, srcMET, weights_string, allEvents_DBS, xSection, intLumiData)
+       tauIds_string, srcTauJetCandidates, tauJetCandSelection, hltPaths_string, srcMET, weights_string,
+       allEvents_DBS, xSection, intLumiData)
 
         outputFileNames.append(outputFileName)
 

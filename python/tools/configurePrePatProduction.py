@@ -1,6 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 
 import PhysicsTools.PatAlgos.tools.helpers as patutils
+import RecoMET.METProducers.METSigParams_cfi as jetResolutions
 
 def configurePrePatProduction(process, pfCandidateCollection = "particleFlow",
                               addGenInfo = False):
@@ -17,6 +18,20 @@ def configurePrePatProduction(process, pfCandidateCollection = "particleFlow",
 
     process.load("TauAnalysis.RecoTools.vertexMultiplicityReweight_cfi")
     process.prePatProductionSequence += process.selectedPrimaryVerticesTrackPtSumGt10
+
+    # add reweighting factors to be applied to Monte Carlo simulated events
+    # in order to match vertex multiplicity distribution in Data
+    process.vertexMultiplicityReweight3dRunA = process.vertexMultiplicityReweight.clone(
+        inputFileName = cms.FileInPath("TauAnalysis/RecoTools/data/expPUpoissonMean_runs160404to173692_finebin.root"),
+        type = cms.string("gen3d")
+    )
+    process.vertexMultiplicityReweight3dRunB = process.vertexMultiplicityReweight.clone(
+        inputFileName = cms.FileInPath("TauAnalysis/RecoTools/data/expPUpoissonMean_runs175832to179431_finebin.root"),
+        type = cms.string("gen3d")
+    )
+    if addGenInfo:
+        process.prePatProductionSequence += process.vertexMultiplicityReweight3dRunA
+        process.prePatProductionSequence += process.vertexMultiplicityReweight3dRunB
     #--------------------------------------------------------------------------------
 
     #--------------------------------------------------------------------------------
@@ -60,6 +75,7 @@ def configurePrePatProduction(process, pfCandidateCollection = "particleFlow",
             src = cms.InputTag('ak5PFJetsL2L3'),
             inputFileName = cms.FileInPath('PhysicsTools/PatUtils/data/pfJetResolutionMCtoDataCorrLUT.root'),
             lutName = cms.string('pfJetResolutionMCtoDataCorrLUT'),
+            jetResolutions = jetResolutions.METSignificance_params,                                      
             smearBy = cms.double(1.0),
             srcGenJets = cms.InputTag('ak5GenJetsNoNu'),
             dRmaxGenJetMatch = cms.double(0.5)
@@ -110,10 +126,10 @@ def configurePrePatProduction(process, pfCandidateCollection = "particleFlow",
     #--------------------------------------------------------------------------------
     # add collection of fixed-cone and shrinking-cone PFTaus
     # (not produced per default anymore)
-    process.load("RecoTauTag.Configuration.RecoPFTauTag_cff")
-    process.prePatProductionSequence += process.recoTauClassicFixedConeSequence
-    process.prePatProductionSequence += process.recoTauClassicShrinkingConeSequence
-    process.prePatProductionSequence += process.recoTauClassicShrinkingConeMVASequence
+    #process.load("RecoTauTag.Configuration.RecoPFTauTag_cff")
+    #process.prePatProductionSequence += process.recoTauClassicFixedConeSequence
+    #process.prePatProductionSequence += process.recoTauClassicShrinkingConeSequence
+    #process.prePatProductionSequence += process.recoTauClassicShrinkingConeMVASequence
     #--------------------------------------------------------------------------------
 
     #--------------------------------------------------------------------------------

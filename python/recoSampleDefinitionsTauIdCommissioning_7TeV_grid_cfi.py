@@ -5,20 +5,27 @@ import TauAnalysis.DQMTools.plotterStyleDefinitions_cfi as styles
 
 # List of samples to run in the analysis
 SAMPLES_TO_RUN = [
-    'data_Jet_Run2011A_May10ReReco_v1',
-    'data_Jet_Run2011A_PromptReco_v4',    
-    'data_SingleMu_Run2011A_May10ReReco_v1',
-    'data_SingleMu_Run2011A_PromptReco_v4',
-    'ZplusJets',
-    'WplusJets',
-    'qcdDiJetPtHat15to30',
-    'qcdDiJetPtHat30to50',
-    'qcdDiJetPtHat50to80',
-    'qcdDiJetPtHat80to120',
-    'qcdDiJetPtHat120to170',
-    'qcdDiJetPtHat170to300',
-    'PPmuXptGt20Mu15',
-    'TTplusJets'
+    ##'data_Jet_Run2011A_May10ReReco_v1',
+    ##'data_Jet_Run2011A_PromptReco_v4',
+    ##'data_Jet_Aug05ReReco_v1',
+    ##'data_Jet_Run2011A_PromptReco_v6', 
+    'data_Jet_Run2011B_PromptReco_v1a', 
+    ##'data_SingleMu_Run2011A_May10ReReco_v1',
+    ##'data_SingleMu_Run2011A_PromptReco_v4',
+    ##'data_SingleMu_Run2011A_Aug05ReReco_v1',
+    ##'data_SingleMu_Run2011A_PromptReco_v6',
+    'data_SingleMu_Run2011B_PromptReco_v1a',
+    ##'ZplusJets',
+    ##'WplusJets',
+    ##'qcdDiJetPtHat15to30s4',
+    ##'qcdDiJetPtHat30to50s4',
+    ##'qcdDiJetPtHat50to80s4',
+    ##'qcdDiJetPtHat80to120s4',
+    ##'qcdDiJetPtHat120to170s4',
+    ##'qcdDiJetPtHat170to300s4',
+    ##'qcdDiJetPtHat300to470s4',
+    ##'PPmuXptGt20Mu15',
+    ##'TTplusJets'
 ]
 
 JOBS_TO_RUN = [
@@ -77,7 +84,7 @@ RECO_SAMPLES = {
     'data_Jet_Run2011A_May10ReReco_v1' : {
         'datasetpath'      : '/Jet/Run2011A-May10ReReco-v1/AOD',
         'dbs_url'          : "http://cmsdbsprod.cern.ch/cms_dbs_prod_global/servlet/DBSServlet",
-        'lumi_mask'        : "/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions11/7TeV/Prompt/Cert_160404-163869_7TeV_PromptReco_Collisions11_JSON.txt",
+        'lumi_mask'        : "/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions11/7TeV/Reprocessing/Cert_160404-163869_7TeV_May10ReReco_Collisions11_JSON_v3.txt",
         'runselection'     : "160329-161312",
         'lumis_per_job'    : "25",
         'jobs'             : [ 'qcdDiJet' ],
@@ -89,6 +96,36 @@ RECO_SAMPLES = {
         'dbs_url'          : "http://cmsdbsprod.cern.ch/cms_dbs_prod_global/servlet/DBSServlet",
         'lumi_mask'        : "/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions11/7TeV/Prompt/Cert_160404-167913_7TeV_PromptReco_Collisions11_JSON.txt",
         'runselection'     : "165071-167913",
+        'lumis_per_job'    : "25",
+        'jobs'             : [ 'qcdDiJet' ],
+        'type'             : 'Data',
+        'hlt'              : 'HLT'
+    },
+    'data_Jet_Aug05ReReco_v1' : {
+        'datasetpath'      : '/Jet/Run2011A-05Aug2011-v1/AOD',
+        'dbs_url'          : "http://cmsdbsprod.cern.ch/cms_dbs_prod_global/servlet/DBSServlet",
+        'lumi_mask'        : "/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions11/7TeV/Reprocessing/Cert_170249-172619_7TeV_ReReco5Aug_Collisions11_JSON_v3.txt",
+        'runselection'     : "170053-172619",
+        'lumis_per_job'    : "25",
+        'jobs'             : [ 'qcdDiJet' ],
+        'type'             : 'Data',
+        'hlt'              : 'HLT'
+    },
+    'data_Jet_Run2011A_PromptReco_v6' : {
+        'datasetpath'      : '/Jet/Run2011A-PromptReco-v6/AOD',
+        'dbs_url'          : "http://cmsdbsprod.cern.ch/cms_dbs_prod_global/servlet/DBSServlet",
+        'lumi_mask'        : "/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions11/7TeV/Prompt/Cert_160404-176023_7TeV_PromptReco_Collisions11_JSON.txt",
+        'runselection'     : "172620-175770",
+        'lumis_per_job'    : "25",
+        'jobs'             : [ 'qcdDiJet' ],
+        'type'             : 'Data',
+        'hlt'              : 'HLT'
+    },
+    'data_Jet_Run2011B_PromptReco_v1a' : {
+        'datasetpath'      : '/Jet/Run2011B-PromptReco-v1/AOD',
+        'dbs_url'          : "http://cmsdbsprod.cern.ch/cms_dbs_prod_global/servlet/DBSServlet",
+        'lumi_mask'        : "/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions11/7TeV/Prompt/Cert_160404-180252_7TeV_PromptReco_Collisions11_JSON.txt",
+        'runselection'     : "175832-180252",
         'lumis_per_job'    : "25",
         'jobs'             : [ 'qcdDiJet' ],
         'type'             : 'Data',
@@ -115,6 +152,36 @@ RECO_SAMPLES = {
         'type'             : 'Data',
         'hlt'              : 'HLT'
     },
+    'data_SingleMu_Run2011A_Aug05ReReco_v1' : {
+        'datasetpath' : "/SingleMu/Run2011A-05Aug2011-v1/AOD",
+        'dbs_url' :  "http://cmsdbsprod.cern.ch/cms_dbs_prod_global/servlet/DBSServlet",
+        'lumi_mask' : "/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions11/7TeV/Reprocessing/Cert_170249-172619_7TeV_ReReco5Aug_Collisions11_JSON_v3.txt",
+        'runselection' : "170053-172619",
+        'lumis_per_job'    : "25",
+        'jobs'             : [ 'qcdMuEnriched', 'WplusJets', 'Zmumu' ],
+        'type'             : 'Data',
+        'hlt'              : 'HLT'
+    },
+    'data_SingleMu_Run2011A_PromptReco_v6' : {
+        'datasetpath'      : "/SingleMu/Run2011A-PromptReco-v6/AOD",
+        'dbs_url'          :  "http://cmsdbsprod.cern.ch/cms_dbs_prod_global/servlet/DBSServlet",
+        'lumi_mask'        : "/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions11/7TeV/Prompt/Cert_160404-176023_7TeV_PromptReco_Collisions11_JSON.txt",
+        'runselection'     : "172620-175770",
+        'lumis_per_job'    : "25",
+        'jobs'             : [ 'qcdMuEnriched', 'WplusJets', 'Zmumu' ],
+        'type'             : 'Data',
+        'hlt'              : 'HLT'
+    },
+    'data_SingleMu_Run2011B_PromptReco_v1a' : {
+        'datasetpath'      : "/SingleMu/Run2011B-PromptReco-v1/AOD",
+        'dbs_url'          :  "http://cmsdbsprod.cern.ch/cms_dbs_prod_global/servlet/DBSServlet",
+        'lumi_mask'        : "/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions11/7TeV/Prompt/Cert_160404-180252_7TeV_PromptReco_Collisions11_JSON.txt",
+        'runselection'     : "175832-180252",
+        'lumis_per_job'    : "25",
+        'jobs'             : [ 'qcdMuEnriched', 'WplusJets', 'Zmumu' ],
+        'type'             : 'Data',
+        'hlt'              : 'HLT'
+    },
     # Monte Carlo samples
     'ZplusJets' : {
         'datasetpath'      : "/DYJetsToLL_TuneZ2_M-50_7TeV-madgraph-tauola/Summer11-PU_S4_START42_V11-v1/AODSIM",
@@ -123,7 +190,7 @@ RECO_SAMPLES = {
         'x_sec'            : 2946*_picobarns, # NLO cross-section for Z --> l+ l-, M(l+ l-) > 50 GeV
                                               # taken from http://alcaraz.web.cern.ch/alcaraz/CROSS_SECTIONS.txt
         'jobs'             : [ 'qcdDiJet', 'qcdMuEnriched', 'WplusJets', 'Zmumu' ],
-        'type'             : 'MC',
+        'type'             : 'smMC',
         'hlt'              : 'HLT'
     },
     'WplusJets' : {
@@ -132,56 +199,56 @@ RECO_SAMPLES = {
         'events_processed' : 49527177,
         'x_sec'            : 31314*_picobarns,
         'jobs'             : [ 'qcdDiJet', 'qcdMuEnriched', 'WplusJets', 'Zmumu' ],
-        'type'             : 'MC',
+        'type'             : 'smMC',
         'hlt'              : 'HLT'
     },
-    'qcdDiJetPtHat15to30' : {
-        'datasetpath'      : "/QCD_Pt-15to30_TuneZ2_7TeV_pythia6/Summer11-PU_S3_START42_V11-v2/AODSIM",
+    'qcdDiJetPtHat15to30s4' : {
+        'datasetpath'      : "/QCD_Pt-15to30_TuneZ2_7TeV_pythia6/Summer11-PU_S4_START42_V11-v1/AODSIM",
         'dbs_url'          : "http://cmsdbsprod.cern.ch/cms_dbs_prod_global/servlet/DBSServlet",
         'events_processed' : 11000000,
         'x_sec'            : 8.16e8*_picobarns,
         'jobs'             : [ 'qcdDiJet' ],
-        'type'             : 'MC',
+        'type'             : 'smMC',
         'hlt'              : 'HLT'
     },
-    'qcdDiJetPtHat30to50' : {
-        'datasetpath'      : "/QCD_Pt-30to50_TuneZ2_7TeV_pythia6/Summer11-PU_S3_START42_V11-v2/AODSIM",
+    'qcdDiJetPtHat30to50s4' : {
+        'datasetpath'      : "/QCD_Pt-30to50_TuneZ2_7TeV_pythia6/Summer11-PU_S4_START42_V11-v1/AODSIM",
         'dbs_url'          : "http://cmsdbsprod.cern.ch/cms_dbs_prod_global/servlet/DBSServlet",
         'events_processed' : 6583068,
         'x_sec'            : 5.31e7*_picobarns,
         'jobs'             : [ 'qcdDiJet' ],
-        'type'             : 'MC',
+        'type'             : 'smMC',
         'hlt'              : 'HLT'
     },
-    'qcdDiJetPtHat50to80' : {
-        'datasetpath'      : "/QCD_Pt-50to80_TuneZ2_7TeV_pythia6/Summer11-PU_S3_START42_V11-v1/AODSIM",
+    'qcdDiJetPtHat50to80s4' : {
+        'datasetpath'      : "/QCD_Pt-50to80_TuneZ2_7TeV_pythia6/Summer11-PU_S4_START42_V11-v1/AODSIM",
         'dbs_url'          : "http://cmsdbsprod.cern.ch/cms_dbs_prod_global/servlet/DBSServlet",
         'events_processed' : 6600000,
         'x_sec'            : 6.36e6*_picobarns,
         'jobs'             : [ 'qcdDiJet' ],
-        'type'             : 'MC',
+        'type'             : 'smMC',
         'hlt'              : 'HLT'
     },
-    'qcdDiJetPtHat80to120' : {
-        'datasetpath'      : "/QCD_Pt-80to120_TuneZ2_7TeV_pythia6/Summer11-PU_S3_START42_V11-v1/AODSIM",
+    'qcdDiJetPtHat80to120s4' : {
+        'datasetpath'      : "/QCD_Pt-80to120_TuneZ2_7TeV_pythia6/Summer11-PU_S4_START42_V11-v1/AODSIM",
         'dbs_url'          : "http://cmsdbsprod.cern.ch/cms_dbs_prod_global/servlet/DBSServlet",
         'events_processed' : 6589956,
         'x_sec'            : 7.84e5*_picobarns,
         'jobs'             : [ 'qcdDiJet' ],
-        'type'             : 'MC',
+        'type'             : 'smMC',
         'hlt'              : 'HLT'
     },
-    'qcdDiJetPtHat120to170' : {
-        'datasetpath'      : "/QCD_Pt-120to170_TuneZ2_7TeV_pythia6/Summer11-PU_S3_START42_V11-v2/AODSIM",
+    'qcdDiJetPtHat120to170s4' : {
+        'datasetpath'      : "/QCD_Pt-120to170_TuneZ2_7TeV_pythia6/Summer11-PU_S4_START42_V11-v1/AODSIM",
         'dbs_url'          : "http://cmsdbsprod.cern.ch/cms_dbs_prod_global/servlet/DBSServlet",
         'events_processed' : 6127528,
         'x_sec'            : 1.15e5*_picobarns,
         'jobs'             : [ 'qcdDiJet' ],
-        'type'             : 'MC',
+        'type'             : 'smMC',
         'hlt'              : 'HLT'
     },
-    'qcdDiJetPtHat170to300' : {
-        'datasetpath'      : "/QCD_Pt-170to300_TuneZ2_7TeV_pythia6/Summer11-PU_S3_START42_V11-v1/AODSIM",
+    'qcdDiJetPtHat170to300s4' : {
+        'datasetpath'      : "/QCD_Pt-170to300_TuneZ2_7TeV_pythia6/Summer11-PU_S4_START42_V11-v1/AODSIM",
         'dbs_url'          : "http://cmsdbsprod.cern.ch/cms_dbs_prod_global/servlet/DBSServlet",
         'events_processed' : 6220160,
         'x_sec'            : 2.43e4*_picobarns,
@@ -189,13 +256,13 @@ RECO_SAMPLES = {
         'type'             : 'MC',
         'hlt'              : 'HLT'
     },
-    'qcdDiJetPtHat300to470' : {
-        'datasetpath'      : "/QCD_Pt-300to470_TuneZ2_7TeV_pythia6/Summer11-PU_S3_START42_V11-v2/AODSIM",
+    'qcdDiJetPtHat300to470s4' : {
+        'datasetpath'      : "/QCD_Pt-300to470_TuneZ2_7TeV_pythia6/Summer11-PU_S4_START42_V11-v1/AODSIM",
         'dbs_url'          : "http://cmsdbsprod.cern.ch/cms_dbs_prod_global/servlet/DBSServlet",
         'events_processed' : 6432669,
         'x_sec'            : 1.17e3*_picobarns,
         'jobs'             : [ 'qcdDiJet' ],
-        'type'             : 'MC',
+        'type'             : 'smMC',
         'hlt'              : 'HLT'
     },
     'PPmuXptGt20Mu15' : {
@@ -204,7 +271,7 @@ RECO_SAMPLES = {
         'events_processed' : 20416038,
         'x_sec'            : 0.2966*_millibarns*2.855e-4, # x-sec * gen filter efficiency
         'jobs'             : [ 'qcdMuEnriched', 'WplusJets', 'Zmumu' ],
-        'type'             : 'MC',
+        'type'             : 'smMC',
         'hlt'              : 'HLT'
     },
     'TTplusJets' : {
@@ -214,7 +281,7 @@ RECO_SAMPLES = {
         'x_sec'            : 157.5*_picobarns, # NLO cross-section from
                                                # https://twiki.cern.ch/twiki/bin/viewauth/CMS/StandardModelCrossSections
         'jobs'             : [ 'qcdDiJet', 'qcdMuEnriched', 'WplusJets', 'Zmumu' ],
-        'type'             : 'MC',
+        'type'             : 'smMC',
         'hlt'              : 'HLT'
     }
 }
@@ -233,9 +300,15 @@ MERGE_SAMPLES = {
     'Data' : {
         'samples' : [
             'data_Jet_Run2011A_May10ReReco_v1',
-            'data_Jet_Run2011A_PromptReco_v4',    
+            'data_Jet_Run2011A_PromptReco_v4',
+            'data_Jet_Aug05ReReco_v1',
+            'data_Jet_Run2011A_PromptReco_v6', 
+            'data_Jet_Run2011B_PromptReco_v1a', 
             'data_SingleMu_Run2011A_May10ReReco_v1',
-            'data_SingleMu_Run2011A_PromptReco_v4'
+            'data_SingleMu_Run2011A_PromptReco_v4',
+            'data_SingleMu_Run2011A_Aug05ReReco_v1',
+            'data_SingleMu_Run2011A_PromptReco_v6',
+            'data_SingleMu_Run2011B_PromptReco_v1a'
         ],
         'type' : 'Data',
         'legendEntry' : "Data",
@@ -259,12 +332,12 @@ MERGE_SAMPLES = {
     },
     'QCD' : {
         'samples' : [
-            'qcdDiJetPtHat15to30',
-            'qcdDiJetPtHat30to50',
-            'qcdDiJetPtHat50to80',
-            'qcdDiJetPtHat80to120',
-            'qcdDiJetPtHat120to170',
-            'qcdDiJetPtHat170to300',
+            'qcdDiJetPtHat15to30s4',
+            'qcdDiJetPtHat30to50s4',
+            'qcdDiJetPtHat50to80s4',
+            'qcdDiJetPtHat80to120s4',
+            'qcdDiJetPtHat120to170s4',
+            'qcdDiJetPtHat170to300s4',
             'PPmuXptGt20Mu15'
         ],
         'type' : plotter.process_PPmuXptGt20.config_dqmHistPlotter.type.value(),

@@ -10,15 +10,19 @@ from TauAnalysis.Skimming.goldenZmmSelectionVBTFnoMuonIsolation_cfi import *
 #--------------------------------------------------------------------------------
 
 zmmHLTFilter.HLTPaths = [
-    'HLT_IsoMu17_v5',
+    'HLT_IsoMu17_v5', # Summer'11 MC
     'HLT_IsoMu17_v6',
-    'HLT_IsoMu17_v7',
     'HLT_IsoMu17_v8',
     'HLT_IsoMu17_v9',
-    'HLT_IsoMu17_v10',
     'HLT_IsoMu17_v11',
     'HLT_IsoMu17_v12',
-    'HLT_IsoMu17_v13'   
+    'HLT_IsoMu17_v13',
+    'HLT_IsoMu17_v14',
+    'HLT_DoubleMu7_v1', # Summer'11 MC
+    'HLT_Mu13_Mu8_v7',
+    'HLT_Mu13_Mu8_v10',
+    'HLT_Mu17_Mu8_v7',
+    'HLT_Mu17_Mu8_v10'
 ]
 
 goldenZmumuCandidateFilter = cms.EDFilter("CandViewCountFilter",

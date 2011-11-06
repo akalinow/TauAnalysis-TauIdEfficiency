@@ -13,12 +13,11 @@ from TauAnalysis.Configuration.tools.jobtools import make_bsub_script
 from TauAnalysis.Configuration.tools.harvestingLXBatch import make_harvest_scripts
 from TauAnalysis.Configuration.tools.harvesting import castor_source
 
-version = 'patV1_3'
+version = 'patV2_0'
 
 inputFilePath  = '/castor/cern.ch/user/v/veelken/TauIdCommissioning/'
 harvestingFilePath = '/castor/cern.ch/user/v/veelken/CMSSW_4_2_x/harvesting/TauIdCommissioning/'
-#outputFilePath = '/data1/veelken/tmp/tauFakeRateAnalysis/'
-outputFilePath = '/tmp/veelken/'
+outputFilePath = '/data1/veelken/tmp/tauFakeRateAnalysis/'
 
 samplesToAnalyze = [
     # modify in case you want to submit jobs for some of the samples only...
@@ -28,32 +27,145 @@ eventSelectionsToAnalyze = [
     # modify in case you want to submit jobs for some of the event selections only...
 ]
 
-#skipFWLiteTauFakeRateAnalyzer = False
-skipFWLiteTauFakeRateAnalyzer = True
+skipFWLiteTauFakeRateAnalyzer = False
+#skipFWLiteTauFakeRateAnalyzer = True
 
-intLumiData = recoSampleDefinitionsTauIdCommissioning_7TeV['TARGET_LUMI']
+#runPeriod = '2011RunA'
+runPeriod = '2011RunB'
 
-#--------------------------------------------------------------------------------
-#
-# CV: average prescale factors determined by lumiCalc2
-#     for JSON file Cert_160404-167913_7TeV_PromptReco_Collisions11_JSON.txt
-#    (L = 1.1 fb^-1, EPS dataset)
-#
-avPrescaleJet30   = 119910.7
-avPrescaleJet60   =   5010.6
-avPrescaleJet80   =   1409.3
-avPrescaleJet110  =    241.1
-avPrescaleJet150  =     49.6
-avPrescaleMu15    =     27.1
-avPrescaleIsoMu17 =      1.0
-#--------------------------------------------------------------------------------
+hltPaths_qcdDiJet = [
+    'HLT_Jet30_v1',
+    'HLT_Jet30_v2',
+    'HLT_Jet30_v3',
+    'HLT_Jet30_v4',
+    'HLT_Jet30_v5',
+    'HLT_Jet30_v6',
+    'HLT_Jet30_v9',
+    'HLT_Jet60_v1',
+    'HLT_Jet60_v2',
+    'HLT_Jet60_v3',
+    'HLT_Jet60_v4',
+    'HLT_Jet60_v5',
+    'HLT_Jet60_v6',
+    'HLT_Jet60_v9',
+    'HLT_Jet80_v1',
+    'HLT_Jet80_v2',
+    'HLT_Jet80_v3',
+    'HLT_Jet80_v4',
+    'HLT_Jet80_v5',
+    'HLT_Jet80_v6',
+    'HLT_Jet110_v1',
+    'HLT_Jet110_v2',
+    'HLT_Jet110_v3',
+    'HLT_Jet110_v4',
+    'HLT_Jet110_v5',
+    'HLT_Jet110_v6',
+    'HLT_Jet110_v9',
+    'HLT_Jet150_v1',
+    'HLT_Jet150_v2',
+    'HLT_Jet150_v3',
+    'HLT_Jet150_v4',
+    'HLT_Jet150_v5',
+    'HLT_Jet150_v6'
+]
+
+hltPaths_qcdMuEnriched = [
+    'HLT_Mu15_v2',
+    'HLT_Mu15_v3',
+    'HLT_Mu15_v4',
+    'HLT_Mu15_v5',
+    'HLT_Mu15_v6',
+    'HLT_Mu15_v8',
+    'HLT_Mu15_v9',
+    'HLT_Mu15_v12',
+    'HLT_Mu15_v13'
+]
+
+intLumiData = None
+hltPaths = None
+srcWeights = None
+if runPeriod == '2011RunA':
+    samplesToAnalyze.extend([
+        'data_Jet_Run2011A_May10ReReco_v1',
+        'data_Jet_Run2011A_PromptReco_v4',
+        'data_Jet_Aug05ReReco_v1',
+        'data_Jet_Run2011A_PromptReco_v6', 
+        'data_SingleMu_Run2011A_May10ReReco_v1',
+        'data_SingleMu_Run2011A_PromptReco_v4',
+        'data_SingleMu_Run2011A_Aug05ReReco_v1',
+        'data_SingleMu_Run2011A_PromptReco_v6'
+    ])
+    intLumiData = 2.12e+3 # runs 160431-173692
+    hltPaths = {
+        'qcdDiJet'      : hltPaths_qcdDiJet,
+        'qcdMuEnriched' : hltPaths_qcdMuEnriched,
+        'WplusJets'     : [
+            'HLT_IsoMu17_v5',
+            'HLT_IsoMu17_v6',
+            'HLT_IsoMu17_v8',
+            'HLT_IsoMu17_v9',
+            'HLT_IsoMu17_v10',
+            'HLT_IsoMu17_v11',
+            'HLT_IsoMu17_v13'
+        ],
+        'Zmumu' : [
+            'HLT_IsoMu17_v5',
+            'HLT_IsoMu17_v6',
+            'HLT_IsoMu17_v8',
+            'HLT_IsoMu17_v9',
+            'HLT_IsoMu17_v10',
+            'HLT_IsoMu17_v11',
+            'HLT_IsoMu17_v13'
+        ]
+    }
+    srcWeights = {
+        'Data' : [],
+        'smMC' : [ 'vertexMultiplicityReweight3dRunA' ]
+    }
+elif runPeriod == '2011RunB':
+    samplesToAnalyze.extend([
+        'data_Jet_Run2011B_PromptReco_v1a', 
+        'data_SingleMu_Run2011B_PromptReco_v1a'
+    ])
+    intLumiData = 2.53e+3 # runs 175860-179411
+    hltPaths = {
+        'qcdDiJet'      : hltPaths_qcdDiJet,
+        'qcdMuEnriched' : hltPaths_qcdMuEnriched,
+        'WplusJets'     : [
+            'HLT_IsoMu24_v1',
+            'HLT_IsoMu24_v2',
+            'HLT_IsoMu24_v4',
+            'HLT_IsoMu24_v5',
+            'HLT_IsoMu24_v6',
+            'HLT_IsoMu24_v7',
+            'HLT_IsoMu24_v8',
+            'HLT_IsoMu24_v9',
+            'HLT_IsoMu24_v12',
+            'HLT_IsoMu24_v13'
+        ],
+        'Zmumu' : {
+            'Data' : [
+                'HLT_Mu17_Mu8_v7',
+                'HLT_Mu17_Mu8_v10'
+            ],
+            'smMC' : [
+                'HLT_DoubleMu7_v1'
+            ]
+        }
+    }
+    srcWeights = {
+        'Data' : [],
+        ##'smMC' : [ 'vertexMultiplicityReweight3dRunB' ]
+        'smMC' : []
+    }
+else:
+    raise ValueError("Invalid runPeriod = %s !!" % runPeriod)
 
 eventSelections = {
     'QCDj30' : {
         'jobNameInRecoSampleDef' : 'qcdDiJet',
         'tauJetCandSelection'    : [ "userFloat('probeJet30') > 0.5" ], 
         'inputFileNames'         : "tauCommissioningQCDdiJetPATtuple.root",
-        'avTriggerPrescale'      : avPrescaleJet30,
         'srcTauJetCandidates'    : 'patPFTausDijetTagAndProbeHPS',
         'legendEntry'            : 'QCDj30',
         'markerStyleData'        : 20,
@@ -64,7 +176,6 @@ eventSelections = {
         'jobNameInRecoSampleDef' : 'qcdDiJet',
         'tauJetCandSelection'    : [ "userFloat('probeJet60') > 0.5" ], 
         'inputFileNames'         : "tauCommissioningQCDdiJetPATtuple.root",
-        'avTriggerPrescale'      : avPrescaleJet60,
         'srcTauJetCandidates'    : 'patPFTausDijetTagAndProbeHPS',
         'legendEntry'            : 'QCDj60',
         'markerStyleData'        : 21,
@@ -75,7 +186,6 @@ eventSelections = {
         'jobNameInRecoSampleDef' : 'qcdDiJet',
         'tauJetCandSelection'    : [ "userFloat('probeJet80') > 0.5" ], 
         'inputFileNames'         : "tauCommissioningQCDdiJetPATtuple.root",
-        'avTriggerPrescale'      : avPrescaleJet80,
         'srcTauJetCandidates'    : 'patPFTausDijetTagAndProbeHPS',
         'legendEntry'            : 'QCDj80',
         'markerStyleData'        : 22,
@@ -86,7 +196,6 @@ eventSelections = {
         'jobNameInRecoSampleDef' : 'qcdDiJet',
         'tauJetCandSelection'    : [ "userFloat('probeJet110') > 0.5" ], 
         'inputFileNames'         : "tauCommissioningQCDdiJetPATtuple.root",
-        'avTriggerPrescale'      : avPrescaleJet110,
         'srcTauJetCandidates'    : 'patPFTausDijetTagAndProbeHPS',
         'legendEntry'            : 'QCDj110',
         'markerStyleData'        : 23,
@@ -97,7 +206,6 @@ eventSelections = {
         'jobNameInRecoSampleDef' : 'qcdDiJet',
         'tauJetCandSelection'    : [ "userFloat('probeJet150') > 0.5" ], 
         'inputFileNames'         : "tauCommissioningQCDdiJetPATtuple.root",
-        'avTriggerPrescale'      : avPrescaleJet150,
         'srcTauJetCandidates'    : 'patPFTausDijetTagAndProbeHPS',
         'legendEntry'            : 'QCDj150',
         'markerStyleData'        : 33,
@@ -108,7 +216,6 @@ eventSelections = {
         'jobNameInRecoSampleDef' : 'qcdMuEnriched',
         'tauJetCandSelection'    : [], 
         'inputFileNames'         : "tauCommissioningQCDmuEnrichedPATtuple.root",
-        'avTriggerPrescale'      : avPrescaleMu15,
         'srcTauJetCandidates'    : 'patPFTausLoosePFIsoEmbedded06HPS',
         'legendEntry'            : 'QCD#mu',
         'markerStyleData'        : 33,
@@ -119,7 +226,6 @@ eventSelections = {
         'jobNameInRecoSampleDef' : 'WplusJets',
         'tauJetCandSelection'    : [], 
         'inputFileNames'         : "tauCommissioningWplusJetsEnrichedPATtuple.root",
-        'avTriggerPrescale'      : avPrescaleIsoMu17,
         'srcTauJetCandidates'    : 'patPFTausLoosePFIsoEmbedded06HPS',
         'legendEntry'            : 'W #rightarrow #mu #nu',
         'markerStyleData'        : 33,
@@ -130,7 +236,6 @@ eventSelections = {
         'jobNameInRecoSampleDef' : 'Zmumu',
         'tauJetCandSelection'    : [], 
         'inputFileNames'         : "tauCommissioningZmumuEnrichedPATtuple.root",
-        'avTriggerPrescale'      : avPrescaleIsoMu17,
         'srcTauJetCandidates'    : 'patPFTausLoosePFIsoEmbedded06HPS',
         'legendEntry'            : 'Z #rightarrow #mu^{+} #mu^{-}',
         'markerStyleData'        : 33,
@@ -242,10 +347,10 @@ tauIds = {
 
 labels = [
     'CMS Preliminary 2011',
-    '#sqrt{s} = 7 TeV, L = 1.1 fb^{-1}'
+    '#sqrt{s} = 7 TeV, L = %1.2f fb^{-1}' % intLumiData/1.e+3
 ]    
 
-srcMET = 'patPFMETs' 
+srcMET = 'patPFMet' 
 
 configFilePath = os.path.join(os.getcwd(), "lxbatch")
 logFilePath    = os.path.join(os.getcwd(), "lxbatch_log")
@@ -291,11 +396,17 @@ for sampleToAnalyze in samplesToAnalyze:
         jobNameInRecoSampleDef = eventSelections[eventSelectionToAnalyze]['jobNameInRecoSampleDef']
         if jobNameInRecoSampleDef in recoSampleDefinitionsTauIdCommissioning_7TeV['RECO_SAMPLES'][sampleToAnalyze]['jobs']:
             tauJetCandSelection = eventSelections[eventSelectionToAnalyze]['tauJetCandSelection']
-            srcTauJetCandidates = eventSelections[eventSelectionToAnalyze]['srcTauJetCandidates']
+            srcTauJetCandidates = eventSelections[eventSelectionToAnalyze]['srcTauJetCandidates']            
+            hltPaths_sample = None
+            if if isinstance(hltPaths[eventSelectionToAnalyze], dict):
+                processType = recoSampleDefinitionsTauIdCommissioning_7TeV['RECO_SAMPLES'][sampleToAnalyze]['type']
+                hltPaths_sample = hltPaths[eventSelectionToAnalyze][processType]
+            else:
+                hltPaths_sample = hltPaths[eventSelectionToAnalyze]
             retVal_FWLiteTauFakeRateAnalyzer = \
               buildConfigFile_FWLiteTauFakeRateAnalyzer(sampleToAnalyze, eventSelectionToAnalyze, version,
                                                         os.path.join(inputFilePath, jobNameInRecoSampleDef, version, sampleToAnalyze),
-                                                        tauIds, tauJetCandSelection, srcTauJetCandidates, srcMET, 
+                                                        tauIds, tauJetCandSelection, srcTauJetCandidates, srcMET, hltPaths_sample, 
                                                         configFilePath, logFilePath, harvestingFilePath,
                                                         recoSampleDefinitionsTauIdCommissioning_7TeV)
         

@@ -121,7 +121,6 @@ process.eventCounterPath = cms.Path(process.totalEventsProcessed)
 #
 # produce Ntuple
 #
-process.load("TauAnalysis.TauIdEfficiency.ntupleConfigVertex_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigGenPhaseSpaceEventInfo_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigGenPileUpEventInfo_cfi")
 
@@ -129,19 +128,12 @@ process.ntupleProducer = cms.EDProducer("ObjValEDNtupleProducer",
 
     ntupleName = cms.string("tauIdEffNtuple"),
 
-    sources = cms.PSet(
-        # number of reconstructed primary event vertices
-        # with sum(trackPt) exceeding different thresholds
-        vertexMultiplicity = process.vertexMultiplicity_template,
-    )
+    sources = cms.PSet()
 )
 
 if isMC:
     setattr(process.ntupleProducer.sources, "genPhaseSpaceEventInfo", process.genPhaseSpaceEventInfo_template)
     setattr(process.ntupleProducer.sources, "genPileUpEventInfo", process.genPileUpEventInfo_template)
-    # add reweighting factors to be applied to Monte Carlo simulated events
-    # in order to match vertex multiplicity distribution in Data                                             
-    setattr(process.ntupleProducer.sources, "vertexMultReweight", process.vertexMultReweight_template)    
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
@@ -178,10 +170,11 @@ process.patTupleOutputModule = cms.OutputModule("PoolOutputModule",
             'keep *_%s_*_*' % retVal['pfTauCollectionHPSpTaNC'],
             'keep *_offlinePrimaryVertices_*_*',
             'keep *_offlinePrimaryVerticesWithBS_*_*',
-            'keep *_selectedPrimaryVertexHighestPtTrackSum_*_*',                                         
-            'keep *_patPFMETs_*_*',
-            ##'keep *_patMETs_*_*',                                             
-            'keep patJets_patJetsAK5PF_*_*',
+            'keep *_selectedPrimaryVertexHighestPtTrackSum_*_*',
+            'keep *_patPFMet_*_*',
+            ##'keep *_patMETs_*_*',                                            
+            'keep *_patJetsAK5PFnotOverlappingWithLeptonsForMEtUncertainty_*_*',
+            'keep patJets_patJetsAK5PF_*_*',                                            
             ##'keep patJets_patJetsAK5Calo_*_*',                                            
             'keep *_*ntupleProducer*_*_*'
         )
@@ -196,9 +189,11 @@ process.patTupleOutputModule.outputCommands.extend(patTriggerEventContent)
 if isMC:
     process.patTupleOutputModule.outputCommands.extend(
         cms.untracked.vstring(
+            'keep *_smearedPatJetsAK5PF_*_*',
+            'keep *_vertexMultiplicityReweight3dRunA_*_*',
+            'keep *_vertexMultiplicityReweight3dRunB_*_*',
+            'keep *_vertexMultiplicityVsRhoPFNeutralReweight_*_*',
             'keep *_addPileupInfo_*_*',
-            'keep *_*_*vtxMultReweight*_*',
-            'keep *_vertexMultiplicityReweight_*_*',
             'keep *_genPhaseSpaceEventInfo_*_*',
             'keep *_genParticles_*_*'
         )

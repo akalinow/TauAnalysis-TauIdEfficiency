@@ -84,19 +84,6 @@ configurePrePatProduction(process, pfCandidateCollection = pfCandidateCollection
 # produce PAT objects
 #
 from TauAnalysis.TauIdEfficiency.tools.configurePatTupleProduction import configurePatTupleProduction
-from TauAnalysis.TauIdEfficiency.tools.sequenceBuilder import buildGenericTauSequence
-
-# add muon isolation variables
-process.load("CommonTools.ParticleFlow.Isolation.pfMuonIsolation_cff")
-from CommonTools.ParticleFlow.Isolation.tools_cfi import *
-process.pfmuIsoDepositPFCandidates = isoDepositReplace("muons", pfCandidateCollection)
-process.prePatProductionSequence._seq = process.prePatProductionSequence._seq * process.pfmuIsoDepositPFCandidates
-
-process.load("PhysicsTools.PatAlgos.producersLayer1.muonProducer_cfi")
-process.patMuons.userIsolation.pfAllParticles = cms.PSet( 
-    src = cms.InputTag("pfmuIsoDepositPFCandidates"),
-    deltaR = cms.double(0.4)
-)
 
 # "clean" CaloTau/PFTau collections
 # (i.e. remove CaloTaus/PFTaus overlapping with muons)
@@ -108,7 +95,7 @@ patCaloTauCleanerPrototype = process.cleanPatTaus.clone(
     preselection = cms.string(''),
     checkOverlaps = cms.PSet(
         muons = cms.PSet(
-           src                 = cms.InputTag("selectedPatMuons"),
+           src                 = cms.InputTag("patMuonsWithinAcc"),
            algorithm           = cms.string("byDeltaR"),
            preselection        = cms.string("isGlobalMuon"),
            deltaR              = cms.double(0.7),
@@ -201,13 +188,15 @@ process.patTupleOutputModule = cms.OutputModule("PoolOutputModule",
             'keep *_%s_*_*' % retVal['pfTauCollectionHPS'],
             'keep *_%s_*_*' % retVal['pfTauCollectionHPSpTaNC'],
             'keep *_goodIsoMuons_*_*',
-            'keep *_goldenZmumuCandidatesGe2IsoMuons_*_*',                                      
+            'keep *_goldenZmumuCandidatesGe2IsoMuons_*_*',
+            'keep *_selectedPatMuonsVBTFid_*_*',                                                
             'keep *_offlinePrimaryVertices_*_*',
             'keep *_offlinePrimaryVerticesWithBS_*_*',
             'keep *_selectedPrimaryVertexHighestPtTrackSum_*_*',                                         
-            'keep *_patPFMETs_*_*',
+            'keep *_patPFMet_*_*',
             ##'keep *_patMETs_*_*',                                            
-            'keep patJets_patJetsAK5PF_*_*',
+            'keep *_patJetsAK5PFnotOverlappingWithLeptonsForMEtUncertainty_*_*',
+            'keep patJets_patJetsAK5PF_*_*',                                               
             ##'keep patJets_patJetsAK5Calo_*_*',
             'keep *_*ntupleProducer*_*_*'
         )
@@ -222,9 +211,11 @@ process.patTupleOutputModule.outputCommands.extend(patTriggerEventContent)
 if isMC:
     process.patTupleOutputModule.outputCommands.extend(
         cms.untracked.vstring(
+            'keep *_smearedPatJetsAK5PF_*_*',
+            'keep *_vertexMultiplicityReweight3dRunA_*_*',
+            'keep *_vertexMultiplicityReweight3dRunB_*_*',
+            'keep *_vertexMultiplicityVsRhoPFNeutralReweight_*_*',
             'keep *_addPileupInfo_*_*',
-            'keep *_*_*vtxMultReweight*_*',
-            'keep *_vertexMultiplicityReweight_*_*',
             'keep *_genPhaseSpaceEventInfo_*_*',
             'keep *_genParticles_*_*'
         )

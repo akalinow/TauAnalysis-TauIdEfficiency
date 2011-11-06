@@ -2,6 +2,7 @@ import FWCore.ParameterSet.Config as cms
 import copy
 
 from TauAnalysis.CandidateTools.sysErrDefinitions_cfi import *
+from TauAnalysis.CandidateTools.tools.composeModuleName import composeModuleName
 from TauAnalysis.CandidateTools.tools.objSelConfigurator import objSelConfigurator
 from TauAnalysis.TauIdEfficiency.tools.configurePatTupleProduction import configurePatTupleProduction
 from TauAnalysis.TauIdEfficiency.tools.sequenceBuilder import buildGenericTauSequence
@@ -11,7 +12,7 @@ import PhysicsTools.PatAlgos.tools.helpers as patutils
 def configurePatTupleProductionTauIdEffMeasSpecific(process, patSequenceBuilder = buildGenericTauSequence,
                                                     hltProcess = "HLT",
                                                     isMC = False, isEmbedded = False,
-                                                    applyZrecoilCorrection = False, runSVfit = True):
+                                                    runSVfit = False):
 
     # check that patSequenceBuilder and patTauCleanerPrototype are defined and non-null
     if patSequenceBuilder is None:
@@ -40,23 +41,15 @@ def configurePatTupleProductionTauIdEffMeasSpecific(process, patSequenceBuilder 
     patTupleConfig = configurePatTupleProduction(process, patSequenceBuilder,
                                                  patPFTauCleanerPrototype, patCaloTauCleanerPrototype, True, hltProcess, isMC, False)
 
-    process.selectedPatMuonsForTauIdEffPFRelIso = cms.EDFilter("PATMuonSelector",
-        src = cms.InputTag('selectedPatMuonsVBTFid'),                                                      
-        cut = cms.string(
-            '(userIsolation("pat::User1Iso")' + \
-            ' + max(0., userIsolation("pat::PfNeutralHadronIso") + userIsolation("pat::PfGammaIso")' + \
-            '          - 0.5*userIsolation("pat::User2Iso"))) < 0.50*pt'
-        ),
-        filter = cms.bool(False)
-    )
-   
+    
     process.producePatTupleTauIdEffMeasSpecific = cms.Sequence(
-        process.patDefaultSequence
-       + process.selectedPatMuonsForTauIdEffPFRelIso
+        process.patTupleProductionSequence
        + process.caloTauSequence
        # store TaNC inputs as discriminators
-       + process.produceTancMVAInputDiscriminators
-       + process.pfTauSequenceFixedCone + process.pfTauSequenceShrinkingCone + process.pfTauSequenceHPS
+       #+ process.produceTancMVAInputDiscriminators
+       #+ process.pfTauSequenceFixedCone
+       #+ process.pfTauSequenceShrinkingCone
+       + process.pfTauSequenceHPS
        + process.pfTauSequenceHPSpTaNC
     )
 
@@ -83,7 +76,7 @@ def configurePatTupleProductionTauIdEffMeasSpecific(process, patSequenceBuilder 
     #--------------------------------------------------------------------------------
 
     process.load("TauAnalysis.RecoTools.patMuonMomentumCorrection_cfi")
-    process.patMuonsMuScleFitCorrectedMomentum.MuonLabel = cms.InputTag('selectedPatMuonsForTauIdEffPFRelIso')
+    process.patMuonsMuScleFitCorrectedMomentum.MuonLabel = cms.InputTag('selectedPatMuonsVBTFid')
     process.producePatTupleTauIdEffMeasSpecific += process.patMuonsMuScleFitCorrectedMomentum
 
     process.load("TauAnalysis.RecoTools.patLeptonSystematics_cff")
@@ -92,6 +85,29 @@ def configurePatTupleProductionTauIdEffMeasSpecific(process, patSequenceBuilder 
     process.producePatTupleTauIdEffMeasSpecific += process.patMuonsMuScleFitCorrectedMomentumShiftUp
     process.producePatTupleTauIdEffMeasSpecific += process.patMuonsMuScleFitCorrectedMomentumShiftDown
 
+    #--------------------------------------------------------------------------------
+    # define Muon selection
+    #--------------------------------------------------------------------------------
+
+    process.selectedPatMuonsForTauIdEffPFRelIso = cms.EDFilter("PATMuonSelector",
+        cut = cms.string(
+            '(userIsolation("pat::User1Iso")' + \
+            ' + max(0., userIsolation("pat::PfNeutralHadronIso") + userIsolation("pat::PfGammaIso")' + \
+            '          - 0.5*userIsolation("pat::User2Iso"))) < 0.50*pt'
+        ),
+        filter = cms.bool(False)
+    )
+
+    patMuonSelConfiguratorForTauIdEff = objSelConfigurator(
+        [ process.selectedPatMuonsForTauIdEffPFRelIso ],
+        src = "patMuonsMuScleFitCorrectedMomentum",
+        pyModuleName = __name__,
+        doSelIndividual = False
+    )
+    setattr(patMuonSelConfiguratorForTauIdEff, "systematics", muonSystematics)
+    process.selectPatMuonsForTauIdEff = patMuonSelConfiguratorForTauIdEff.configure(process = process)
+    process.producePatTupleTauIdEffMeasSpecific += process.selectPatMuonsForTauIdEff
+ 
     #--------------------------------------------------------------------------------
     # define Muon selection for di-Muon veto
     #--------------------------------------------------------------------------------
@@ -104,7 +120,7 @@ def configurePatTupleProductionTauIdEffMeasSpecific(process, patSequenceBuilder 
     
     process.allDiMuPairForTauIdEffZmumuHypotheses = cms.EDProducer("PATDiMuPairProducer",
         useLeadingTausOnly = cms.bool(False),
-        srcLeg1 = cms.InputTag('selectedPatMuonsForTauIdEffPFRelIso'),
+        srcLeg1 = cms.InputTag(composeModuleName(['selectedPatMuonsForTauIdEffPFRelIso', "cumulative"])),
         srcLeg2 = cms.InputTag('selectedPatMuonsForTauIdEffZmumuHypotheses'),
         dRmin12 = cms.double(0.01),
         srcMET = cms.InputTag(''),
@@ -149,24 +165,24 @@ def configurePatTupleProductionTauIdEffMeasSpecific(process, patSequenceBuilder 
 
     # CV: do not run SVFit and PFMetSignificance algorithms,
     #     as they use a significant amount of time (2011/05/27)
-    retVal_pfTauFixedCone = \
-        buildSequenceTauIdEffMeasSpecific(process,
-                                          'selectedPatMuonsForTauIdEffTrkIP',
-                                          [ "PFTau", "FixedCone" ], patTupleConfig["pfTauCollectionFixedCone"], False,
-                                          None,
-                                          'patPFMETs',
-                                          isMC = isMC, isEmbedded = isEmbedded,
-                                          applyZrecoilCorrection = applyZrecoilCorrection, runSVfit = False)
-    process.producePatTupleTauIdEffMeasSpecific += retVal_pfTauFixedCone["sequence"]
-    retVal_pfTauShrinkingCone = \
-        buildSequenceTauIdEffMeasSpecific(process,
-                                          'selectedPatMuonsForTauIdEffTrkIP',
-                                          [ "PFTau", "ShrinkingCone" ], patTupleConfig["pfTauCollectionShrinkingCone"], False,
-                                          None,
-                                          'patPFMETs',
-                                          isMC = isMC, isEmbedded = isEmbedded,
-                                          applyZrecoilCorrection = applyZrecoilCorrection, runSVfit = False)
-    process.producePatTupleTauIdEffMeasSpecific += retVal_pfTauShrinkingCone["sequence"]
+    #retVal_pfTauFixedCone = \
+    #    buildSequenceTauIdEffMeasSpecific(process,
+    #                                      'selectedPatMuonsForTauIdEffPFRelIso',
+    #                                      [ "PFTau", "FixedCone" ], patTupleConfig["pfTauCollectionFixedCone"], False,
+    #                                      None,
+    #                                      'patType1CorrectedPFMet',
+    #                                      isMC = isMC, isEmbedded = isEmbedded,
+    #                                      runSVfit = False)
+    #process.producePatTupleTauIdEffMeasSpecific += retVal_pfTauFixedCone["sequence"]
+    #retVal_pfTauShrinkingCone = \
+    #    buildSequenceTauIdEffMeasSpecific(process,
+    #                                      'selectedPatMuonsForTauIdEffPFRelIso',
+    #                                      [ "PFTau", "ShrinkingCone" ], patTupleConfig["pfTauCollectionShrinkingCone"], False,
+    #                                      None,
+    #                                      'patType1CorrectedPFMet',
+    #                                      isMC = isMC, isEmbedded = isEmbedded,
+    #                                      runSVfit = False)
+    #process.producePatTupleTauIdEffMeasSpecific += retVal_pfTauShrinkingCone["sequence"]
     # CV: save HPS taus passing the following tau id. discriminators
     #     for measurement of tau charge misidentification rate
     savePFTauHPS = \
@@ -179,12 +195,12 @@ def configurePatTupleProductionTauIdEffMeasSpecific(process, patSequenceBuilder 
        + "tauID('againstMuonTight') > 0.5"                 
     retVal_pfTauHPS = \
         buildSequenceTauIdEffMeasSpecific(process,
-                                          'selectedPatMuonsForTauIdEffTrkIP',
+                                          'selectedPatMuonsForTauIdEffPFRelIso',
                                           [ "PFTau", "HPS" ], patTupleConfig["pfTauCollectionHPS"], True,
                                           savePFTauHPS,
-                                          'patPFMETs',
+                                          'patType1CorrectedPFMet',
                                           isMC = isMC, isEmbedded = isEmbedded,
-                                          applyZrecoilCorrection = applyZrecoilCorrection, runSVfit = runSVfit)
+                                          runSVfit = runSVfit)
     process.producePatTupleTauIdEffMeasSpecific += retVal_pfTauHPS["sequence"]
     # CV: save HPS+TaNC taus passing the following tau id. discriminators
     #     for measurement of tau charge misidentification rate
@@ -196,22 +212,22 @@ def configurePatTupleProductionTauIdEffMeasSpecific(process, patSequenceBuilder 
        + "tauID('againstMuonTight') > 0.5"
     retVal_pfTauHPSpTaNC = \
         buildSequenceTauIdEffMeasSpecific(process,
-                                          'selectedPatMuonsForTauIdEffTrkIP',
+                                          'selectedPatMuonsForTauIdEffPFRelIso',
                                           [ "PFTau", "HPSpTaNC" ], patTupleConfig["pfTauCollectionHPSpTaNC"], True,
                                           savePFTauHPSpTaNC,
-                                          'patPFMETs',
+                                          'patType1CorrectedPFMet',
                                           isMC = isMC, isEmbedded = isEmbedded,
-                                          applyZrecoilCorrection = applyZrecoilCorrection, runSVfit = runSVfit)
+                                          runSVfit = runSVfit)
     process.producePatTupleTauIdEffMeasSpecific += retVal_pfTauHPSpTaNC["sequence"]
 
     retVal = {}
-    retVal["pfTauFixedCone"] = retVal_pfTauFixedCone
-    retVal["pfTauShrinkingCone"] = retVal_pfTauShrinkingCone
+    #retVal["pfTauFixedCone"] = retVal_pfTauFixedCone
+    #retVal["pfTauShrinkingCone"] = retVal_pfTauShrinkingCone
     retVal["pfTauHPS"] = retVal_pfTauHPS
     retVal["pfTauHPSpTaNC"] = retVal_pfTauHPSpTaNC
     retVal["algorithms"] = [
-        "pfTauFixedCone",
-        "pfTauShrinkingCone",
+        #"pfTauFixedCone",
+        #"pfTauShrinkingCone",
         "pfTauHPS",
         "pfTauHPSpTaNC"
     ]    

@@ -285,39 +285,9 @@ process.selectedPatMuonsLoose = cms.EDFilter("PATMuonSelector",
     filter = cms.bool(True)
 )
 
-# embedd isolation variables into pat::Muon objects
-process.selectedPatMuonsTightPFIso04 = cms.EDProducer("PATMuonPFIsolationEmbedder",
-    src = cms.InputTag('selectedPatMuonsTight'),                                       
-    userFloatName = cms.string('pfLooseIsoPt04'),
-    pfCandidateSource = cms.InputTag('particleFlow'),
-    vertexSource = cms.InputTag('selectedPrimaryVertexPosition'),
-    beamSpotSource = cms.InputTag('offlineBeamSpot'),
-    chargedHadronIso = cms.PSet(
-        ptMin = cms.double(0.),        
-        dRvetoCone = cms.double(0.0001),
-        dRisoCone = cms.double(0.4)
-    ),
-    neutralHadronIso = cms.PSet(
-        ptMin = cms.double(0.5),        
-        dRvetoCone = cms.double(0.01),        
-        dRisoCone = cms.double(0.4)
-    ),
-    photonIso = cms.PSet(
-        ptMin = cms.double(0.5),        
-        dRvetoCone = cms.double(0.01),
-        dRisoCone = cms.double(0.4)
-    ),
-    direction = cms.string('p4'),
-    pileUpCorr = cms.PSet(
-        method = cms.string("deltaBeta"),
-        deltaZ = cms.double(0.2),
-        chargedToNeutralFactor = cms.double(0.50)
-    )
-)
-
 # embedd into pat::Muon objects information whether or not reconstructed muons are matched to trigger primitives
 process.selectedPatMuonsTightTriggerMatched = cms.EDProducer("PATMuonTriggerEmbedder",
-    src = cms.InputTag("selectedPatMuonsTightPFIso04"),
+    src = cms.InputTag("selectedPatMuonsTight"),
     matched = cms.InputTag("patTrigger"),
     triggerPaths = cms.vstring(
         'HLT_IsoMu12_v*',
