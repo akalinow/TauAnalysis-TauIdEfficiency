@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.28 $
+ * \version $Revision: 1.29 $
  *
- * $Id: fitTauIdEff.cc,v 1.28 2011/09/30 12:26:40 veelken Exp $
+ * $Id: fitTauIdEff.cc,v 1.29 2011/10/25 16:14:23 veelken Exp $
  *
  */
 
@@ -710,9 +710,9 @@ int main(int argc, const char* argv[])
   //}
 
   std::map<std::string, std::map<std::string, std::map<std::string, double> > > numEventsAll = // key = (process/"sum", region, observable)
-    compNumEvents(templatesAll, processes, distributionsData);
+    compNumEvents(templatesAll, processes, regions, distributionsData);
   std::map<std::string, std::map<std::string, std::map<std::string, double> > > fittedFractions = // key = (process, region, observable)
-    compFittedFractions(templatesAll, numEventsAll, processes, distributionsData);
+    compFittedFractions(templatesAll, numEventsAll, processes, regions, distributionsData);
 
   std::cout << "running fit for central values..." << std::endl;
   
@@ -856,8 +856,10 @@ int main(int argc, const char* argv[])
 	}
       }
       
-      numEventsAll_fluctuated = compNumEvents(templatesAll_fluctuated, processes, distributionsData);
-      fittedFractions_fluctuated = compFittedFractions(templatesAll_fluctuated, numEventsAll_fluctuated, processes, distributionsData);
+      numEventsAll_fluctuated = 
+	compNumEvents(templatesAll_fluctuated, processes, regions, distributionsData);
+      fittedFractions_fluctuated = 
+	compFittedFractions(templatesAll_fluctuated, numEventsAll_fluctuated, processes, regions, distributionsData);
       
       for ( std::vector<std::string>::const_iterator tauId = tauIds.begin();
 	    tauId != tauIds.end(); ++tauId ) {

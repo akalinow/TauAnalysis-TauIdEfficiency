@@ -3,6 +3,7 @@
 import TauAnalysis.Configuration.tools.castor as castor
 import TauAnalysis.TauIdEfficiency.tools.castor_mirror2 as castor_mirror
 
+import os
 import subprocess
 import shlex
 
@@ -12,7 +13,7 @@ version = "V10_1tauEnRecovery"
 #version = "V2"
 
 # Get all the skim files from the castor directory
-sourceFilePath = "/castor/cern.ch/user/v/veelken/CMSSW_4_2_x/PATtuples/TauIdEffMeas/%s" % jobId # Christian's PAT-tuples
+sourceFilePath = "/castor/cern.ch/user/v/veelken/CMSSW_4_2_x/PATtuples/TauIdEffMeas/%s/%s" % (jobId, version) # Christian's PAT-tuples
 #sourceFilePath = "/castor/cern.ch/user/m/mverzett/tagprobe/Jun06Skim/edntuples_v3/" # Mauro's Ntuples
 source_files = [ file_info['path'] for file_info in castor.nslsl(sourceFilePath) ]
 print "source_files:"
@@ -24,7 +25,20 @@ if not os.path.exists(targetFilePath):
     os.mkdir(targetFilePath)
 
 samplesToCopy = [
-    # modify in case you want to submit jobs for some of the samples only...
+    # modify in case you want to copy some of the samples only...
+    'data_SingleMu_Run2011A_May10ReReco_v1',
+    'data_SingleMu_Run2011A_PromptReco_v4',
+    'data_SingleMu_Run2011A_Aug05ReReco_v1',
+    'data_SingleMu_Run2011A_PromptReco_v6',
+    'data_MET_Run2011B_PromptReco_v1',
+    'data_MET_Run2011B_PromptReco_v1a',
+    'Ztautau_powheg',
+    #'Ztautau_embedded_part1',
+    #'Ztautau_embedded_part2',
+    'Zmumu_powheg',
+    'PPmuXptGt20Mu15',
+    'WplusJets_madgraph',
+    'TTplusJets_madgraph'
 ]
 
 files_to_copy = []

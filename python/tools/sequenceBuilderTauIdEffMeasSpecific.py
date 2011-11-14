@@ -93,7 +93,7 @@ def buildSequenceTauIdEffMeasSpecific(process,
         muonSelection = cms.string("isGlobalMuon() | isTrackerMuon() | isStandAloneMuon()"),
         srcMuon = cms.InputTag('patMuons'),
         pfIsolation = cms.PSet(
-            chargedHadronIso = cms.PSet(
+            chargedParticleIso = cms.PSet(
                 ptMin = cms.double(1.0),        
                 dRvetoCone = cms.double(0.15),
                 dRisoCone = cms.double(0.6)
@@ -117,8 +117,10 @@ def buildSequenceTauIdEffMeasSpecific(process,
         srcVertex = cms.InputTag('offlinePrimaryVerticesWithBS'),
         filter = cms.bool(False)                                                  
     )
-    if savePatTaus is not None:
-        setattr(selectedPatPFTausForTauIdEff, "save", cms.string(savePatTaus))
+    # CV: comment-out for now, in order to make sure there is no bias
+    #     on the tau id. efficiency measurement
+    #if savePatTaus is not None:
+    #    setattr(selectedPatPFTausForTauIdEff, "save", cms.string(savePatTaus))
     setattr(process, selectedPatPFTausForTauIdEffName, selectedPatPFTausForTauIdEff)
     patTauSelectionModules.append(selectedPatPFTausForTauIdEff)
 

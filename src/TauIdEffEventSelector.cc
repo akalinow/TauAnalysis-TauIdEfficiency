@@ -27,7 +27,7 @@ TauIdEffEventSelector::TauIdEffEventSelector(const edm::ParameterSet& cfg)
   disableTauCandPreselCuts_ = cfg.getParameter<bool>("disableTauCandPreselCuts");
 
 //--- define default cuts for ABCD regions
-  muonPtMin_                =  20.0; 
+  muonPtMin_                =  17.0; 
   muonPtMax_                =  +1.e+3; 
   muonEtaMin_               =  -2.1;
   muonEtaMax_               =  +2.1; 

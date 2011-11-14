@@ -125,7 +125,6 @@ bool PATPFTauSelectorForTauIdEff::filter(edm::Event& evt, const edm::EventSetup&
 
     reco::Candidate::LorentzVector p4PFJetUncorrected = pfJet->p4();
 
-    //double pfJetJEC = jetEnergyCorrector->correction(*pfJet, edm::RefToBase<reco::Jet>(pfJet), evt, es);
     double pfJetJEC = jetEnergyCorrector->correction(*pfJet, evt, es);
     if ( verbosity_ ) {
       std::cout << " PFJet: uncorrected Pt = " << p4PFJetUncorrected.pt() << "," 

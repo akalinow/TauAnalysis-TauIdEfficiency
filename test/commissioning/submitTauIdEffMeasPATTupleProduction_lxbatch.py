@@ -28,8 +28,8 @@ samplesToAnalyze = [
     ##'data_SingleMu_Run2011A_Aug05ReReco_v1',
     ##'data_SingleMu_Run2011A_PromptReco_v6',
     ##'data_MET_Run2011B_PromptReco_v1',
-    'data_MET_Run2011B_PromptReco_v1a',
-    ##'Ztautau_powheg',
+    ##'data_MET_Run2011B_PromptReco_v1a',
+    'Ztautau_powheg',
     #'Ztautau_embedded_part1',
     #'Ztautau_embedded_part2',
     ##'Zmumu_powheg',
@@ -137,13 +137,16 @@ def customizeConfigFile(sampleName, jobId, version, inputFileNames, outputFileNa
 
     return cfgFileName_modified
 
-if len(samplesToAnalyze) == 0:
+if len(samplesToAnalyze) == 0 and len(samplesToAnalyze_noTauSel) == 0:
     samplesToAnalyze = recoSampleDefinitionsTauIdEfficiency_7TeV['SAMPLES_TO_ANALYZE']
+samplesToAnalyze_all = []
+samplesToAnalyze_all.extend(samplesToAnalyze)
+samplesToAnalyze_all.extend(samplesToAnalyze_noTauSel)
 
 bsubScriptFileNames = {}
 bsubJobNames        = {}
 
-for sampleToAnalyze in samplesToAnalyze:
+for sampleToAnalyze in samplesToAnalyze_all:
 
     print "checking sample %s" % sampleToAnalyze
 
@@ -166,15 +169,21 @@ for sampleToAnalyze in samplesToAnalyze:
         for jobType in [ "", "_noTauSel" ]:
             configFile_original = None
             if jobType == "":
-                configFile_original = configFile
+                if sampleToAnalyze in samplesToAnalyze:
+                    configFile_original = configFile
             elif jobType == "_noTauSel":
-                configFile_original = configFile_noTauSel
-                if not sampleToAnalyze in samplesToAnalyze_noTauSel:
-                    continue
+                if sampleToAnalyze in samplesToAnalyze_noTauSel:
+                    configFile_original = configFile_noTauSel
             else:
                 raise ValueError("Invalid jobType = %s !!" % jobType)
 
+            #print "jobType = %s: configFile_original = %s" % (jobType, configFile_original)
+            
+            if configFile_original is None:
+                continue
+
             outputFileName = output_mapper(sampleToAnalyze, jobType, version, jobNumber)
+            #print "outputFileName = %s" % outputFileName
             
             configFileName = os.path.join(
                 configFilePath,
@@ -184,6 +193,7 @@ for sampleToAnalyze in samplesToAnalyze:
                                 inputFileNames_chunk, outputFileName, configFile_original, configFileName)
 
             logFileName = os.path.basename(configFileName.replace('_cfg.py', '.log'))
+            #print " logFileName = %s" % logFileName
             def log_file_maker(job_hash):
                 return os.path.join(logFilePath, logFileName)
 
@@ -208,7 +218,7 @@ for sampleToAnalyze in samplesToAnalyze:
 # create "master" shell script
 shFileName_master = "submitTauIdPATTupleProduction_lxbatch_%s_%s.sh" % (jobId, version)
 shFile_master = open(shFileName_master, "w")
-for sampleToAnalyze in samplesToAnalyze:
+for sampleToAnalyze in samplesToAnalyze_all:
     for bsubId in bsubScriptFileNames[sampleToAnalyze].keys():
         shFile_master.write("%s -q %s -J %s < %s\n" %
           (executable_bsub,

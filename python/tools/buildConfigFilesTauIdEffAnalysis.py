@@ -97,6 +97,8 @@ def buildConfigFile_FWLiteTauIdEffAnalyzer(sampleToAnalyze, jobId, inputFilePath
         for sample in recoSampleDefinitions['MERGE_SAMPLES'][process]['samples']:
             if sample == sampleToAnalyze:
                 process_matched = process
+    if process_matched.startswith('Data'):
+        process_matched = 'Data'
 
     if not process_matched:
         print("No process associated to sample %s --> skipping !!" % sampleToAnalyze)
@@ -111,11 +113,8 @@ def buildConfigFile_FWLiteTauIdEffAnalyzer(sampleToAnalyze, jobId, inputFilePath
     sysUncertainties_expanded = [ "CENTRAL_VALUE" ]
     if processType != 'Data':
         for sysUncertainty in sysUncertainties:
-            if sysUncertainty != "sysAddPUsmearing":
-                sysUncertainties_expanded.append(sysUncertainty + "Up")
-                sysUncertainties_expanded.append(sysUncertainty + "Down")
-            else:
-                sysUncertainties_expanded.append(sysUncertainty)
+            sysUncertainties_expanded.append(sysUncertainty + "Up")
+            sysUncertainties_expanded.append(sysUncertainty + "Down")
     print " sysUncertainties = %s" %  sysUncertainties_expanded     
 
     tauIds_string = make_tauIds_string(tauIds)
@@ -147,8 +146,6 @@ def buildConfigFile_FWLiteTauIdEffAnalyzer(sampleToAnalyze, jobId, inputFilePath
         outputFileName_full = os.path.join(outputFilePath, outputFileName)
 
         srcMuTauPairs = 'selectedMuPFTauHPSpairsDzForTauIdEff'
-        if recoSampleDefinitions['RECO_SAMPLES'][sampleToAnalyze]['applyZrecoilCorrection']:
-            srcMuTauPairs = composeModuleName([ srcMuTauPairs, "ZllRecoilCorrected" ])
         if sysUncertainty != "CENTRAL_VALUE":  
             srcMuTauPairs = composeModuleName([ srcMuTauPairs, sysUncertainty, "cumulative" ])            
         else:
@@ -204,7 +201,7 @@ process.tauIdEffAnalyzer = cms.PSet(
     hltPaths = cms.vstring(%s),
     l1Bits = cms.vstring(%s),
     
-    srcGoodMuons = cms.InputTag('selectedPatMuonsPFRelIsoCumulative'),
+    srcGoodMuons = cms.InputTag('selectedPatMuonsForTauIdEffPFRelIsoCumulative'),
     
     srcMuTauPairs = cms.InputTag('%s'),
     srcCaloMEt = cms.InputTag('patMETs'),
@@ -286,8 +283,19 @@ def buildConfigFile_makeTauIdEffQCDtemplate(jobId, directory, inputFileName, tau
 
     """Build config file for correcting QCD template obtained from control region in Data
        for contributions of Ztautau signal plus Zmumu, W + jets and TTbar backgrounds"""
-    
-    outputFileName = 'makeTauIdEffQCDtemplate_%s_%s.root' % (jobId, directory)
+
+    fitVariables_always = [
+        'diTauVisMass',
+        'diTauMt'
+    ]
+    for fitVariable_always in fitVariables_always:
+        if fitVariables.count(fitVariable_always) == 0:
+            fitVariables.append(fitVariable_always)
+
+    if directory != "":
+        outputFileName = 'makeTauIdEffQCDtemplate_%s_%s.root' % (jobId, directory)
+    else:
+        outputFileName = 'makeTauIdEffQCDtemplate_%s.root' % jobId
     outputFileName = outputFileName.replace('__', '_')
     outputFileName_full = os.path.join(outputFilePath, outputFileName)
 
@@ -369,7 +377,10 @@ def buildConfigFile_fitTauIdEff(fitMethod, jobId, directory, inputFileName, tauI
        observed in regions A/B/C/D, in order to determined Ztautau signal contribution
        in regions C1p (tau id. passed sample), C1f (tau id. failed sample)"""
 
-    outputFileName = '%s_%s_%s.root' % (fitMethod, jobId, directory)
+    if directory != "":  
+        outputFileName = '%s_%s_%s.root' % (fitMethod, jobId, directory)
+    else:
+        outputFileName = '%s_%s.root' % (fitMethod, jobId)
     outputFileName = outputFileName.replace('__', '_')
     outputFileName_full = os.path.join(outputFilePath, outputFileName)
 
@@ -483,13 +494,16 @@ def buildConfigFile_FWLiteTauIdEffPreselNumbers(inputFilePath, sampleZtautau, jo
 
     """Compute preselection efficiencies and purities in regions C1p, C1f"""
 
-    inputFileNames_Ztautau = []
     inputFileNames = os.listdir(inputFilePath)
-    for inputFileName in inputFileNames:
-        if inputFileName.find(sampleZtautau) != -1 and inputFileName.find(jobId) != -1:
-            inputFileNames_Ztautau.append(os.path.join(inputFilePath, inputFileName))
+    #print(inputFileNames)
 
-    inputFileNames_string = make_inputFileNames_vstring(inputFileNames_Ztautau)        
+    inputFile_regex = \
+      r"tauIdEffMeasPATTuple_%s_%s_(?P<hash>[a-zA-Z0-9]*).root" % (sampleZtautau, jobId)
+    fwliteInput_fileNames = ""
+    for inputFileName in inputFileNames:
+        inputFile_matcher = re.compile(inputFile_regex)
+        if inputFile_matcher.match(inputFileName):
+            fwliteInput_fileNames += "process.fwliteInput.fileNames.append('%s')\n" % os.path.join(inputFilePath, inputFileName)
 
     tauIds_string = make_tauIds_string(tauIds)
 
@@ -509,12 +523,14 @@ import FWCore.ParameterSet.Config as cms
 process = cms.PSet()
 
 process.fwliteInput = cms.PSet(
-    fileNames   = cms.vstring(%s),
+    fileNames   = cms.vstring(),
         
     maxEvents   = cms.int32(-1),
     
     outputEvery = cms.uint32(1000)
 )
+
+%s
     
 process.fwliteOutput = cms.PSet(
     fileName  = cms.string('%s')
@@ -544,9 +560,10 @@ process.%s = cms.PSet(
     hltPaths = cms.vstring(%s),
     l1Bits = cms.vstring(%s),
     
-    srcGoodMuons = cms.InputTag('selectedPatMuonsPFRelIsoCumulative'),
+    srcGoodMuons = cms.InputTag('selectedPatMuonsForTauIdEffPFRelIsoCumulative'),
     
     srcMuTauPairs = cms.InputTag('selectedMuPFTauHPSpairsDzForTauIdEffCumulative'),
+    srcCaloMEt = cms.InputTag('patMETs'),
     
     srcGenParticles = cms.InputTag('genParticles'),
 
@@ -554,7 +571,7 @@ process.%s = cms.PSet(
 
     weights = cms.VInputTag(%s)
 )
-""" % (inputFileNames_string, outputFileName_full, keyword_compTauIdEffPreselNumbers,
+""" % (fwliteInput_fileNames, outputFileName_full, keyword_compTauIdEffPreselNumbers,
        tauIds_string, binning_string, hltPaths_string, l1Bits_string, weights_string)
 
     configFileName = outputFileName.replace('.root', '_cfg.py')

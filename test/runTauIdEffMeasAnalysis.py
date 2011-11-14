@@ -10,11 +10,11 @@ channel = 'ZtoMuTau_tauIdEff'
 #jobId = getJobId(channel)
 jobId = '2011Oct30'
 
-version = 'V10tauEnRecovery'
+version = 'V10_1tauEnRecovery'
 
-inputFilePath = '/data2/veelken/CMSSW_4_2_x/PATtuples/TauIdEffMeas/%s/%s/' % (jobId, version) \
-               + 'user/v/veelken/CMSSW_4_2_x/PATtuples/TauIdEffMeas/%s/' % jobId
-outputFilePath = '/data1/veelken/tmp/muonPtGt20/%s/' % version
+inputFilePath = '/data1/veelken/CMSSW_4_2_x/PATtuples/TauIdEffMeas/%s/%s/' % (jobId, version) \
+               + 'user/v/veelken/CMSSW_4_2_x/PATtuples/TauIdEffMeas/%s/%s/' % (jobId, version)
+outputFilePath = '/data1/veelken/tmp/muonPtGt17/%s/' % version
 
 samplesToAnalyze = [
     # modify in case you want to submit jobs for some of the samples only...
@@ -34,8 +34,8 @@ samplesToAnalyze = [
 # used to compute preselection efficiencies and purities in C1p and C1f/D1p regions
 sampleZtautau = 'Ztautau_powheg'
 
-#runPeriod = '2011RunA'
-runPeriod = '2011RunB'
+runPeriod = '2011RunA'
+#runPeriod = '2011RunB'
 
 intLumiData = None
 hltPaths = None
@@ -105,9 +105,9 @@ mode = 'tauIdEfficiency'
 #mode = 'tauChargeMisIdRate'
 
 sysUncertainties = [
-    ##"TauJetEn",      # needed for diTauVisMass/diTauVisMassFromJet
-    ##"JetEn",         # needed for diTauMt/Pzeta 
-    ##"UnclusteredEn", # needed for diTauMt/Pzeta 
+    "TauJetEn",      # needed for diTauVisMass/diTauVisMassFromJet
+    "JetEn",         # needed for diTauMt/Pzeta 
+    "UnclusteredEn", # needed for diTauMt/Pzeta 
 ]
 
 tauIds = {
@@ -406,6 +406,10 @@ if len(samplesToAnalyze) == 0:
 
 if not os.path.exists(outputFilePath):
     os.mkdir(outputFilePath)
+
+outputFilePath = os.path.join(outputFilePath, runPeriod)
+if not os.path.exists(outputFilePath):
+    os.mkdir(outputFilePath)
     
 outputFilePath = os.path.join(outputFilePath, mode)
 if not os.path.exists(outputFilePath):
@@ -482,8 +486,10 @@ for binVariable in binning.keys():
 # build shell script for running 'hadd' in order to merge QCD background templates
 # produced by makeTauIdEffQCDtemplate macro with output of FWLiteTauIdEffAnalyzer macro 
 #
-haddShellFileName_stage2 = os.path.join(outputFilePath, 'harvestTauIdEffHistograms_stage1_%s.csh' % "".join([ jobId, version ]))
-haddInputFileNames_stage2 = [ haddOutputFileName_stage1, outputFileNames_makeTauIdEffQCDtemplate ]
+haddShellFileName_stage2 = os.path.join(outputFilePath, 'harvestTauIdEffHistograms_stage2_%s.csh' % "".join([ jobId, version ]))
+haddInputFileNames_stage2 = []
+haddInputFileNames_stage2.append(haddOutputFileName_stage1)
+haddInputFileNames_stage2.extend(outputFileNames_makeTauIdEffQCDtemplate)
 haddOutputFileName_stage2 = \
   os.path.join(outputFilePath, 'analyzeTauIdEffHistograms_all_corrQCDtemplates_%s.root' % "".join([ jobId, version ]))
 retVal_hadd_stage2 = \
@@ -524,7 +530,7 @@ for binVariable in binning.keys():
 # build config files for running FWLiteTauIdEffPreselNumbers macro
 #
 retVal_FWLiteTauIdEffPreselNumbers = \
-  buildConfigFile_FWLiteTauIdEffPreselNumbers(inputFilePath, sampleZtautau, "".join([ jobId, version, suffix_noTauSel ]), tauIds,
+  buildConfigFile_FWLiteTauIdEffPreselNumbers(inputFilePath, sampleZtautau, "".join([ version, suffix_noTauSel ]), tauIds,
                                               binning, outputFilePath, hltPaths, l1Bits, srcWeights, keyword_compTauIdEffPreselNumbers)
 configFileName_FWLiteTauIdEffPreselNumbers = retVal_FWLiteTauIdEffPreselNumbers['configFileName']
 outputFileName_FWLiteTauIdEffPreselNumbers = retVal_FWLiteTauIdEffPreselNumbers['outputFileName']
@@ -668,7 +674,7 @@ for i, outputFileName in enumerate(outputFileNames_FWLiteTauIdEffAnalyzer):
 makeFile.write("\n")
 makeFile.write("%s: %s\n" %
   (haddOutputFileName_stage1,
-   make_MakeFile_vstring(outputFileNames_FWLiteTauIdEffAnalyzer)))
+   make_MakeFile_vstring(haddInputFileNames_stage1)))
 makeFile.write("\t%s%s %s &> %s\n" %
   (nice, executable_shell,
    haddShellFileName_stage1,
@@ -684,8 +690,11 @@ for i, outputFileName in enumerate(outputFileNames_makeTauIdEffQCDtemplate):
        configFileNames_makeTauIdEffQCDtemplate[i],
        logFileNames_makeTauIdEffQCDtemplate[i]))
 makeFile.write("\n")
-makeFile.write("\t%s %s &> %s\n" %
-  (executable_shell,
+makeFile.write("%s: %s\n" %
+  (haddOutputFileName_stage2,
+   make_MakeFile_vstring(haddInputFileNames_stage2)))
+makeFile.write("\t%s%s %s &> %s\n" %
+  (nice, executable_shell,
    haddShellFileName_stage2,
    haddLogFileName_stage2))
 makeFile.write("\n")
@@ -693,7 +702,7 @@ for i, outputFileName in enumerate(outputFileNames_fitTauIdEff):
     makeFile.write("%s: %s %s\n" %
       (outputFileName,
        executable_fitTauIdEff,
-       haddOutputFileName_stage1))
+       haddOutputFileName_stage2))
     makeFile.write("\t%s%s %s &> %s\n" %
       (nice, executable_fitTauIdEff,
        configFileNames_fitTauIdEff[i],
@@ -707,10 +716,9 @@ makeFile.write("\t%s%s %s &> %s\n" %
    configFileName_FWLiteTauIdEffPreselNumbers,
    logFileName_FWLiteTauIdEffPreselNumbers))
 makeFile.write("\n")
-makeFile.write("%s: %s %s\n" %
+makeFile.write("%s: %s\n" %
   (haddOutputFileName_stage3,
-   make_MakeFile_vstring(outputFileNames_fitTauIdEff),
-   outputFileName_FWLiteTauIdEffPreselNumbers))
+   make_MakeFile_vstring(haddInputFileNames_stage3)))
 makeFile.write("\t%s%s %s &> %s\n" %
   (nice, executable_shell,
    haddShellFileName_stage3,
@@ -726,10 +734,9 @@ for i, outputFileName in enumerate(outputFileNames_compTauIdEffFinalNumbers):
        configFileNames_compTauIdEffFinalNumbers[i],
        logFileNames_compTauIdEffFinalNumbers[i]))
 makeFile.write("\n")
-makeFile.write("%s: %s %s\n" %
+makeFile.write("%s: %s\n" %
   (haddOutputFileName_stage4,
-   make_MakeFile_vstring(outputFileNames_compTauIdEffFinalNumbers),
-   make_MakeFile_vstring(outputFileNames_compTauIdEffFinalNumbers)))
+   make_MakeFile_vstring(haddInputFileNames_stage4)))
 makeFile.write("\t%s%s %s &> %s\n" %
   (nice, executable_shell,
    haddShellFileName_stage4,

@@ -83,9 +83,10 @@ std::vector<std::string> getTauIdValues(const std::string& region)
 {
   std::vector<std::string> retVal;
 
-  if      ( region.find("p") != std::string::npos ) retVal.push_back(std::string("passed"));
-  else if ( region.find("f") != std::string::npos ) retVal.push_back(std::string("failed"));
-  else                                              retVal.push_back(std::string("all"));
+  if      ( region.find("_qcd") != std::string::npos ) retVal.push_back(std::string("all"));
+  else if ( region.find("p")    != std::string::npos ) retVal.push_back(std::string("passed"));
+  else if ( region.find("f")    != std::string::npos ) retVal.push_back(std::string("failed"));
+  else                                                 retVal.push_back(std::string("all"));
 
   return retVal;
 }
@@ -131,6 +132,7 @@ TH1* normalize(const TH1* histogram, double norm = 1.)
 //--------------------------------------------------------------------------------
 
   //std::cout << "<normalize>:" << std::endl;
+  //std::cout << " histogram = " << histogram << std::endl;
 
   TH1* retVal = (TH1*)histogram->Clone();
 
@@ -218,7 +220,7 @@ void applyStyleOption(T* histogram, const std::string& histogramTitle,
   } //else std::cerr << "Histogram = " << histogram->GetName() << " has no valid y-Axis !!" << std::endl;
 }
 
-void drawCMSprelimaryLabels(double xOffset = 0.150, double yOffset = 0.8075)
+void drawCMSprelimaryLabels(double xOffset = 0.160, double yOffset = 0.8075)
 {
   static TPaveText* cmsPreliminaryLabel = 0;
   if ( !cmsPreliminaryLabel ) {
@@ -607,10 +609,10 @@ void loadHistograms(
 	  //std::cout << " name      = " << histogram->GetName() << std::endl;
 	  //std::cout << " integral  = " << histogram->Integral() << std::endl;
 	  
-	  int numBins = histogram->GetNbinsX();
-	  if      ( (numBins % 3) == 0                  ) histogram->Rebin(3);
-	  else if ( (numBins % 4) == 0 && numBins >= 36 ) histogram->Rebin(4);
-	  else                                            histogram->Rebin(2);
+	  //int numBins = histogram->GetNbinsX();
+	  //if      ( (numBins % 3) == 0                  ) histogram->Rebin(3);
+	  //else if ( (numBins % 4) == 0 && numBins >= 36 ) histogram->Rebin(4);
+	  //else                                            histogram->Rebin(2);
 
 	  // CV: scale MC histograms by 0.80 to account for crab jobs lost when processing Data
 	  //    (temporary fix, 2011/07/11)
@@ -823,20 +825,23 @@ void scaleBins(std::map<std::string, std::map<std::string, TH1*> >& histograms, 
 
 std::map<std::string, std::map<std::string, std::map<std::string, double> > > compNumEvents(
   std::map<std::string, std::map<std::string, std::map<std::string, TH1*> > >& templatesAll,
-  const std::vector<std::string>& processes, const std::map<std::string, std::map<std::string, TH1*> >& distributionsData)
+  const std::vector<std::string>& processes, const std::vector<std::string>& regions, 
+  const std::map<std::string, std::map<std::string, TH1*> >& distributionsData)
 {
   std::map<std::string, std::map<std::string, std::map<std::string, double> > > retVal; // key = (process/"sum", region, observable)
 
   for ( std::vector<std::string>::const_iterator process = processes.begin();
 	process != processes.end(); ++process ) {
-    for ( std::map<std::string, std::map<std::string, TH1*> >::const_iterator region = distributionsData.begin();
-	  region != distributionsData.end(); ++region ) {
-      for ( std::map<std::string, TH1*>::const_iterator key = region->second.begin();
-	    key != region->second.end(); ++key ) {
-	retVal[*process][region->first][key->first] = getIntegral(templatesAll[*process][region->first][key->first], true, true);
-	//std::cout << "numEvents[" << (*process) << "][" << region->first << "][" << key->first << "] = "
-	//          << retVal[*process][region->first][key->first] << std::endl;
-	retVal["sum"][region->first][key->first] += retVal[*process][region->first][key->first];
+    for ( std::vector<std::string>::const_iterator region = regions.begin();
+	  region != regions.end(); ++region ) {
+      std::map<std::string, std::map<std::string, TH1*> >::const_iterator distributionsData_region = distributionsData.find(*region);
+      assert(distributionsData_region != distributionsData.end());
+      for ( std::map<std::string, TH1*>::const_iterator key = distributionsData_region->second.begin();
+	    key != distributionsData_region->second.end(); ++key ) {
+	retVal[*process][*region][key->first] = getIntegral(templatesAll[*process][*region][key->first], true, true);
+	//std::cout << "numEvents[" << (*process) << "][" << (*region) << "][" << key->first << "] = "
+	//          << retVal[*process][*region][key->first] << std::endl;
+	retVal["sum"][*region][key->first] += retVal[*process][*region][key->first];
       }
     }
   }
@@ -849,20 +854,23 @@ std::map<std::string, std::map<std::string, std::map<std::string, double> > > co
 std::map<std::string, std::map<std::string, std::map<std::string, double> > > compFittedFractions(
   std::map<std::string, std::map<std::string, std::map<std::string, TH1*> > >& templatesAll,
   std::map<std::string, std::map<std::string, std::map<std::string, double> > >& numEventsAll,
-  const std::vector<std::string>& processes, const std::map<std::string, std::map<std::string, TH1*> >& distributionsData)
+  const std::vector<std::string>& processes, const std::vector<std::string>& regions, 
+  const std::map<std::string, std::map<std::string, TH1*> >& distributionsData)
 {
   std::map<std::string, std::map<std::string, std::map<std::string, double> > > retVal; // key = (process, region, observable)
   
   for ( std::vector<std::string>::const_iterator process = processes.begin();
 	process != processes.end(); ++process ) {
-    for ( std::map<std::string, std::map<std::string, TH1*> >::const_iterator region = distributionsData.begin();
-	  region != distributionsData.end(); ++region ) {
-      for ( std::map<std::string, TH1*>::const_iterator key = region->second.begin();
-	    key != region->second.end(); ++key ) {
-	retVal[*process][region->first][key->first] = 
-	  getIntegral(templatesAll[*process][region->first][key->first], false, false)/numEventsAll[*process][region->first][key->first];
-	//std::cout << "fittedFraction[" << (*process) << "][" << region->first << "][" << key->first << "] = "
-	//	    << retVal[*process][region->first][key->first] << std::endl;
+    for ( std::vector<std::string>::const_iterator region = regions.begin();
+	  region != regions.end(); ++region ) {
+      std::map<std::string, std::map<std::string, TH1*> >::const_iterator distributionsData_region = distributionsData.find(*region);
+      assert(distributionsData_region != distributionsData.end());
+      for ( std::map<std::string, TH1*>::const_iterator key = distributionsData_region->second.begin();
+	    key != distributionsData_region->second.end(); ++key ) {
+	retVal[*process][*region][key->first] = 
+	  getIntegral(templatesAll[*process][*region][key->first], false, false)/numEventsAll[*process][*region][key->first];
+	//std::cout << "fittedFraction[" << (*process) << "][" << (*region) << "][" << key->first << "] = "
+	//	    << retVal[*process][*region][key->first] << std::endl;
       }
     }
   }

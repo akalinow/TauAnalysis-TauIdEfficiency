@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.1 $
+ * \version $Revision: 1.2 $
  *
- * $Id: makeTauIdEffQCDtemplate.cc,v 1.1 2011/10/25 16:13:24 veelken Exp $
+ * $Id: makeTauIdEffQCDtemplate.cc,v 1.2 2011/11/06 13:25:23 veelken Exp $
  *
  */
 
@@ -60,10 +60,19 @@ struct regionEntryType
   void makeQCDtemplate(TFileDirectory& dir, 
 		       histogramMap& distributionsData, std::map<std::string, histogramMap>& templates, numEventsMap& numEvents)
   {
-    std::string keyWplusJetsSideband_data = getKey(fitVariable_, tauId_, tauIdValue_);
-    std::string keyWplusJetsSideband_mc = getKey(fitVariable_, tauId_, tauIdValue_, sysShift_);
+    //std::cout << "<regionEntryType::makeQCDtemplate>:" << std::endl;
+    //std::cout << " fitVariable = " << fitVariable_ << std::endl;
+    //std::cout << " tauId = " << tauId_ << std::endl;
+    //std::cout << " tauIdValue = " << tauIdValue_ << std::endl;
+    //std::cout << " regionWplusJetsSideband = " << regionWplusJetsSideband_ << std::endl;
+    //std::cout << " regionTakeQCDtemplateFromData = " << regionTakeQCDtemplateFromData_ << std::endl;
+
+    std::string keyWplusJetsSideband_data = getKey(fitVariable_, tauId_, "all");
+    std::string keyWplusJetsSideband_mc = getKey(fitVariable_, tauId_, "all", sysShift_);
+    TH1* distributionDataWplusJetsSideband = distributionsData[regionWplusJetsSideband_][keyWplusJetsSideband_data];
+    //std::cout << "distributionDataWplusJetsSideband = " << distributionDataWplusJetsSideband << std::endl;
     double numEventsWplusJetsSideband_obsWplusJets = 
-      getIntegral(distributionsData[regionWplusJetsSideband_][keyWplusJetsSideband_data], true, true)
+      getIntegral(distributionDataWplusJetsSideband, true, true)
      - (numEvents["Ztautau"][regionWplusJetsSideband_][keyWplusJetsSideband_mc]
       + numEvents["Zmumu"][regionWplusJetsSideband_][keyWplusJetsSideband_mc]
       + numEvents["QCD"][regionWplusJetsSideband_][keyWplusJetsSideband_mc]
@@ -75,9 +84,10 @@ struct regionEntryType
     
     double scaleFactorWplusJets = numEventsWplusJetsSideband_obsWplusJets/numEventsWplusJetsSideband_expWplusJets;
 
-    std::string keyQCDsideband_data = getKey(fitVariable_, tauId_, tauIdValue_);
-    std::string keyQCDsideband_mc = getKey(fitVariable_, tauId_, tauIdValue_, sysShift_);    
+    std::string keyQCDsideband_data = getKey(fitVariable_, tauId_, "all");
+    std::string keyQCDsideband_mc = getKey(fitVariable_, tauId_, "all", sysShift_);    
     TH1* distributionDataQCDsideband = distributionsData[regionTakeQCDtemplateFromData_][keyQCDsideband_data];
+    //std::cout << "distributionDataQCDsideband = " << distributionDataQCDsideband << std::endl;
     TH1* templateZtautauQCDsideband = templates["Ztautau"][regionTakeQCDtemplateFromData_][keyQCDsideband_mc];
     TH1* templateZmumuQCDsideband = templates["Zmumu"][regionTakeQCDtemplateFromData_][keyQCDsideband_mc];
     TH1* templateWplusJetsQCDsideband = templates["WplusJets"][regionTakeQCDtemplateFromData_][keyQCDsideband_mc];
@@ -87,13 +97,13 @@ struct regionEntryType
     templateQCDsidebandName.ReplaceAll(regionTakeQCDtemplateFromData_, regionStoreQCDtemplate_);
     if ( sysShift_ != "CENTRAL_VALUE" ) templateQCDsidebandName.Append("_").Append(sysShift_);
     TH1* templateQCDsideband_obsQCD = 0;
-    if ( distributionDataQCDsideband->GetXaxis()->GetXbins() ) {
-      const TArrayD* binning = distributionDataQCDsideband->GetXaxis()->GetXbins();
+    TAxis* xAxis = distributionDataQCDsideband->GetXaxis(); 
+    if ( xAxis->GetXbins() && xAxis->GetXbins()->GetSize() >= 2 ) {
+      const TArrayD* binning = xAxis->GetXbins();      
       templateQCDsideband_obsQCD = 
 	dir.make<TH1D>(templateQCDsidebandName, 
 		       distributionDataQCDsideband->GetTitle(), binning->GetSize() - 1, binning->GetArray());
     } else {
-      TAxis* xAxis = distributionDataQCDsideband->GetXaxis();
       templateQCDsideband_obsQCD = 
 	dir.make<TH1D>(templateQCDsidebandName, 
 		       distributionDataQCDsideband->GetTitle(), xAxis->GetNbins(), xAxis->GetXmin(), xAxis->GetXmax());
@@ -180,9 +190,13 @@ int main(int argc, const char* argv[])
 	  std::string regionTakeQCDtemplateFromData = 
 	    cfgMakeTauIdEffQCDtemplate.getParameter<std::string>(std::string("regionTakeQCDtemplateFromData_").append(*tauIdValue));
 	  regions.push_back(regionTakeQCDtemplateFromData);
+	  regions.push_back(std::string(regionTakeQCDtemplateFromData).append("+"));
+	  regions.push_back(std::string(regionTakeQCDtemplateFromData).append("-"));
 	  std::string regionWplusJetsSideband = 
 	    cfgMakeTauIdEffQCDtemplate.getParameter<std::string>(std::string("regionWplusJetsSideband_").append(*tauIdValue));
 	  regions.push_back(regionWplusJetsSideband);
+	  regions.push_back(std::string(regionWplusJetsSideband).append("+"));
+	  regions.push_back(std::string(regionWplusJetsSideband).append("-"));
 	  std::string regionStoreQCDtemplate = 
 	    cfgMakeTauIdEffQCDtemplate.getParameter<std::string>(std::string("regionStoreQCDtemplate_").append(*tauIdValue));
 
@@ -269,7 +283,7 @@ int main(int argc, const char* argv[])
   processes.push_back(std::string("TTplusJets"));
 
   numEventsMap numEventsAll = // key = (process/"sum", region, observable)
-    compNumEvents(templatesAll, processes, distributionsData);
+    compNumEvents(templatesAll, processes, regions, distributionsData);
   
   TFileDirectory histogramOutputDirectory = ( directory != "" ) ?
     fs.mkdir(directory.data()) : fs;
@@ -280,7 +294,7 @@ int main(int argc, const char* argv[])
   }
 
   delete histogramInputFile;
- 
+
 //--print time that it took macro to run
   std::cout << "finished executing makeTauIdEffQCDtemplate macro:" << std::endl;
   std::cout << " #tauIdDiscr.  = " << tauIds.size() << std::endl;

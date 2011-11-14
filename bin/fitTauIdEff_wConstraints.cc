@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.21 $
+ * \version $Revision: 1.22 $
  *
- * $Id: fitTauIdEff_wConstraints.cc,v 1.21 2011/08/02 15:16:09 veelken Exp $
+ * $Id: fitTauIdEff_wConstraints.cc,v 1.22 2011/10/25 16:14:23 veelken Exp $
  *
  */
 
@@ -788,8 +788,6 @@ int main(int argc, const char* argv[])
   vstring fitVariables = cfgFitTauIdEff_wConstraints.getParameter<vstring>("fitVariables");
 
   bool takeQCDfromData = cfgFitTauIdEff_wConstraints.getParameter<bool>("takeQCDfromData");
-  std::string regionQCDtemplateFromData_all = 
-    cfgFitTauIdEff_wConstraints.getParameter<std::string>("regionTakeQCDtemplateFromData_all");
   std::string regionQCDtemplateFromData_passed = 
     cfgFitTauIdEff_wConstraints.getParameter<std::string>("regionTakeQCDtemplateFromData_passed");
   std::string regionQCDtemplateFromData_failed = 
@@ -864,14 +862,19 @@ int main(int argc, const char* argv[])
     std::cout << "loading histograms for sysShift = " << (*sysShift) << "..." << std::endl;
     
     if ( (*sysShift) == "CENTRAL_VALUE" && !runClosureTest ) {
-      loadHistograms(distributionsData, histogramInputDirectory, "Data",       regions, tauIds, fitVariables, *sysShift);
+      vstring regions_data = regions;
+      if ( takeQCDfromData ) {
+	regions_data.push_back(regionQCDtemplateFromData_passed);
+	regions_data.push_back(regionQCDtemplateFromData_failed);
+      }
+      loadHistograms(distributionsData, histogramInputDirectory, "Data",       regions_data, tauIds, fitVariables, *sysShift);
     }
 
-    loadHistograms(templatesZtautau,    histogramInputDirectory, "Ztautau",    regions, tauIds, fitVariables, *sysShift);
-    loadHistograms(templatesZmumu,      histogramInputDirectory, "Zmumu",      regions, tauIds, fitVariables, *sysShift);
-    loadHistograms(templatesQCD,        histogramInputDirectory, "QCD",        regions, tauIds, fitVariables, *sysShift);
-    loadHistograms(templatesWplusJets,  histogramInputDirectory, "WplusJets",  regions, tauIds, fitVariables, *sysShift);
-    loadHistograms(templatesTTplusJets, histogramInputDirectory, "TTplusJets", regions, tauIds, fitVariables, *sysShift);
+    loadHistograms(templatesZtautau,    histogramInputDirectory, "Ztautau",    regions,      tauIds, fitVariables, *sysShift);
+    loadHistograms(templatesZmumu,      histogramInputDirectory, "Zmumu",      regions,      tauIds, fitVariables, *sysShift);
+    loadHistograms(templatesQCD,        histogramInputDirectory, "QCD",        regions,      tauIds, fitVariables, *sysShift);
+    loadHistograms(templatesWplusJets,  histogramInputDirectory, "WplusJets",  regions,      tauIds, fitVariables, *sysShift);
+    loadHistograms(templatesTTplusJets, histogramInputDirectory, "TTplusJets", regions,      tauIds, fitVariables, *sysShift);
   }
 
   std::map<std::string, std::map<std::string, std::map<std::string, TH1*> > > templatesAll; // key = (process, region, observable)
@@ -911,25 +914,22 @@ int main(int argc, const char* argv[])
 	    fitVariable != fitVariables.end(); ++fitVariable ) {
 	for ( std::vector<std::string>::const_iterator sysShift = loadSysShifts.begin();
 	      sysShift != loadSysShifts.end(); ++sysShift ) {	  
-	  std::string keyQCD_all     = getKey(*fitVariable, *tauId, "all",    *sysShift);
 	  std::string keyQCD_passed  = getKey(*fitVariable, *tauId, "passed", *sysShift);
 	  std::string keyQCD_failed  = getKey(*fitVariable, *tauId, "failed", *sysShift);
 
-	  std::string keyData_all    = getKey(*fitVariable, *tauId, "all");
 	  std::string keyData_passed = getKey(*fitVariable, *tauId, "all");
-	  if ( regionQCDtemplateFromData_passed.find("p") != std::string::npos ) keyData_passed = getKey(*fitVariable, *tauId, "passed");
+	  if ( regionQCDtemplateFromData_passed.find("p")    != std::string::npos &&
+	       regionQCDtemplateFromData_passed.find("_qcd") == std::string::npos ) 
+	    keyData_passed = getKey(*fitVariable, *tauId, "passed");
 	  std::string keyData_failed = getKey(*fitVariable, *tauId, "all");
-	  if ( regionQCDtemplateFromData_failed.find("f") != std::string::npos ) keyData_failed = getKey(*fitVariable, *tauId, "failed");
+	  if ( regionQCDtemplateFromData_failed.find("f")    != std::string::npos &&
+	       regionQCDtemplateFromData_failed.find("_qcd") == std::string::npos ) 
+	    keyData_failed = getKey(*fitVariable, *tauId, "failed");
 	  
-	  //std::cout << "templatesQCD[C1][" << keyQCD_all << "] = " 
-	  //	      << templatesQCD["C1"][keyQCD_all]  << std::endl;
 	  //std::cout << "templatesQCD[C1p][" << keyQCD_passed << "] = " 
 	  //	      << templatesQCD["C1p"][keyQCD_passed]  << std::endl;
 	  //std::cout << "templatesQCD[C1f][" << keyQCD_failed << "] = " 
 	  //	      << templatesQCD["C1f"][keyQCD_failed]  << std::endl;
-	  //std::cout << "distributionsData" 
-	  //	      << "['" << regionQCDtemplateFromData_all << "'][" << keyData_all << "] = " 
-	  //	      << distributionsData[regionQCDtemplateFromData_all][keyData_all] << std::endl;
 	  //std::cout << "distributionsData" 
 	  //	      << "['" << regionQCDtemplateFromData_passed << "'][" << keyData_passed << "] = " 
 	  //	      << distributionsData[regionQCDtemplateFromData_passed][keyData_passed] << std::endl;
@@ -937,12 +937,6 @@ int main(int argc, const char* argv[])
 	  //	      << "['" << regionQCDtemplateFromData_failed << "'][" << keyData_failed << "] = " 
 	  //	      << distributionsData[regionQCDtemplateFromData_failed][keyData_failed] << std::endl;
 	  
-	  std::string histogramNameQCD_C1 = templatesQCD["C1"][keyQCD_all]->GetName();
-	  double normQCD_C1 = getIntegral(templatesQCD["C1"][keyQCD_all], true, true);	
-	  templatesQCD["C1"][keyQCD_all] = 
-	    normalize(distributionsData[regionQCDtemplateFromData_all][keyData_all], normQCD_C1);
-	  templatesQCD["C1"][keyQCD_all]->SetName(histogramNameQCD_C1.data());
-
 	  std::string histogramNameQCD_C1p = templatesQCD["C1p"][keyQCD_passed]->GetName();
 	  double normQCD_C1p = getIntegral(templatesQCD["C1p"][keyQCD_passed], true, true);	
 	  templatesQCD["C1p"][keyQCD_passed] = 
@@ -972,22 +966,22 @@ int main(int argc, const char* argv[])
 //--- make control plots plots of Data compared to sum(MC) scaled by cross-sections
 //    for muonPt, tauPt, Mt, visMass,... distributions in different regions
   if ( makeControlPlots ) {
-    for ( std::map<std::string, std::map<std::string, TH1*> >::const_iterator region = distributionsData.begin();
-	  region != distributionsData.end(); ++region ) {
-      for ( std::map<std::string, TH1*>::const_iterator key = region->second.begin();
-	    key != region->second.end(); ++key ) {
+    for ( vstring::const_iterator region = regions.begin();
+	  region != regions.end(); ++region ) {
+      for ( std::map<std::string, TH1*>::const_iterator key = distributionsData[*region].begin();
+	    key != distributionsData[*region].end(); ++key ) {
 	if ( !isSystematicShift(key->first) ) {
 	  //std::string histogramTitle = std::string("Region ").append(region->first).append(": ").append(key->first);
 	  //histogramTitle.append(" (scaled by cross-section)");
 	  std::string histogramTitle = "";
 	  std::string outputFileName = std::string("controlPlotsTauIdEff_wConstraints_");
-	  outputFileName.append(region->first).append("_").append(key->first).append(".pdf");
-	  drawHistograms(templatesZtautau[region->first][key->first], -1.,
-			 templatesZmumu[region->first][key->first], -1.,
-			 templatesQCD[region->first][key->first], -1.,
-			 templatesWplusJets[region->first][key->first], -1.,
-			 templatesTTplusJets[region->first][key->first], -1.,
-			 distributionsData[region->first][key->first],
+	  outputFileName.append(*region).append("_").append(key->first).append(".pdf");
+	  drawHistograms(templatesZtautau[*region][key->first], -1.,
+			 templatesZmumu[*region][key->first], -1.,
+			 templatesQCD[*region][key->first], -1.,
+			 templatesWplusJets[*region][key->first], -1.,
+			 templatesTTplusJets[*region][key->first], -1.,
+			 distributionsData[*region][key->first],
 			 histogramTitle, xAxisTitles[getObservable(key->first)],
 			 outputFileName);
 	}
@@ -1003,12 +997,13 @@ int main(int argc, const char* argv[])
   //		  << getIntegral(key->second, true, true) << std::endl;
   //  }
   //}
-
+std::cout << "break-point 1 reached" << std::endl;
   std::map<std::string, std::map<std::string, std::map<std::string, double> > > numEventsAll = // key = (process/"sum", region, observable)
-    compNumEvents(templatesAll, processes, distributionsData);
+    compNumEvents(templatesAll, processes, regions, distributionsData);
+std::cout << "break-point 2 reached" << std::endl;
   std::map<std::string, std::map<std::string, std::map<std::string, double> > > fittedFractions = // key = (process, region, observable)
-    compFittedFractions(templatesAll, numEventsAll, processes, distributionsData);
-
+    compFittedFractions(templatesAll, numEventsAll, processes, regions, distributionsData);
+std::cout << "break-point 3 reached" << std::endl;
 //--- print MC expectations for probabilities 
 //   o pDiTauCharge_OS_SS
 //   o pDiTauKine_Sig_Bgr
@@ -1082,9 +1077,9 @@ int main(int argc, const char* argv[])
       effErrors[*tauId][*fitVariable] = effError;
       for ( std::vector<std::string>::const_iterator process = processes.begin();
 	    process != processes.end(); ++process ) {
-	for ( std::map<std::string, std::map<std::string, TH1*> >::const_iterator region = distributionsData.begin();
-	      region != distributionsData.end(); ++region ) {
-	  normFactorsAll_fitted[*process][region->first][*tauId][*fitVariable] = normFactors_fitted[*process][region->first];
+	for ( vstring::const_iterator region = regions.begin();
+	      region != regions.end(); ++region ) {
+	  normFactorsAll_fitted[*process][*region][*tauId][*fitVariable] = normFactors_fitted[*process][*region];
 	}
       }
       fitConvergenceFlags[*tauId][*fitVariable] = hasFitConverged;
@@ -1094,10 +1089,10 @@ int main(int argc, const char* argv[])
 //--- make control plots of Data compared to sum(MC) scaled by normalization factors determined by fit
 //    for muonPt, tauPt, Mt, visMass,... distributions in different regions
   if ( makeControlPlots ) {
-    for ( std::map<std::string, std::map<std::string, TH1*> >::const_iterator region = distributionsData.begin();
-	  region != distributionsData.end(); ++region ) {
-      for ( std::map<std::string, TH1*>::const_iterator key = region->second.begin();
-	    key != region->second.end(); ++key ) {
+    for ( vstring::const_iterator region = regions.begin();
+	  region != regions.end(); ++region ) {
+      for ( std::map<std::string, TH1*>::const_iterator key = distributionsData[*region].begin();
+	    key != distributionsData[*region].end(); ++key ) {
 	for ( std::vector<std::string>::const_iterator tauId = tauIds.begin();
 	      tauId != tauIds.end(); ++tauId ) {
 	  if ( !(key->first.find(*tauId) != std::string::npos) ) continue;
@@ -1108,20 +1103,20 @@ int main(int argc, const char* argv[])
 	      //histogramTitle.append(" (scaled by normalization det. by fit)");
 	      std::string histogramTitle = "";
 	      std::string outputFileName = std::string("controlPlotsTauIdEff_wConstraints_");
-	      outputFileName.append(region->first).append("_").append(key->first);
+	      outputFileName.append(*region).append("_").append(key->first);
 	      outputFileName.append("_fitted_").append(*fitVariable).append(".pdf");
   	      drawHistograms(
-	        templatesZtautau[region->first][key->first], 
-		getTemplateNorm_fitted("Ztautau", region->first, key->first, *tauId, *fitVariable, normFactorsAll_fitted, fittedFractions),
-		templatesZmumu[region->first][key->first], 
-		getTemplateNorm_fitted("Zmumu", region->first, key->first, *tauId, *fitVariable, normFactorsAll_fitted, fittedFractions),
-		templatesQCD[region->first][key->first], 
-		getTemplateNorm_fitted("QCD", region->first, key->first, *tauId, *fitVariable, normFactorsAll_fitted, fittedFractions),
-		templatesWplusJets[region->first][key->first], 
-		getTemplateNorm_fitted("WplusJets", region->first, key->first, *tauId, *fitVariable, normFactorsAll_fitted, fittedFractions),
-		templatesTTplusJets[region->first][key->first], 
-		getTemplateNorm_fitted("TTplusJets", region->first, key->first, *tauId, *fitVariable, normFactorsAll_fitted, fittedFractions),
-		distributionsData[region->first][key->first],
+	        templatesZtautau[*region][key->first], 
+		getTemplateNorm_fitted("Ztautau", *region, key->first, *tauId, *fitVariable, normFactorsAll_fitted, fittedFractions),
+		templatesZmumu[*region][key->first], 
+		getTemplateNorm_fitted("Zmumu", *region, key->first, *tauId, *fitVariable, normFactorsAll_fitted, fittedFractions),
+		templatesQCD[*region][key->first], 
+		getTemplateNorm_fitted("QCD", *region, key->first, *tauId, *fitVariable, normFactorsAll_fitted, fittedFractions),
+		templatesWplusJets[*region][key->first], 
+		getTemplateNorm_fitted("WplusJets", *region, key->first, *tauId, *fitVariable, normFactorsAll_fitted, fittedFractions),
+		templatesTTplusJets[*region][key->first], 
+		getTemplateNorm_fitted("TTplusJets", *region, key->first, *tauId, *fitVariable, normFactorsAll_fitted, fittedFractions),
+		distributionsData[*region][key->first],
 		histogramTitle, xAxisTitles[getObservable(key->first)],
 		outputFileName, true);
 	    }
@@ -1172,17 +1167,17 @@ int main(int argc, const char* argv[])
     for ( unsigned iPseudoExperiment = 0; iPseudoExperiment < numPseudoExperiments; ++numPseudoExperiments ) {
       for ( std::vector<std::string>::const_iterator process = processes.begin();
 	    process != processes.end(); ++process ) {
-	for ( std::map<std::string, std::map<std::string, TH1*> >::const_iterator region = distributionsData.begin();
-	      region != distributionsData.end(); ++region ) {
-	  for ( std::map<std::string, TH1*>::const_iterator key = region->second.begin();
-		key != region->second.end(); ++key ) {
+	for ( vstring::const_iterator region = regions.begin();
+	      region != regions.end(); ++region ) {
+	  for ( std::map<std::string, TH1*>::const_iterator key = distributionsData[*region].begin();
+		key != distributionsData[*region].end(); ++key ) {
 	    if ( !isSystematicShift(key->first) ) {
 	      TH1* origHistogram = key->second;
 	      
-	      TH1* fluctHistogram = templatesAll_fluctuated[*process][region->first][key->first];
+	      TH1* fluctHistogram = templatesAll_fluctuated[*process][*region][key->first];
 	      if ( !fluctHistogram ) {
 		fluctHistogram = (TH1*)origHistogram->Clone(TString(origHistogram->GetName()).Append("_fluctuated"));
-		templatesAll_fluctuated[*process][region->first][key->first] = fluctHistogram;
+		templatesAll_fluctuated[*process][*region][key->first] = fluctHistogram;
 	      }
 	      
 	      sampleHistogram_stat(origHistogram, fluctHistogram);
@@ -1190,7 +1185,7 @@ int main(int argc, const char* argv[])
 	      for ( std::vector<sysUncertaintyEntry>::const_iterator sysUncertainty = varySysUncertainties.begin();
 		    sysUncertainty != varySysUncertainties.end(); ++sysUncertainty ) {
 		std::string key_sys = std::string(key->first).append("_").append(sysUncertainty->sysNameDiff_);
-		TH1* sysHistogram = templatesAll_fluctuated[*process][region->first][key_sys];
+		TH1* sysHistogram = templatesAll_fluctuated[*process][*region][key_sys];
 		assert(sysHistogram);
 		
 		sampleHistogram_sys(fluctHistogram, sysHistogram, 1.0, -3.0, +3.0, kCoherent);
@@ -1200,8 +1195,10 @@ int main(int argc, const char* argv[])
 	}
       }
       
-      numEventsAll_fluctuated = compNumEvents(templatesAll_fluctuated, processes, distributionsData);
-      fittedFractions_fluctuated = compFittedFractions(templatesAll_fluctuated, numEventsAll_fluctuated, processes, distributionsData);
+      numEventsAll_fluctuated = 
+	compNumEvents(templatesAll_fluctuated, processes, regions, distributionsData);
+      fittedFractions_fluctuated = 
+	compFittedFractions(templatesAll_fluctuated, numEventsAll_fluctuated, processes, regions, distributionsData);
       
       for ( std::vector<std::string>::const_iterator tauId = tauIds.begin();
 	    tauId != tauIds.end(); ++tauId ) {

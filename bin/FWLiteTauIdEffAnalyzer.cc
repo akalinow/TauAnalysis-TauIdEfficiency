@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.24 $
+ * \version $Revision: 1.25 $
  *
- * $Id: FWLiteTauIdEffAnalyzer.cc,v 1.24 2011/10/25 16:16:23 veelken Exp $
+ * $Id: FWLiteTauIdEffAnalyzer.cc,v 1.25 2011/11/06 13:25:23 veelken Exp $
  *
  */
 
@@ -445,7 +445,6 @@ int main(int argc, char* argv[])
       double evtWeight = 1.0;
       for ( vInputTag::const_iterator srcWeight = srcWeights.begin();
 	    srcWeight != srcWeights.end(); ++srcWeight ) {
-	std::cout << ">" << srcWeight->label() << "<" << std::endl;
 	edm::Handle<double> weight;
 	evt.getByLabel(*srcWeight, weight);
 	evtWeight *= (*weight);
