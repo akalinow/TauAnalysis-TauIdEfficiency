@@ -15,7 +15,7 @@ channel = 'ZtoMuTau_tauIdEff'
 #jobId = getJobId(channel)
 jobId = '2011Oct30'
 
-version = 'V10_1tauEnRecovery'
+version = 'V10_2tauEnRecovery'
 
 lxbatch_queue = '1nw'
 
@@ -23,19 +23,19 @@ pfCandidateCollection = "particleFlow" # pile-up removal disabled
 #pfCandidateCollection = "pfNoPileUp"   # pile-up removal enabled
 
 samplesToAnalyze = [
-    ##'data_SingleMu_Run2011A_May10ReReco_v1',
-    ##'data_SingleMu_Run2011A_PromptReco_v4',
-    ##'data_SingleMu_Run2011A_Aug05ReReco_v1',
-    ##'data_SingleMu_Run2011A_PromptReco_v6',
-    ##'data_MET_Run2011B_PromptReco_v1',
-    ##'data_MET_Run2011B_PromptReco_v1a',
+    'data_SingleMu_Run2011A_May10ReReco_v1',
+    'data_SingleMu_Run2011A_PromptReco_v4',
+    'data_SingleMu_Run2011A_Aug05ReReco_v1',
+    'data_SingleMu_Run2011A_PromptReco_v6',
+    'data_MET_Run2011B_PromptReco_v1',
+    'data_MET_Run2011B_PromptReco_v1a',
     'Ztautau_powheg',
     #'Ztautau_embedded_part1',
     #'Ztautau_embedded_part2',
-    ##'Zmumu_powheg',
-    ##'PPmuXptGt20Mu15',
-    ##'WplusJets_madgraph',
-    ##'TTplusJets_madgraph'
+    'Zmumu_powheg',
+    'PPmuXptGt20Mu15',
+    'WplusJets_madgraph',
+    'TTplusJets_madgraph'
 ]
 
 samplesToAnalyze_noTauSel = [
@@ -61,6 +61,8 @@ numInputFilesPerJob = {
 # Get all the skim files from the castor directory
 inputFilePath = getAnalysisFilePath(channel)
 print("inputFilePath = %s" % inputFilePath)
+
+skipExistingPATtuples = True
 
 #outputFilePath = "/castor/cern.ch/user/m/mverzett/tagprobe/patTuples_v6"
 #outputFilePath = "/castor/cern.ch/user/m/mverzett/tagprobe/"
@@ -143,6 +145,7 @@ samplesToAnalyze_all = []
 samplesToAnalyze_all.extend(samplesToAnalyze)
 samplesToAnalyze_all.extend(samplesToAnalyze_noTauSel)
 
+bsubFileNames       = {}
 bsubScriptFileNames = {}
 bsubJobNames        = {}
 
@@ -150,6 +153,7 @@ for sampleToAnalyze in samplesToAnalyze_all:
 
     print "checking sample %s" % sampleToAnalyze
 
+    bsubFileNames[sampleToAnalyze]       = {}
     bsubScriptFileNames[sampleToAnalyze] = {}
     bsubJobNames[sampleToAnalyze]        = {}
 
@@ -197,18 +201,19 @@ for sampleToAnalyze in samplesToAnalyze_all:
             def log_file_maker(job_hash):
                 return os.path.join(logFilePath, logFileName)
 
+            bsubId = "%s_%i" % (jobType, jobNumber)
+
             jobName, bsubScript = make_bsub_script(
                 os.path.join(outputFilePath, outputFileName),
                 input_files_and_jobs,
                 log_file_maker,
                 "cmsRun %s" % os.path.join(configFilePath, configFileName))
+            bsubFileNames[sampleToAnalyze][bsubId] = [ outputFileName ]
 
             bsubScriptFileName = os.path.join(configFilePath, logFileName.replace(".log", ".sh"))
             bsubScriptFile = open(bsubScriptFileName, "w")
             bsubScriptFile.write(bsubScript)
             bsubScriptFile.close()
-
-            bsubId = "%s_%i" % (jobType, jobNumber)
 
             bsubScriptFileNames[sampleToAnalyze][bsubId] = bsubScriptFileName
             
@@ -218,13 +223,21 @@ for sampleToAnalyze in samplesToAnalyze_all:
 # create "master" shell script
 shFileName_master = "submitTauIdPATTupleProduction_lxbatch_%s_%s.sh" % (jobId, version)
 shFile_master = open(shFileName_master, "w")
+existingOutputFiles = [ file_info['file'] for file_info in castor.nslsl(outputFilePath) ]
 for sampleToAnalyze in samplesToAnalyze_all:
     for bsubId in bsubScriptFileNames[sampleToAnalyze].keys():
-        shFile_master.write("%s -q %s -J %s < %s\n" %
-          (executable_bsub,
-           lxbatch_queue,
-           bsubJobNames[sampleToAnalyze][bsubId],
-           bsubScriptFileNames[sampleToAnalyze][bsubId]))
+        outputFilesExist = True
+        for outputFileName in bsubFileNames[sampleToAnalyze][bsubId]:
+            if not outputFileName in existingOutputFiles:
+                outputFilesExist = False
+        if skipExistingPATtuples and outputFilesExist:
+            print "Output files for sample = %s, bsubId = %s exist --> skipping !!" % (sampleToAnalyze, bsubId)
+        else:
+            shFile_master.write("%s -q %s -J %s < %s\n" %
+              (executable_bsub,
+               lxbatch_queue,
+               bsubJobNames[sampleToAnalyze][bsubId],
+               bsubScriptFileNames[sampleToAnalyze][bsubId]))
     shFile_master.write("\n")
 shFile_master.close()
 

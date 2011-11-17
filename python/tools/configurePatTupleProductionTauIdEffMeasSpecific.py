@@ -41,7 +41,18 @@ def configurePatTupleProductionTauIdEffMeasSpecific(process, patSequenceBuilder 
     patTupleConfig = configurePatTupleProduction(process, patSequenceBuilder,
                                                  patPFTauCleanerPrototype, patCaloTauCleanerPrototype, True, hltProcess, isMC, False)
 
-    
+    # add "raw" (uncorrected) CaloMET,
+    # needed to parametrize efficiency turn-on of HLT_IsoMu15_L1ETM20 cross-trigger
+    process.patCaloMet = process.patMETs.clone(
+        metSource = cms.InputTag('met'),
+        addMuonCorrections = cms.bool(False)
+    )
+
+    process.patCaloMetNoHF = process.patMETs.clone(
+        metSource = cms.InputTag('metNoHF'),
+        addMuonCorrections = cms.bool(False)
+    )
+        
     process.producePatTupleTauIdEffMeasSpecific = cms.Sequence(
         process.patTupleProductionSequence
        + process.caloTauSequence
@@ -51,6 +62,8 @@ def configurePatTupleProductionTauIdEffMeasSpecific(process, patSequenceBuilder 
        #+ process.pfTauSequenceShrinkingCone
        + process.pfTauSequenceHPS
        + process.pfTauSequenceHPSpTaNC
+       + process.patCaloMet
+       + process.patCaloMetNoHF
     )
 
     #--------------------------------------------------------------------------------
@@ -204,32 +217,32 @@ def configurePatTupleProductionTauIdEffMeasSpecific(process, patSequenceBuilder 
     process.producePatTupleTauIdEffMeasSpecific += retVal_pfTauHPS["sequence"]
     # CV: save HPS+TaNC taus passing the following tau id. discriminators
     #     for measurement of tau charge misidentification rate
-    savePFTauHPSpTaNC = \
-        "pt > 15.0 & abs(eta) < 2.5 & " \
-       + "tauID('leadingTrackFinding') > 0.5 & " \
-       + "tauID('byTaNCloose') > 0.5 & " \
-       + "tauID('againstElectronLoose') > 0.5 & " \
-       + "tauID('againstMuonTight') > 0.5"
-    retVal_pfTauHPSpTaNC = \
-        buildSequenceTauIdEffMeasSpecific(process,
-                                          'selectedPatMuonsForTauIdEffPFRelIso',
-                                          [ "PFTau", "HPSpTaNC" ], patTupleConfig["pfTauCollectionHPSpTaNC"], True,
-                                          savePFTauHPSpTaNC,
-                                          'patType1CorrectedPFMet',
-                                          isMC = isMC, isEmbedded = isEmbedded,
-                                          runSVfit = runSVfit)
-    process.producePatTupleTauIdEffMeasSpecific += retVal_pfTauHPSpTaNC["sequence"]
+    #savePFTauHPSpTaNC = \
+    #    "pt > 15.0 & abs(eta) < 2.5 & " \
+    #   + "tauID('leadingTrackFinding') > 0.5 & " \
+    #   + "tauID('byTaNCloose') > 0.5 & " \
+    #   + "tauID('againstElectronLoose') > 0.5 & " \
+    #   + "tauID('againstMuonTight') > 0.5"
+    #retVal_pfTauHPSpTaNC = \
+    #    buildSequenceTauIdEffMeasSpecific(process,
+    #                                      'selectedPatMuonsForTauIdEffPFRelIso',
+    #                                      [ "PFTau", "HPSpTaNC" ], patTupleConfig["pfTauCollectionHPSpTaNC"], True,
+    #                                      savePFTauHPSpTaNC,
+    #                                      'patType1CorrectedPFMet',
+    #                                      isMC = isMC, isEmbedded = isEmbedded,
+    #                                      runSVfit = runSVfit)
+    #process.producePatTupleTauIdEffMeasSpecific += retVal_pfTauHPSpTaNC["sequence"]
 
     retVal = {}
     #retVal["pfTauFixedCone"] = retVal_pfTauFixedCone
     #retVal["pfTauShrinkingCone"] = retVal_pfTauShrinkingCone
     retVal["pfTauHPS"] = retVal_pfTauHPS
-    retVal["pfTauHPSpTaNC"] = retVal_pfTauHPSpTaNC
+    #retVal["pfTauHPSpTaNC"] = retVal_pfTauHPSpTaNC
     retVal["algorithms"] = [
         #"pfTauFixedCone",
         #"pfTauShrinkingCone",
         "pfTauHPS",
-        "pfTauHPSpTaNC"
+        #"pfTauHPSpTaNC"
     ]    
     return retVal
 

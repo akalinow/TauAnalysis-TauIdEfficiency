@@ -20,6 +20,7 @@
   <use   name="PhysicsTools/MVAComputer"/>
   <use   name="PhysicsTools/MVATrainer"/>
   <use   name="PhysicsTools/SelectorUtils"/>
+  <use   name="PhysicsTools/PatUtils"/>
   <use   name="RecoTauTag/RecoTau"/>
   <use   name="TauAnalysis/BgEstimationTools"/>
   <use   name="TauAnalysis/CandidateTools"/>

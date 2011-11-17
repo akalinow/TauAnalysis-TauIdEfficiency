@@ -8,7 +8,7 @@ import subprocess
 import shlex
 
 jobId = "2011Oct30" # Christian's Ntuples
-version = "V10_1tauEnRecovery"
+version = "V10_2tauEnRecovery"
 #jobId = "2011Jun06" # Mauro's Ntuples
 #version = "V2"
 

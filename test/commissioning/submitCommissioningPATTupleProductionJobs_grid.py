@@ -83,7 +83,7 @@ for sampleName in SAMPLES_TO_RUN:
 
                cfg = cfg.replace("#__", "")
                isMC = "False"
-               if RECO_SAMPLES[sampleName]['type'] == 'MC':
+               if RECO_SAMPLES[sampleName]['type'] == 'smMC':
                     isMC = "True"
                cfg = cfg.replace("#isMC#", isMC)
                cfg = cfg.replace("#HLTprocessName#", "'%s'" % RECO_SAMPLES[sampleName]['hlt'])

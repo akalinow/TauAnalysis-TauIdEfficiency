@@ -115,16 +115,17 @@ def produceTauIdEffMeasPATTuple(process, isMC, isEmbedded, HLTprocessName, pfCan
                 #'keep *_selectedPatPFTausFixedConeForTauIdEff*_*_*',
                 #'keep *_selectedPatPFTausShrinkingConeForTauIdEff*_*_*',
                 'keep *_selectedPatPFTausHPSforTauIdEff*_*_*',
-                'keep *_selectedPatPFTausHPSpTaNCforTauIdEff*_*_*',
+                #'keep *_selectedPatPFTausHPSpTaNCforTauIdEff*_*_*',
                 #'keep *_selectedMuPFTauFixedConePairsDzForTauIdEff*_*_*',
                 #'keep *_selectedMuPFTauShrinkingConePairsDzForTauIdEff*_*_*',
                 'keep *_selectedMuPFTauHPSpairsDzForTauIdEff*_*_*',
-                'keep *_selectedMuPFTauHPSpTaNCpairsDzForTauIdEff*_*_*',
+                #'keep *_selectedMuPFTauHPSpTaNCpairsDzForTauIdEff*_*_*',
                 'keep *_offlinePrimaryVertices_*_*',
                 'keep *_offlinePrimaryVerticesWithBS_*_*',
                 'keep *_selectedPrimaryVertexHighestPtTrackSum_*_*',
                 # keep CaloMEt objects                                                            
                 'keep *_patMETs*_*_*',
+                'keep *_patCaloMet*_*_*',                                  
                 # keep PFMEt objects                                               
                 'keep *_patPFMet*_*_*',
                 'keep *_patType1CorrectedPFMet*_*_*',
@@ -211,19 +212,19 @@ def produceTauIdEffMeasPATTuple(process, isMC, isEmbedded, HLTprocessName, pfCan
     if isMC:
         process.schedule = cms.Schedule(
             process.p,
-            ##process.muonPFTauFixedConeSkimPath,
-            ##process.muonPFTauShrinkingConeSkimPath,
+            #process.muonPFTauFixedConeSkimPath,
+            #process.muonPFTauShrinkingConeSkimPath,
             process.muonPFTauHPSskimPath,
-            process.muonPFTauHPSpTaNCskimPath,
+            #process.muonPFTauHPSpTaNCskimPath,
             process.genZtoMuTauWithinAccSkimPath,
             process.o
         )
     else:
         process.schedule = cms.Schedule(
             process.p,
-            ##process.muonPFTauFixedConeSkimPath,
-            ##process.muonPFTauShrinkingConeSkimPath,
+            #process.muonPFTauFixedConeSkimPath,
+            #process.muonPFTauShrinkingConeSkimPath,
             process.muonPFTauHPSskimPath,
-            process.muonPFTauHPSpTaNCskimPath,
+            #process.muonPFTauHPSpTaNCskimPath,
             process.o
         )

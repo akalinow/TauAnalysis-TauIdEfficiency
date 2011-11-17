@@ -2,6 +2,7 @@
 
 import copy
 import os
+import socket
 import time
 
 from TauAnalysis.TauIdEfficiency.recoSampleDefinitionsTauIdCommissioning_7TeV_grid_cfi import recoSampleDefinitionsTauIdCommissioning_7TeV
@@ -33,34 +34,42 @@ skipFWLiteTauFakeRateAnalyzer = False
 #runPeriod = '2011RunA'
 runPeriod = '2011RunB'
 
-hltPaths_qcdDiJet = [
+hltPaths_qcdDiJet30 = [
     'HLT_Jet30_v1',
     'HLT_Jet30_v2',
     'HLT_Jet30_v3',
     'HLT_Jet30_v4',
     'HLT_Jet30_v5',
     'HLT_Jet30_v6',
-    'HLT_Jet30_v9',
+    'HLT_Jet30_v9'
+]
+hltPaths_qcdDiJet60 = [
     'HLT_Jet60_v1',
     'HLT_Jet60_v2',
     'HLT_Jet60_v3',
     'HLT_Jet60_v4',
     'HLT_Jet60_v5',
     'HLT_Jet60_v6',
-    'HLT_Jet60_v9',
+    'HLT_Jet60_v9'
+]
+hltPaths_qcdDiJet80 = [
     'HLT_Jet80_v1',
     'HLT_Jet80_v2',
     'HLT_Jet80_v3',
     'HLT_Jet80_v4',
     'HLT_Jet80_v5',
-    'HLT_Jet80_v6',
+    'HLT_Jet80_v6'
+]
+hltPaths_qcdDiJet110 = [
     'HLT_Jet110_v1',
     'HLT_Jet110_v2',
     'HLT_Jet110_v3',
     'HLT_Jet110_v4',
     'HLT_Jet110_v5',
     'HLT_Jet110_v6',
-    'HLT_Jet110_v9',
+    'HLT_Jet110_v9'
+]
+hltPaths_qcdDiJet150 = [
     'HLT_Jet150_v1',
     'HLT_Jet150_v2',
     'HLT_Jet150_v3',
@@ -97,9 +106,13 @@ if runPeriod == '2011RunA':
     ])
     intLumiData = 2.12e+3 # runs 160431-173692
     hltPaths = {
-        'qcdDiJet'      : hltPaths_qcdDiJet,
-        'qcdMuEnriched' : hltPaths_qcdMuEnriched,
-        'WplusJets'     : [
+        'QCDj30' : hltPaths_qcdDiJet30,
+        'QCDj60' : hltPaths_qcdDiJet60,
+        'QCDj80' : hltPaths_qcdDiJet80,
+        'QCDj110' : hltPaths_qcdDiJet110,
+        'QCDj150' : hltPaths_qcdDiJet150,
+        'QCDmu' : hltPaths_qcdMuEnriched,
+        'Wmunu' : [
             'HLT_IsoMu17_v5',
             'HLT_IsoMu17_v6',
             'HLT_IsoMu17_v8',
@@ -127,11 +140,15 @@ elif runPeriod == '2011RunB':
         'data_Jet_Run2011B_PromptReco_v1a', 
         'data_SingleMu_Run2011B_PromptReco_v1a'
     ])
-    intLumiData = 2.53e+3 # runs 175860-179411
+    intLumiData = 2.53e+3 # runs 175860-180252
     hltPaths = {
-        'qcdDiJet'      : hltPaths_qcdDiJet,
-        'qcdMuEnriched' : hltPaths_qcdMuEnriched,
-        'WplusJets'     : [
+        'QCDj30' : hltPaths_qcdDiJet30,
+        'QCDj60' : hltPaths_qcdDiJet60,
+        'QCDj80' : hltPaths_qcdDiJet80,
+        'QCDj110' : hltPaths_qcdDiJet110,
+        'QCDj150' : hltPaths_qcdDiJet150,
+        'QCDmu' : hltPaths_qcdMuEnriched,
+        'Wmunu' : [
             'HLT_IsoMu24_v1',
             'HLT_IsoMu24_v2',
             'HLT_IsoMu24_v4',
@@ -347,10 +364,24 @@ tauIds = {
 
 labels = [
     'CMS Preliminary 2011',
-    '#sqrt{s} = 7 TeV, L = %1.2f fb^{-1}' % intLumiData/1.e+3
+    '#sqrt{s} = 7 TeV, L = %1.2f fb^{-1}' % (intLumiData/1.e+3)
 ]    
 
-srcMET = 'patPFMet' 
+srcMET = 'patPFMet'
+
+hostname = socket.gethostname()
+print "hostname = %s" % hostname
+if hostname == 'ucdavis.cern.ch':
+    if not os.path.exists(outputFilePath):
+        os.mkdir(outputFilePath)
+
+    outputFilePath = os.path.join(outputFilePath, version)
+    if not os.path.exists(outputFilePath):
+        os.mkdir(outputFilePath)
+
+    outputFilePath = os.path.join(outputFilePath, runPeriod)
+    if not os.path.exists(outputFilePath):
+        os.mkdir(outputFilePath)
 
 configFilePath = os.path.join(os.getcwd(), "lxbatch")
 logFilePath    = os.path.join(os.getcwd(), "lxbatch_log")
@@ -398,7 +429,7 @@ for sampleToAnalyze in samplesToAnalyze:
             tauJetCandSelection = eventSelections[eventSelectionToAnalyze]['tauJetCandSelection']
             srcTauJetCandidates = eventSelections[eventSelectionToAnalyze]['srcTauJetCandidates']            
             hltPaths_sample = None
-            if if isinstance(hltPaths[eventSelectionToAnalyze], dict):
+            if isinstance(hltPaths[eventSelectionToAnalyze], dict):
                 processType = recoSampleDefinitionsTauIdCommissioning_7TeV['RECO_SAMPLES'][sampleToAnalyze]['type']
                 hltPaths_sample = hltPaths[eventSelectionToAnalyze][processType]
             else:

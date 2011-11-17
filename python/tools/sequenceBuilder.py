@@ -153,58 +153,13 @@ def buildTauSequence(
     setattr(process, patTauJetIdEmbedderName, patTauJetIdEmbedder)
     outputSequence += getattr(process, patTauJetIdEmbedderName)
     
-    # embed loose PFIsolation sums into pat::Tau objects
-    patTauLoosePFIsoEmbedder04 = cms.EDProducer("PATTauPFIsolationEmbedder",
-        src = cms.InputTag(patTauJetIdEmbedderName),                                       
-        userFloatName = cms.string('pfLooseIsoPt04'),
-        pfCandidateSource = cms.InputTag('pfNoPileUp'),
-        chargedHadronIso = cms.PSet(
-            ptMin = cms.double(1.0),        
-            dRvetoCone = cms.double(0.15),
-            dRisoCone = cms.double(0.4)
-        ),
-        neutralHadronIso = cms.PSet(
-            ptMin = cms.double(1000.),        
-            dRvetoCone = cms.double(0.15),        
-            dRisoCone = cms.double(0.)
-        ),
-        photonIso = cms.PSet(
-            ptMin = cms.double(1.5),        
-            dPhiVeto = cms.double(-1.),  # asymmetric Eta x Phi veto region 
-            dEtaVeto = cms.double(-1.),  # to account for photon conversions in electron isolation case        
-            dRvetoCone = cms.double(0.15),
-            dRisoCone = cms.double(0.4)
-        ),
-        direction = cms.string('track')
-    )
-    patTauLoosePFIsoEmbedder04Name = collectionName[0] + "LoosePFIsoEmbedded04" + collectionName[1]
-    setattr(process, patTauLoosePFIsoEmbedder04Name, patTauLoosePFIsoEmbedder04)
-    outputSequence += getattr(process, patTauLoosePFIsoEmbedder04Name)
-
-    patTauLoosePFIsoEmbedder06 = patTauLoosePFIsoEmbedder04.clone(
-        src = cms.InputTag(patTauLoosePFIsoEmbedder04Name),                                       
-        userFloatName = cms.string('pfLooseIsoPt06'),
-        chargedHadronIso = patTauLoosePFIsoEmbedder04.chargedHadronIso.clone(
-            dRisoCone = cms.double(0.6)
-        ),
-        neutralHadronIso = patTauLoosePFIsoEmbedder04.neutralHadronIso.clone(
-            dRisoCone = cms.double(0.6)
-        ),
-        photonIso = patTauLoosePFIsoEmbedder04.photonIso.clone(
-            dRisoCone = cms.double(0.6)
-        )
-    )
-    patTauLoosePFIsoEmbedder06Name = collectionName[0] + "LoosePFIsoEmbedded06" + collectionName[1]
-    setattr(process, patTauLoosePFIsoEmbedder06Name, patTauLoosePFIsoEmbedder06)
-    outputSequence += getattr(process, patTauLoosePFIsoEmbedder06Name)
-
     # return sequence for production of basic tau collection,
     # generator level particle and jet matches and trigger primitives embedded;
     # together with name of "cleaned" tau collection
     # to be used as InputTag for further processing
     retVal = {}
     retVal["sequence"] = outputSequence
-    retVal["collection"] = patTauLoosePFIsoEmbedder06Name
+    retVal["collection"] = patTauJetIdEmbedderName
     return retVal
 
 def buildQCDdiJetTauSequence(

@@ -105,9 +105,10 @@ mode = 'tauIdEfficiency'
 #mode = 'tauChargeMisIdRate'
 
 sysUncertainties = [
-    "TauJetEn",      # needed for diTauVisMass/diTauVisMassFromJet
-    "JetEn",         # needed for diTauMt/Pzeta 
-    "UnclusteredEn", # needed for diTauMt/Pzeta 
+    "TauJetEn",     # needed for diTauVisMass/diTauVisMassFromJet
+    "JetEn",        # needed for diTauMt/Pzeta
+    "JetRes",       # needed for diTauMt/Pzeta
+    "UnclusteredEn" # needed for diTauMt/Pzeta 
 ]
 
 tauIds = {

@@ -34,7 +34,7 @@ def buildConfigFile_FWLiteTauFakeRateAnalyzer(sampleToAnalyze, evtSel, version, 
     """Build cfg.py file to run FWLiteTauFakeRateAnalyzer macro to run on PAT-tuples,
        and fill histograms for passed/failed samples"""
 
-    #print "inputFilePath = %s" % inputFilePath
+    print "inputFilePath = %s" % inputFilePath
 
     inputFileNames = None
     if inputFilePath.find('/castor/') != -1:

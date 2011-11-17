@@ -9,12 +9,12 @@ SAMPLES_TO_RUN = [
     ##'data_Jet_Run2011A_PromptReco_v4',
     ##'data_Jet_Aug05ReReco_v1',
     ##'data_Jet_Run2011A_PromptReco_v6', 
-    'data_Jet_Run2011B_PromptReco_v1a', 
+    ##'data_Jet_Run2011B_PromptReco_v1a', 
     ##'data_SingleMu_Run2011A_May10ReReco_v1',
     ##'data_SingleMu_Run2011A_PromptReco_v4',
     ##'data_SingleMu_Run2011A_Aug05ReReco_v1',
     ##'data_SingleMu_Run2011A_PromptReco_v6',
-    'data_SingleMu_Run2011B_PromptReco_v1a',
+    ##'data_SingleMu_Run2011B_PromptReco_v1a',
     ##'ZplusJets',
     ##'WplusJets',
     ##'qcdDiJetPtHat15to30s4',
@@ -24,8 +24,8 @@ SAMPLES_TO_RUN = [
     ##'qcdDiJetPtHat120to170s4',
     ##'qcdDiJetPtHat170to300s4',
     ##'qcdDiJetPtHat300to470s4',
-    ##'PPmuXptGt20Mu15',
-    ##'TTplusJets'
+    'PPmuXptGt20Mu15',
+    'TTplusJets'
 ]
 
 JOBS_TO_RUN = [
@@ -52,19 +52,19 @@ ROOT_FILE_NAMES = {
 JOB_OPTIONS = {
     'qcdDiJet' : {
         'applyEventSelection' : True,
-        'submitTypes'         : [ 'MC', 'Data' ]
+        'submitTypes'         : [ 'smMC', 'Data' ]
     },
     'qcdMuEnriched' : {
         'applyEventSelection' : True,
-        'submitTypes'         : [ 'MC', 'Data' ]
+        'submitTypes'         : [ 'smMC', 'Data' ]
     },
     'WplusJets' : {
         'applyEventSelection' : True,
-        'submitTypes'         : [ 'MC', 'Data' ]
+        'submitTypes'         : [ 'smMC', 'Data' ]
     },
     'Zmumu' : {
         'applyEventSelection' : True,
-        'submitTypes'         : [ 'MC', 'Data' ]
+        'submitTypes'         : [ 'smMC', 'Data' ]
     }
 }
 
@@ -253,7 +253,7 @@ RECO_SAMPLES = {
         'events_processed' : 6220160,
         'x_sec'            : 2.43e4*_picobarns,
         'jobs'             : [ 'qcdDiJet' ],
-        'type'             : 'MC',
+        'type'             : 'smMC',
         'hlt'              : 'HLT'
     },
     'qcdDiJetPtHat300to470s4' : {
