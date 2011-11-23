@@ -13,13 +13,17 @@ SAMPLES_TO_ANALYZE = [
     'data_SingleMu_Run2011A_PromptReco_v4',
     'data_SingleMu_Run2011A_Aug05ReReco_v1',
     'data_SingleMu_Run2011A_PromptReco_v6',
-    'data_MET_Run2011B_PromptReco_v1',
-    'data_MET_Run2011B_PromptReco_v1a',
+    #'data_MET_Run2011B_PromptReco_v1',
+    #'data_MET_Run2011B_PromptReco_v1a',
+    'data_MET_Run2011B_PromptReco_v1c',
     #'DYtautauM10to20_powheg',
     #'Ztautau_pythia',
     'Ztautau_powheg',
-    #'Ztautau_embedded_part1',
-    #'Ztautau_embedded_part2',
+    'Ztautau_embedded_Run2011A_May10ReReco',
+    'Ztautau_embedded_Run2011A_PromptReco_v4',
+    'Ztautau_embedded_Run2011A_Aug05ReReco_v1',
+    'Ztautau_embedded_Run2011A_PromptReco_v6',
+    'Ztautau_embedded_Run2011B_PromptReco_v1',
     #'qqZll',
     #'DYmumuM10to20_pythia',
     #'Zmumu_pythia',
@@ -182,7 +186,29 @@ TauIdEfficiencySpecific_RECO_SAMPLES = {
         'enableFakeRates' : True,
         'hlt' : cms.InputTag("TriggerResults", "", "HLT"),
         'SE_black_list' : 'T2_US_UCSD'
-    }
+    },
+    'data_MET_Run2011B_PromptReco_v1c' : {
+        'datasetpath' : "/MET/Run2011B-PromptReco-v1/AOD",
+        'dbs_url' :  "http://cmsdbsprod.cern.ch/cms_dbs_prod_global/servlet/DBSServlet",
+        'lumi_mask' : "/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions11/7TeV/Prompt/Cert_160404-180252_7TeV_PromptReco_Collisions11_JSON.txt",
+        'runselection' : "175832-180252",
+        'number_of_jobs' : 2500,
+        'conditions' : 'GR_R_42_V20::All',
+        'events_processed' : -1,
+        'skim_eff' : 1.0,
+        'type' : 'Data',
+        'drawOption' : styles.drawOption_Data,
+        'hlt_paths' : {
+            'HLT_Mu15_L1ETM20_v3'    : '178420:MIN-179889:MAX',
+            'HLT_IsoMu15_L1ETM20_v3' : '178420:MIN-179889:MAX',
+            'HLT_Mu15_L1ETM20_v4'    : '179959:MIN-180252:MAX',
+            'HLT_IsoMu15_L1ETM20_v4' : '179959:MIN-180252:MAX'
+        },
+        'enableSysUncertainties' : False,
+        'enableFakeRates' : True,
+        'hlt' : cms.InputTag("TriggerResults", "", "HLT"),
+        'SE_black_list' : 'T2_US_UCSD'
+    },
 }
 RECO_SAMPLES.update(TauIdEfficiencySpecific_RECO_SAMPLES)
 
@@ -203,8 +229,9 @@ MERGE_SAMPLES = {
     },
     'Data_2011RunB' : {
         'samples' : [
-            'data_MET_Run2011B_PromptReco_v1',
-            'data_MET_Run2011B_PromptReco_v1a'
+            #'data_MET_Run2011B_PromptReco_v1',
+            #'data_MET_Run2011B_PromptReco_v1a'
+            'data_MET_Run2011B_PromptReco_v1c'
         ],
         'type' : 'Data'
     },

@@ -60,11 +60,6 @@ def configurePrePatProduction(process, pfCandidateCollection = "particleFlow",
     # smear momenta of ak5PFJets,
     # to account for Data/MC difference in PFJet resolutions (cf. JME-10-014)
     if addGenInfo:
-        process.ak5PFJetsL2L3 = cms.EDProducer('PFJetCorrectionProducer',
-            src = cms.InputTag('ak5PFJets'),
-            correctors = cms.vstring('ak5PFL2L3')
-        )
-        process.prePatProductionSequence += process.ak5PFJetsL2L3
 
         process.load("RecoJets/Configuration/GenJetParticles_cff")
         process.load("RecoJets/Configuration/RecoGenJets_cff")
@@ -72,10 +67,11 @@ def configurePrePatProduction(process, pfCandidateCollection = "particleFlow",
         process.prePatProductionSequence += process.ak5GenJetsNoNu
         
         process.smearedAK5PFJets = cms.EDProducer("SmearedPFJetProducer",
-            src = cms.InputTag('ak5PFJetsL2L3'),
+            src = cms.InputTag('ak5PFJets'),                                                  
             inputFileName = cms.FileInPath('PhysicsTools/PatUtils/data/pfJetResolutionMCtoDataCorrLUT.root'),
             lutName = cms.string('pfJetResolutionMCtoDataCorrLUT'),
-            jetResolutions = jetResolutions.METSignificance_params,                                      
+            jetResolutions = jetResolutions.METSignificance_params,
+            jetCorrLabel = cms.string("ak5PFL1FastL2L3"),
             smearBy = cms.double(1.0),
             srcGenJets = cms.InputTag('ak5GenJetsNoNu'),
             dRmaxGenJetMatch = cms.double(0.5)
@@ -86,7 +82,10 @@ def configurePrePatProduction(process, pfCandidateCollection = "particleFlow",
     #--------------------------------------------------------------------------------
     # produce collections of kT PFJets for dR = 0.6 needed for rho (FastJet) pile-up corrections
     if not hasattr(process, "kt6PFJets"):
-        process.load("RecoJets.Configuration.RecoPFJets_cff")
+        process.load("RecoJets.JetProducers.kt4PFJets_cfi")
+        process.kt6PFJets = process.kt4PFJets.clone(
+            rParam = cms.doube(0.6)
+        )
         process.kt6PFJets.Rho_EtaMax = cms.double(2.5)
         process.kt6PFJets.doRhoFastjet = True
         process.prePatProductionSequence += process.kt6PFJets

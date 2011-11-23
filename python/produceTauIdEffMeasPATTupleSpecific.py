@@ -95,6 +95,12 @@ def produceTauIdEffMeasPATTuple(process, isMC, isEmbedded, HLTprocessName, pfCan
     #-------------------------------------------------------------------------------------------------------------------------
 
     #--------------------------------------------------------------------------------
+    # add event counter for Mauro's "self baby-sitting" technology
+    process.processedEventsPATtupleProduction = cms.EDProducer("EventCountProducer")
+    process.eventCounterPath = cms.Path(process.processedEventsPATtupleProduction)
+    #--------------------------------------------------------------------------------
+
+    #--------------------------------------------------------------------------------
     #
     # save PAT-tuple
     #

@@ -8,7 +8,7 @@ import subprocess
 import shlex
 
 jobId = "2011Oct30" # Christian's Ntuples
-version = "V10_2tauEnRecovery"
+version = "V10_3tauEnRecovery"
 #jobId = "2011Jun06" # Mauro's Ntuples
 #version = "V2"
 
@@ -62,4 +62,4 @@ for source_file in source_files:
     print("copying %s --> %s" % (source_file, target_file))
     files_to_copy.append(source_file)
 
-castor_mirror.mirror_files(castor_mirror.needs_local_copy(files_to_copy, [ targetFilePath ]), [ targetFilePath ], 3)
+castor_mirror.mirror_files(castor_mirror.needs_local_copy(files_to_copy, [ targetFilePath ]), [ targetFilePath ], 10)

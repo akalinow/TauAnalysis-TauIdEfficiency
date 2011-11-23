@@ -597,11 +597,21 @@ void loadHistograms(
 	  std::string histogramName = std::string(process).append("_").append(*region).append("_").append(*observable);
 	  histogramName.append("_").append(*tauId).append("_").append(*tauIdValue);
 	  if ( sysShift != "CENTRAL_VALUE" ) histogramName.append("_").append(sysShift);
- 
+
+	  std::string key = getKey(*observable, *tauId, *tauIdValue, sysShift);	
+	  //std::cout << "--> key = " << key << std::endl;
+
+	  if ( histogramMap[*region].find(key) != histogramMap[*region].end() ) {
+	    std::cout << "Warning in <loadHistograms>:" 
+		      << " histogram = " << histogramName << " already exists --> skipping !!" << std::endl;
+	    continue;
+	  }
+	  
 	  TH1* histogram = dynamic_cast<TH1*>(inputDirectory->Get(histogramName.data()));
 	  if ( !histogram ) {
-	    std::cout << "Error in <loadHistograms>: failed to load histogram = " << histogramName 
-		      << " from file/directory = " << inputDirectory->GetName() << " --> aborting !!";
+	    std::cout << "Error in <loadHistograms>:" 
+		      << " failed to load histogram = " << histogramName 
+		      << " from file/directory = " << inputDirectory->GetName() << " --> aborting !!" << std::endl;
 	    assert(0);
 	  }
 
@@ -614,15 +624,13 @@ void loadHistograms(
 	  //else if ( (numBins % 4) == 0 && numBins >= 36 ) histogram->Rebin(4);
 	  //else                                            histogram->Rebin(2);
 
-	  // CV: scale MC histograms by 0.80 to account for crab jobs lost when processing Data
-	  //    (temporary fix, 2011/07/11)
+	  // CV: scale MC histograms by 0.40 to account for crab jobs lost when processing Data
+	  //    (temporary fix, 2011/11/21)
 	  if ( process != "Data" ) {
 	    if ( !histogram->GetSumw2N() ) histogram->Sumw2();	    
-	    histogram->Scale(0.80);
+	    histogram->Scale(0.40);
 	  }
 
-	  std::string key = getKey(*observable, *tauId, *tauIdValue, sysShift);	
-	  //std::cout << "--> key = " << key << std::endl;
 	  if ( histogram != 0 ) histogramMap[*region][key] = histogram;
 	}
       }

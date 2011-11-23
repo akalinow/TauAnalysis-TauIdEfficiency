@@ -204,7 +204,7 @@ process.tauIdEffAnalyzer = cms.PSet(
     srcGoodMuons = cms.InputTag('selectedPatMuonsForTauIdEffPFRelIsoCumulative'),
     
     srcMuTauPairs = cms.InputTag('%s'),
-    srcCaloMEt = cms.InputTag('patMETs'),
+    srcCaloMEt = cms.InputTag('patCaloMetNoHF'),
     svFitMassHypothesis = cms.string('psKine_MEt_logM_fit'),
     tauChargeMode = cms.string('%s'),
     disableTauCandPreselCuts = cms.bool(%s),
@@ -563,7 +563,7 @@ process.%s = cms.PSet(
     srcGoodMuons = cms.InputTag('selectedPatMuonsForTauIdEffPFRelIsoCumulative'),
     
     srcMuTauPairs = cms.InputTag('selectedMuPFTauHPSpairsDzForTauIdEffCumulative'),
-    srcCaloMEt = cms.InputTag('patMETs'),
+    srcCaloMEt = cms.InputTag('patCaloMetNoHF'),
     
     srcGenParticles = cms.InputTag('genParticles'),
 

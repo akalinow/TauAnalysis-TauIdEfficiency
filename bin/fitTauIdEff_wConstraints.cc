@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.22 $
+ * \version $Revision: 1.23 $
  *
- * $Id: fitTauIdEff_wConstraints.cc,v 1.22 2011/10/25 16:14:23 veelken Exp $
+ * $Id: fitTauIdEff_wConstraints.cc,v 1.23 2011/11/14 13:57:00 veelken Exp $
  *
  */
 
@@ -997,13 +997,12 @@ int main(int argc, const char* argv[])
   //		  << getIntegral(key->second, true, true) << std::endl;
   //  }
   //}
-std::cout << "break-point 1 reached" << std::endl;
+
   std::map<std::string, std::map<std::string, std::map<std::string, double> > > numEventsAll = // key = (process/"sum", region, observable)
     compNumEvents(templatesAll, processes, regions, distributionsData);
-std::cout << "break-point 2 reached" << std::endl;
   std::map<std::string, std::map<std::string, std::map<std::string, double> > > fittedFractions = // key = (process, region, observable)
     compFittedFractions(templatesAll, numEventsAll, processes, regions, distributionsData);
-std::cout << "break-point 3 reached" << std::endl;
+
 //--- print MC expectations for probabilities 
 //   o pDiTauCharge_OS_SS
 //   o pDiTauKine_Sig_Bgr

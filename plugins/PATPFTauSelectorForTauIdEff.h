@@ -12,9 +12,9 @@
  * 
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.3 $
+ * \version $Revision: 1.4 $
  *
- * $Id: PATPFTauSelectorForTauIdEff.h,v 1.3 2011/07/01 14:22:58 veelken Exp $
+ * $Id: PATPFTauSelectorForTauIdEff.h,v 1.4 2011/07/26 14:04:16 veelken Exp $
  *
  */
 
@@ -68,7 +68,7 @@ private:
   ParticlePFIsolationExtractor<pat::Tau>* pfIsolationExtractor_;
   double maxPFIsoPt_;
   edm::InputTag srcPFIsoCandidates_;
-  edm::InputTag srcBeamSpot_;
+  edm::InputTag srcPFNoPileUpCandidates_;
   edm::InputTag srcVertex_;
   edm::InputTag srcRhoFastJet_;
 

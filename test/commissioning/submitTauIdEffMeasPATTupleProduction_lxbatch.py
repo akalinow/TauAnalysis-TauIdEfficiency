@@ -15,7 +15,7 @@ channel = 'ZtoMuTau_tauIdEff'
 #jobId = getJobId(channel)
 jobId = '2011Oct30'
 
-version = 'V10_2tauEnRecovery'
+version = 'V10_3tauEnRecovery'
 
 lxbatch_queue = '1nw'
 

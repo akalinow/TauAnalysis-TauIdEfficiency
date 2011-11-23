@@ -14,7 +14,6 @@
 #include "DataFormats/JetReco/interface/PFJetCollection.h"
 #include "DataFormats/ParticleFlowCandidate/interface/PFCandidate.h"
 #include "DataFormats/ParticleFlowCandidate/interface/PFCandidateFwd.h"
-#include "DataFormats/BeamSpot/interface/BeamSpot.h"
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 
@@ -55,8 +54,8 @@ PATPFTauSelectorForTauIdEff::PATPFTauSelectorForTauIdEff(const edm::ParameterSet
   pfIsolationExtractor_ = new ParticlePFIsolationExtractor<pat::Tau>(cfg.getParameter<edm::ParameterSet>("pfIsolation"));
   maxPFIsoPt_ = cfg.getParameter<double>("maxPFIsoPt");
   srcPFIsoCandidates_ = cfg.getParameter<edm::InputTag>("srcPFIsoCandidates");
-  srcBeamSpot_   = cfg.getParameter<edm::InputTag>("srcBeamSpot");
-  srcVertex_     = cfg.getParameter<edm::InputTag>("srcVertex");
+  srcPFNoPileUpCandidates_ = cfg.getParameter<edm::InputTag>("srcPFNoPileUpCandidates");
+  srcVertex_ = cfg.getParameter<edm::InputTag>("srcVertex");
   if ( cfg.exists("srcRhoFastJet") ) {
     srcRhoFastJet_ = cfg.getParameter<edm::InputTag>("srcRhoFastJet");
   }
@@ -98,8 +97,8 @@ bool PATPFTauSelectorForTauIdEff::filter(edm::Event& evt, const edm::EventSetup&
   edm::Handle<reco::PFCandidateCollection> pfIsoCandidates;
   evt.getByLabel(srcPFIsoCandidates_, pfIsoCandidates);
 
-  edm::Handle<reco::BeamSpot> beamSpot;
-  evt.getByLabel(srcBeamSpot_, beamSpot);
+  edm::Handle<reco::PFCandidateCollection> pfNoPileUpCandidates;
+  evt.getByLabel(srcPFNoPileUpCandidates_, pfNoPileUpCandidates);
 
   double rhoFastJet = -1.;
   if ( srcRhoFastJet_.label() != "" ) {
@@ -182,12 +181,11 @@ bool PATPFTauSelectorForTauIdEff::filter(edm::Event& evt, const edm::EventSetup&
     if ( !(produceAll_ || isSaved) && !(leadPFChargedHadron->pt() > minLeadTrackPt_) ) continue;
 
 //--- require that (PF)Tau-jet candidate passes loose isolation criteria
-    reco::VertexCollection theVertexCollection;
-    theVertexCollection.push_back(*theVertex);
     double loosePFIsoPt = -1.;
     if ( leadPFChargedHadron ) 
-      loosePFIsoPt = (*pfIsolationExtractor_)(*pfTau_input, leadPFChargedHadron->momentum(), 
-					      *pfIsoCandidates, &theVertexCollection, beamSpot.product(), rhoFastJet);
+      loosePFIsoPt = 
+	(*pfIsolationExtractor_)(*pfTau_input, leadPFChargedHadron->momentum(), 
+				 *pfIsoCandidates, *pfIsoCandidates, rhoFastJet);
     if ( verbosity_ ) std::cout << " loosePFIsoPt = " << loosePFIsoPt << std::endl;
     if ( !(produceAll_  || isSaved) && loosePFIsoPt > maxPFIsoPt_ ) continue;
 

@@ -99,7 +99,6 @@ def buildSequenceTauIdEffMeasSpecific(process,
     patTauSelectionModules.append(selectedPatTausAntiOverlapWithMuonsVeto)
 
     process.load("RecoTauTag.RecoTau.PFRecoTauQualityCuts_cfi")
-    process.load("TauAnalysis.RecoTools.patLeptonPFIsolationSelector_cfi")
     selectedPatPFTausForTauIdEffName = \
         composeModuleName(["selectedPat%ss%s" % (tauIdAlgorithmName[0], tauIdAlgorithmName[1]), "ForTauIdEff"])
     selectedPatPFTausForTauIdEff = cms.EDFilter("PATPFTauSelectorForTauIdEff",
@@ -131,10 +130,15 @@ def buildSequenceTauIdEffMeasSpecific(process,
                 dEtaVeto = cms.double(-1.),  # to account for photon conversions in electron isolation case        
                 dRvetoCone = cms.double(0.15),
                 dRisoCone = cms.double(0.6)
-            )
+            ),
+            pileUpCorr = cms.PSet(
+                method = cms.string("deltaBeta"),
+                chargedToNeutralFactor = cms.double(0.50)
+            )                                        
         ),
         maxPFIsoPt = cms.double(2.5),
-        srcPFIsoCandidates = cms.InputTag('pfNoPileUp'),
+        srcPFIsoCandidates = cms.InputTag('particleFlow'),
+        srcPFNoPileUpCandidates = cms.InputTag('pfNoPileUp'),                             
         srcBeamSpot = cms.InputTag('offlineBeamSpot'),
         srcVertex = cms.InputTag('offlinePrimaryVerticesWithBS'),
         filter = cms.bool(False)                                                  
@@ -154,9 +158,9 @@ def buildSequenceTauIdEffMeasSpecific(process,
     #     since the tau-jet response is taken from the Monte Carlo simulation
     #
     if isMC or isEmbedded:
-        setattr(selectedPatPFTausForTauIdEff, "jetEnergyCorrection", cms.string('ak5PFL1L2L3'))
+        setattr(selectedPatPFTausForTauIdEff, "jetEnergyCorrection", cms.string('ak5PFL1FastL2L3'))
     else:
-        setattr(selectedPatPFTausForTauIdEff, "jetEnergyCorrection", cms.string('ak5PFL1L2L3Residual'))
+        setattr(selectedPatPFTausForTauIdEff, "jetEnergyCorrection", cms.string('ak5PFL1FastL2L3Residual'))
 
     patTauSelConfigurator = objSelConfigurator(
         patTauSelectionModules,

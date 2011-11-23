@@ -10,11 +10,11 @@ channel = 'ZtoMuTau_tauIdEff'
 #jobId = getJobId(channel)
 jobId = '2011Oct30'
 
-version = 'V10_1tauEnRecovery'
+version = 'V10_3tauEnRecovery'
 
 inputFilePath = '/data1/veelken/CMSSW_4_2_x/PATtuples/TauIdEffMeas/%s/%s/' % (jobId, version) \
                + 'user/v/veelken/CMSSW_4_2_x/PATtuples/TauIdEffMeas/%s/%s/' % (jobId, version)
-outputFilePath = '/data1/veelken/tmp/muonPtGt17/%s/' % version
+outputFilePath = '/data1/veelken/tmp/muonPtGt17/%s_1/' % version
 
 samplesToAnalyze = [
     # modify in case you want to submit jobs for some of the samples only...
@@ -34,8 +34,8 @@ samplesToAnalyze = [
 # used to compute preselection efficiencies and purities in C1p and C1f/D1p regions
 sampleZtautau = 'Ztautau_powheg'
 
-runPeriod = '2011RunA'
-#runPeriod = '2011RunB'
+#runPeriod = '2011RunA'
+runPeriod = '2011RunB'
 
 intLumiData = None
 hltPaths = None
@@ -73,13 +73,14 @@ if runPeriod == '2011RunA':
     }
 elif runPeriod == '2011RunB':
     samplesToAnalyze.extend([
-        'data_MET_Run2011B_PromptReco_v1'
+        'data_MET_Run2011B_PromptReco_v1',
+        'data_MET_Run2011B_PromptReco_v1a'
     ])
-    intLumiData = 398.5 # runs 178420-179411
+    intLumiData = 773.9 # runs 178420-180252
     hltPaths = {
         'Data' : [
             'HLT_IsoMu15_L1ETM20_v3',
-            'HLT_IsoMu15_L1ETM20_v4',
+            'HLT_IsoMu15_L1ETM20_v4'
         ],
         'smMC' : [
             'HLT_IsoMu15_v5'
@@ -91,8 +92,7 @@ elif runPeriod == '2011RunB':
     }
     srcWeights = {
         'Data' : [],
-        ##'smMC' : [ 'vertexMultiplicityReweight3dRunB' ]
-        'smMC' : []
+        'smMC' : [ 'vertexMultiplicityReweight3dRunB' ]
     }
 else:
     raise ValueError("Invalid runPeriod = %s !!" % runPeriod)
@@ -105,9 +105,9 @@ mode = 'tauIdEfficiency'
 #mode = 'tauChargeMisIdRate'
 
 sysUncertainties = [
-    "TauJetEn",     # needed for diTauVisMass/diTauVisMassFromJet
     "JetEn",        # needed for diTauMt/Pzeta
-    "JetRes",       # needed for diTauMt/Pzeta
+    "TauJetEn",     # needed for diTauVisMass/diTauVisMassFromJet
+    "TauJetRes",    # needed for diTauVisMass/diTauVisMassFromJet
     "UnclusteredEn" # needed for diTauMt/Pzeta 
 ]
 
@@ -667,7 +667,8 @@ makeFile.write("\n")
 for i, outputFileName in enumerate(outputFileNames_FWLiteTauIdEffAnalyzer):
     makeFile.write("%s: %s\n" %
       (outputFileName,
-       executable_FWLiteTauIdEffAnalyzer))
+       #executable_FWLiteTauIdEffAnalyzer,
+       ""))
     makeFile.write("\t%s%s %s &> %s\n" %
       (nice, executable_FWLiteTauIdEffAnalyzer,
        configFileNames_FWLiteTauIdEffAnalyzer[i],
@@ -711,7 +712,8 @@ for i, outputFileName in enumerate(outputFileNames_fitTauIdEff):
 makeFile.write("\n")
 makeFile.write("%s: %s\n" %
   (outputFileName_FWLiteTauIdEffPreselNumbers,
-   executable_compTauIdEffPreselNumbers))
+   #executable_compTauIdEffPreselNumbers,
+   ""))
 makeFile.write("\t%s%s %s &> %s\n" %
   (nice, executable_compTauIdEffPreselNumbers,
    configFileName_FWLiteTauIdEffPreselNumbers,
