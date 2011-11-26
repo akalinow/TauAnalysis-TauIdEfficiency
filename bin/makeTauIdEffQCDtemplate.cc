@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.2 $
+ * \version $Revision: 1.3 $
  *
- * $Id: makeTauIdEffQCDtemplate.cc,v 1.2 2011/11/06 13:25:23 veelken Exp $
+ * $Id: makeTauIdEffQCDtemplate.cc,v 1.3 2011/11/14 13:57:00 veelken Exp $
  *
  */
 
@@ -26,6 +26,8 @@
 #include "TauAnalysis/TauIdEfficiency/bin/tauIdEffAuxFunctions.h"
 #include "TauAnalysis/CandidateTools/interface/generalAuxFunctions.h"
 
+#include <TROOT.h>
+#include <TSystem.h>
 #include <TFile.h>
 #include <TH1.h>
 #include <TString.h>
@@ -45,57 +47,41 @@ struct regionEntryType
   regionEntryType(const std::string& regionTakeQCDtemplateFromData, 
 		  const std::string& regionWplusJetsSideband, 
 		  const std::string& regionStoreQCDtemplate, 
-		  const std::string& tauId, const std::string& fitVariable, const std::string& tauIdValue, 
-		  const std::string& sysShift)
+		  const std::string& tauId, const std::string& fitVariable, const std::string& sysUncertainty)
     : regionTakeQCDtemplateFromData_(regionTakeQCDtemplateFromData),
       regionWplusJetsSideband_(regionWplusJetsSideband),
       regionStoreQCDtemplate_(regionStoreQCDtemplate),
       tauId_(tauId),
       fitVariable_(fitVariable),
-      tauIdValue_(tauIdValue),
-      sysShift_(sysShift)
+      sysUncertainty_(sysUncertainty)
   {}
   ~regionEntryType() {}
 
   void makeQCDtemplate(TFileDirectory& dir, 
-		       histogramMap& distributionsData, std::map<std::string, histogramMap>& templates, numEventsMap& numEvents)
+		       histogramMap3& histograms_data, histogramMap4& histograms_mc, valueMap2& numEvents_mc)
   {
-    //std::cout << "<regionEntryType::makeQCDtemplate>:" << std::endl;
-    //std::cout << " fitVariable = " << fitVariable_ << std::endl;
-    //std::cout << " tauId = " << tauId_ << std::endl;
-    //std::cout << " tauIdValue = " << tauIdValue_ << std::endl;
-    //std::cout << " regionWplusJetsSideband = " << regionWplusJetsSideband_ << std::endl;
-    //std::cout << " regionTakeQCDtemplateFromData = " << regionTakeQCDtemplateFromData_ << std::endl;
-
-    std::string keyWplusJetsSideband_data = getKey(fitVariable_, tauId_, "all");
-    std::string keyWplusJetsSideband_mc = getKey(fitVariable_, tauId_, "all", sysShift_);
-    TH1* distributionDataWplusJetsSideband = distributionsData[regionWplusJetsSideband_][keyWplusJetsSideband_data];
-    //std::cout << "distributionDataWplusJetsSideband = " << distributionDataWplusJetsSideband << std::endl;
     double numEventsWplusJetsSideband_obsWplusJets = 
-      getIntegral(distributionDataWplusJetsSideband, true, true)
-     - (numEvents["Ztautau"][regionWplusJetsSideband_][keyWplusJetsSideband_mc]
-      + numEvents["Zmumu"][regionWplusJetsSideband_][keyWplusJetsSideband_mc]
-      + numEvents["QCD"][regionWplusJetsSideband_][keyWplusJetsSideband_mc]
-      + numEvents["TTplusJets"][regionWplusJetsSideband_][keyWplusJetsSideband_mc]);
+      getIntegral(histograms_data[regionWplusJetsSideband_]["EventCounter"][key_central_value], true, true)
+     - (numEvents_mc["Ztautau"][regionWplusJetsSideband_]
+      + numEvents_mc["Zmumu"][regionWplusJetsSideband_]
+      + numEvents_mc["QCD"][regionWplusJetsSideband_]
+      + numEvents_mc["TTplusJets"][regionWplusJetsSideband_]);
     double numEventsWplusJetsSideband_expWplusJets = 
-      numEvents["WplusJets"][regionWplusJetsSideband_][keyWplusJetsSideband_mc];
+      numEvents_mc["WplusJets"][regionWplusJetsSideband_];
     std::cout << "numEventsWplusJets_sideband: observed = " << numEventsWplusJetsSideband_obsWplusJets << "," 
 	      << " expected = " << numEventsWplusJetsSideband_expWplusJets << std::endl;
     
     double scaleFactorWplusJets = numEventsWplusJetsSideband_obsWplusJets/numEventsWplusJetsSideband_expWplusJets;
 
-    std::string keyQCDsideband_data = getKey(fitVariable_, tauId_, "all");
-    std::string keyQCDsideband_mc = getKey(fitVariable_, tauId_, "all", sysShift_);    
-    TH1* distributionDataQCDsideband = distributionsData[regionTakeQCDtemplateFromData_][keyQCDsideband_data];
-    //std::cout << "distributionDataQCDsideband = " << distributionDataQCDsideband << std::endl;
-    TH1* templateZtautauQCDsideband = templates["Ztautau"][regionTakeQCDtemplateFromData_][keyQCDsideband_mc];
-    TH1* templateZmumuQCDsideband = templates["Zmumu"][regionTakeQCDtemplateFromData_][keyQCDsideband_mc];
-    TH1* templateWplusJetsQCDsideband = templates["WplusJets"][regionTakeQCDtemplateFromData_][keyQCDsideband_mc];
-    TH1* templateTTplusJetsQCDsideband = templates["TTplusJets"][regionTakeQCDtemplateFromData_][keyQCDsideband_mc];
+    TH1* distributionDataQCDsideband = histograms_data[regionTakeQCDtemplateFromData_][fitVariable_][key_central_value];
+    TH1* templateZtautauQCDsideband = histograms_mc["Ztautau"][regionTakeQCDtemplateFromData_][fitVariable_][sysUncertainty_];
+    TH1* templateZmumuQCDsideband = histograms_mc["Zmumu"][regionTakeQCDtemplateFromData_][fitVariable_][sysUncertainty_];
+    TH1* templateWplusJetsQCDsideband = histograms_mc["WplusJets"][regionTakeQCDtemplateFromData_][fitVariable_][sysUncertainty_];
+    TH1* templateTTplusJetsQCDsideband = histograms_mc["TTplusJets"][regionTakeQCDtemplateFromData_][fitVariable_][sysUncertainty_];
 
     TString templateQCDsidebandName = distributionDataQCDsideband->GetName();    
     templateQCDsidebandName.ReplaceAll(regionTakeQCDtemplateFromData_, regionStoreQCDtemplate_);
-    if ( sysShift_ != "CENTRAL_VALUE" ) templateQCDsidebandName.Append("_").Append(sysShift_);
+    if ( sysUncertainty_ != key_central_value ) templateQCDsidebandName.Append("_").Append(sysUncertainty_);
     TH1* templateQCDsideband_obsQCD = 0;
     TAxis* xAxis = distributionDataQCDsideband->GetXaxis(); 
     if ( xAxis->GetXbins() && xAxis->GetXbins()->GetSize() >= 2 ) {
@@ -121,9 +107,8 @@ struct regionEntryType
 
   std::string tauId_;
   std::string fitVariable_;
-  std::string tauIdValue_;
   
-  std::string sysShift_;
+  std::string sysUncertainty_;
 };
 
 int main(int argc, const char* argv[])
@@ -156,37 +141,62 @@ int main(int argc, const char* argv[])
 
   edm::ParameterSet cfgMakeTauIdEffQCDtemplate = cfg.getParameter<edm::ParameterSet>("makeTauIdEffQCDtemplate");
 
-  typedef std::vector<std::string> vstring;
   vstring tauIds = cfgMakeTauIdEffQCDtemplate.getParameter<vstring>("tauIds");
   vstring tauIdValues;
   tauIdValues.push_back("passed");
   tauIdValues.push_back("failed");
 
   vstring fitVariables = cfgMakeTauIdEffQCDtemplate.getParameter<vstring>("fitVariables");
-  
-  std::vector<std::string> loadSysShifts;
-  loadSysShifts.push_back("CENTRAL_VALUE");
-  vstring loadSysUncertaintyNames = cfgMakeTauIdEffQCDtemplate.getParameter<vstring>("loadSysUncertainties");
-  for ( vstring::const_iterator sysUncertaintyName = loadSysUncertaintyNames.begin();
-	sysUncertaintyName != loadSysUncertaintyNames.end(); ++sysUncertaintyName ) {
-    if ( (*sysUncertaintyName) == "sysAddPUsmearing" ) {
-      loadSysShifts.push_back(*sysUncertaintyName);
-    } else {
-      loadSysShifts.push_back(std::string(*sysUncertaintyName).append("Up"));
-      loadSysShifts.push_back(std::string(*sysUncertaintyName).append("Down"));
-    } 
-  }
 
-  vstring regions;
-  std::vector<regionEntryType*> regionEntries;
+  vstring sysUncertainties = cfgMakeTauIdEffQCDtemplate.getParameter<vstring>("sysUncertainties");
+  vstring sysUncertainties_expanded;
+  sysUncertainties_expanded.push_back(key_central_value);
+  for ( vstring::const_iterator sysUncertainty = sysUncertainties.begin();
+	sysUncertainty != sysUncertainties.end(); ++sysUncertainty ) {
+    sysUncertainties_expanded.push_back(std::string(*sysUncertainty).append("Up"));
+    sysUncertainties_expanded.push_back(std::string(*sysUncertainty).append("Down"));
+  }
+  
+  vstring sysUncertainties_data;
+  sysUncertainties_data.push_back(key_central_value);
+
+   fwlite::InputSource inputFiles(cfg); 
+  if ( inputFiles.files().size() != 1 ) 
+    throw cms::Exception("makeTauIdEffQCDtemplate") 
+      << "Input file must be unique, got = " << format_vstring(inputFiles.files()) << " !!\n";
+  std::string histogramFileName = (*inputFiles.files().begin());
+
+  TFile* histogramInputFile = new TFile(histogramFileName.data());
+  std::string directory = cfgMakeTauIdEffQCDtemplate.getParameter<std::string>("directory");
+  TDirectory* histogramInputDirectory = ( directory != "" ) ?
+    dynamic_cast<TDirectory*>(histogramInputFile->Get(directory.data())) : histogramInputFile;
+  if ( !histogramInputDirectory ) 
+    throw cms::Exception("makeTauIdEffQCDtemplate") 
+      << "Directory = " << directory << " does not exists in input file = " << histogramFileName << " !!\n";
+
+  fwlite::OutputFiles outputFile(cfg);
+  fwlite::TFileService fs = fwlite::TFileService(outputFile.file().data());
+
+  TFileDirectory histogramOutputDirectory = ( directory != "" ) ?
+    fs.mkdir(directory.data()) : fs;
+
+  vstring processes;
+  processes.push_back(std::string("Ztautau"));
+  processes.push_back(std::string("Zmumu"));
+  processes.push_back(std::string("QCD"));
+  processes.push_back(std::string("WplusJets"));
+  processes.push_back(std::string("TTplusJets"));
+
   for ( vstring::const_iterator tauId = tauIds.begin();
 	tauId != tauIds.end(); ++tauId ) {
+    vstring regions;
+    std::vector<regionEntryType*> regionEntries;
     for ( vstring::const_iterator tauIdValue = tauIdValues.begin();
 	  tauIdValue != tauIdValues.end(); ++tauIdValue ) {
       for ( vstring::const_iterator fitVariable = fitVariables.begin();
 	    fitVariable != fitVariables.end(); ++fitVariable ) {
-	for ( std::vector<std::string>::const_iterator sysShift = loadSysShifts.begin();
-	      sysShift != loadSysShifts.end(); ++sysShift ) {
+	for ( vstring::const_iterator sysUncertainty = sysUncertainties_expanded.begin();
+	      sysUncertainty != sysUncertainties_expanded.end(); ++sysUncertainty ) {
 	  std::string regionTakeQCDtemplateFromData = 
 	    cfgMakeTauIdEffQCDtemplate.getParameter<std::string>(std::string("regionTakeQCDtemplateFromData_").append(*tauIdValue));
 	  regions.push_back(regionTakeQCDtemplateFromData);
@@ -205,7 +215,7 @@ int main(int argc, const char* argv[])
 	    new regionEntryType(regionTakeQCDtemplateFromData, 
 				regionWplusJetsSideband, 
 				regionStoreQCDtemplate, 
-				*tauId, *fitVariable, *tauIdValue, *sysShift);
+				*tauId, *fitVariable, *sysUncertainty);
 	  regionEntries.push_back(regionEntry);
 	  
 	  // tau+ candidates only
@@ -213,7 +223,7 @@ int main(int argc, const char* argv[])
 	    new regionEntryType(std::string(regionTakeQCDtemplateFromData).append("+"), 
 				std::string(regionWplusJetsSideband).append("+"), 
 				std::string(regionStoreQCDtemplate).append("+"), 
-				*tauId, *fitVariable, *tauIdValue, *sysShift);
+				*tauId, *fitVariable, *sysUncertainty);
 	  regionEntries.push_back(regionEntry_plus);
 	  
 	  // tau- candidates only
@@ -221,76 +231,34 @@ int main(int argc, const char* argv[])
 	    new regionEntryType(std::string(regionTakeQCDtemplateFromData).append("-"), 
 				std::string(regionWplusJetsSideband).append("-"), 
 				std::string(regionStoreQCDtemplate).append("-"), 
-				*tauId, *fitVariable, *tauIdValue, *sysShift);
+				*tauId, *fitVariable, *sysUncertainty);
 	  regionEntries.push_back(regionEntry_minus);
 	}
       }
     }
-  }
 
-  fwlite::InputSource inputFiles(cfg); 
-  if ( inputFiles.files().size() != 1 ) 
-    throw cms::Exception("makeTauIdEffQCDtemplate") 
-      << "Input file must be unique, got = " << format_vstring(inputFiles.files()) << " !!\n";
-  std::string histogramFileName = (*inputFiles.files().begin());
-
-  fwlite::OutputFiles outputFile(cfg);
-  fwlite::TFileService fs = fwlite::TFileService(outputFile.file().data());
-
-  histogramMap distributionsData; // key = (region, observable + sysShift)
-
-  histogramMap templatesZtautau;
-  histogramMap templatesZmumu;
-  histogramMap templatesQCD;
-  histogramMap templatesWplusJets;
-  histogramMap templatesTTplusJets;
-
-  TFile* histogramInputFile = new TFile(histogramFileName.data());
-  std::string directory = cfgMakeTauIdEffQCDtemplate.getParameter<std::string>("directory");
-  TDirectory* histogramInputDirectory = ( directory != "" ) ?
-    dynamic_cast<TDirectory*>(histogramInputFile->Get(directory.data())) : histogramInputFile;
-  if ( !histogramInputDirectory ) 
-    throw cms::Exception("makeTauIdEffQCDtemplate") 
-      << "Directory = " << directory << " does not exists in input file = " << histogramFileName << " !!\n";
-  
-   for ( std::vector<std::string>::const_iterator sysShift = loadSysShifts.begin();
-	sysShift != loadSysShifts.end(); ++sysShift ) {
-    std::cout << "loading histograms for sysShift = " << (*sysShift) << "..." << std::endl;
-    
-    if ( (*sysShift) == "CENTRAL_VALUE" ) {
-      loadHistograms(distributionsData, histogramInputDirectory, "Data",       regions, tauIds, fitVariables, *sysShift);
+    histogramMap4 histograms_mc; // key = (process, region, observable, central value/systematic uncertainty)
+    valueMap2 numEvents_mc; // key = (process, region)
+    for ( vstring::const_iterator process = processes.begin();
+	  process != processes.end(); ++process ) {
+      loadHistograms(histograms_mc[*process], histogramInputDirectory, 
+		     *process, regions, *tauId, fitVariables, sysUncertainties_expanded);
+      
+      for ( vstring::const_iterator region = regions.begin();
+	    region != regions.end(); ++region ) {
+	numEvents_mc[*process][*region] = 
+	  getIntegral(histograms_mc[*process][*region]["EventCounter"][key_central_value], true, true);
+      }
     }
+    
+    histogramMap3 histograms_data; // key = (region, observable, key_central_value)
+    loadHistograms(histograms_data, histogramInputDirectory, 
+		   "Data", regions, *tauId, fitVariables, sysUncertainties_data);
 
-    loadHistograms(templatesZtautau,    histogramInputDirectory, "Ztautau",    regions, tauIds, fitVariables, *sysShift);
-    loadHistograms(templatesZmumu,      histogramInputDirectory, "Zmumu",      regions, tauIds, fitVariables, *sysShift);
-    loadHistograms(templatesQCD,        histogramInputDirectory, "QCD",        regions, tauIds, fitVariables, *sysShift);
-    loadHistograms(templatesWplusJets,  histogramInputDirectory, "WplusJets",  regions, tauIds, fitVariables, *sysShift);
-    loadHistograms(templatesTTplusJets, histogramInputDirectory, "TTplusJets", regions, tauIds, fitVariables, *sysShift);
-  }
-
-  std::map<std::string, histogramMap> templatesAll; // key = (process, region, observable)
-  templatesAll["Ztautau"]    = templatesZtautau;
-  templatesAll["Zmumu"]      = templatesZmumu;
-  templatesAll["QCD"]        = templatesQCD;
-  templatesAll["WplusJets"]  = templatesWplusJets;
-  templatesAll["TTplusJets"] = templatesTTplusJets;
-
-  std::vector<std::string> processes;
-  processes.push_back(std::string("Ztautau"));
-  processes.push_back(std::string("Zmumu"));
-  processes.push_back(std::string("QCD"));
-  processes.push_back(std::string("WplusJets"));
-  processes.push_back(std::string("TTplusJets"));
-
-  numEventsMap numEventsAll = // key = (process/"sum", region, observable)
-    compNumEvents(templatesAll, processes, regions, distributionsData);
-  
-  TFileDirectory histogramOutputDirectory = ( directory != "" ) ?
-    fs.mkdir(directory.data()) : fs;
-
-  for ( std::vector<regionEntryType*>::iterator regionEntry = regionEntries.begin();
-	regionEntry != regionEntries.end(); ++regionEntry ) {
-    (*regionEntry)->makeQCDtemplate(histogramOutputDirectory, distributionsData, templatesAll, numEventsAll);
+    for ( std::vector<regionEntryType*>::iterator regionEntry = regionEntries.begin();
+	  regionEntry != regionEntries.end(); ++regionEntry ) {
+      (*regionEntry)->makeQCDtemplate(histogramOutputDirectory, histograms_data, histograms_mc, numEvents_mc);
+    }
   }
 
   delete histogramInputFile;
