@@ -7,9 +7,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.7 $
+ * \version $Revision: 1.8 $
  *
- * $Id: TauIdEffHistManager.h,v 1.7 2011/08/10 16:23:07 veelken Exp $
+ * $Id: TauIdEffHistManager.h,v 1.8 2011/11/06 13:25:26 veelken Exp $
  *
  */
 
@@ -80,6 +80,8 @@ class TauIdEffHistManager
   TH1* histogramCaloMEt_;
   TH1* histogramCaloSumEt_;
   TH1* histogramNumVertices_;
+
+  TH1* histogramEventCounter_;
   
   std::vector<TH1*> histograms_;
 };

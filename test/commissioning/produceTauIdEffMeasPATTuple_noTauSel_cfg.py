@@ -13,8 +13,6 @@ isEmbedded = False # use for everything except for Ztautau samples produced via 
 HLTprocessName = "HLT" # use for Summer'11 MC
 pfCandidateCollection = "particleFlow" # pile-up removal disabled
 ##pfCandidateCollection = "pfNoPileUp" # pile-up removal enabled
-applyZrecoilCorrection = False
-#applyZrecoilCorrection = True
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
@@ -25,12 +23,11 @@ applyZrecoilCorrection = False
 #__isEmbedded = #isEmbedded#
 #__HLTprocessName = #HLTprocessName#
 #__pfCandidateCollection = #pfCandidateCollection#
-#__applyZrecoilCorrection = #applyZrecoilCorrection#
 #
 #--------------------------------------------------------------------------------
 
 from TauAnalysis.TauIdEfficiency.produceTauIdEffMeasPATTupleSpecific import produceTauIdEffMeasPATTuple
-produceTauIdEffMeasPATTuple(process, isMC, isEmbedded, HLTprocessName, pfCandidateCollection, applyZrecoilCorrection)
+produceTauIdEffMeasPATTuple(process, isMC, isEmbedded, HLTprocessName, pfCandidateCollection)
 
 for processAttrName in dir(process):
     processAttr = getattr(process, processAttrName)

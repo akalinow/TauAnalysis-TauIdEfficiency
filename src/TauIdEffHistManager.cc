@@ -40,6 +40,8 @@ void TauIdEffHistManager::bookHistograms(TFileDirectory& dir)
   histogramCaloMEt_         = book1D(dir, "caloMEt",            "calo-E_{T}^{miss}",                     20,          0.0,        100.0);
   histogramCaloSumEt_       = book1D(dir, "caloSumEt",          "#Sigma E_{T}^{calo}",                   50,          0.,         500.0);
   histogramNumVertices_     = book1D(dir, "numVertices",        "Num. Vertices",                         20,         -0.5,         19.5);
+
+  histogramEventCounter_    = book1D(dir, "EventCounter",       "Event Counter",                          1,         -0.5,         +0.5);
 }
 
 void TauIdEffHistManager::fillHistograms(const PATMuTauPair& muTauPair, const pat::MET& caloMEt, size_t numVertices, double weight)
@@ -68,6 +70,8 @@ void TauIdEffHistManager::fillHistograms(const PATMuTauPair& muTauPair, const pa
   histogramCaloMEt_->Fill(caloMEt.pt(), weight);
   histogramCaloSumEt_->Fill(caloMEt.sumEt(), weight);
   histogramNumVertices_->Fill(numVertices, weight);
+
+  histogramEventCounter_->Fill(0., weight);
 }
 
 void TauIdEffHistManager::scaleHistograms(double factor)

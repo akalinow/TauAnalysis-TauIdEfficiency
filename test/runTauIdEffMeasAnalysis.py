@@ -14,7 +14,7 @@ version = 'V10_3tauEnRecovery'
 
 inputFilePath = '/data1/veelken/CMSSW_4_2_x/PATtuples/TauIdEffMeas/%s/%s/' % (jobId, version) \
                + 'user/v/veelken/CMSSW_4_2_x/PATtuples/TauIdEffMeas/%s/%s/' % (jobId, version)
-outputFilePath = '/data1/veelken/tmp/muonPtGt17/%s_1/' % version
+outputFilePath = '/data1/veelken/tmp/muonPtGt17/%s_2/' % version
 
 samplesToAnalyze = [
     # modify in case you want to submit jobs for some of the samples only...
@@ -34,8 +34,8 @@ samplesToAnalyze = [
 # used to compute preselection efficiencies and purities in C1p and C1f/D1p regions
 sampleZtautau = 'Ztautau_powheg'
 
-#runPeriod = '2011RunA'
-runPeriod = '2011RunB'
+runPeriod = '2011RunA'
+#runPeriod = '2011RunB'
 
 intLumiData = None
 hltPaths = None
@@ -105,78 +105,85 @@ mode = 'tauIdEfficiency'
 #mode = 'tauChargeMisIdRate'
 
 sysUncertainties = [
-    "JetEn",        # needed for diTauMt/Pzeta
-    "TauJetEn",     # needed for diTauVisMass/diTauVisMassFromJet
-    "TauJetRes",    # needed for diTauVisMass/diTauVisMassFromJet
-    "UnclusteredEn" # needed for diTauMt/Pzeta 
+    #"JetEn",        # needed for diTauMt/Pzeta
+    "TauJetEn",      # needed for diTauVisMass
+    "TauJetRes"      # needed for diTauVisMass
+    #"UnclusteredEn" # needed for diTauMt/Pzeta 
 ]
+
+#templateMorphingMode = "none"
+#templateMorphingMode = "horizontal" # WARNING: 'horizontal' template morphing runs **very** slow !!
+templateMorphingMode = "vertical"
+
+fitIndividualProcesses = True
+#fitIndividualProcesses = False
 
 tauIds = {
     # HPS isolation with no deltaBeta corrections applied
     # (separate isolation requirements wrt. PFChargedHadrons and PFGammas)
-    'tauDiscrHPSloose'  : {
-        'discriminators' : [
-            'decayModeFinding',
-            'byLooseIsolation'
-        ],
-        'legendEntry' : "HPS Loose",
-        'markerStyleData' : 20,
-        'markerStyleSim' : 24,
-        'color' : 418
-    },
-    'tauDiscrHPSmedium' : {
-        'discriminators' : [
-            'decayModeFinding',
-            'byMediumIsolation'
-        ],
-        'legendEntry' : "HPS Medium",
-        'markerStyleData' : 21,
-        'markerStyleSim' : 25,
-        'color' : 807
-    },
-    'tauDiscrHPStight' : {
-        'discriminators' : [
-            'decayModeFinding',
-            'byTightIsolation'
-        ],
-        'legendEntry' : "HPS Tight",
-        'markerStyleData' : 22,
-        'markerStyleSim' : 26,
-        'color' : 618
-    },
+##     'tauDiscrHPSloose'  : {
+##         'discriminators' : [
+##             'decayModeFinding',
+##             'byLooseIsolation'
+##         ],
+##         'legendEntry' : "HPS Loose",
+##         'markerStyleData' : 20,
+##         'markerStyleSim' : 24,
+##         'color' : 418
+##     },
+##     'tauDiscrHPSmedium' : {
+##         'discriminators' : [
+##             'decayModeFinding',
+##             'byMediumIsolation'
+##         ],
+##         'legendEntry' : "HPS Medium",
+##         'markerStyleData' : 21,
+##         'markerStyleSim' : 25,
+##         'color' : 807
+##     },
+##     'tauDiscrHPStight' : {
+##         'discriminators' : [
+##             'decayModeFinding',
+##             'byTightIsolation'
+##         ],
+##         'legendEntry' : "HPS Tight",
+##         'markerStyleData' : 22,
+##         'markerStyleSim' : 26,
+##         'color' : 618
+##     },
             
     # HPS isolation with deltaBeta corrections applied
     # (separate isolation requirements wrt. PFChargedHadrons and PFGammas)
-    'tauDiscrHPSlooseDBcorr'  : {
-        'discriminators' : [
-            'decayModeFinding',
-            'byLooseIsolationDeltaBetaCorr'
-        ],
-        'legendEntry' : "HPS #delta#beta Loose",
-        'markerStyleData' : 20,
-        'markerStyleSim' : 24,
-        'color' : 418
-    },
-    'tauDiscrHPSmediumDBcorr' : {
-        'discriminators' : [
-            'decayModeFinding',
-            'byMediumIsolationDeltaBetaCorr'
-        ],
-        'legendEntry' : "HPS #delta#beta Medium",
-        'markerStyleData' : 21,
-        'markerStyleSim' : 25,
-        'color' : 807
-    },
-    'tauDiscrHPStightDBcorr' : {
-        'discriminators' : [
-            'decayModeFinding',
-            'byTightIsolationDeltaBetaCorr'
-        ],
-        'legendEntry' : "HPS #delta#beta Tight",
-        'markerStyleData' : 22,
-        'markerStyleSim' : 26,
-        'color' : 618
-    },
+##     'tauDiscrHPSlooseDBcorr'  : {
+##         'discriminators' : [
+##             'decayModeFinding',
+##             'byLooseIsolationDeltaBetaCorr'
+##         ],
+##         'legendEntry' : "HPS #delta#beta Loose",
+##         'markerStyleData' : 20,
+##         'markerStyleSim' : 24,
+##         'color' : 418
+##     },
+##     'tauDiscrHPSmediumDBcorr' : {
+##         'discriminators' : [
+##             'decayModeFinding',
+##             'byMediumIsolationDeltaBetaCorr'
+##         ],
+##         'legendEntry' : "HPS #delta#beta Medium",
+##         'markerStyleData' : 21,
+##         'markerStyleSim' : 25,
+##         'color' : 807
+##     },
+##     'tauDiscrHPStightDBcorr' : {
+##         'discriminators' : [
+##             'decayModeFinding',
+##             'byTightIsolationDeltaBetaCorr'
+##         ],
+##         'legendEntry' : "HPS #delta#beta Tight",
+##         'markerStyleData' : 22,
+##         'markerStyleSim' : 26,
+##         'color' : 618
+##     },
     
     # HPS combined isolation discriminators
     # (based on isolation sumPt of PFChargedHadrons + PFGammas)
@@ -293,6 +300,8 @@ execDir = "%s/bin/%s/" % (os.environ['CMSSW_BASE'], os.environ['SCRAM_ARCH'])
 
 executable_compTauIdEffPreselNumbers = None
 suffix_noTauSel                      = None
+regions                              = None
+regionsToFit                         = None
 keyword_compTauIdEffPreselNumbers    = None
 passed_region                        = None
 failed_region                        = None
@@ -343,13 +352,14 @@ if mode == 'tauIdEfficiency':
         'D1p',
         'D1f'
     ]
+    regionsToFit                         = [ 'A', 'B', 'C1p', 'C1f', 'C2', 'D' ]
     passed_region                        = 'C1p'
     failed_region                        = 'C1f'
     regionQCDtemplateFromData_passed     = 'A1_mW'
     regionQCDtemplateFromData_failed     = 'A1_mW'
     regionWplusJetsSideband_passed       = 'AWj_mW'
     regionWplusJetsSideband_failed       = 'AWj_mW'
-    fitMethod                            = 'fitTauIdEff_wConstraints'
+    fitMethod                            = 'fitTauIdEff'
     tauChargeMode                        = 'tauLeadTrackCharge'
     disableTauCandPreselCuts             = False
     executable_compTauIdEffFinalNumbers  = execDir + 'compTauIdEffFinalNumbers'
@@ -374,6 +384,7 @@ elif mode == 'tauChargeMisIdRate':
         'D1f',
         'D2'
     ]
+    regionsToFit                         = [ 'C1p', 'D1p' ]
     passed_region                        = 'C1p'
     failed_region                        = 'D1p'
     regionQCDtemplateFromData_passed     = 'A1_mW'
@@ -415,6 +426,10 @@ if not os.path.exists(outputFilePath):
 outputFilePath = os.path.join(outputFilePath, mode)
 if not os.path.exists(outputFilePath):
     os.mkdir(outputFilePath)
+
+outputFilePath_plots = os.path.join(outputFilePath, "plots")
+if not os.path.exists(outputFilePath_plots):
+    os.mkdir(outputFilePath_plots)
 
 #--------------------------------------------------------------------------------
 #
@@ -505,25 +520,29 @@ haddLogFileName_stage2 = retVal_hadd_stage2['logFileName']
 configFileNames_fitTauIdEff = []
 outputFileNames_fitTauIdEff = []
 logFileNames_fitTauIdEff    = []
-retVal_fitTauIdEff = \
-  buildConfigFile_fitTauIdEff(fitMethod, "".join([ jobId, version ]), '', haddOutputFileName_stage2, tauIds.keys(),
-                              fitVariables, sysUncertainties, outputFilePath,
-                              regions, passed_region, failed_region,                              
-                              histQCDtemplateFromData_passed, histQCDtemplateFromData_failed, True)
-configFileNames_fitTauIdEff.append(retVal_fitTauIdEff['configFileName'])
-outputFileNames_fitTauIdEff.append(retVal_fitTauIdEff['outputFileName'])
-logFileNames_fitTauIdEff.append(retVal_fitTauIdEff['logFileName'])
-for binVariable in binning.keys():
-    for binName, binOptions in binning[binVariable].items():
-        if isinstance(binOptions, dict) and binOptions.get('min') is not None and binOptions.get('max') is not None:
-            retVal_fitTauIdEff = \
-              buildConfigFile_fitTauIdEff(fitMethod, "".join([ jobId, version ]), binName, haddOutputFileName_stage2, tauIds.keys(),
-                                          fitVariables, sysUncertainties, outputFilePath,
-                                          regions, passed_region, failed_region,
-                                          histQCDtemplateFromData_passed, histQCDtemplateFromData_failed, False)
-            configFileNames_fitTauIdEff.append(retVal_fitTauIdEff['configFileName'])
-            outputFileNames_fitTauIdEff.append(retVal_fitTauIdEff['outputFileName'])
-            logFileNames_fitTauIdEff.append(retVal_fitTauIdEff['logFileName'])
+for tauId in tauIds.keys():
+    for fitVariable in fitVariables:
+        retVal_fitTauIdEff = \
+          buildConfigFile_fitTauIdEff(fitMethod, "".join([ jobId, version ]), '', haddOutputFileName_stage2, tauId,
+                                      fitVariable, templateMorphingMode, sysUncertainties, outputFilePath,
+                                      regionsToFit, passed_region, failed_region,                              
+                                      histQCDtemplateFromData_passed, histQCDtemplateFromData_failed,
+                                      fitIndividualProcesses, intLumiData, True, outputFilePath_plots)
+        configFileNames_fitTauIdEff.append(retVal_fitTauIdEff['configFileName'])
+        outputFileNames_fitTauIdEff.append(retVal_fitTauIdEff['outputFileName'])
+        logFileNames_fitTauIdEff.append(retVal_fitTauIdEff['logFileName'])
+        for binVariable in binning.keys():
+            for binName, binOptions in binning[binVariable].items():
+                if isinstance(binOptions, dict) and binOptions.get('min') is not None and binOptions.get('max') is not None:
+                    retVal_fitTauIdEff = \
+                      buildConfigFile_fitTauIdEff(fitMethod, "".join([ jobId, version ]), binName, haddOutputFileName_stage2, tauId,
+                                                  fitVariable, templateMorphingMode, sysUncertainties, outputFilePath,
+                                                  regionsToFit, passed_region, failed_region,
+                                                  histQCDtemplateFromData_passed, histQCDtemplateFromData_failed,
+                                                  fitIndividualProcesses, intLumiData, False, outputFilePath_plots)
+                    configFileNames_fitTauIdEff.append(retVal_fitTauIdEff['configFileName'])
+                    outputFileNames_fitTauIdEff.append(retVal_fitTauIdEff['outputFileName'])
+                    logFileNames_fitTauIdEff.append(retVal_fitTauIdEff['logFileName'])
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
@@ -563,7 +582,8 @@ logFileNames_compTauIdEffFinalNumbers = []
 retVal_compTauIdEffFinalNumbers = \
   buildConfigFile_compTauIdEffFinalNumbers(haddOutputFileName_stage3, '', "".join([ jobId, version ]), tauIds.keys(),
                                            fitVariables, outputFilePath,
-                                           keyword_compTauIdEffFinalNumbers, passed_region, failed_region)
+                                           keyword_compTauIdEffFinalNumbers, passed_region, failed_region,
+                                           fitIndividualProcesses)
 configFileNames_compTauIdEffFinalNumbers.append(retVal_compTauIdEffFinalNumbers['configFileName'])
 outputFileNames_compTauIdEffFinalNumbers.append(retVal_compTauIdEffFinalNumbers['outputFileName'])
 logFileNames_compTauIdEffFinalNumbers.append(retVal_compTauIdEffFinalNumbers['logFileName'])
@@ -573,7 +593,8 @@ for binVariable in binning.keys():
             retVal_compTauIdEffFinalNumbers = \
               buildConfigFile_compTauIdEffFinalNumbers(haddOutputFileName_stage3, binName, "".join([ jobId, version ]), tauIds.keys(),
                                                        fitVariables, outputFilePath,
-                                                       keyword_compTauIdEffFinalNumbers, passed_region, failed_region)
+                                                       keyword_compTauIdEffFinalNumbers, passed_region, failed_region,
+                                                       fitIndividualProcesses)
             configFileNames_compTauIdEffFinalNumbers.append(retVal_compTauIdEffFinalNumbers['configFileName'])
             outputFileNames_compTauIdEffFinalNumbers.append(retVal_compTauIdEffFinalNumbers['outputFileName'])
             logFileNames_compTauIdEffFinalNumbers.append(retVal_compTauIdEffFinalNumbers['logFileName'])

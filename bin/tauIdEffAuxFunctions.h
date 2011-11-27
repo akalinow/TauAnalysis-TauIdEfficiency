@@ -35,6 +35,25 @@ const std::string key_central_value = "CENTRAL_VALUE";
 //-------------------------------------------------------------------------------
 //
 
+bool contains_string(const vstring& names, const std::string& nameToFind)
+{
+  bool retVal = false;
+  for ( vstring::const_iterator name = names.begin();
+	name != names.end(); ++name ) {
+    if ( (*name) == nameToFind ) retVal = true;
+  }
+  return retVal;
+}
+
+void add_string_uniquely(vstring& names, const std::string& nameToAdd)
+{
+  if ( !contains_string(names, nameToAdd) ) names.push_back(nameToAdd);
+}
+
+//
+//-------------------------------------------------------------------------------
+//
+
 double getIntegral(const TH1* histogram, bool inclUnderflowBin, bool inclOverflowBin)
 {
 //--------------------------------------------------------------------------------
@@ -121,24 +140,24 @@ void drawCMSprelimaryLabels(double intLumiData, double xOffset = 0.160, double y
 //-------------------------------------------------------------------------------
 //
 
-std::vector<std::string> getObservables(const std::string& region, const std::vector<std::string>& fitVariables)
+vstring getObservables(const std::string& region, const std::vector<std::string>& fitVariables)
 {
-  std::vector<std::string> retVal;
-  if        ( region           == "ABCD"            ) {
+  vstring retVal;
+  if ( region == "ABCD" ) {
     retVal = fitVariables;
-    retVal.push_back(std::string("diTauMt"));
+    add_string_uniquely(retVal, "diTauMt");
   } else if ( region.find("A") != std::string::npos ) {
     retVal = fitVariables;
-    retVal.push_back(std::string("diTauMt"));
+    add_string_uniquely(retVal, "diTauMt");
   } else if ( region.find("B") != std::string::npos ) {
     retVal = fitVariables;
-    retVal.push_back(std::string("diTauMt"));
+    add_string_uniquely(retVal, "diTauMt");
   } else if ( region.find("C") != std::string::npos ) {
     retVal = fitVariables;
-    retVal.push_back(std::string("diTauMt"));
+    add_string_uniquely(retVal, "diTauMt");
   } else if ( region.find("D") != std::string::npos ) {
     retVal = fitVariables;
-    retVal.push_back(std::string("diTauMt"));
+    add_string_uniquely(retVal, "diTauMt");
   } else {
     std::cout << "Error in <getObservables>: undefined region = " << region << " !!" << std::endl;
   }
@@ -165,12 +184,19 @@ void loadHistograms(histogramMap3& histogramMap,
 // Load template histograms/distributions observed in data from ROOT file
 //--------------------------------------------------------------------------------
 
-  //std::cout << "<loadHistograms>:" << std::endl;
-
+  std::cout << "<loadHistograms>:" << std::endl;
+  std::cout << " process = " << process << std::endl;
+  std::cout << " regions = " << format_vstring(regions) << std::endl;
+  std::cout << " tauId = " << tauId << std::endl;
+  std::cout << " fitVariables = " << format_vstring(fitVariables) << std::endl;
+  std::cout << " sysUncertainties = " << format_vstring(sysUncertainties) << std::endl;
+  std::cout << " genMatch = " << genMatch << std::endl;
+  
   for ( vstring::const_iterator region = regions.begin();
 	region != regions.end(); ++region ) {
 
     vstring observables = getObservables(*region, fitVariables);
+    add_string_uniquely(observables, "EventCounter"); // CV: for normalization purposes, always add 'EventCounter'
     std::string tauIdValue = getTauIdValue(*region);
 
     for ( vstring::const_iterator observable = observables.begin();
@@ -195,10 +221,6 @@ void loadHistograms(histogramMap3& histogramMap,
 	    << "Failed to load histogram = " << histogramName << " from file/directory = " << inputDirectory->GetName() << " !!\n";
 	
 	
-	//std::cout << " histogram = " << histogram << std::endl;
-	//std::cout << " name      = " << histogram->GetName() << std::endl;
-	//std::cout << " integral  = " << histogram->Integral() << std::endl;
-	
 	//int numBins = histogram->GetNbinsX();
 	//if      ( (numBins % 3) == 0                  ) histogram->Rebin(3);
 	//else if ( (numBins % 4) == 0 && numBins >= 36 ) histogram->Rebin(4);
@@ -206,12 +228,17 @@ void loadHistograms(histogramMap3& histogramMap,
 	
 	// CV: scale MC histograms by 0.40 to account for crab jobs lost when processing Data
 	//    (temporary fix, 2011/11/21)
-	if ( process != "Data" ) {
-	  if ( !histogram->GetSumw2N() ) histogram->Sumw2();	    
-	  histogram->Scale(0.40);
-	}
+	//if ( process != "Data" ) {
+	//  if ( !histogram->GetSumw2N() ) histogram->Sumw2();	    
+	//  histogram->Scale(0.40);
+	//}
 	
-	if ( histogram != 0 ) histogramMap[*region][*observable][*sysUncertainty] = histogram;
+	if ( histogram != 0 ) {
+	  histogramMap[*region][*observable][*sysUncertainty] = histogram;
+	  std::cout << "histogramMap[region = " << (*region) << "][observable = " << (*observable) << "]" 
+		    << "[sysUncertainty = " << (*sysUncertainty) << "] = " << histogram << std::endl;
+	  std::cout << " (name = " << histogram->GetName() << ", integral = " << histogram->Integral() << ")" << std::endl;
+	}
       }
     }
   }

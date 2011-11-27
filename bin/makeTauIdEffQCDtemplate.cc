@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.3 $
+ * \version $Revision: 1.4 $
  *
- * $Id: makeTauIdEffQCDtemplate.cc,v 1.3 2011/11/14 13:57:00 veelken Exp $
+ * $Id: makeTauIdEffQCDtemplate.cc,v 1.4 2011/11/26 15:37:59 veelken Exp $
  *
  */
 
@@ -58,18 +58,28 @@ struct regionEntryType
   ~regionEntryType() {}
 
   void makeQCDtemplate(TFileDirectory& dir, 
-		       histogramMap3& histograms_data, histogramMap4& histograms_mc, valueMap2& numEvents_mc)
+		       histogramMap3& histograms_data, histogramMap4& histograms_mc, valueMap3& numEvents_mc)
   {
-    double numEventsWplusJetsSideband_obsWplusJets = 
-      getIntegral(histograms_data[regionWplusJetsSideband_]["EventCounter"][key_central_value], true, true)
-     - (numEvents_mc["Ztautau"][regionWplusJetsSideband_]
-      + numEvents_mc["Zmumu"][regionWplusJetsSideband_]
-      + numEvents_mc["QCD"][regionWplusJetsSideband_]
-      + numEvents_mc["TTplusJets"][regionWplusJetsSideband_]);
+    //std::cout << "<regionEntryType::makeQCDtemplate>" << std::endl;
+    //std::cout << " regionWplusJetsSideband = " << regionWplusJetsSideband_ << std::endl;
+    //std::cout << " tauId = " << tauId_ << std::endl;
+    //std::cout << " fitVariable = " << fitVariable_ << std::endl;
+    //std::cout << " sysUncertainty = " << sysUncertainty_ << std::endl;
+
+    double numEventsWplusJetsSideband_data = 
+      getIntegral(histograms_data[regionWplusJetsSideband_]["EventCounter"][key_central_value], true, true);
+    double numEventsWplusJetsSideband_expBgr = 
+      (numEvents_mc["Ztautau"][regionWplusJetsSideband_][sysUncertainty_]
+     + numEvents_mc["Zmumu"][regionWplusJetsSideband_][sysUncertainty_]
+     + numEvents_mc["QCD"][regionWplusJetsSideband_][sysUncertainty_]
+     + numEvents_mc["TTplusJets"][regionWplusJetsSideband_][sysUncertainty_]);
+    double numEventsWplusJetsSideband_obsWplusJets = numEventsWplusJetsSideband_data - numEventsWplusJetsSideband_expBgr;
     double numEventsWplusJetsSideband_expWplusJets = 
-      numEvents_mc["WplusJets"][regionWplusJetsSideband_];
-    std::cout << "numEventsWplusJets_sideband: observed = " << numEventsWplusJetsSideband_obsWplusJets << "," 
-	      << " expected = " << numEventsWplusJetsSideband_expWplusJets << std::endl;
+      numEvents_mc["WplusJets"][regionWplusJetsSideband_][sysUncertainty_];    
+    //std::cout << "WplusJets sideband: observed = " << numEventsWplusJetsSideband_data << ","
+    //	        << " expected background = " << numEventsWplusJetsSideband_expBgr 
+    //	        << " --> observed WplusJets contribution = " << numEventsWplusJetsSideband_obsWplusJets << ","
+    //	        << " expected = " << numEventsWplusJetsSideband_expWplusJets << std::endl;
     
     double scaleFactorWplusJets = numEventsWplusJetsSideband_obsWplusJets/numEventsWplusJetsSideband_expWplusJets;
 
@@ -82,6 +92,7 @@ struct regionEntryType
     TString templateQCDsidebandName = distributionDataQCDsideband->GetName();    
     templateQCDsidebandName.ReplaceAll(regionTakeQCDtemplateFromData_, regionStoreQCDtemplate_);
     if ( sysUncertainty_ != key_central_value ) templateQCDsidebandName.Append("_").Append(sysUncertainty_);
+    std::cout << "creating histogram = " << templateQCDsidebandName << std::endl;
     TH1* templateQCDsideband_obsQCD = 0;
     TAxis* xAxis = distributionDataQCDsideband->GetXaxis(); 
     if ( xAxis->GetXbins() && xAxis->GetXbins()->GetSize() >= 2 ) {
@@ -147,6 +158,7 @@ int main(int argc, const char* argv[])
   tauIdValues.push_back("failed");
 
   vstring fitVariables = cfgMakeTauIdEffQCDtemplate.getParameter<vstring>("fitVariables");
+  add_string_uniquely(fitVariables, "EventCounter"); // CV: for normalization purposes, always add 'EventCounter'
 
   vstring sysUncertainties = cfgMakeTauIdEffQCDtemplate.getParameter<vstring>("sysUncertainties");
   vstring sysUncertainties_expanded;
@@ -189,27 +201,30 @@ int main(int argc, const char* argv[])
 
   for ( vstring::const_iterator tauId = tauIds.begin();
 	tauId != tauIds.end(); ++tauId ) {
+
     vstring regions;
     std::vector<regionEntryType*> regionEntries;
+
     for ( vstring::const_iterator tauIdValue = tauIdValues.begin();
 	  tauIdValue != tauIdValues.end(); ++tauIdValue ) {
+
+      std::string regionTakeQCDtemplateFromData = 
+	cfgMakeTauIdEffQCDtemplate.getParameter<std::string>(std::string("regionTakeQCDtemplateFromData_").append(*tauIdValue));
+      add_string_uniquely(regions, regionTakeQCDtemplateFromData);
+      add_string_uniquely(regions, std::string(regionTakeQCDtemplateFromData).append("+"));
+      add_string_uniquely(regions, std::string(regionTakeQCDtemplateFromData).append("-"));	  
+      std::string regionWplusJetsSideband = 
+	cfgMakeTauIdEffQCDtemplate.getParameter<std::string>(std::string("regionWplusJetsSideband_").append(*tauIdValue));
+      add_string_uniquely(regions, regionWplusJetsSideband);
+      add_string_uniquely(regions, std::string(regionWplusJetsSideband).append("+"));
+      add_string_uniquely(regions, std::string(regionWplusJetsSideband).append("-"));
+      std::string regionStoreQCDtemplate = 
+	cfgMakeTauIdEffQCDtemplate.getParameter<std::string>(std::string("regionStoreQCDtemplate_").append(*tauIdValue));
+      
       for ( vstring::const_iterator fitVariable = fitVariables.begin();
 	    fitVariable != fitVariables.end(); ++fitVariable ) {
 	for ( vstring::const_iterator sysUncertainty = sysUncertainties_expanded.begin();
 	      sysUncertainty != sysUncertainties_expanded.end(); ++sysUncertainty ) {
-	  std::string regionTakeQCDtemplateFromData = 
-	    cfgMakeTauIdEffQCDtemplate.getParameter<std::string>(std::string("regionTakeQCDtemplateFromData_").append(*tauIdValue));
-	  regions.push_back(regionTakeQCDtemplateFromData);
-	  regions.push_back(std::string(regionTakeQCDtemplateFromData).append("+"));
-	  regions.push_back(std::string(regionTakeQCDtemplateFromData).append("-"));
-	  std::string regionWplusJetsSideband = 
-	    cfgMakeTauIdEffQCDtemplate.getParameter<std::string>(std::string("regionWplusJetsSideband_").append(*tauIdValue));
-	  regions.push_back(regionWplusJetsSideband);
-	  regions.push_back(std::string(regionWplusJetsSideband).append("+"));
-	  regions.push_back(std::string(regionWplusJetsSideband).append("-"));
-	  std::string regionStoreQCDtemplate = 
-	    cfgMakeTauIdEffQCDtemplate.getParameter<std::string>(std::string("regionStoreQCDtemplate_").append(*tauIdValue));
-
 	  // all tau charges
 	  regionEntryType* regionEntry = 
 	    new regionEntryType(regionTakeQCDtemplateFromData, 
@@ -238,7 +253,7 @@ int main(int argc, const char* argv[])
     }
 
     histogramMap4 histograms_mc; // key = (process, region, observable, central value/systematic uncertainty)
-    valueMap2 numEvents_mc; // key = (process, region)
+    valueMap3 numEvents_mc; // key = (process, region, central value/systematic uncertainty)
     for ( vstring::const_iterator process = processes.begin();
 	  process != processes.end(); ++process ) {
       loadHistograms(histograms_mc[*process], histogramInputDirectory, 
@@ -246,8 +261,11 @@ int main(int argc, const char* argv[])
       
       for ( vstring::const_iterator region = regions.begin();
 	    region != regions.end(); ++region ) {
-	numEvents_mc[*process][*region] = 
-	  getIntegral(histograms_mc[*process][*region]["EventCounter"][key_central_value], true, true);
+	for ( vstring::const_iterator sysUncertainty = sysUncertainties_expanded.begin();
+	      sysUncertainty != sysUncertainties_expanded.end(); ++sysUncertainty ) {
+	  numEvents_mc[*process][*region][*sysUncertainty] = 
+	    getIntegral(histograms_mc[*process][*region]["EventCounter"][*sysUncertainty], true, true);
+	}
       }
     }
     

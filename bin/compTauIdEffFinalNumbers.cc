@@ -77,6 +77,8 @@ int main(int argc, const char* argv[])
   std::string region_passed = cfgCompTauIdEffNumbers.getParameter<std::string>("passed_region");
   std::string region_failed = cfgCompTauIdEffNumbers.getParameter<std::string>("failed_region");
 
+  bool fitIndividualProcesses = cfgCompTauIdEffNumbers.getParameter<bool>("fitIndividualProcesses");
+
   std::string directory = cfgCompTauIdEffNumbers.getParameter<std::string>("directory");
   
   fwlite::InputSource inputFiles(cfg); 
@@ -261,21 +263,26 @@ int main(int argc, const char* argv[])
       std::cout << " expPurity_failed = " << expPurity_failed << std::endl;
       double expFake_failed = expNorm_failed*(1. - expPurity_failed);
 
-      double numPurityCorrFactor = 
-	(fitNorm_passed - expFake_passed)/((fitNorm_passed - expFake_passed) + (fitNorm_failed - expFake_failed));
-      double denomPurityCorrFactor = fitNorm_passed/fitNorm;
-      double purityCorrFactor = numPurityCorrFactor/denomPurityCorrFactor;
-      double purityCorrFactorErr = 
-	purityCorrFactor
-       *((expFake_passed + expFake_failed)/((fitNorm_passed - expFake_passed) + (fitNorm_failed - expFake_failed)))
-       *frRelErr;
+      double purityCorrFactor    = 1.;
+      double purityCorrFactorErr = 0.;
+      double expPurityCorrFactor = 1.;
+      if ( fitIndividualProcesses ) {
+        double numPurityCorrFactor = 
+	  (fitNorm_passed - expFake_passed)/((fitNorm_passed - expFake_passed) + (fitNorm_failed - expFake_failed));
+        double denomPurityCorrFactor = fitNorm_passed/fitNorm;
+        purityCorrFactor = numPurityCorrFactor/denomPurityCorrFactor;
+        purityCorrFactorErr = 
+	  purityCorrFactor
+         *((expFake_passed + expFake_failed)/((fitNorm_passed - expFake_passed) + (fitNorm_failed - expFake_failed)))
+         *frRelErr;
+
+	double numExpPurityCorrFactor = 
+	  (expNorm_passed - expFake_passed)/((expNorm_passed - expFake_passed) + (expNorm_failed - expFake_failed));
+        double denomExpPurityCorrFactor = expNorm_passed/expNorm;
+	expPurityCorrFactor = numExpPurityCorrFactor/denomExpPurityCorrFactor;
+      }
       std::cout << " purityCorrFactor = " << purityCorrFactor << " +/- " << purityCorrFactorErr 
 		<< " (" << purityCorrFactorErr/purityCorrFactor << "%)" << std::endl;
-      
-      double numExpPurityCorrFactor = 
-	(expNorm_passed - expFake_passed)/((expNorm_passed - expFake_passed) + (expNorm_failed - expFake_failed));
-      double denomExpPurityCorrFactor = expNorm_passed/expNorm;
-      double expPurityCorrFactor = numExpPurityCorrFactor/denomExpPurityCorrFactor;
       std::cout << " expPurityCorrFactor = " << expPurityCorrFactor << std::endl;
 
 //--- compute tau id. efficiency and uncertainty

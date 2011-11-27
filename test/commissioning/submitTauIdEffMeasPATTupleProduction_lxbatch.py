@@ -15,7 +15,7 @@ channel = 'ZtoMuTau_tauIdEff'
 #jobId = getJobId(channel)
 jobId = '2011Oct30'
 
-version = 'V10_3tauEnRecovery'
+version = 'V10_4tauEnRecovery'
 
 lxbatch_queue = '1nw'
 
@@ -23,19 +23,21 @@ pfCandidateCollection = "particleFlow" # pile-up removal disabled
 #pfCandidateCollection = "pfNoPileUp"   # pile-up removal enabled
 
 samplesToAnalyze = [
-    'data_SingleMu_Run2011A_May10ReReco_v1',
-    'data_SingleMu_Run2011A_PromptReco_v4',
-    'data_SingleMu_Run2011A_Aug05ReReco_v1',
-    'data_SingleMu_Run2011A_PromptReco_v6',
-    'data_MET_Run2011B_PromptReco_v1',
-    'data_MET_Run2011B_PromptReco_v1a',
+    #'data_SingleMu_Run2011A_May10ReReco_v1',
+    #'data_SingleMu_Run2011A_PromptReco_v4',
+    #'data_SingleMu_Run2011A_Aug05ReReco_v1',
+    #'data_SingleMu_Run2011A_PromptReco_v6',
+    #'data_MET_Run2011B_PromptReco_v1s1',
     'Ztautau_powheg',
-    #'Ztautau_embedded_part1',
-    #'Ztautau_embedded_part2',
-    'Zmumu_powheg',
-    'PPmuXptGt20Mu15',
-    'WplusJets_madgraph',
-    'TTplusJets_madgraph'
+    #'Ztautau_embedded_Run2011A_May10ReReco',
+    #'Ztautau_embedded_Run2011A_PromptReco_v4',
+    #'Ztautau_embedded_Run2011A_Aug05ReReco_v1',
+    #'Ztautau_embedded_Run2011A_PromptReco_v6',
+    #'Ztautau_embedded_Run2011B_PromptReco_v1',
+    #'Zmumu_powheg',
+    #'PPmuXptGt20Mu15',
+    #'WplusJets_madgraph',
+    #'TTplusJets_madgraph'
 ]
 
 samplesToAnalyze_noTauSel = [
@@ -43,19 +45,21 @@ samplesToAnalyze_noTauSel = [
 ]    
 
 numInputFilesPerJob = {
-    'data_SingleMu_Run2011A_May10ReReco_v1' : 10,
-    'data_SingleMu_Run2011A_PromptReco_v4'  : 10,
-    'data_SingleMu_Run2011A_Aug05ReReco_v1' :  5,
-    'data_SingleMu_Run2011A_PromptReco_v6'  :  5,
-    'data_MET_Run2011B_PromptReco_v1'       :  3,
-    'data_MET_Run2011B_PromptReco_v1a'      :  3,
-    'Ztautau_powheg'                        :  3,
-    'Ztautau_embedded_part1'                :  5,
-    'Ztautau_embedded_part2'                :  5,
-    'Zmumu_powheg'                          :  5,
-    'PPmuXptGt20Mu15'                       :  5,
-    'WplusJets_madgraph'                    : 10,
-    'TTplusJets_madgraph'                   :  3
+    'data_SingleMu_Run2011A_May10ReReco_v1'    : 10,
+    'data_SingleMu_Run2011A_PromptReco_v4'     : 10,
+    'data_SingleMu_Run2011A_Aug05ReReco_v1'    :  5,
+    'data_SingleMu_Run2011A_PromptReco_v6'     :  5,
+    'data_MET_Run2011B_PromptReco_v1s1'        :  3,
+    'Ztautau_powheg'                           :  3,
+    'Ztautau_embedded_Run2011A_May10ReReco'    :  5,
+    'Ztautau_embedded_Run2011A_PromptReco_v4'  :  5,
+    'Ztautau_embedded_Run2011A_Aug05ReReco_v1' :  5,
+    'Ztautau_embedded_Run2011A_PromptReco_v6'  :  5,
+    'Ztautau_embedded_Run2011B_PromptReco_v1'  :  5,
+    'Zmumu_powheg'                             :  5,
+    'PPmuXptGt20Mu15'                          :  5,
+    'WplusJets_madgraph'                       : 10,
+    'TTplusJets_madgraph'                      :  3
 }    
 
 # Get all the skim files from the castor directory

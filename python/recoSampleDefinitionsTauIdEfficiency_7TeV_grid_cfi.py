@@ -15,7 +15,7 @@ SAMPLES_TO_ANALYZE = [
     'data_SingleMu_Run2011A_PromptReco_v6',
     #'data_MET_Run2011B_PromptReco_v1',
     #'data_MET_Run2011B_PromptReco_v1a',
-    'data_MET_Run2011B_PromptReco_v1c',
+    'data_MET_Run2011B_PromptReco_v1s1',
     #'DYtautauM10to20_powheg',
     #'Ztautau_pythia',
     'Ztautau_powheg',
@@ -187,7 +187,7 @@ TauIdEfficiencySpecific_RECO_SAMPLES = {
         'hlt' : cms.InputTag("TriggerResults", "", "HLT"),
         'SE_black_list' : 'T2_US_UCSD'
     },
-    'data_MET_Run2011B_PromptReco_v1c' : {
+    'data_MET_Run2011B_PromptReco_v1s1' : {
         'datasetpath' : "/MET/Run2011B-PromptReco-v1/AOD",
         'dbs_url' :  "http://cmsdbsprod.cern.ch/cms_dbs_prod_global/servlet/DBSServlet",
         'lumi_mask' : "/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions11/7TeV/Prompt/Cert_160404-180252_7TeV_PromptReco_Collisions11_JSON.txt",
@@ -207,7 +207,7 @@ TauIdEfficiencySpecific_RECO_SAMPLES = {
         'enableSysUncertainties' : False,
         'enableFakeRates' : True,
         'hlt' : cms.InputTag("TriggerResults", "", "HLT"),
-        'SE_black_list' : 'T2_US_UCSD'
+        'SE_black_list' : 'T2_US_UCSD, T2_US_MIT'
     },
 }
 RECO_SAMPLES.update(TauIdEfficiencySpecific_RECO_SAMPLES)

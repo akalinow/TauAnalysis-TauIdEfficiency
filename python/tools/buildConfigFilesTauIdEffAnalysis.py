@@ -178,6 +178,7 @@ process.fwliteOutput = cms.PSet(
 )
 
 process.tauIdEffAnalyzer = cms.PSet(
+
     process = cms.string('%s'),
     type = cms.string('%s'),
 
@@ -284,13 +285,15 @@ def buildConfigFile_makeTauIdEffQCDtemplate(jobId, directory, inputFileName, tau
     """Build config file for correcting QCD template obtained from control region in Data
        for contributions of Ztautau signal plus Zmumu, W + jets and TTbar backgrounds"""
 
+    fitVariables_makeTauIdEffQCDtemplate = []
+    fitVariables_makeTauIdEffQCDtemplate.extend(fitVariables)
     fitVariables_always = [
         'diTauVisMass',
         'diTauMt'
     ]
     for fitVariable_always in fitVariables_always:
-        if fitVariables.count(fitVariable_always) == 0:
-            fitVariables.append(fitVariable_always)
+        if fitVariables_makeTauIdEffQCDtemplate.count(fitVariable_always) == 0:
+            fitVariables_makeTauIdEffQCDtemplate.append(fitVariable_always)
 
     if directory != "":
         outputFileName = 'makeTauIdEffQCDtemplate_%s_%s.root' % (jobId, directory)
@@ -299,7 +302,7 @@ def buildConfigFile_makeTauIdEffQCDtemplate(jobId, directory, inputFileName, tau
     outputFileName = outputFileName.replace('__', '_')
     outputFileName_full = os.path.join(outputFilePath, outputFileName)
 
-    loadSysUncertainties_string = make_inputFileNames_vstring(sysUncertainties)
+    sysUncertainties_string = make_inputFileNames_vstring(sysUncertainties)
 
     config = \
 """
@@ -342,7 +345,7 @@ process.makeTauIdEffQCDtemplate = cms.PSet(
 %s
     ),
     
-    loadSysUncertainties = cms.vstring(
+    sysUncertainties = cms.vstring(
 %s
     )
 )
@@ -351,7 +354,7 @@ process.makeTauIdEffQCDtemplate = cms.PSet(
        regionQCDtemplateFromData_passed, regionQCDtemplateFromData_failed,
        regionWplusJetsSideband_passed, regionWplusJetsSideband_failed, 
        histQCDtemplateFromData_passed, histQCDtemplateFromData_failed,
-       tauIds, fitVariables, loadSysUncertainties_string)
+       tauIds, fitVariables_makeTauIdEffQCDtemplate, sysUncertainties_string)
     
     configFileName = outputFileName.replace('.root', '_cfg.py')
     configFileName_full = os.path.join(outputFilePath, configFileName)    
@@ -369,28 +372,28 @@ process.makeTauIdEffQCDtemplate = cms.PSet(
 
     return retVal
 
-def buildConfigFile_fitTauIdEff(fitMethod, jobId, directory, inputFileName, tauIds, fitVariables, sysUncertainties, outputFilePath,
-                                regions, passed_region, failed_region, 
-                                regionQCDtemplateFromData_passed, regionQCDtemplateFromData_failed, makeControlPlots):
+def buildConfigFile_fitTauIdEff(fitMethod, jobId, directory, inputFileName, tauId, fitVariable,
+                                templateMorphingMode, sysUncertainties, outputFilePath,
+                                regionsToFit, passed_region, failed_region, 
+                                regionQCDtemplateFromData_passed, regionQCDtemplateFromData_failed,
+                                fitIndividualProcesses, intLumiData, makeControlPlots, outputFilePath_plots):
 
     """Fit Ztautau signal plus background templates to Mt and visMass distributions
        observed in regions A/B/C/D, in order to determined Ztautau signal contribution
        in regions C1p (tau id. passed sample), C1f (tau id. failed sample)"""
 
     if directory != "":  
-        outputFileName = '%s_%s_%s.root' % (fitMethod, jobId, directory)
+        outputFileName = '%s_%s_%s_%s_%s.root' % (fitMethod, tauId, fitVariable, jobId, directory)
     else:
-        outputFileName = '%s_%s.root' % (fitMethod, jobId)
+        outputFileName = '%s_%s_%s_%s.root' % (fitMethod, tauId, fitVariable, jobId)
     outputFileName = outputFileName.replace('__', '_')
     outputFileName_full = os.path.join(outputFilePath, outputFileName)
 
-    regions_string = make_inputFileNames_vstring(regions)
+    regionsToFit_string = make_inputFileNames_vstring(regionsToFit)
 
-    loadSysUncertainties_string = make_inputFileNames_vstring(sysUncertainties)
-    varySysUncertainties = []
-    if "sysTauJetEn" in sysUncertainties:
-        varySysUncertainties.append("sysTauJetEn")
-    varySysUncertainties_string = make_inputFileNames_vstring(varySysUncertainties)
+    fitIndividualProcesses_string = getStringRep_bool(fitIndividualProcesses)
+
+    sysUncertainties_string = make_inputFileNames_vstring(sysUncertainties)
 
     makeControlPlots_string = getStringRep_bool(makeControlPlots)
 
@@ -418,63 +421,50 @@ process.%s = cms.PSet(
     runClosureTest = cms.bool(False),
     #runClosureTest = cms.bool(True),
 
-    # CV: fitting fake-rates of background processes
-    #     in C2f/C2p regions causes bias of fit result (2011/06/28)
-    fitTauIdEffC2 = cms.bool(False),
-    #fitTauIdEffC2 = cms.bool(True),
-
     regions = cms.vstring(
 %s
     ),
 
-    # regions (in Data) from which templates for QCD background are taken
-    regionTakeQCDtemplateFromData_passed = cms.string('%s'),
-    regionTakeQCDtemplateFromData_failed = cms.string('%s'),
-    #takeQCDfromData = cms.bool(False),
-    takeQCDfromData = cms.bool(True),
+    # regions (Data or MC) from which templates for QCD background are taken
+    regionQCDtemplate_passed = cms.string('%s'),
+    regionQCDtemplate_failed = cms.string('%s'),
 
     # define "passed" and "failed" regions
-    passed_region = cms.string('%s'),
-    failed_region = cms.string('%s'),
+    region_passed = cms.string('%s'),
+    region_failed = cms.string('%s'),
     
-    tauIds = cms.vstring(
-%s
-    ),
+    tauId = cms.string('%s'),
 
-    fitVariables = cms.vstring(
-%s
-    ),
+    fitVariable = cms.string('%s'),
 
-    #allowTemplateMorphing = cms.bool(True), # WARNING: template morphing runs **very** slow !!
-    allowTemplateMorphing = cms.bool(False),
-    morphSysUncertainty = cms.string(
-        "sysTauJetEn"
+    fitIndividualProcesses = cms.bool(%s),
+
+    templateMorphingMode = cms.string('%s'), 
+
+    sysUncertainties = cms.vstring(
+%s
     ),
     sysVariedByNsigma = cms.double(3.0),
-    morphQCDinABD = cms.bool(False),
-    
-    loadSysUncertainties = cms.vstring(
-%s
-    ),
 
     runPseudoExperiments = cms.bool(False),
     #runPseudoExperiments = cms.bool(True),
     numPseudoExperiments = cms.uint32(10000),
-    varySysUncertainties = cms.vstring(
-%s
-    ),
 
-    makeControlPlots = cms.bool(%s)
+    intLumiData = cms.double(%f),
+
+    makeControlPlots = cms.bool(%s),
+    controlPlotFilePath = cms.string('%s')
 )
 """ % (inputFileName, outputFileName_full,
        fitMethod, directory,
-       regions_string,
+       regionsToFit_string,
        regionQCDtemplateFromData_passed, regionQCDtemplateFromData_failed,
        passed_region, failed_region, 
-       tauIds, fitVariables, loadSysUncertainties_string, varySysUncertainties_string, makeControlPlots_string)
-
+       tauId, fitVariable, fitIndividualProcesses_string, templateMorphingMode, sysUncertainties_string,
+       intLumiData*1.e-3, makeControlPlots_string, outputFilePath_plots)
+    
     configFileName = outputFileName.replace('.root', '_cfg.py')
-    configFileName_full = os.path.join(outputFilePath, configFileName)    
+    configFileName_full = os.path.join(outputFilePath, configFileName)
     configFile = open(configFileName_full, "w")
     configFile.write(config)
     configFile.close()
@@ -499,11 +489,15 @@ def buildConfigFile_FWLiteTauIdEffPreselNumbers(inputFilePath, sampleZtautau, jo
 
     inputFile_regex = \
       r"tauIdEffMeasPATTuple_%s_%s_(?P<hash>[a-zA-Z0-9]*).root" % (sampleZtautau, jobId)
+    inputFileNames_sample = []
     fwliteInput_fileNames = ""
     for inputFileName in inputFileNames:
         inputFile_matcher = re.compile(inputFile_regex)
         if inputFile_matcher.match(inputFileName):
+            inputFileNames_sample.append(os.path.join(inputFilePath, inputFileName))
             fwliteInput_fileNames += "process.fwliteInput.fileNames.append('%s')\n" % os.path.join(inputFilePath, inputFileName)
+
+    print " found %i input files." % len(inputFileNames_sample)
 
     tauIds_string = make_tauIds_string(tauIds)
 
@@ -591,13 +585,16 @@ process.%s = cms.PSet(
     return retVal
 
 def buildConfigFile_compTauIdEffFinalNumbers(inputFileName, directory, jobId, tauIds, fitVariables, outputFilePath,
-                                             keyword_compTauIdEffFinalNumbers, passed_region, failed_region):
+                                             keyword_compTauIdEffFinalNumbers, passed_region, failed_region,
+                                             fitIndividualProcesses):
 
     """Compute final tau id. efficiency values and uncertainties"""
 
     outputFileName = '%s_%s_%s.root' % (keyword_compTauIdEffFinalNumbers, directory, jobId)
     outputFileName = outputFileName.replace('__', '_')
     outputFileName_full = os.path.join(outputFilePath, outputFileName)
+
+    fitIndividualProcesses_string = getStringRep_bool(fitIndividualProcesses)
 
     config = \
 """
@@ -629,10 +626,12 @@ process.%s = cms.PSet(
     ),
 
     passed_region = cms.string('%s'),
-    failed_region = cms.string('%s')
+    failed_region = cms.string('%s'),
+
+    fitIndividualProcesses = cms.bool(%s)
 )
 """ % (inputFileName, outputFileName_full, keyword_compTauIdEffFinalNumbers,
-       directory, tauIds, fitVariables, passed_region, failed_region)
+       directory, tauIds, fitVariables, passed_region, failed_region, fitIndividualProcesses_string)
 
     configFileName = outputFileName.replace('.root', '_cfg.py')
     configFileName_full = os.path.join(outputFilePath, configFileName)    
@@ -650,8 +649,8 @@ process.%s = cms.PSet(
 
     return retVal
 
-def buildConfigFile_makeTauIdEffFinalPlots(inputFileName, tauIds, tauIdNamesToPlot, binning, fitVariables, outputFilePath, outputFileName,
-                                           expEff_label, measEff_label):
+def buildConfigFile_makeTauIdEffFinalPlots(inputFileName, tauIds, tauIdNamesToPlot, binning, fitVariables,
+                                           outputFilePath, outputFileName, expEff_label, measEff_label):
 
     """Make plots of tau id. efficiency as function of tauPt, tauEta,..."""
 
