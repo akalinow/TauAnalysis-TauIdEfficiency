@@ -54,7 +54,7 @@ int main(int argc, const char* argv[])
 //   (numbers not determined by tau id. efficiency code itself)
   double leadTrackFindingEffErr = 0.039; // uncertainty on track reconstruction efficiency for charged hadrons (taken from TRK-10-002)
   double leadTrackPtEffErr      = 0.010; // relative uncertainty on efficiency to pass leadTrackPt > 5.0 GeV requirement
-  double pfLooseIsoEffErr       = 0.025; // difference between efficiencies to pass pfLooseIso for e/mu/tau-jets 
+  double pfLooseIsoEffErr       = 0.020; // difference between efficiencies to pass pfLooseIso for e/mu/tau-jets 
                                          // plus Data-MC difference in e/mu efficiencies (measured in Zee/Zmumu events via Tag & Probe)
   double tauJetEnScaleErr       = 0.010; // uncertainty on fitResults arising from tau-jet/jet energy scale uncertainty
   double leadTrackPtCorrRelErr  = 0.20;  // relative uncertainty on leadTrackPt correction factor
@@ -71,7 +71,18 @@ int main(int argc, const char* argv[])
   edm::ParameterSet cfgCompTauIdEffNumbers = cfg.getParameter<edm::ParameterSet>("compTauIdEffFinalNumbers");
 
   typedef std::vector<std::string> vstring;
-  vstring tauIds = cfgCompTauIdEffNumbers.getParameter<vstring>("tauIds");
+  vstring tauIds;
+  std::map<std::string, size_t> numTauIdDiscriminators; // key = tau id.
+  typedef std::vector<edm::ParameterSet> vParameterSet;
+  vParameterSet cfgTauIdDiscriminators = cfgCompTauIdEffNumbers.getParameter<vParameterSet>("tauIds");
+  for ( vParameterSet::const_iterator cfgTauIdDiscriminator = cfgTauIdDiscriminators.begin();
+	cfgTauIdDiscriminator != cfgTauIdDiscriminators.end(); ++cfgTauIdDiscriminator ) {
+    std::string tauIdName = cfgTauIdDiscriminator->getParameter<std::string>("name");
+    tauIds.push_back(tauIdName);
+    vstring tauIdDiscriminators = cfgTauIdDiscriminator->getParameter<vstring>("discriminators");
+    numTauIdDiscriminators[tauIdName] = tauIdDiscriminators.size();
+  }
+
   vstring fitVariables = cfgCompTauIdEffNumbers.getParameter<vstring>("fitVariables");
 
   std::string region_passed = cfgCompTauIdEffNumbers.getParameter<std::string>("passed_region");
@@ -121,58 +132,62 @@ int main(int argc, const char* argv[])
       TString key_passed = Form("_%s_", region_passed.data());
       TString key_failed = Form("_%s_", region_failed.data());
 
+      int effPreselectionNumBins = 9 + numTauIdDiscriminators[*tauId];
+
 //--- compute efficiencies and uncertainties of lead. track finding, track Pt cut 
 //    and loose isolation requirement applied in preselection
       TString effPreselectionName_passed = Form("Ztautau_%s_%s_TauHadMatched", region_passed.data(), tauId->data());        
       TString effPreselectionName_failed = TString(effPreselectionName_passed).ReplaceAll(key_passed, key_failed);
       
       double numLeadTrackFindingEff = 
-	getNumber(inputDirectory_presel, effPreselectionName_passed, 1, 11).first
-       + getNumber(inputDirectory_presel, effPreselectionName_failed, 1, 11).first;
+	getNumber(inputDirectory_presel, effPreselectionName_passed, 1, effPreselectionNumBins).first
+       + getNumber(inputDirectory_presel, effPreselectionName_failed, 1, effPreselectionNumBins).first;
       double denomLeadTrackFindingEff = 
-        getNumber(inputDirectory_presel, effPreselectionName_passed, 0, 11).first
-       + getNumber(inputDirectory_presel, effPreselectionName_failed, 0, 11).first;
+        getNumber(inputDirectory_presel, effPreselectionName_passed, 0, effPreselectionNumBins).first
+       + getNumber(inputDirectory_presel, effPreselectionName_failed, 0, effPreselectionNumBins).first;
       double leadTrackFindingEff = numLeadTrackFindingEff/denomLeadTrackFindingEff;
       std::cout << " leadTrackFindingEff = " << leadTrackFindingEff  << " +/- " << leadTrackFindingEffErr << std::endl;
 
       double numLeadTrackPtEff = 
-	getNumber(inputDirectory_presel, effPreselectionName_passed, 2, 11).first
-       + getNumber(inputDirectory_presel, effPreselectionName_failed, 2, 11).first;
+	getNumber(inputDirectory_presel, effPreselectionName_passed, 2, effPreselectionNumBins).first
+       + getNumber(inputDirectory_presel, effPreselectionName_failed, 2, effPreselectionNumBins).first;
       double denomLeadTrackPtEff = numLeadTrackFindingEff;
       double leadTrackPtEff = numLeadTrackPtEff/denomLeadTrackPtEff;
       std::cout << " leadTrackPtEff = " << leadTrackPtEff << " +/- " << leadTrackPtEffErr << std::endl;
 
       double numPFLooseIsoEff = 
-	getNumber(inputDirectory_presel, effPreselectionName_passed, 3, 11).first;
-       + getNumber(inputDirectory_presel, effPreselectionName_failed, 3, 11).first;
+	getNumber(inputDirectory_presel, effPreselectionName_passed, 3, effPreselectionNumBins).first
+       + getNumber(inputDirectory_presel, effPreselectionName_failed, 3, effPreselectionNumBins).first;
+      std::cout << "numPFLooseIsoEff = " << numPFLooseIsoEff << std::endl;
       double denomPFLooseIsoEff = numLeadTrackPtEff;
+      std::cout << "denomPFLooseIsoEff = " << denomPFLooseIsoEff << std::endl;
       double pfLooseIsoEff = numPFLooseIsoEff/denomPFLooseIsoEff;
       std::cout << " pfLooseIsoEff = " << pfLooseIsoEff << " +/- " << pfLooseIsoEffErr << std::endl;
 
       double numElecVetoEff = 
-	getNumber(inputDirectory_presel, effPreselectionName_passed, 4, 11).first;
-       + getNumber(inputDirectory_presel, effPreselectionName_failed, 4, 11).first;
+	getNumber(inputDirectory_presel, effPreselectionName_passed, 4, effPreselectionNumBins).first
+       + getNumber(inputDirectory_presel, effPreselectionName_failed, 4, effPreselectionNumBins).first;
        double denomElecVetoEff = numPFLooseIsoEff;
       double elecVetoEff = numElecVetoEff/denomElecVetoEff;
       std::cout << " elecVetoEff = " << elecVetoEff << std::endl;
 
       double numMuVetoEff = 
-	getNumber(inputDirectory_presel, effPreselectionName_passed, 5, 11).first;
-       + getNumber(inputDirectory_presel, effPreselectionName_failed, 5, 11).first;
+	getNumber(inputDirectory_presel, effPreselectionName_passed, 5, effPreselectionNumBins).first
+       + getNumber(inputDirectory_presel, effPreselectionName_failed, 5, effPreselectionNumBins).first;
        double denomMuVetoEff = numElecVetoEff;
       double muVetoEff = numMuVetoEff/denomMuVetoEff;
       std::cout << " muVetoEff = " << muVetoEff << std::endl;
 
       double numAbsDzEff = 
-	getNumber(inputDirectory_presel, effPreselectionName_passed, 6, 11).first;
-       + getNumber(inputDirectory_presel, effPreselectionName_failed, 6, 11).first;
+	getNumber(inputDirectory_presel, effPreselectionName_passed, 6, effPreselectionNumBins).first
+       + getNumber(inputDirectory_presel, effPreselectionName_failed, 6, effPreselectionNumBins).first;
        double denomAbsDzEff = numMuVetoEff;
        double absDzEff = numAbsDzEff/denomAbsDzEff;
       std::cout << " absDzEff = " << absDzEff << std::endl;
 
       double numChargeProdEff = 
-	getNumber(inputDirectory_presel, effPreselectionName_passed, 7, 11).first;
-       + getNumber(inputDirectory_presel, effPreselectionName_failed, 7, 11).first;
+	getNumber(inputDirectory_presel, effPreselectionName_passed, 7, effPreselectionNumBins).first
+       + getNumber(inputDirectory_presel, effPreselectionName_failed, 7, effPreselectionNumBins).first;
        double denomChargeProdEff = numAbsDzEff;
        double chargeProdEff = numChargeProdEff/denomChargeProdEff;
       std::cout << " chargeProdEff = " << chargeProdEff << " +/- " << chargeProdEff << std::endl;
@@ -208,9 +223,9 @@ int main(int argc, const char* argv[])
 //    but failing the loose isolation requirement
 //
       TString pfLooseIsoCorrFactorName = Form("Ztautau_%s_%s_TauHadMatchedReversed", region_passed.data(), tauId->data());   
-      double numPFLooseIsoCorrFactor = getNumber(inputDirectory_presel, pfLooseIsoCorrFactorName, -7, 11).first;
+      double numPFLooseIsoCorrFactor = getNumber(inputDirectory_presel, pfLooseIsoCorrFactorName, -7, effPreselectionNumBins).first;
       //std::cout << " numPFLooseIsoCorrFactor = " << numPFLooseIsoCorrFactor << std::endl;
-      double denomPFLooseIsoCorrFactor = getNumber(inputDirectory_presel, pfLooseIsoCorrFactorName, -6, 11).first;
+      double denomPFLooseIsoCorrFactor = getNumber(inputDirectory_presel, pfLooseIsoCorrFactorName, -6, effPreselectionNumBins).first;
       //std::cout << " denomPFLooseIsoCorrFactor = " << denomPFLooseIsoCorrFactor << std::endl;
       double pfLooseIsoCorrFactor = numPFLooseIsoCorrFactor/denomPFLooseIsoCorrFactor;
       double pfLooseIsoCorrFactorErr = (1./pfLooseIsoCorrFactor  - 1.)*pfLooseIsoCorrRelErr;
@@ -226,9 +241,13 @@ int main(int argc, const char* argv[])
 //                  tauIdEff(MC, leadTrackFinding && leadTrackPtCut && HPS discr. passed)
 //
       TString leadTrackPtCorrFactorName = pfLooseIsoCorrFactorName;
-      double numLeadTrackPtCorrFactor = getNumber(inputDirectory_presel, pfLooseIsoCorrFactorName, -8, 11).first;
+      double numLeadTrackPtCorrFactor = 
+	getNumber(inputDirectory_presel, pfLooseIsoCorrFactorName, 
+		  -(6 + numTauIdDiscriminators[*tauId]), effPreselectionNumBins).first;
       //std::cout << " numLeadTrackPtCorrFactor = " << numLeadTrackPtCorrFactor << std::endl;
-      double denomLeadTrackPtCorrFactor = getNumber(inputDirectory_presel, pfLooseIsoCorrFactorName, -7, 11).first;
+      double denomLeadTrackPtCorrFactor = 
+	getNumber(inputDirectory_presel, pfLooseIsoCorrFactorName, 
+		  -(5 + numTauIdDiscriminators[*tauId]), effPreselectionNumBins).first;
       //std::cout << " denomLeadTrackPtCorrFactor = " << denomLeadTrackPtCorrFactor << std::endl;
       double leadTrackPtCorrFactor = numLeadTrackPtCorrFactor/denomLeadTrackPtCorrFactor;
       double leadTrackPtCorrFactorErr = (1./leadTrackPtCorrFactor - 1.)*leadTrackPtCorrRelErr;
@@ -248,17 +267,25 @@ int main(int argc, const char* argv[])
       double expNorm_failed = expNorm*(1. - mcExp);
 
       TString matchedTauHadName_passed = Form("Ztautau_%s_%s_TauHadMatched", region_passed.data(), tauId->data());  
-      double matchedTauHad_passed = getNumber(inputDirectory_presel, matchedTauHadName_passed, 9, 11).first;
+      double matchedTauHad_passed = 
+	getNumber(inputDirectory_presel, matchedTauHadName_passed, 
+		  7 + numTauIdDiscriminators[*tauId], effPreselectionNumBins).first;
       TString matchedFakeTauName_passed = Form("Ztautau_%s_%s_FakeTauMatched", region_passed.data(), tauId->data());
-      double matchedFakeTau_passed = getNumber(inputDirectory_presel, matchedFakeTauName_passed, 9, 11).first;
+      double matchedFakeTau_passed = 
+	getNumber(inputDirectory_presel, matchedFakeTauName_passed, 
+		  7 + numTauIdDiscriminators[*tauId], effPreselectionNumBins).first;
       double expPurity_passed = matchedTauHad_passed/(matchedTauHad_passed + matchedFakeTau_passed);
       std::cout << " expPurity_passed = " << expPurity_passed << std::endl;
       double expFake_passed = expNorm_passed*(1. - expPurity_passed);
 
       TString matchedTauHadName_failed = TString(matchedTauHadName_passed).ReplaceAll(key_passed, key_failed);
-      double matchedTauHad_failed = getNumber(inputDirectory_presel, matchedTauHadName_failed, 7, 11).first;
+      double matchedTauHad_failed = 
+	getNumber(inputDirectory_presel, matchedTauHadName_failed, 
+		  7, effPreselectionNumBins).first;
       TString matchedFakeTauName_failed = TString(matchedFakeTauName_passed).ReplaceAll(key_passed, key_failed);
-      double matchedFakeTau_failed = getNumber(inputDirectory_presel, matchedFakeTauName_failed, 7, 11).first;
+      double matchedFakeTau_failed = 
+	getNumber(inputDirectory_presel, matchedFakeTauName_failed, 
+		  7, effPreselectionNumBins).first;
       double expPurity_failed = matchedTauHad_failed/(matchedTauHad_failed + matchedFakeTau_failed);
       std::cout << " expPurity_failed = " << expPurity_failed << std::endl;
       double expFake_failed = expNorm_failed*(1. - expPurity_failed);
@@ -334,12 +361,12 @@ int main(int argc, const char* argv[])
       TString totEffExpName_control_passed = Form("Ztautau_%s_%s_TauHadMatchedReversed", region_passed.data(), tauId->data()); 
       TString totEffExpName_control_failed = TString(totEffExpName_control_passed).ReplaceAll(key_passed, key_failed);
       double numTotEffExp_control = 
-	getNumber(inputDirectory_presel, totEffExpName_control_passed, -9, 11).first
-       + getNumber(inputDirectory_presel, totEffExpName_control_failed, -9, 11).first;
+	getNumber(inputDirectory_presel, totEffExpName_control_passed, -9, effPreselectionNumBins).first
+       + getNumber(inputDirectory_presel, totEffExpName_control_failed, -9, effPreselectionNumBins).first;
       //std::cout << " numTotEffExp_control = " << numTotEffExp_control << std::endl;
       double denomTotEffExp_control = 
-	getNumber(inputDirectory_presel, totEffExpName_control_passed, 0, 11).first
-       + getNumber(inputDirectory_presel, totEffExpName_control_failed, 0, 11).first;
+	getNumber(inputDirectory_presel, totEffExpName_control_passed, 0, effPreselectionNumBins).first
+       + getNumber(inputDirectory_presel, totEffExpName_control_failed, 0, effPreselectionNumBins).first;
       //std::cout << " denomTotEffExp_control = " << denomTotEffExp_control << std::endl;
       double totEffExp_control = numTotEffExp_control/denomTotEffExp_control;
       std::cout << " MC exp. (2) = " << totEffExp_control << std::endl;

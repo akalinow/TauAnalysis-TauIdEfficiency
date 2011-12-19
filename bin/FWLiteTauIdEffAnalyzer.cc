@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.25 $
+ * \version $Revision: 1.26 $
  *
- * $Id: FWLiteTauIdEffAnalyzer.cc,v 1.25 2011/11/06 13:25:23 veelken Exp $
+ * $Id: FWLiteTauIdEffAnalyzer.cc,v 1.26 2011/11/14 13:57:00 veelken Exp $
  *
  */
 
@@ -60,6 +60,7 @@
 #include <TSystem.h>
 #include <TROOT.h>
 #include <TBenchmark.h>
+#include <TF1.h>
 
 #include <vector>
 #include <string>
@@ -69,7 +70,7 @@ typedef std::vector<std::string> vstring;
 
 struct histManagerEntryType
 {
-  histManagerEntryType(const edm::ParameterSet& cfg, bool fillGenMatchHistograms,
+  histManagerEntryType(const edm::ParameterSet& cfg, bool fillGenMatchHistograms, 
 		       const std::string& binVariable = "", double min = -0.5, double max = +0.5)
     : binVariable_(binVariable),
       min_(min),
@@ -109,16 +110,19 @@ struct histManagerEntryType
     }
   }
   void fillHistograms(double x, const PATMuTauPair& muTauPair, const pat::MET& caloMEt, 
-		      size_t numVertices, int genMatchType, double weight)
+		      size_t numVertices, const std::map<std::string, bool>& plot_triggerBits_passed, int genMatchType, double weight)
   {
     if ( x > min_ && x <= max_ ) {
-      histManager_->fillHistograms(muTauPair, caloMEt, numVertices, weight);
+      histManager_->fillHistograms(muTauPair, caloMEt, numVertices, plot_triggerBits_passed, weight);
 
       if ( fillGenMatchHistograms_ ) {
-	if      ( genMatchType == kJetToTauFakeMatched ) histManagerJetToTauFake_->fillHistograms(muTauPair, caloMEt, numVertices, weight);
-	else if ( genMatchType == kMuToTauFakeMatched  ) histManagerMuToTauFake_->fillHistograms(muTauPair, caloMEt, numVertices, weight);
+	if      ( genMatchType == kJetToTauFakeMatched ) 
+	  histManagerJetToTauFake_->fillHistograms(muTauPair, caloMEt, numVertices, plot_triggerBits_passed, weight);
+	else if ( genMatchType == kMuToTauFakeMatched  ) 
+	  histManagerMuToTauFake_->fillHistograms(muTauPair, caloMEt, numVertices, plot_triggerBits_passed, weight);
 	else if ( genMatchType == kGenTauHadMatched    ||
-		  genMatchType == kGenTauOtherMatched  ) histManagerGenTau_->fillHistograms(muTauPair, caloMEt, numVertices, weight);
+		  genMatchType == kGenTauOtherMatched  ) 
+	  histManagerGenTau_->fillHistograms(muTauPair, caloMEt, numVertices, plot_triggerBits_passed, weight);
       }
     }
   }
@@ -143,7 +147,8 @@ struct regionEntryType
 		  const std::string& process, const std::string& region, 
 		  const vstring& tauIdDiscriminators, const std::string& tauIdName, const std::string& sysShift,
 		  const edm::ParameterSet& cfgBinning, const std::string& svFitMassHypothesis, 
-		  const std::string& tauChargeMode, bool disableTauCandPreselCuts, bool fillGenMatchHistograms,
+		  const std::string& tauChargeMode, bool disableTauCandPreselCuts, const edm::ParameterSet& cfgEventSelCuts, 
+		  bool fillGenMatchHistograms, const vstring& plot_triggerBits,
 		  const std::string& selEventsFileName)
     : process_(process),
       region_(region),
@@ -156,7 +161,7 @@ struct regionEntryType
       numMuTauPairsWeighted_selected_(0.),
       selEventsFile_(0)
   {
-    edm::ParameterSet cfgSelector;
+    edm::ParameterSet cfgSelector = cfgEventSelCuts;
     cfgSelector.addParameter<vstring>("tauIdDiscriminators", tauIdDiscriminators_);
     cfgSelector.addParameter<std::string>("region", region_);
     cfgSelector.addParameter<std::string>("tauChargeMode", tauChargeMode);
@@ -174,6 +179,7 @@ struct regionEntryType
     if ( sysShift_ != "CENTRAL_VALUE" ) label_.append("_").append(sysShift_);
     cfgHistManager.addParameter<std::string>("label", label_);
     cfgHistManager.addParameter<std::string>("svFitMassHypothesis", svFitMassHypothesis);
+    cfgHistManager.addParameter<vstring>("triggerBits", plot_triggerBits);
 
     histogramsUnbinned_ = new histManagerEntryType(cfgHistManager, fillGenMatchHistograms);
     histogramsUnbinned_->bookHistograms(fs);
@@ -223,12 +229,12 @@ struct regionEntryType
     delete selEventsFile_;
   }
   void analyze(const fwlite::Event& evt, const PATMuTauPair& muTauPair, const pat::MET& caloMEt, 
-	       size_t numVertices, int genMatchType, double evtWeight)
+	       size_t numVertices, const std::map<std::string, bool>& plot_triggerBits_passed, int genMatchType, double evtWeight)
   {
     pat::strbitset evtSelFlags;
     if ( selector_->operator()(muTauPair, caloMEt, evtSelFlags) ) {
 //--- fill histograms for "inclusive" tau id. efficiency measurement
-      histogramsUnbinned_->fillHistograms(0., muTauPair, caloMEt, numVertices, genMatchType, evtWeight);
+      histogramsUnbinned_->fillHistograms(0., muTauPair, caloMEt, numVertices, plot_triggerBits_passed, genMatchType, evtWeight);
 
 //--- fill histograms for tau id. efficiency measurement as function of 
 //   o tau-jet transverse momentum
@@ -245,7 +251,7 @@ struct regionEntryType
 	else if ( (*histManagerEntry)->binVariable_ == "sumEt"       ) x = muTauPair.met()->sumEt();
 	else throw cms::Exception("regionEntryType::analyze")
 	  << "Invalid binVariable = " << (*histManagerEntry)->binVariable_ << " !!\n";
-	(*histManagerEntry)->fillHistograms(x, muTauPair, caloMEt, numVertices, genMatchType, evtWeight);
+	(*histManagerEntry)->fillHistograms(x, muTauPair, caloMEt, numVertices, plot_triggerBits_passed, genMatchType, evtWeight);
       }
  
       if ( selEventsFile_ ) 
@@ -277,6 +283,153 @@ struct regionEntryType
   std::ofstream* selEventsFile_;
 };
 
+void checkL1Bits(const fwlite::Event& evt,
+		 const vstring& l1Bits, 
+		 const edm::InputTag& srcL1GtReadoutRecord, const edm::InputTag& srcL1GtObjectMapRecord,
+		 std::map<std::string, bool>* l1Bits_passed, bool* anyL1bit_passed)
+{
+  edm::Handle<L1GlobalTriggerReadoutRecord> l1GtReadoutRecord;
+  evt.getByLabel(srcL1GtReadoutRecord, l1GtReadoutRecord);
+  edm::Handle<L1GlobalTriggerObjectMapRecord> l1GtObjectMapRecord;
+  evt.getByLabel(srcL1GtObjectMapRecord, l1GtObjectMapRecord);
+
+  DecisionWord l1GtDecision = l1GtReadoutRecord->decisionWord();
+  const std::vector<L1GlobalTriggerObjectMap>& l1GtObjectMaps = l1GtObjectMapRecord->gtObjectMap();
+
+  if ( anyL1bit_passed ) {
+    (*anyL1bit_passed) = false;
+  }
+
+  for ( vstring::const_iterator l1Bit = l1Bits.begin();
+	l1Bit != l1Bits.end(); ++l1Bit ) {	  
+    bool isL1bit_passed = false;
+    for ( std::vector<L1GlobalTriggerObjectMap>::const_iterator l1GtObjectMap = l1GtObjectMaps.begin();
+	  l1GtObjectMap != l1GtObjectMaps.end(); ++l1GtObjectMap ) {
+      std::string l1Bit_idx = (*l1GtObjectMap).algoName();
+      int idx = (*l1GtObjectMap).algoBitNumber();	    
+      if ( l1Bit_idx == (*l1Bit) ) isL1bit_passed = l1GtDecision[idx];
+    }
+
+    if ( l1Bits_passed ) {
+      (*l1Bits_passed)[*l1Bit] = isL1bit_passed;
+    }
+
+    if ( anyL1bit_passed ) {
+      if ( isL1bit_passed ) (*anyL1bit_passed) = true;
+    }
+  }
+}
+
+std::string getHLTpath_key(const std::string& hltPath)
+{
+  std::string key = hltPath;
+  size_t idx = hltPath.find_last_of("_v");
+  if ( idx != std::string::npos ) {
+    // CV: std::string.find_last_of returns position of 'v' character
+    //    --> need to decrease 'idx' by one in order to eliminate trailing underscore
+    key = std::string(hltPath, 0, idx - 1);
+  }
+  return key;
+}
+
+void checkHLTpaths(const fwlite::Event& evt, 
+		   const vstring& hltPaths,
+		   const edm::InputTag& srcHLTresults,
+		   std::map<std::string, bool>* hltPaths_passed, bool* anyHLTpath_passed)
+{
+  edm::Handle<edm::TriggerResults> hltResults;
+  evt.getByLabel(srcHLTresults, hltResults);
+
+  const edm::TriggerNames& triggerNames = evt.triggerNames(*hltResults);
+
+  if ( hltPaths_passed ) {
+    for ( vstring::const_iterator hltPath = hltPaths.begin();
+	  hltPath != hltPaths.end(); ++hltPath ) {
+      std::string key = getHLTpath_key(*hltPath);
+      (*hltPaths_passed)[key] = false;
+    }
+  }
+  
+  if ( anyHLTpath_passed ) {
+    (*anyHLTpath_passed) = false;
+  }
+
+  for ( vstring::const_iterator hltPath = hltPaths.begin();
+	hltPath != hltPaths.end(); ++hltPath ) {
+    bool isHLTpath_passed = false;
+    unsigned int idx = triggerNames.triggerIndex(*hltPath);
+    if ( idx < triggerNames.size() ) {
+      isHLTpath_passed = hltResults->accept(idx);
+    }
+
+    if ( isHLTpath_passed ) {
+      if ( hltPaths_passed ) {
+	std::string key = getHLTpath_key(*hltPath);
+	(*hltPaths_passed)[key] = isHLTpath_passed;
+      }
+    
+      if ( anyHLTpath_passed ) {
+	(*anyHLTpath_passed) = true;
+      }
+    }
+  }
+}
+
+//-------------------------------------------------------------------------------
+//
+// Integral of Crystal Ball function for fitting trigger efficiency turn-on curves
+// (code from Pascal Paganini)
+//
+double integralCrystalBall(double m, double m0, double sigma, double alpha, double n, double norm) 
+{
+  const double sqrtPiOver2 = 1.2533141373;
+  const double sqrt2 = 1.4142135624;
+  
+  double sig = fabs((double)sigma);
+  
+  double t = (m - m0)/sig;
+  
+  if (alpha < 0) t = -t;
+  
+  double absAlpha = fabs(alpha / sig);
+  double a = TMath::Power(n/absAlpha, n)*exp(-0.5*absAlpha*absAlpha);
+  double b = absAlpha - n/absAlpha;
+  
+  if ( a >= std::numeric_limits<double>::max() ) return -1.;
+  
+  double approxErf;
+  double arg = absAlpha / sqrt2;
+  if      ( arg >  5. ) approxErf =  1;
+  else if ( arg < -5. ) approxErf = -1;
+  else                  approxErf = erf(arg);
+  
+  double leftArea = (1 + approxErf) * sqrtPiOver2;
+  double rightArea = ( a * 1/TMath::Power(absAlpha - b,n-1)) / (n - 1);
+  double area = leftArea + rightArea;
+  
+  if ( t <= absAlpha ) {
+    arg = t / sqrt2;
+    if      ( arg >  5.) approxErf =  1;
+    else if ( arg < -5.) approxErf = -1;
+    else                 approxErf = erf(arg);
+    return norm * (1 + approxErf) * sqrtPiOver2 / area;
+  } else {
+    return norm * (leftArea +  a * (1/TMath::Power(t-b, n - 1) - 1/TMath::Power(absAlpha - b, n - 1)) / (1 - n)) / area;
+  }
+}
+
+Double_t integralCrystalBall_data_div_mc(Double_t* x, Double_t* par)
+{
+  if  ( x[0] < 100. ) {
+    double data = integralCrystalBall(x[0], par[0], par[1], par[2], par[3], par[4]);
+    double mc   = integralCrystalBall(x[0], par[5], par[6], par[7], par[8], par[9]);
+    return ( mc > 0. ) ? (data/mc) : 1.;
+  } else {
+    return 1.;
+  }
+}
+//-------------------------------------------------------------------------------
+
 int main(int argc, char* argv[]) 
 {
 //--- parse command-line arguments
@@ -305,9 +458,12 @@ int main(int argc, char* argv[])
   edm::ParameterSet cfgTauIdEffAnalyzer = cfg.getParameter<edm::ParameterSet>("tauIdEffAnalyzer");
 
   edm::InputTag srcMuTauPairs = cfgTauIdEffAnalyzer.getParameter<edm::InputTag>("srcMuTauPairs");
+  bool requireUniqueMuTauPair = ( cfgTauIdEffAnalyzer.exists("") ) ? 
+    cfgTauIdEffAnalyzer.getParameter<bool>("requireUniqueMuTauPair") : false;
   std::string svFitMassHypothesis = cfgTauIdEffAnalyzer.getParameter<std::string>("svFitMassHypothesis");
   std::string tauChargeMode = cfgTauIdEffAnalyzer.getParameter<std::string>("tauChargeMode");
   bool disableTauCandPreselCuts = cfgTauIdEffAnalyzer.getParameter<bool>("disableTauCandPreselCuts");
+  edm::ParameterSet cfgEventSelCuts = cfgTauIdEffAnalyzer.getParameter<edm::ParameterSet>("eventSelCuts");
   edm::InputTag srcHLTresults = cfgTauIdEffAnalyzer.getParameter<edm::InputTag>("srcHLTresults");
   edm::InputTag srcL1GtReadoutRecord = cfgTauIdEffAnalyzer.getParameter<edm::InputTag>("srcL1GtReadoutRecord"); 
   edm::InputTag srcL1GtObjectMapRecord = cfgTauIdEffAnalyzer.getParameter<edm::InputTag>("srcL1GtObjectMapRecord");
@@ -319,7 +475,15 @@ int main(int argc, char* argv[])
   edm::InputTag srcGenParticles = cfgTauIdEffAnalyzer.getParameter<edm::InputTag>("srcGenParticles");
   bool fillGenMatchHistograms = cfgTauIdEffAnalyzer.getParameter<bool>("fillGenMatchHistograms");
   typedef std::vector<int> vint;
-  vint skipPdgIdsGenParticleMatch = cfgTauIdEffAnalyzer.getParameter<vint>("skipPdgIdsGenParticleMatch");
+  vint skipPdgIdsGenParticleMatch = cfgTauIdEffAnalyzer.getParameter<vint>("skipPdgIdsGenParticleMatch");  
+  vstring plot_l1Bits = cfgTauIdEffAnalyzer.getParameter<vstring>("plot_l1Bits");
+  vstring plot_hltPaths = cfgTauIdEffAnalyzer.getParameter<vstring>("plot_hltPaths");
+  vstring plot_triggerBits;
+  plot_triggerBits.insert(plot_triggerBits.end(), plot_l1Bits.begin(), plot_l1Bits.end());
+  for ( vstring::const_iterator plot_hltPath = plot_hltPaths.begin();
+	plot_hltPath != plot_hltPaths.end(); ++plot_hltPath ) {
+    plot_triggerBits.push_back(getHLTpath_key(*plot_hltPath));
+  }
   typedef std::vector<edm::InputTag> vInputTag;
   vInputTag srcWeights = cfgTauIdEffAnalyzer.getParameter<vInputTag>("weights");
   std::string sysShift = cfgTauIdEffAnalyzer.exists("sysShift") ?
@@ -332,10 +496,22 @@ int main(int argc, char* argv[])
     muonIsoProbExtractor = new PATMuonLUTvalueExtractorFromKNN(cfgMuonIsoProbExtractor);
   }
 
+  TF1* triggerEffCorrection = new TF1("triggerEffCorrection", &integralCrystalBall_data_div_mc, 0., 1.e+6, 10);
+  double triggerEffCorr_parameter[] = {
+    3.08698e+01, 4.12547e+00, 7.67225e+00, 1.55325e+02, 1.00826e+00,
+    3.07315e+01, -4.16879e+00, 1.37289e+01, 1.02238e+00, 1.03602e+00
+  };
+  for ( int iPar = 0; iPar < triggerEffCorrection->GetNpar(); ++iPar ) {
+    triggerEffCorrection->SetParameter(iPar, triggerEffCorr_parameter[iPar]);
+  }
+
   std::string selEventsFileName = ( cfgTauIdEffAnalyzer.exists("selEventsFileName") ) ? 
     cfgTauIdEffAnalyzer.getParameter<std::string>("selEventsFileName") : "";
 
   fwlite::InputSource inputFiles(cfg); 
+  edm::ParameterSet cfgInputSource = cfg.getParameter<edm::ParameterSet>("fwliteInput");
+  int firstRun = cfgInputSource.getParameter<int>("firstRun");
+  int lastRun = cfgInputSource.getParameter<int>("lastRun");
   int maxEvents = inputFiles.maxEvents();
 
   fwlite::OutputFiles outputFile(cfg);
@@ -365,30 +541,34 @@ int main(int argc, char* argv[])
       regionEntryType* regionEntry = 
 	new regionEntryType(fs, process, *region, tauIdDiscriminators, tauIdName, 
 			    sysShift, cfgBinning, svFitMassHypothesis, 
-			    tauChargeMode, disableTauCandPreselCuts, fillGenMatchHistograms, selEventsFileName);
+			    tauChargeMode, disableTauCandPreselCuts, cfgEventSelCuts, 
+			    fillGenMatchHistograms, plot_triggerBits, selEventsFileName);
       regionEntries.push_back(regionEntry);
 
       // tau+ candidates only
-      regionEntryType* regionEntry_plus = 
-	new regionEntryType(fs, process, std::string(*region).append("+"), tauIdDiscriminators, tauIdName, 
-			    sysShift, cfgBinning, svFitMassHypothesis, 
-			    tauChargeMode, disableTauCandPreselCuts, fillGenMatchHistograms, selEventsFileName);
-      regionEntries.push_back(regionEntry_plus);
-
+      //regionEntryType* regionEntry_plus = 
+      //  new regionEntryType(fs, process, std::string(*region).append("+"), tauIdDiscriminators, tauIdName, 
+      //		      sysShift, cfgBinning, svFitMassHypothesis, 
+      //		      tauChargeMode, disableTauCandPreselCuts, cfgEventSelCuts, 
+      //		      fillGenMatchHistograms, plot_triggerBits, selEventsFileName);
+      //regionEntries.push_back(regionEntry_plus);
+      //
       // tau- candidates only
-      regionEntryType* regionEntry_minus = 
-	new regionEntryType(fs, process, std::string(*region).append("-"), tauIdDiscriminators, tauIdName, 
-			    sysShift, cfgBinning, svFitMassHypothesis, 
-			    tauChargeMode, disableTauCandPreselCuts, fillGenMatchHistograms, selEventsFileName);
-      regionEntries.push_back(regionEntry_minus);
+      //regionEntryType* regionEntry_minus = 
+      //  new regionEntryType(fs, process, std::string(*region).append("-"), tauIdDiscriminators, tauIdName, 
+      //		      sysShift, cfgBinning, svFitMassHypothesis, 
+      //		      tauChargeMode, disableTauCandPreselCuts, cfgEventSelCuts, 
+      //		      fillGenMatchHistograms, plot_triggerBits, selEventsFileName);
+      //regionEntries.push_back(regionEntry_minus);
     }
   }
 
-  edm::ParameterSet cfgSelectorABCD;
+  edm::ParameterSet cfgSelectorABCD = cfgEventSelCuts;
   cfgSelectorABCD.addParameter<vstring>("tauIdDiscriminators", vstring());
   cfgSelectorABCD.addParameter<std::string>("region", "ABCD");
   cfgSelectorABCD.addParameter<std::string>("tauChargeMode", tauChargeMode);
   cfgSelectorABCD.addParameter<bool>("disableTauCandPreselCuts", disableTauCandPreselCuts);
+
   TauIdEffEventSelector* selectorABCD = new TauIdEffEventSelector(cfgSelectorABCD);
 
 //--- book "dummy" histogram counting number of processed events
@@ -450,6 +630,26 @@ int main(int argc, char* argv[])
 	evtWeight *= (*weight);
       }
 
+//--- apply trigger efficiency correction (to MC only)
+      typedef std::vector<pat::MET> PATMETCollection;
+      edm::Handle<PATMETCollection> caloMEt;
+      evt.getByLabel(srcCaloMEt, caloMEt);
+      if ( caloMEt->size() != 1 )
+	throw cms::Exception("FWLiteTauIdEffAnalyzer")
+	  << "Failed to find unique CaloMEt object !!\n";
+      //std::cout << " " << srcCaloMEt.label() << ": " << caloMEt->front().pt() << std::endl;
+
+      if ( !isData ) {
+	double triggerEffCorrection_value = triggerEffCorrection->Eval(caloMEt->front().pt());
+	//std::cout << " triggerEffCorrection_value = " << triggerEffCorrection_value << std::endl;
+	evtWeight *= triggerEffCorrection_value;
+      }
+
+//--- check if current event is within specified run-range
+//   (this check is important in case triggers changed or became active/inactive **during** a data-taking period)
+      if ( (firstRun != -1 && (int)evt.id().run() < firstRun) || 
+	   (lastRun  != -1 && (int)evt.id().run() > lastRun ) ) continue;
+
 //--- quit event loop if maximal number of events to be processed is reached 
       ++numEvents_processed;
       numEventsWeighted_processed += evtWeight;
@@ -484,18 +684,7 @@ int main(int argc, char* argv[])
       if ( hltPaths.size() == 0 ) {
 	anyHLTpath_passed = true;
       } else {
-	edm::Handle<edm::TriggerResults> hltResults;
-	evt.getByLabel(srcHLTresults, hltResults);
-	
-	const edm::TriggerNames& triggerNames = evt.triggerNames(*hltResults);
-	
-	for ( vstring::const_iterator hltPath = hltPaths.begin();
-	      hltPath != hltPaths.end(); ++hltPath ) {
-	  bool isHLTpath_passed = false;
-	  unsigned int idx = triggerNames.triggerIndex(*hltPath);
-	  if ( idx < triggerNames.size() ) isHLTpath_passed = hltResults->accept(idx);
-	  if ( isHLTpath_passed ) anyHLTpath_passed = true;
-	}
+	checkHLTpaths(evt, hltPaths, srcHLTresults, NULL, &anyHLTpath_passed);
       }
 
       if ( !anyHLTpath_passed ) continue;
@@ -504,25 +693,7 @@ int main(int argc, char* argv[])
       if ( l1Bits.size() == 0 ) {
 	anyL1bit_passed = true;
       } else {
-	edm::Handle<L1GlobalTriggerReadoutRecord> l1GtReadoutRecord;
-	evt.getByLabel(srcL1GtReadoutRecord, l1GtReadoutRecord);
-	edm::Handle<L1GlobalTriggerObjectMapRecord> l1GtObjectMapRecord;
-	evt.getByLabel(srcL1GtObjectMapRecord, l1GtObjectMapRecord);
-
-	DecisionWord l1GtDecision = l1GtReadoutRecord->decisionWord();
-	const std::vector<L1GlobalTriggerObjectMap>& l1GtObjectMaps = l1GtObjectMapRecord->gtObjectMap();
-
-	for ( vstring::const_iterator l1Bit = l1Bits.begin();
-	      l1Bit != l1Bits.end(); ++l1Bit ) {	  
-	  for ( std::vector<L1GlobalTriggerObjectMap>::const_iterator l1GtObjectMap = l1GtObjectMaps.begin();
-		l1GtObjectMap != l1GtObjectMaps.end(); ++l1GtObjectMap ) {
-	    bool isL1bit_passed = false;
-	    std::string l1Bit_idx = (*l1GtObjectMap).algoName();
-	    int idx = (*l1GtObjectMap).algoBitNumber();	    
-	    if ( l1Bit_idx == (*l1Bit) ) isL1bit_passed = l1GtDecision[idx];
-	    if ( isL1bit_passed ) anyL1bit_passed = true;
-	  }
-	}
+	checkL1Bits(evt, l1Bits, srcL1GtReadoutRecord, srcL1GtObjectMapRecord, NULL, &anyL1bit_passed);
       }
 
       if ( !anyL1bit_passed ) continue;
@@ -543,14 +714,7 @@ int main(int argc, char* argv[])
 //--- require event to contain exactly one muon + tau-jet pair
 //    passing the selection criteria for region "ABCD"
       edm::Handle<PATMuTauPairCollection> muTauPairs;
-      evt.getByLabel(srcMuTauPairs, muTauPairs);
-      
-      typedef std::vector<pat::MET> PATMETCollection;
-      edm::Handle<PATMETCollection> caloMEt;
-      evt.getByLabel(srcCaloMEt, caloMEt);
-      if ( caloMEt->size() != 1 )
-	throw cms::Exception("FWLiteTauIdEffAnalyzer")
-	  << "Failed to find unique CaloMEt object !!\n";
+      evt.getByLabel(srcMuTauPairs, muTauPairs);           
 
       unsigned numMuTauPairsABCD = 0;
       for ( PATMuTauPairCollection::const_iterator muTauPair = muTauPairs->begin();
@@ -568,10 +732,20 @@ int main(int argc, char* argv[])
       edm::Handle<reco::VertexCollection> vertices;
       evt.getByLabel(srcVertices, vertices);
       size_t numVertices = vertices->size();
+      
+//--- check L1 bits for trigger efficiency control plots
+      std::map<std::string, bool> plot_triggerBits_passed;
+      if ( plot_l1Bits.size() > 0 ) {
+	checkL1Bits(evt, plot_l1Bits, srcL1GtReadoutRecord, srcL1GtObjectMapRecord, &plot_triggerBits_passed, NULL);
+      }	
+      if ( plot_hltPaths.size() > 0 ) {
+	checkHLTpaths(evt, plot_hltPaths, srcHLTresults, &plot_triggerBits_passed, NULL);
+      }
 
 //--- iterate over collection of muon + tau-jet pairs:
 //    check which region muon + tau-jet pair is selected in,
 //    fill histograms for that region
+      if ( requireUniqueMuTauPair && muTauPairs->size () > 1 ) continue;  
       for ( PATMuTauPairCollection::const_iterator muTauPair = muTauPairs->begin();
 	    muTauPair != muTauPairs->end(); ++muTauPair ) {
 
@@ -590,7 +764,8 @@ int main(int argc, char* argv[])
 	  double evtWeight_region = evtWeight;
 	  if ( muonIsoProbExtractor && (*regionEntry)->region_.find("_mW") != std::string::npos ) 
 	    evtWeight_region *= (*muonIsoProbExtractor)(*muTauPair->leg1());
-	  (*regionEntry)->analyze(evt, *muTauPair, caloMEt->front(), numVertices, genMatchType, evtWeight_region);
+	  (*regionEntry)->analyze(evt, *muTauPair, caloMEt->front(), 
+				  numVertices, plot_triggerBits_passed, genMatchType, evtWeight_region);
 
 	  //pat::strbitset evtSelFlags;
 	  //if ( (*regionEntry)->region_ == "D1p" && (*regionEntry)->selector_->operator()(*muTauPair, evtSelFlags) ) {
@@ -617,6 +792,7 @@ int main(int argc, char* argv[])
 
 //--- apply correction to scale-factor in order to account for events lost, 
 //    due to aborted skimming/crab or PAT-tuple production/lxbatch jobs
+    std::cout << " allEvents_processed = " << histogramEventCounter->GetBinContent(2) << std::endl;
     double lostStatCorrFactor = 1.;
     if ( histogramEventCounter->GetBinContent(1) > histogramEventCounter->GetBinContent(2) && 
 	 histogramEventCounter->GetBinContent(2) > 0.                                      ) {
@@ -632,6 +808,9 @@ int main(int argc, char* argv[])
       for ( std::vector<histManagerEntryType*>::iterator histManagerEntry = (*regionEntry)->histogramEntriesBinned_.begin();
 	    histManagerEntry != (*regionEntry)->histogramEntriesBinned_.end(); ++histManagerEntry ) {
 	(*histManagerEntry)->histManager_->scaleHistograms(mcScaleFactor*lostStatCorrFactor);
+	(*histManagerEntry)->histManagerJetToTauFake_->scaleHistograms(mcScaleFactor*lostStatCorrFactor);
+	(*histManagerEntry)->histManagerMuToTauFake_->scaleHistograms(mcScaleFactor*lostStatCorrFactor);
+        (*histManagerEntry)->histManagerGenTau_->scaleHistograms(mcScaleFactor*lostStatCorrFactor);
       }
     }
   }
@@ -658,6 +837,8 @@ int main(int argc, char* argv[])
 
   delete muonIsoProbExtractor;
 
+  delete triggerEffCorrection;
+
 //--- close ASCII files containing run + event numbers of events selected in different regions
   for ( std::vector<regionEntryType*>::iterator it = regionEntries.begin();
 	it != regionEntries.end(); ++it ) {
@@ -665,10 +846,10 @@ int main(int argc, char* argv[])
   }
   
   if ( isData ) {
-    std::cout << " intLumiData (recorded, IsoMu17 prescale corr.) = " << intLumiData << " pb" << std::endl;
+    std::cout << " intLumiData = " << intLumiData << " pb" << std::endl;
     // CV: luminosity is recorded in some 'weird' units,
     //     needs to be multiplied by factor 0.10 in order to be in units of pb^-1
-    std::cout << " intLumiData_analyzed (recorded) = " << intLumiData_analyzed*1.e-6*0.10 << " pb" << std::endl;
+    std::cout << " intLumiData_analyzed = " << intLumiData_analyzed*1.e-6*0.10 << " pb" << std::endl;
   }
 
   clock.Show("FWLiteTauIdEffAnalyzer");

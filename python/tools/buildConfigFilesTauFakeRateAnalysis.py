@@ -77,7 +77,11 @@ def buildConfigFile_FWLiteTauFakeRateAnalyzer(sampleToAnalyze, evtSel, version, 
 
     tauIds_string = make_tauIds_string(tauIds)
 
-    hltPaths_string = make_inputFileNames_vstring(hltPaths[processType])
+    hltPaths_string = None
+    if isinstance(hltPaths, dict):
+        hltPaths_string = make_inputFileNames_vstring(hltPaths[processType])
+    else:
+        hltPaths_string = make_inputFileNames_vstring(hltPaths)
 
     configFileNames = []
     outputFileNames = []

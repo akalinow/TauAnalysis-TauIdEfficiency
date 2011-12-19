@@ -7,9 +7,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.8 $
+ * \version $Revision: 1.9 $
  *
- * $Id: TauIdEffHistManager.h,v 1.8 2011/11/06 13:25:26 veelken Exp $
+ * $Id: TauIdEffHistManager.h,v 1.9 2011/11/27 18:25:18 veelken Exp $
  *
  */
 
@@ -34,7 +34,7 @@ class TauIdEffHistManager
 
   /// book and fill histograms
   void bookHistograms(TFileDirectory&);
-  void fillHistograms(const PATMuTauPair&, const pat::MET&, size_t, double);
+  void fillHistograms(const PATMuTauPair&, const pat::MET&, size_t, const std::map<std::string, bool>&, double);
   
   /// scale all bin-contents/bin-errors by factor given as function argument
   /// (to account for events lost, due to aborted skimming/crab or PAT-tuple production/lxbatch jobs)
@@ -60,6 +60,9 @@ class TauIdEffHistManager
   /// as template variable
   std::string svFitMassHypothesis_;
  
+  typedef std::vector<std::string> vstring;
+  vstring triggerBits_;
+  
   TH1* histogramMuonPt_;
   TH1* histogramMuonEta_;
   TH1* histogramMuonPhi_;
@@ -80,6 +83,9 @@ class TauIdEffHistManager
   TH1* histogramCaloMEt_;
   TH1* histogramCaloSumEt_;
   TH1* histogramNumVertices_;
+
+  std::map<std::string, TH1*> histogramNumCaloMEt_; // key = L1 bit; numerator for trigger efficiency control plots
+  TH1* histogramDenomCaloMEt_;                      // denominator for trigger efficiency control plots
 
   TH1* histogramEventCounter_;
   

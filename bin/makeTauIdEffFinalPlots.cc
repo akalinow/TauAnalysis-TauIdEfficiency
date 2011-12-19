@@ -114,6 +114,8 @@ int main(int argc, const char* argv[])
   std::string expEff_label  = cfgMakeTauIdEffPlots.getParameter<std::string>("expEff_label");
   std::string measEff_label = cfgMakeTauIdEffPlots.getParameter<std::string>("measEff_label");
 
+  double intLumiData = cfgMakeTauIdEffPlots.getParameter<double>("intLumiData"); // in units of fb^-1
+
   typedef std::vector<std::string> vstring;
   vstring fitVariables = cfgMakeTauIdEffPlots.getParameter<vstring>("fitVariables");
 
@@ -281,7 +283,7 @@ int main(int argc, const char* argv[])
     }
     legend->Draw();
 
-    drawCMSprelimaryLabels(0.175, 0.8375);
+    drawCMSprelimaryLabels(intLumiData, 0.175, 0.8375);
 
     canvas->cd();
     bottomPad->Draw();
@@ -322,9 +324,12 @@ int main(int argc, const char* argv[])
     }
 
     canvas->Update();
-    TString outputFileName_i = outputFileName;
-    outputFileName_i.ReplaceAll(".", std::string("_").append(*fitVariable).append(".").data());
-    canvas->Print(outputFileName_i.Data());
+    size_t idx = outputFileName.find_last_of('.');
+    std::string outputFileName_plot = std::string(outputFileName, 0, idx);
+    outputFileName_plot.append("_").append(*fitVariable);
+    if ( idx != std::string::npos ) canvas->Print(std::string(outputFileName_plot).append(std::string(outputFileName, idx)).data());
+    canvas->Print(std::string(outputFileName_plot).append(".png").data());
+    canvas->Print(std::string(outputFileName_plot).append(".pdf").data());
 
     delete legend;
 

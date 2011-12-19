@@ -10,6 +10,7 @@ TauIdEffHistManager::TauIdEffHistManager(const edm::ParameterSet& cfg)
   label_                = cfg.getParameter<std::string>("label");
   svFitMassHypothesis_  = cfg.exists("svFitMassHypothesis") ?
     cfg.getParameter<std::string>("svFitMassHypothesis") : "";
+  triggerBits_          = cfg.getParameter<vstring>("triggerBits");
 }
 
 TauIdEffHistManager::~TauIdEffHistManager()
@@ -41,10 +42,24 @@ void TauIdEffHistManager::bookHistograms(TFileDirectory& dir)
   histogramCaloSumEt_       = book1D(dir, "caloSumEt",          "#Sigma E_{T}^{calo}",                   50,          0.,         500.0);
   histogramNumVertices_     = book1D(dir, "numVertices",        "Num. Vertices",                         20,         -0.5,         19.5);
 
+  for ( vstring::const_iterator triggerBit = triggerBits_.begin();
+	triggerBit != triggerBits_.end(); ++triggerBit ) {
+    // CV: skip creating histogram in case it already exists
+    //    (created for different version of HLT path)
+    if ( histogramNumCaloMEt_.find(*triggerBit) != histogramNumCaloMEt_.end() ) continue;
+    std::string histogramName  = std::string("numCaloMEt").append("_").append(*triggerBit);
+    std::string histogramTitle = std::string(*triggerBit).append(" vs. calo-E_{T}^{miss}");
+    histogramNumCaloMEt_[*triggerBit] = book1D(dir, histogramName, histogramTitle, 100, 0., 100.);
+    //std::cout << "histogramNumCaloMEt[" << (*triggerBit) << "] = " 
+    //          << histogramNumCaloMEt_[*triggerBit] << std::endl;
+  }
+  histogramDenomCaloMEt_ = book1D(dir, "denomCaloMEt", "calo-E_{T}^{miss} denominator", 100, 0., 100.);
+  
   histogramEventCounter_    = book1D(dir, "EventCounter",       "Event Counter",                          1,         -0.5,         +0.5);
 }
 
-void TauIdEffHistManager::fillHistograms(const PATMuTauPair& muTauPair, const pat::MET& caloMEt, size_t numVertices, double weight)
+void TauIdEffHistManager::fillHistograms(const PATMuTauPair& muTauPair, const pat::MET& caloMEt, 
+					 size_t numVertices, const std::map<std::string, bool>& triggerBits_passed, double weight)
 {
   histogramMuonPt_->Fill(muTauPair.leg1()->pt(), weight);
   histogramMuonEta_->Fill(muTauPair.leg1()->eta(), weight);
@@ -70,6 +85,16 @@ void TauIdEffHistManager::fillHistograms(const PATMuTauPair& muTauPair, const pa
   histogramCaloMEt_->Fill(caloMEt.pt(), weight);
   histogramCaloSumEt_->Fill(caloMEt.sumEt(), weight);
   histogramNumVertices_->Fill(numVertices, weight);
+
+  for ( std::map<std::string, bool>::const_iterator triggerBit_passed = triggerBits_passed.begin();
+	triggerBit_passed != triggerBits_passed.end(); ++triggerBit_passed ) {    
+    //std::cout << "histogramNumCaloMEt[" << triggerBit_passed->first << "] = " 
+    //          << histogramNumCaloMEt_[triggerBit_passed->first] << std::endl;
+    std::cout << triggerBit_passed->first << ": " << triggerBit_passed->second << std::endl;
+    assert(histogramNumCaloMEt_[triggerBit_passed->first]);
+    if ( triggerBit_passed->second ) histogramNumCaloMEt_[triggerBit_passed->first]->Fill(caloMEt.pt(), weight);
+  }
+  histogramDenomCaloMEt_->Fill(caloMEt.pt(), weight);
 
   histogramEventCounter_->Fill(0., weight);
 }

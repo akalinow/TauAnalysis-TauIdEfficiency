@@ -14,10 +14,11 @@ channel = 'ZtoMuTau_tauIdEff'
 
 #jobId = getJobId(channel)
 jobId = '2011Oct30'
+#jobId = '2011Dec15'
 
-version = 'V10_4tauEnRecovery'
+version = 'V10_5tauEnRecovery'
 
-lxbatch_queue = '1nw'
+lxbatch_queue = '1nd'
 
 pfCandidateCollection = "particleFlow" # pile-up removal disabled
 #pfCandidateCollection = "pfNoPileUp"   # pile-up removal enabled
@@ -28,20 +29,22 @@ samplesToAnalyze = [
     #'data_SingleMu_Run2011A_Aug05ReReco_v1',
     #'data_SingleMu_Run2011A_PromptReco_v6',
     #'data_MET_Run2011B_PromptReco_v1s1',
-    'Ztautau_powheg',
+    'data_SingleMu_Run2011B_PromptReco_v1',
+    #'Ztautau_powheg',
     #'Ztautau_embedded_Run2011A_May10ReReco',
     #'Ztautau_embedded_Run2011A_PromptReco_v4',
     #'Ztautau_embedded_Run2011A_Aug05ReReco_v1',
     #'Ztautau_embedded_Run2011A_PromptReco_v6',
     #'Ztautau_embedded_Run2011B_PromptReco_v1',
     #'Zmumu_powheg',
+    #'ZplusJets_madgraph',
     #'PPmuXptGt20Mu15',
     #'WplusJets_madgraph',
     #'TTplusJets_madgraph'
 ]
 
 samplesToAnalyze_noTauSel = [
-    'Ztautau_powheg'
+    #'Ztautau_powheg'
 ]    
 
 numInputFilesPerJob = {
@@ -49,7 +52,8 @@ numInputFilesPerJob = {
     'data_SingleMu_Run2011A_PromptReco_v4'     : 10,
     'data_SingleMu_Run2011A_Aug05ReReco_v1'    :  5,
     'data_SingleMu_Run2011A_PromptReco_v6'     :  5,
-    'data_MET_Run2011B_PromptReco_v1s1'        :  3,
+    'data_MET_Run2011B_PromptReco_v1s1'        :  5,
+    'data_SingleMu_Run2011B_PromptReco_v1'     :  5,
     'Ztautau_powheg'                           :  3,
     'Ztautau_embedded_Run2011A_May10ReReco'    :  5,
     'Ztautau_embedded_Run2011A_PromptReco_v4'  :  5,
@@ -57,8 +61,9 @@ numInputFilesPerJob = {
     'Ztautau_embedded_Run2011A_PromptReco_v6'  :  5,
     'Ztautau_embedded_Run2011B_PromptReco_v1'  :  5,
     'Zmumu_powheg'                             :  5,
+    'ZplusJets_madgraph'                       :  1,
     'PPmuXptGt20Mu15'                          :  5,
-    'WplusJets_madgraph'                       : 10,
+    'WplusJets_madgraph'                       :  5,
     'TTplusJets_madgraph'                      :  3
 }    
 

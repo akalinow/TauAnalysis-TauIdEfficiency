@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.4 $
+ * \version $Revision: 1.5 $
  *
- * $Id: makeTauIdEffQCDtemplate.cc,v 1.4 2011/11/26 15:37:59 veelken Exp $
+ * $Id: makeTauIdEffQCDtemplate.cc,v 1.5 2011/11/27 18:25:17 veelken Exp $
  *
  */
 
@@ -211,13 +211,13 @@ int main(int argc, const char* argv[])
       std::string regionTakeQCDtemplateFromData = 
 	cfgMakeTauIdEffQCDtemplate.getParameter<std::string>(std::string("regionTakeQCDtemplateFromData_").append(*tauIdValue));
       add_string_uniquely(regions, regionTakeQCDtemplateFromData);
-      add_string_uniquely(regions, std::string(regionTakeQCDtemplateFromData).append("+"));
-      add_string_uniquely(regions, std::string(regionTakeQCDtemplateFromData).append("-"));	  
+      //add_string_uniquely(regions, std::string(regionTakeQCDtemplateFromData).append("+"));
+      //add_string_uniquely(regions, std::string(regionTakeQCDtemplateFromData).append("-"));	  
       std::string regionWplusJetsSideband = 
 	cfgMakeTauIdEffQCDtemplate.getParameter<std::string>(std::string("regionWplusJetsSideband_").append(*tauIdValue));
       add_string_uniquely(regions, regionWplusJetsSideband);
-      add_string_uniquely(regions, std::string(regionWplusJetsSideband).append("+"));
-      add_string_uniquely(regions, std::string(regionWplusJetsSideband).append("-"));
+      //add_string_uniquely(regions, std::string(regionWplusJetsSideband).append("+"));
+      //add_string_uniquely(regions, std::string(regionWplusJetsSideband).append("-"));
       std::string regionStoreQCDtemplate = 
 	cfgMakeTauIdEffQCDtemplate.getParameter<std::string>(std::string("regionStoreQCDtemplate_").append(*tauIdValue));
       
@@ -232,22 +232,22 @@ int main(int argc, const char* argv[])
 				regionStoreQCDtemplate, 
 				*tauId, *fitVariable, *sysUncertainty);
 	  regionEntries.push_back(regionEntry);
-	  
+
 	  // tau+ candidates only
-	  regionEntryType* regionEntry_plus = 
-	    new regionEntryType(std::string(regionTakeQCDtemplateFromData).append("+"), 
-				std::string(regionWplusJetsSideband).append("+"), 
-				std::string(regionStoreQCDtemplate).append("+"), 
-				*tauId, *fitVariable, *sysUncertainty);
-	  regionEntries.push_back(regionEntry_plus);
-	  
+	  //regionEntryType* regionEntry_plus = 
+	  //  new regionEntryType(std::string(regionTakeQCDtemplateFromData).append("+"), 
+	  //			  std::string(regionWplusJetsSideband).append("+"), 
+	  //			  std::string(regionStoreQCDtemplate).append("+"), 
+	  //			  *tauId, *fitVariable, *sysUncertainty);
+	  //regionEntries.push_back(regionEntry_plus);
+	  //
 	  // tau- candidates only
-	  regionEntryType* regionEntry_minus = 
-	    new regionEntryType(std::string(regionTakeQCDtemplateFromData).append("-"), 
-				std::string(regionWplusJetsSideband).append("-"), 
-				std::string(regionStoreQCDtemplate).append("-"), 
-				*tauId, *fitVariable, *sysUncertainty);
-	  regionEntries.push_back(regionEntry_minus);
+	  //regionEntryType* regionEntry_minus = 
+	  //  new regionEntryType(std::string(regionTakeQCDtemplateFromData).append("-"), 
+	  //			  std::string(regionWplusJetsSideband).append("-"), 
+	  //			  std::string(regionStoreQCDtemplate).append("-"), 
+	  //			  *tauId, *fitVariable, *sysUncertainty);
+	  //regionEntries.push_back(regionEntry_minus);
 	}
       }
     }

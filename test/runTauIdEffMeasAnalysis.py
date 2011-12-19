@@ -10,21 +10,25 @@ channel = 'ZtoMuTau_tauIdEff'
 #jobId = getJobId(channel)
 jobId = '2011Oct30'
 
-version = 'V10_3tauEnRecovery'
+version = 'V10_5tauEnRecovery'
+label = 'fitEWKbgSum_v4'
 
 inputFilePath = '/data1/veelken/CMSSW_4_2_x/PATtuples/TauIdEffMeas/%s/%s/' % (jobId, version) \
                + 'user/v/veelken/CMSSW_4_2_x/PATtuples/TauIdEffMeas/%s/%s/' % (jobId, version)
-outputFilePath = '/data1/veelken/tmp/muonPtGt17/%s_2/' % version
+outputFilePath = '/data1/veelken/tmp/muonPtGt17/%s_%s/' % (version, label)
 
 samplesToAnalyze = [
-    # modify in case you want to submit jobs for some of the samples only...
     #
     # NOTE: data samples are added according to the runPeriod chosen
     #
     'Ztautau_powheg',
-    #'Ztautau_embedded_part1',
-    #'Ztautau_embedded_part2',
+    #'Ztautau_embedded_Run2011A_May10ReReco',
+    #'Ztautau_embedded_Run2011A_PromptReco_v4',
+    #'Ztautau_embedded_Run2011A_Aug05ReReco_v1',
+    #'Ztautau_embedded_Run2011A_PromptReco_v6',
+    #'Ztautau_embedded_Run2011B_PromptReco_v1',
     'Zmumu_powheg',
+    'ZplusJets_madgraph',
     'PPmuXptGt20Mu15',
     'WplusJets_madgraph',
     'TTplusJets_madgraph'
@@ -34,10 +38,12 @@ samplesToAnalyze = [
 # used to compute preselection efficiencies and purities in C1p and C1f/D1p regions
 sampleZtautau = 'Ztautau_powheg'
 
-runPeriod = '2011RunA'
-#runPeriod = '2011RunB'
+#runPeriod = '2011RunA'
+runPeriod = '2011RunB'
 
 intLumiData = None
+firstRunData = -1
+lastRunData = -1
 hltPaths = None
 l1Bits = None
 srcWeights = None
@@ -73,8 +79,7 @@ if runPeriod == '2011RunA':
     }
 elif runPeriod == '2011RunB':
     samplesToAnalyze.extend([
-        'data_MET_Run2011B_PromptReco_v1',
-        'data_MET_Run2011B_PromptReco_v1a'
+        'data_MET_Run2011B_PromptReco_v1s1'
     ])
     intLumiData = 773.9 # runs 178420-180252
     hltPaths = {
@@ -87,7 +92,7 @@ elif runPeriod == '2011RunB':
         ]
     }
     l1Bits = {
-        'Data' : [ ],
+        'Data' : [],
         'smMC' : [ 'L1_ETM20' ]
     }
     srcWeights = {
@@ -97,6 +102,15 @@ elif runPeriod == '2011RunB':
 else:
     raise ValueError("Invalid runPeriod = %s !!" % runPeriod)
 
+cut_muonPtMin         = 17.0
+cut_tauLeadTrackPtMin =  5.0
+cut_tauAbsIsoMax      =  5.0
+cut_caloMEtPtMin      = 20.0
+cut_pfMEtPtMin        = 20.0
+
+plot_l1Bits   = []
+plot_hltPaths = []
+
 fitVariables = [
     'diTauVisMass'
 ]    
@@ -105,85 +119,85 @@ mode = 'tauIdEfficiency'
 #mode = 'tauChargeMisIdRate'
 
 sysUncertainties = [
-    #"JetEn",        # needed for diTauMt/Pzeta
-    "TauJetEn",      # needed for diTauVisMass
-    "TauJetRes"      # needed for diTauVisMass
-    #"UnclusteredEn" # needed for diTauMt/Pzeta 
+    "JetEn",        # needed for diTauMt/Pzeta
+    "TauJetEn",     # needed for diTauVisMass
+    "TauJetRes",    # needed for diTauVisMass
+    "UnclusteredEn" # needed for diTauMt/Pzeta 
 ]
 
 #templateMorphingMode = "none"
 #templateMorphingMode = "horizontal" # WARNING: 'horizontal' template morphing runs **very** slow !!
 templateMorphingMode = "vertical"
 
-fitIndividualProcesses = True
-#fitIndividualProcesses = False
+#fitIndividualProcesses = True
+fitIndividualProcesses = False
 
 tauIds = {
     # HPS isolation with no deltaBeta corrections applied
     # (separate isolation requirements wrt. PFChargedHadrons and PFGammas)
-##     'tauDiscrHPSloose'  : {
-##         'discriminators' : [
-##             'decayModeFinding',
-##             'byLooseIsolation'
-##         ],
-##         'legendEntry' : "HPS Loose",
-##         'markerStyleData' : 20,
-##         'markerStyleSim' : 24,
-##         'color' : 418
-##     },
-##     'tauDiscrHPSmedium' : {
-##         'discriminators' : [
-##             'decayModeFinding',
-##             'byMediumIsolation'
-##         ],
-##         'legendEntry' : "HPS Medium",
-##         'markerStyleData' : 21,
-##         'markerStyleSim' : 25,
-##         'color' : 807
-##     },
-##     'tauDiscrHPStight' : {
-##         'discriminators' : [
-##             'decayModeFinding',
-##             'byTightIsolation'
-##         ],
-##         'legendEntry' : "HPS Tight",
-##         'markerStyleData' : 22,
-##         'markerStyleSim' : 26,
-##         'color' : 618
-##     },
+    'tauDiscrHPSloose'  : {
+        'discriminators' : [
+            'decayModeFinding',
+            'byLooseIsolation'
+        ],
+        'legendEntry' : "HPS Loose",
+        'markerStyleData' : 20,
+        'markerStyleSim' : 24,
+        'color' : 418
+    },
+    'tauDiscrHPSmedium' : {
+        'discriminators' : [
+            'decayModeFinding',
+            'byMediumIsolation'
+        ],
+        'legendEntry' : "HPS Medium",
+        'markerStyleData' : 21,
+        'markerStyleSim' : 25,
+        'color' : 807
+    },
+    'tauDiscrHPStight' : {
+        'discriminators' : [
+            'decayModeFinding',
+            'byTightIsolation'
+        ],
+        'legendEntry' : "HPS Tight",
+        'markerStyleData' : 22,
+        'markerStyleSim' : 26,
+        'color' : 618
+    },
             
     # HPS isolation with deltaBeta corrections applied
     # (separate isolation requirements wrt. PFChargedHadrons and PFGammas)
-##     'tauDiscrHPSlooseDBcorr'  : {
-##         'discriminators' : [
-##             'decayModeFinding',
-##             'byLooseIsolationDeltaBetaCorr'
-##         ],
-##         'legendEntry' : "HPS #delta#beta Loose",
-##         'markerStyleData' : 20,
-##         'markerStyleSim' : 24,
-##         'color' : 418
-##     },
-##     'tauDiscrHPSmediumDBcorr' : {
-##         'discriminators' : [
-##             'decayModeFinding',
-##             'byMediumIsolationDeltaBetaCorr'
-##         ],
-##         'legendEntry' : "HPS #delta#beta Medium",
-##         'markerStyleData' : 21,
-##         'markerStyleSim' : 25,
-##         'color' : 807
-##     },
-##     'tauDiscrHPStightDBcorr' : {
-##         'discriminators' : [
-##             'decayModeFinding',
-##             'byTightIsolationDeltaBetaCorr'
-##         ],
-##         'legendEntry' : "HPS #delta#beta Tight",
-##         'markerStyleData' : 22,
-##         'markerStyleSim' : 26,
-##         'color' : 618
-##     },
+    'tauDiscrHPSlooseDBcorr'  : {
+        'discriminators' : [
+            'decayModeFinding',
+            'byLooseIsolationDeltaBetaCorr'
+        ],
+        'legendEntry' : "HPS #delta#beta Loose",
+        'markerStyleData' : 20,
+        'markerStyleSim' : 24,
+        'color' : 418
+    },
+    'tauDiscrHPSmediumDBcorr' : {
+        'discriminators' : [
+            'decayModeFinding',
+            'byMediumIsolationDeltaBetaCorr'
+        ],
+        'legendEntry' : "HPS #delta#beta Medium",
+        'markerStyleData' : 21,
+        'markerStyleSim' : 25,
+        'color' : 807
+    },
+    'tauDiscrHPStightDBcorr' : {
+        'discriminators' : [
+            'decayModeFinding',
+            'byTightIsolationDeltaBetaCorr'
+        ],
+        'legendEntry' : "HPS #delta#beta Tight",
+        'markerStyleData' : 22,
+        'markerStyleSim' : 26,
+        'color' : 618
+    },
     
     # HPS combined isolation discriminators
     # (based on isolation sumPt of PFChargedHadrons + PFGammas)
@@ -193,6 +207,29 @@ tauIds = {
             'byLooseCombinedIsolationDeltaBetaCorr'
         ],
         'legendEntry' : "HPS comb. Loose",
+        'markerStyleData' : 20,
+        'markerStyleSim' : 24,
+        'color' : 418
+    },
+    'tauDiscrHPScombLooseDBcorrAndElectronVeto'  : {
+        'discriminators' : [
+            'decayModeFinding',
+            'byLooseCombinedIsolationDeltaBetaCorr',
+            'againstElectronMVA'
+            
+        ],
+        'legendEntry' : "HPS comb. Loose & e-Veto",
+        'markerStyleData' : 20,
+        'markerStyleSim' : 24,
+        'color' : 418
+    },
+    'tauDiscrHPScombLooseDBcorrAndMuonVeto'  : {
+        'discriminators' : [
+            'decayModeFinding',
+            'byLooseCombinedIsolationDeltaBetaCorr',
+            'againstMuonTight'
+        ],
+        'legendEntry' : "HPS comb. Loose & #mu-Veto",
         'markerStyleData' : 20,
         'markerStyleSim' : 24,
         'color' : 418
@@ -222,78 +259,78 @@ tauIds = {
 binning = {
     # NOTE: these strings need to match what is hard-coded in regionEntryType::regionEntryType constructor,
     #       defined in TauAnalysis/TauIdEfficiency/bin/FWLiteTauIdEffAnalyzer.cc 
-##     'tauPt' : {
-##         'tauPtLt25' : {
-##             'min' :  20.0,
-##             'max' :  25.0
-##         },
-##         'tauPt25to30' : {
-##             'min' :  25.0,
-##             'max' :  30.0
-##         },
-##         'tauPt30to40' : {
-##             'min' :  30.0,
-##             'max' :  40.0
-##         },
-##         'tauPtGt40' : {
-##             'min' :  40.0,
-##             'max' : 100.0
-##         },
-##         'xAxisTitle' : "P_{T}^{#tau}"
-##     },
-##     'tauAbsEta' : {
-##         'tauAbsEtaLt14' : {
-##             'min' :  0.0,
-##             'max' :  1.4
-##         },
-##         'tauAbsEta14to19' : {
-##             'min' :  1.4,
-##             'max' :  1.9
-##         },
-##         'tauAbsEta19to23' : {
-##             'min' :  1.9,
-##             'max' :  2.3
-##         },
-##         'xAxisTitle' : "|#eta_{#tau}|"
-##     },
-##     'numVertices' : {
-##         'numVerticesLeq4' : {
-##             'min' :  -0.5,
-##             'max' :   4.5
-##         },
-##         'numVertices5to6' : {
-##             'min' :   4.5,
-##             'max' :   6.5
-##         },
-##         'numVertices7to8' : {
-##             'min' :   6.5,
-##             'max' :   8.5
-##         },
-##         'numVerticesGt8' : {
-##             'min' : 8.5,
-##             'max' :  20.5
-##         },
-##         'xAxisTitle' : "Num. Vertices"
-##     },
-##     'sumEt' : {
-##         'sumEtLt250' : {
-##             'min' :    0.0,
-##             'max' :  250.0
-##         },
-##         'sumEt250to350' : {
-##             'min' :  250.0,
-##             'max' :  350.0
-##         },
-##         'sumEt350to450' : {
-##             'min' :  350.0,
-##             'max' :  450.0
-##         },
-##         'sumEtGt450' : {
-##             'min' :  450.0,
-##             'max' : 1000.0
-##         },
-##         'xAxisTitle' : "#Sigma E_{T}"
-##     }
+    'tauPt' : {
+        'tauPtLt25' : {
+            'min' :  20.0,
+            'max' :  25.0
+        },
+        'tauPt25to30' : {
+            'min' :  25.0,
+            'max' :  30.0
+        },
+        'tauPt30to40' : {
+            'min' :  30.0,
+            'max' :  40.0
+        },
+        'tauPtGt40' : {
+            'min' :  40.0,
+            'max' : 100.0
+        },
+        'xAxisTitle' : "P_{T}^{#tau}"
+    },
+    'tauAbsEta' : {
+        'tauAbsEtaLt14' : {
+            'min' :  0.0,
+            'max' :  1.4
+        },
+        'tauAbsEta14to19' : {
+            'min' :  1.4,
+            'max' :  1.9
+        },
+        'tauAbsEta19to23' : {
+            'min' :  1.9,
+            'max' :  2.3
+        },
+        'xAxisTitle' : "|#eta_{#tau}|"
+    },
+    'numVertices' : {
+        'numVerticesLe6' : {
+            'min' :  -0.5,
+            'max' :   6.5
+        },
+        'numVertices7to9' : {
+            'min' :   6.5,
+            'max' :   9.5
+        },
+        'numVertices10to12' : {
+            'min' :   9.5,
+            'max' :  12.5
+        },
+        'numVerticesGt12' : {
+            'min' :  12.5,
+            'max' :  24.5
+        },
+        'xAxisTitle' : "Num. Vertices"
+    },
+    'sumEt' : {
+        'sumEtLt250' : {
+            'min' :    0.0,
+            'max' :  250.0
+        },
+        'sumEt250to350' : {
+            'min' :  250.0,
+            'max' :  350.0
+        },
+        'sumEt350to450' : {
+            'min' :  350.0,
+            'max' :  450.0
+        },
+        'sumEtGt450' : {
+            'min' :  450.0,
+            'max' : 1000.0
+        },
+        'xAxisTitle' : "#Sigma E_{T}"
+    }
 }
 
 execDir = "%s/bin/%s/" % (os.environ['CMSSW_BASE'], os.environ['SCRAM_ARCH'])
@@ -319,7 +356,7 @@ measEff_label                        = None
 if mode == 'tauIdEfficiency':
     executable_compTauIdEffPreselNumbers = execDir + 'FWLiteTauIdEffPreselNumbers'
     keyword_compTauIdEffPreselNumbers    = 'compTauIdEffPreselNumbers'
-    suffix_noTauSel                      = '_noTauSel'
+    suffix_noTauSel                      = 'noTauSel'
     regions                              = [
         'ABCD',
         'A',
@@ -347,18 +384,24 @@ if mode == 'tauIdEfficiency':
         'C2',
         'C2p',
         'C2f',
+        'CWj',
+        'CWj_mW',
         'D',   # generic background control region (SS, tight muon isolation)
         'D1',
         'D1p',
-        'D1f'
+        'D1f',
+        'DWj',
+        'DWj_mW'
     ]
     regionsToFit                         = [ 'A', 'B', 'C1p', 'C1f', 'C2', 'D' ]
     passed_region                        = 'C1p'
     failed_region                        = 'C1f'
     regionQCDtemplateFromData_passed     = 'A1_mW'
     regionQCDtemplateFromData_failed     = 'A1_mW'
-    regionWplusJetsSideband_passed       = 'AWj_mW'
-    regionWplusJetsSideband_failed       = 'AWj_mW'
+    #regionWplusJetsSideband_passed       = 'CWj'
+    #regionWplusJetsSideband_failed       = 'CWj'
+    regionWplusJetsSideband_passed       = 'AWj'
+    regionWplusJetsSideband_failed       = 'AWj'
     fitMethod                            = 'fitTauIdEff'
     tauChargeMode                        = 'tauLeadTrackCharge'
     disableTauCandPreselCuts             = False
@@ -389,8 +432,8 @@ elif mode == 'tauChargeMisIdRate':
     failed_region                        = 'D1p'
     regionQCDtemplateFromData_passed     = 'A1_mW'
     regionQCDtemplateFromData_failed     = 'B1_mW'
-    regionWplusJetsSideband_passed       = 'AWj_mW'
-    regionWplusJetsSideband_failed       = 'BWj_mW'
+    regionWplusJetsSideband_passed       = 'CWj'
+    regionWplusJetsSideband_failed       = 'DWj'
     fitMethod                            = 'fitTauIdEff'
     tauChargeMode                        = 'tauSignalChargedHadronSum'
     disableTauCandPreselCuts             = True
@@ -439,12 +482,20 @@ configFileNames_FWLiteTauIdEffAnalyzer = []
 outputFileNames_FWLiteTauIdEffAnalyzer = []
 logFileNames_FWLiteTauIdEffAnalyzer    = []
 for sampleToAnalyze in samplesToAnalyze:
+    fwliteInput_firstRun = -1
+    fwliteInput_lastRun  = -1
+    processType = recoSampleDefinitionsTauIdEfficiency_7TeV['RECO_SAMPLES'][sampleToAnalyze]['type']
+    if processType == 'Data':
+        fwliteInput_firstRun = firstRunData
+        fwliteInput_lastRun = lastRunData
     retVal_FWLiteTauIdEffAnalyzer = \
-      buildConfigFile_FWLiteTauIdEffAnalyzer(sampleToAnalyze, version, inputFilePath, tauIds,
+      buildConfigFile_FWLiteTauIdEffAnalyzer(sampleToAnalyze, version, inputFilePath, fwliteInput_firstRun, fwliteInput_lastRun, tauIds,
                                              binning, sysUncertainties, outputFilePath,
                                              recoSampleDefinitionsTauIdEfficiency_7TeV,
                                              regions, intLumiData, hltPaths, l1Bits, srcWeights,
-                                             tauChargeMode, disableTauCandPreselCuts)
+                                             tauChargeMode, disableTauCandPreselCuts,
+                                             cut_muonPtMin, cut_tauLeadTrackPtMin, cut_tauAbsIsoMax, cut_caloMEtPtMin, cut_pfMEtPtMin,
+                                             plot_l1Bits, plot_hltPaths)
 
     if retVal_FWLiteTauIdEffAnalyzer is None:
         continue
@@ -550,8 +601,9 @@ for tauId in tauIds.keys():
 # build config files for running FWLiteTauIdEffPreselNumbers macro
 #
 retVal_FWLiteTauIdEffPreselNumbers = \
-  buildConfigFile_FWLiteTauIdEffPreselNumbers(inputFilePath, sampleZtautau, "".join([ version, suffix_noTauSel ]), tauIds,
-                                              binning, outputFilePath, hltPaths, l1Bits, srcWeights, keyword_compTauIdEffPreselNumbers)
+  buildConfigFile_FWLiteTauIdEffPreselNumbers(inputFilePath, sampleZtautau, "_".join([ suffix_noTauSel, version ]), tauIds,
+                                              binning, outputFilePath, hltPaths, l1Bits, srcWeights, keyword_compTauIdEffPreselNumbers,
+                                              cut_muonPtMin, cut_tauLeadTrackPtMin, cut_tauAbsIsoMax, cut_caloMEtPtMin, cut_pfMEtPtMin)
 configFileName_FWLiteTauIdEffPreselNumbers = retVal_FWLiteTauIdEffPreselNumbers['configFileName']
 outputFileName_FWLiteTauIdEffPreselNumbers = retVal_FWLiteTauIdEffPreselNumbers['outputFileName']
 logFileName_FWLiteTauIdEffPreselNumbers = retVal_FWLiteTauIdEffPreselNumbers['logFileName']
@@ -580,7 +632,7 @@ configFileNames_compTauIdEffFinalNumbers = []
 outputFileNames_compTauIdEffFinalNumbers = []
 logFileNames_compTauIdEffFinalNumbers = []
 retVal_compTauIdEffFinalNumbers = \
-  buildConfigFile_compTauIdEffFinalNumbers(haddOutputFileName_stage3, '', "".join([ jobId, version ]), tauIds.keys(),
+  buildConfigFile_compTauIdEffFinalNumbers(haddOutputFileName_stage3, '', "".join([ jobId, version ]), tauIds,
                                            fitVariables, outputFilePath,
                                            keyword_compTauIdEffFinalNumbers, passed_region, failed_region,
                                            fitIndividualProcesses)
@@ -591,7 +643,7 @@ for binVariable in binning.keys():
     for binName, binOptions in binning[binVariable].items():
         if isinstance(binOptions, dict) and binOptions.get('min') is not None and binOptions.get('max') is not None:
             retVal_compTauIdEffFinalNumbers = \
-              buildConfigFile_compTauIdEffFinalNumbers(haddOutputFileName_stage3, binName, "".join([ jobId, version ]), tauIds.keys(),
+              buildConfigFile_compTauIdEffFinalNumbers(haddOutputFileName_stage3, binName, "".join([ jobId, version ]), tauIds,
                                                        fitVariables, outputFilePath,
                                                        keyword_compTauIdEffFinalNumbers, passed_region, failed_region,
                                                        fitIndividualProcesses)
@@ -632,7 +684,7 @@ for binVariable in binning.keys():
     retVal_makeTauIdEffFinalPlots = \
       buildConfigFile_makeTauIdEffFinalPlots(haddOutputFileName_stage4, tauIds, discriminators_HPS,
                                              binning[binVariable], fitVariables, outputFilePath, outputFileName_HPS,
-                                             expEff_label, measEff_label)
+                                             expEff_label, measEff_label, intLumiData)
     configFileNames_makeTauIdEffFinalPlots.append(retVal_makeTauIdEffFinalPlots['configFileName'])
     outputFileNames_makeTauIdEffFinalPlots.append(retVal_makeTauIdEffFinalPlots['outputFileName'])
     logFileNames_makeTauIdEffFinalPlots.append(retVal_makeTauIdEffFinalPlots['logFileName'])
@@ -647,7 +699,7 @@ for binVariable in binning.keys():
     retVal_makeTauIdEffFinalPlots = \
       buildConfigFile_makeTauIdEffFinalPlots(haddOutputFileName_stage4, tauIds, discriminators_HPSdbCorr,
                                              binning[binVariable], fitVariables, outputFilePath, outputFileName_HPSdbCorr,
-                                             expEff_label, measEff_label)
+                                             expEff_label, measEff_label, intLumiData)
     configFileNames_makeTauIdEffFinalPlots.append(retVal_makeTauIdEffFinalPlots['configFileName'])
     outputFileNames_makeTauIdEffFinalPlots.append(retVal_makeTauIdEffFinalPlots['outputFileName'])
     logFileNames_makeTauIdEffFinalPlots.append(retVal_makeTauIdEffFinalPlots['logFileName'])
@@ -662,7 +714,7 @@ for binVariable in binning.keys():
     retVal_makeTauIdEffFinalPlots = \
       buildConfigFile_makeTauIdEffFinalPlots(haddOutputFileName_stage4, tauIds, discriminators_HPScombined,
                                              binning[binVariable], fitVariables, outputFilePath, outputFileName_HPScombined,
-                                             expEff_label, measEff_label)
+                                             expEff_label, measEff_label, intLumiData)
     configFileNames_makeTauIdEffFinalPlots.append(retVal_makeTauIdEffFinalPlots['configFileName'])
     outputFileNames_makeTauIdEffFinalPlots.append(retVal_makeTauIdEffFinalPlots['outputFileName'])
     logFileNames_makeTauIdEffFinalPlots.append(retVal_makeTauIdEffFinalPlots['logFileName'])
@@ -677,7 +729,7 @@ def make_MakeFile_vstring(list_of_strings):
     return retVal
 
 # done building config files, now build Makefile...
-makeFileName = "Makefile_TauIdEffMeasAnalysis_%s" % "".join([ jobId, version ])
+makeFileName = "Makefile_TauIdEffMeasAnalysis_%s_%s_%s" % (jobId, version, label)
 makeFile = open(makeFileName, "w")
 makeFile.write("\n")
 makeFile.write("all: %s %s\n" %
@@ -722,9 +774,10 @@ makeFile.write("\t%s%s %s &> %s\n" %
    haddLogFileName_stage2))
 makeFile.write("\n")
 for i, outputFileName in enumerate(outputFileNames_fitTauIdEff):
-    makeFile.write("%s: %s %s\n" %
+    makeFile.write("%s: %s %s %s\n" %
       (outputFileName,
        executable_fitTauIdEff,
+       configFileNames_fitTauIdEff[i],
        haddOutputFileName_stage2))
     makeFile.write("\t%s%s %s &> %s\n" %
       (nice, executable_fitTauIdEff,
@@ -749,9 +802,10 @@ makeFile.write("\t%s%s %s &> %s\n" %
    haddLogFileName_stage3))
 makeFile.write("\n")
 for i, outputFileName in enumerate(outputFileNames_compTauIdEffFinalNumbers):
-    makeFile.write("%s: %s %s\n" %
+    makeFile.write("%s: %s %s %s\n" %
       (outputFileName,
        executable_compTauIdEffFinalNumbers,
+       configFileNames_compTauIdEffFinalNumbers[i],
        haddOutputFileName_stage3))
     makeFile.write("\t%s%s %s &> %s\n" %
       (nice, executable_compTauIdEffFinalNumbers,
@@ -782,6 +836,9 @@ makeFile.write("\trm -f %s\n" % make_MakeFile_vstring(outputFileNames_FWLiteTauI
 makeFile.write("\trm -f %s\n" % make_MakeFile_vstring(haddInputFileNames_stage1))
 makeFile.write("\trm -f %s\n" % haddShellFileName_stage1)
 makeFile.write("\trm -f %s\n" % haddOutputFileName_stage1)
+makeFile.write("\trm -f %s\n" % make_MakeFile_vstring(haddInputFileNames_stage2))
+makeFile.write("\trm -f %s\n" % haddShellFileName_stage2)
+makeFile.write("\trm -f %s\n" % haddOutputFileName_stage2)
 makeFile.write("\trm -f %s\n" % make_MakeFile_vstring(outputFileNames_fitTauIdEff))
 makeFile.write("\trm -f %s\n" % outputFileName_FWLiteTauIdEffPreselNumbers)
 makeFile.write("\trm -f %s\n" % make_MakeFile_vstring(haddInputFileNames_stage3))

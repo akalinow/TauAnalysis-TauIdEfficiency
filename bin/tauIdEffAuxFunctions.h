@@ -232,7 +232,17 @@ void loadHistograms(histogramMap3& histogramMap,
 	//  if ( !histogram->GetSumw2N() ) histogram->Sumw2();	    
 	//  histogram->Scale(0.40);
 	//}
-	
+
+	// CV: scale MC histograms for ZplusJets and WplusJets by print-out
+        //       '--> scaling histograms by factor = 0.10662 according to cross-section times luminosity.'
+	//     in analyzeTauIdEffPATtuple.log files, in order to account for bug in 
+	//       TauAnalysis/TauIdEfficiency/bin/FWLiteTauIdEffAnalyzer.cc
+	//     version 1.26 (generator-matched histograms were not scaled)
+	//    (temporary fix, 2011/12/18)
+	//if ( !histogram->GetSumw2N() ) histogram->Sumw2();	 
+	//if      ( process == "ZplusJets_madgraph" ) histogram->Scale(0.10662);
+	//else if ( process == "WplusJets"          ) histogram->Scale(0.489305);
+
 	if ( histogram != 0 ) {
 	  histogramMap[*region][*observable][*sysUncertainty] = histogram;
 	  std::cout << "histogramMap[region = " << (*region) << "][observable = " << (*observable) << "]" 

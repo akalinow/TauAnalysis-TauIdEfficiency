@@ -8,7 +8,8 @@ import subprocess
 import shlex
 
 jobId = "2011Oct30" # Christian's Ntuples
-version = "V10_3tauEnRecovery"
+#jobId = "2011Dec15"
+version = "V10_5tauEnRecovery"
 #jobId = "2011Jun06" # Mauro's Ntuples
 #version = "V2"
 
@@ -26,19 +27,23 @@ if not os.path.exists(targetFilePath):
 
 samplesToCopy = [
     # modify in case you want to copy some of the samples only...
-    'data_SingleMu_Run2011A_May10ReReco_v1',
-    'data_SingleMu_Run2011A_PromptReco_v4',
-    'data_SingleMu_Run2011A_Aug05ReReco_v1',
-    'data_SingleMu_Run2011A_PromptReco_v6',
-    'data_MET_Run2011B_PromptReco_v1',
-    'data_MET_Run2011B_PromptReco_v1a',
-    'Ztautau_powheg',
-    #'Ztautau_embedded_part1',
-    #'Ztautau_embedded_part2',
-    'Zmumu_powheg',
-    'PPmuXptGt20Mu15',
-    'WplusJets_madgraph',
-    'TTplusJets_madgraph'
+    #'data_SingleMu_Run2011A_May10ReReco_v1',
+    #'data_SingleMu_Run2011A_PromptReco_v4',
+    #'data_SingleMu_Run2011A_Aug05ReReco_v1',
+    #'data_SingleMu_Run2011A_PromptReco_v6',
+    #'data_MET_Run2011B_PromptReco_v1s1',
+    'data_SingleMu_Run2011B_PromptReco_v1',
+    #'Ztautau_powheg',
+    #'Ztautau_embedded_Run2011A_May10ReReco',
+    #'Ztautau_embedded_Run2011A_PromptReco_v4',
+    #'Ztautau_embedded_Run2011A_Aug05ReReco_v1',
+    #'Ztautau_embedded_Run2011A_PromptReco_v6',
+    #'Ztautau_embedded_Run2011B_PromptReco_v1',
+    #'Zmumu_powheg',
+    #'ZplusJets_madgraph',
+    #'PPmuXptGt20Mu15',
+    #'WplusJets_madgraph',
+    #'TTplusJets_madgraph'
 ]
 
 files_to_copy = []
@@ -62,4 +67,4 @@ for source_file in source_files:
     print("copying %s --> %s" % (source_file, target_file))
     files_to_copy.append(source_file)
 
-castor_mirror.mirror_files(castor_mirror.needs_local_copy(files_to_copy, [ targetFilePath ]), [ targetFilePath ], 10)
+castor_mirror.mirror_files(castor_mirror.needs_local_copy(files_to_copy, [ targetFilePath ]), [ targetFilePath ], 3)

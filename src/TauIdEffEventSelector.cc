@@ -59,6 +59,12 @@ TauIdEffEventSelector::TauIdEffEventSelector(const edm::ParameterSet& cfg)
   tauIdDiscriminatorMax_    =  +1.e+3;
   tauIdDiscriminatorCut_    = kNotApplied;
 
+  if ( cfg.exists("muonPtMin")         ) muonPtMin_         = cfg.getParameter<double>("muonPtMin");
+  if ( cfg.exists("tauLeadTrackPtMin") ) tauLeadTrackPtMin_ = cfg.getParameter<double>("tauLeadTrackPtMin");
+  if ( cfg.exists("tauAbsIsoMax")      ) tauAbsIsoMax_      = cfg.getParameter<double>("tauAbsIsoMax");
+  if ( cfg.exists("caloMEtPtMin")      ) caloMEtPtMin_      = cfg.getParameter<double>("caloMEtPtMin");
+  if ( cfg.exists("pfMEtPtMin")        ) pfMEtPtMin_        = cfg.getParameter<double>("pfMEtPtMin");
+
 //--- additional cuts to make sure there are no events in underflow/overflow bins
 //    of visible and transverse mass distributions
 //   (difference in event yields may cause problem with simultaneous fit of visMass and Mt distributions)

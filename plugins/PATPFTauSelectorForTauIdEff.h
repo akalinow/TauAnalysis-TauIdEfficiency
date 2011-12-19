@@ -12,9 +12,9 @@
  * 
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.4 $
+ * \version $Revision: 1.5 $
  *
- * $Id: PATPFTauSelectorForTauIdEff.h,v 1.4 2011/07/26 14:04:16 veelken Exp $
+ * $Id: PATPFTauSelectorForTauIdEff.h,v 1.5 2011/11/23 10:32:14 veelken Exp $
  *
  */
 
@@ -45,6 +45,8 @@ class PATPFTauSelectorForTauIdEff : public edm::EDFilter
   bool filter(edm::Event&, const edm::EventSetup&);
   
 private:
+
+  std::string moduleLabel_;
 
   bool filter_;
 

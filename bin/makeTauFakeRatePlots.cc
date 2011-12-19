@@ -74,7 +74,8 @@ int main(int argc, const char* argv[])
   for ( vParameterSet::const_iterator cfgEventSelection = cfgEventSelections.begin();
 	cfgEventSelection != cfgEventSelections.end(); ++cfgEventSelection ) {
     std::string eventSelectionName = cfgEventSelection->getParameter<std::string>("name");
-    double avTriggerPrescale = cfgEventSelection->getParameter<double>("avTriggerPrescale");
+    double avTriggerPrescale = ( cfgEventSelection->exists("avTriggerPrescale") ) ?
+      cfgEventSelection->getParameter<double>("avTriggerPrescale") : 1.0;
     avTriggerPrescales[eventSelectionName] = avTriggerPrescale;
   }
 

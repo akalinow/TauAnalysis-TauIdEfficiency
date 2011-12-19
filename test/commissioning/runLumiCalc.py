@@ -8,17 +8,17 @@ hltPaths = [
     #'HLT_L1SingleMu10_v*',
     #'HLT_IsoMu15_v*',
     #'HLT_IsoMu12_v*',
-    'HLT_Mu15_v*',    # for QCD muon enriched 
+    #'HLT_Mu15_v*',    # for QCD muon enriched 
     #'HLT_IsoMu17_v*', # for W --> mu nu, Z --> mu+ mu- and Tau id. efficiency
-    'HLT_IsoMu24_v*',
+    #'HLT_IsoMu24_v*',
     #'HLT_DoubleMu7_v*',
     #'HLT_Mu13_Mu8_v*',
     #'HLT_Mu17_Mu8_v*',
-    'HLT_Jet30_v*',   # for QCD multi-jet
-    'HLT_Jet60_v*',
-    'HLT_Jet80_v*',
-    'HLT_Jet110_v*',
-    'HLT_Jet150_v*'
+    #'HLT_Jet30_v*',   # for QCD multi-jet
+    #'HLT_Jet60_v*',
+    #'HLT_Jet80_v*',
+    #'HLT_Jet110_v*',
+    #'HLT_Jet150_v*'
     #'HLT_Mu8_Ele17_CaloIdL_v*',
     #'HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_v*',
     #'HLT_Mu17_Ele8_CaloIdL_v*',
@@ -31,6 +31,7 @@ hltPaths = [
     #'HLT_Ele32_CaloIdVL_CaloIsoVL_TrkIdVL_TrkIsoVL_v*',
     #'HLT_Ele32_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_v*'
     #'HLT_Ele27_WP80_PFMT50_v*'
+    'HLT_Ele32_WP70_v2'
 ]
 
 jsonFiles = {

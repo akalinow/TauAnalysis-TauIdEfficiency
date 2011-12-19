@@ -60,9 +60,9 @@ int getGenMatchType(const PATMuTauPair& muTauPair, const reco::GenParticleCollec
   //std::cout << " genTauDecayMode = " << genTauDecayMode << std::endl;
 
   if      ( (matchingGenParticleAbsPdgId >=  1 && matchingGenParticleAbsPdgId <=  6) ||
-	     matchingGenParticleAbsPdgId == 11 || matchingGenParticleAbsPdgId == 13  ||
-	     matchingGenParticleAbsPdgId == 22                                            ) return kJetToTauFakeMatched;
-  else if (  matchingGenParticleAbsPdgId == 11 || 
+	     matchingGenParticleAbsPdgId == 11 || matchingGenParticleAbsPdgId == 22  ||
+	     matchingGenParticleAbsPdgId == 21                                            ) return kJetToTauFakeMatched;
+  else if (  matchingGenParticleAbsPdgId == 13 || 
 	    (matchingGenParticleAbsPdgId == 15 &&  genTauDecayMode == "muon")             ) return kMuToTauFakeMatched;
   else if (  matchingGenParticleAbsPdgId == 15 && (genTauDecayMode == "oneProng0Pi0"    ||
 						   genTauDecayMode == "oneProng1Pi0"    ||

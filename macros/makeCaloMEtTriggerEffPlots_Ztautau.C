@@ -13,6 +13,7 @@
 #include <TMath.h>
 #include <TROOT.h>
 
+#include <string>
 #include <iostream>
 #include <iomanip>
 #include <assert.h>
@@ -212,14 +213,14 @@ void makePlot(const TString& title,
 
   dummyHistogram_top->Draw("axis");
 
-  graph_Data_passed->SetLineColor(4);
-  graph_Data_passed->SetMarkerColor(4);
-  graph_Data_passed->SetMarkerStyle(20);
-  graph_Data_passed->Draw("p");
+  //graph_Data_passed->SetLineColor(4);
+  //graph_Data_passed->SetMarkerColor(4);
+  //graph_Data_passed->SetMarkerStyle(20);
+  //graph_Data_passed->Draw("p");
 
-  fit_Data_passed->SetLineColor(graph_Data_passed->GetLineColor());
-  fit_Data_passed->SetLineWidth(2);
-  fit_Data_passed->Draw("same");
+  //fit_Data_passed->SetLineColor(graph_Data_passed->GetLineColor());
+  //fit_Data_passed->SetLineWidth(2);
+  //fit_Data_passed->Draw("same");
 
   graph_mcSum_passed->SetLineColor(7);
   graph_mcSum_passed->SetMarkerColor(7);
@@ -233,11 +234,11 @@ void makePlot(const TString& title,
   graph_Data_failed->SetLineColor(2);
   graph_Data_failed->SetMarkerColor(2);
   graph_Data_failed->SetMarkerStyle(21);
-  graph_Data_failed->Draw("p");
+  //graph_Data_failed->Draw("p");
 
   fit_Data_failed->SetLineColor(graph_Data_failed->GetLineColor());
   fit_Data_failed->SetLineWidth(2);
-  fit_Data_failed->Draw("same");
+  //fit_Data_failed->Draw("same");
  
   graph_mcSum_failed->SetLineColor(6);
   graph_mcSum_failed->SetMarkerColor(6);
@@ -251,9 +252,9 @@ void makePlot(const TString& title,
   TLegend* legend = new TLegend(0.61, 0.16, 0.89, 0.47, "", "brNDC"); 
   legend->SetBorderSize(0);
   legend->SetFillColor(0);
-  legend->AddEntry(graph_Data_passed,  legendEntry_Data_passed.Data(),  "p");
+  //legend->AddEntry(graph_Data_passed,  legendEntry_Data_passed.Data(),  "p");
   legend->AddEntry(graph_mcSum_passed, legendEntry_mcSum_passed.Data(), "p");
-  legend->AddEntry(graph_Data_failed,  legendEntry_Data_failed.Data(),  "p");
+  //legend->AddEntry(graph_Data_failed,  legendEntry_Data_failed.Data(),  "p");
   legend->AddEntry(graph_mcSum_failed, legendEntry_mcSum_failed.Data(), "p");
   legend->Draw();
 
@@ -342,7 +343,13 @@ void makePlot(const TString& title,
   fit_Data_div_mc_failed->Draw("same");
  
   canvas->Update();
-  canvas->Print(outputFileName.Data());
+  size_t idx = outputFileName.Last('.');
+  std::string outputFileName_plot = std::string(outputFileName.Data(), 0, idx);
+  if ( idx != std::string::npos ) canvas->Print(std::string(outputFileName_plot).append(std::string(outputFileName.Data(), idx)).data());
+  //canvas->Print(std::string(outputFileName_plot).append(".png").data());
+  //canvas->Print(std::string(outputFileName_plot).append(".pdf").data());
+  topPad->Print(std::string(outputFileName_plot).append(".png").data());
+  topPad->Print(std::string(outputFileName_plot).append(".pdf").data());
 
   delete legend;
   delete label;
@@ -595,7 +602,7 @@ void makeCaloMEtTriggerEffPlots_Ztautau()
 //--- suppress the output canvas 
   gROOT->SetBatch(true);
 
-  TString inputFilePath = "/data1/veelken/tmp/muonPtGt17/V10_5tauEnRecovery_L1ETM20Eff/2011RunB/tauIdEfficiency/";
+  TString inputFilePath = "/data1/veelken/tmp/muonPtGt17/V10_5tauEnRecovery_L1ETM20Eff_v3/2011RunB/tauIdEfficiency/";
   
   TString inputFileName = "analyzeTauIdEffHistograms_all_2011Oct30V10_5tauEnRecovery.root";
 

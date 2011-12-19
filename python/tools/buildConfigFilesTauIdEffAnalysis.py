@@ -52,9 +52,12 @@ def getStringRep_bool(flag):
     return retVal
 #--------------------------------------------------------------------------------
 
-def buildConfigFile_FWLiteTauIdEffAnalyzer(sampleToAnalyze, jobId, inputFilePath, tauIds, binning, sysUncertainties, outputFilePath,
+def buildConfigFile_FWLiteTauIdEffAnalyzer(sampleToAnalyze, jobId, inputFilePath, fwliteInput_firstRun, fwliteInput_lastRun, 
+                                           tauIds, binning, sysUncertainties, outputFilePath,
                                            recoSampleDefinitions, regions, intLumiData, hltPaths, l1Bits, srcWeights,
-                                           tauChargeMode, disableTauCandPreselCuts):
+                                           tauChargeMode, disableTauCandPreselCuts,
+                                           muonPtMin, tauLeadTrackPtMin, tauAbsIsoMax, caloMEtPtMin, pfMEtPtMin,
+                                           plot_l1Bits, plot_hltPaths, requireUniqueMuTauPair = False):
 
     """Build cfg.py file to run FWLiteTauIdEffAnalyzer macro to run on PAT-tuples,
        apply event selections and fill histograms for A/B/C/D regions"""
@@ -123,12 +126,17 @@ def buildConfigFile_FWLiteTauIdEffAnalyzer(sampleToAnalyze, jobId, inputFilePath
 
     hltPaths_string = make_inputFileNames_vstring(hltPaths[processType])
     l1Bits_string = make_inputFileNames_vstring(l1Bits[processType])
+    plot_l1Bits_string = make_inputFileNames_vstring(plot_l1Bits)
+    plot_hltPaths_string = make_inputFileNames_vstring(plot_hltPaths)
     weights_string = make_inputFileNames_vstring(srcWeights[processType])
 
     srcGenParticles = ''
     fillGenMatchHistograms = False
     if processType != 'Data' and \
-      (process_matched.find('Ztautau') != -1 or process_matched.find('Zmumu') != -1 or process_matched.find('ZplusJets') != -1):
+      (process_matched.find('Ztautau')   != -1 or
+       process_matched.find('Zmumu')     != -1 or
+       process_matched.find('ZplusJets') != -1 or
+       process_matched.find('WplusJets') != -1):
         srcGenParticles = 'genParticles'
         fillGenMatchHistograms = True
 
@@ -165,6 +173,9 @@ process = cms.PSet()
 
 process.fwliteInput = cms.PSet(
     fileNames   = cms.vstring(),
+
+    firstRun    = cms.int32(%i),
+    lastRun     = cms.int32(%i),
     
     maxEvents   = cms.int32(-1),
     
@@ -205,16 +216,27 @@ process.tauIdEffAnalyzer = cms.PSet(
     srcGoodMuons = cms.InputTag('selectedPatMuonsForTauIdEffPFRelIsoCumulative'),
     
     srcMuTauPairs = cms.InputTag('%s'),
+    requireUniqueMuTauPair = cms.bool(%s),
     srcCaloMEt = cms.InputTag('patCaloMetNoHF'),
     svFitMassHypothesis = cms.string('psKine_MEt_logM_fit'),
     tauChargeMode = cms.string('%s'),
     disableTauCandPreselCuts = cms.bool(%s),
+    eventSelCuts = cms.PSet(
+        muonPtMin         = cms.double(%f),
+        tauLeadTrackPtMin = cms.double(%f),
+        tauAbsIsoMax      = cms.double(%f),
+        caloMEtPtMin      = cms.double(%f),
+        pfMEtPtMin        = cms.double(%f)
+    ),
 
     srcVertices = cms.InputTag('offlinePrimaryVertices'),
 
     srcGenParticles = cms.InputTag('%s'),
     fillGenMatchHistograms = cms.bool(%s),
     skipPdgIdsGenParticleMatch = cms.vint32(12, 14, 16),
+
+    plot_l1Bits = cms.vstring(%s),
+    plot_hltPaths = cms.vstring(%s),
 
     weights = cms.VInputTag(%s),
 
@@ -247,10 +269,12 @@ process.tauIdEffAnalyzer = cms.PSet(
 
     srcLumiProducer = cms.InputTag('lumiProducer')
 )
-""" % (fwliteInput_fileNames, outputFileName_full,
+""" % (fwliteInput_firstRun, fwliteInput_lastRun, fwliteInput_fileNames, outputFileName_full,
        process_matched, processType,
        regions_string, tauIds_string, binning_string, sysUncertainty, hltPaths_string, l1Bits_string,
-       srcMuTauPairs, tauChargeMode, disableTauCandPreselCuts_string, srcGenParticles, getStringRep_bool(fillGenMatchHistograms),
+       srcMuTauPairs, getStringRep_bool(requireUniqueMuTauPair), tauChargeMode, disableTauCandPreselCuts_string,
+       muonPtMin, tauLeadTrackPtMin, tauAbsIsoMax, caloMEtPtMin, pfMEtPtMin,
+       srcGenParticles, getStringRep_bool(fillGenMatchHistograms), plot_l1Bits_string, plot_hltPaths_string,
        weights_string, allEvents_DBS, xSection, intLumiData)
 
         outputFileNames.append(outputFileName_full)
@@ -480,7 +504,8 @@ process.%s = cms.PSet(
     return retVal
 
 def buildConfigFile_FWLiteTauIdEffPreselNumbers(inputFilePath, sampleZtautau, jobId, tauIds, binning, outputFilePath,
-                                                hltPaths, l1Bits, srcWeights, keyword_compTauIdEffPreselNumbers):
+                                                hltPaths, l1Bits, srcWeights, keyword_compTauIdEffPreselNumbers,
+                                                muonPtMin, tauLeadTrackPtMin, tauAbsIsoMax, caloMEtPtMin, pfMEtPtMin):
 
     """Compute preselection efficiencies and purities in regions C1p, C1f"""
 
@@ -503,7 +528,7 @@ def buildConfigFile_FWLiteTauIdEffPreselNumbers(inputFilePath, sampleZtautau, jo
 
     binning_string = make_binning_string(binning)
 
-    hltPaths_string = make_inputFileNames_vstring(hltPaths)
+    hltPaths_string = make_inputFileNames_vstring(hltPaths['smMC'])
     l1Bits_string = make_inputFileNames_vstring(l1Bits['smMC'])
     weights_string = make_inputFileNames_vstring(srcWeights['smMC'])
 
@@ -550,7 +575,9 @@ process.%s = cms.PSet(
 
     sysShift = cms.string('CENTRAL_VALUE'),
 
-    srcTrigger = cms.InputTag('patTriggerEvent'),
+    srcHLTresults = cms.InputTag('TriggerResults::HLT'),
+    srcL1GtReadoutRecord = cms.InputTag('gtDigis::RECO'),
+    srcL1GtObjectMapRecord = cms.InputTag('hltL1GtObjectMap::HLT'),
     hltPaths = cms.vstring(%s),
     l1Bits = cms.vstring(%s),
     
@@ -561,12 +588,22 @@ process.%s = cms.PSet(
     
     srcGenParticles = cms.InputTag('genParticles'),
 
+    eventSelCuts = cms.PSet(
+        muonPtMin         = cms.double(%f),
+        tauLeadTrackPtMin = cms.double(%f),
+        tauAbsIsoMax      = cms.double(%f),
+        caloMEtPtMin      = cms.double(%f),
+        pfMEtPtMin        = cms.double(%f)
+    ),
+
     srcVertices = cms.InputTag('offlinePrimaryVertices'),
 
     weights = cms.VInputTag(%s)
 )
 """ % (fwliteInput_fileNames, outputFileName_full, keyword_compTauIdEffPreselNumbers,
-       tauIds_string, binning_string, hltPaths_string, l1Bits_string, weights_string)
+       tauIds_string, binning_string, hltPaths_string, l1Bits_string,
+       muonPtMin, tauLeadTrackPtMin, tauAbsIsoMax, caloMEtPtMin, pfMEtPtMin,
+       weights_string)
 
     configFileName = outputFileName.replace('.root', '_cfg.py')
     configFileName_full = os.path.join(outputFilePath, configFileName)    
@@ -594,6 +631,8 @@ def buildConfigFile_compTauIdEffFinalNumbers(inputFileName, directory, jobId, ta
     outputFileName = outputFileName.replace('__', '_')
     outputFileName_full = os.path.join(outputFilePath, outputFileName)
 
+    tauIds_string = make_tauIds_string(tauIds)
+
     fitIndividualProcesses_string = getStringRep_bool(fitIndividualProcesses)
 
     config = \
@@ -617,7 +656,7 @@ process.%s = cms.PSet(
     #    (needs as many 'fitTauIdEff' jobs to be run in parallel as there are bins)
     directory = cms.string('%s'),
     
-    tauIds = cms.vstring(
+    tauIds = cms.VPSet(
 %s
     ),
 
@@ -631,7 +670,7 @@ process.%s = cms.PSet(
     fitIndividualProcesses = cms.bool(%s)
 )
 """ % (inputFileName, outputFileName_full, keyword_compTauIdEffFinalNumbers,
-       directory, tauIds, fitVariables, passed_region, failed_region, fitIndividualProcesses_string)
+       directory, tauIds_string, fitVariables, passed_region, failed_region, fitIndividualProcesses_string)
 
     configFileName = outputFileName.replace('.root', '_cfg.py')
     configFileName_full = os.path.join(outputFilePath, configFileName)    
@@ -650,7 +689,7 @@ process.%s = cms.PSet(
     return retVal
 
 def buildConfigFile_makeTauIdEffFinalPlots(inputFileName, tauIds, tauIdNamesToPlot, binning, fitVariables,
-                                           outputFilePath, outputFileName, expEff_label, measEff_label):
+                                           outputFilePath, outputFileName, expEff_label, measEff_label, intLumiData):
 
     """Make plots of tau id. efficiency as function of tauPt, tauEta,..."""
 
@@ -710,6 +749,8 @@ process.makeTauIdEffFinalPlots = cms.PSet(
     expEff_label  = cms.string('%s'),
     measEff_label = cms.string('%s'),
 
+    intLumiData = cms.double(%f),
+
     fitVariables = cms.vstring(
 %s
     ),
@@ -723,7 +764,7 @@ process.makeTauIdEffFinalPlots = cms.PSet(
 
     outputFileName = cms.string('%s')
 )
-""" % (inputFileName, tauIds_string, expEff_label, measEff_label,
+""" % (inputFileName, tauIds_string, expEff_label, measEff_label, intLumiData*1.e-3,
        fitVariables, xAxisBinning_string, binning['xAxisTitle'], values_string, outputFileName_full)
 
     configFileName = outputFileName;

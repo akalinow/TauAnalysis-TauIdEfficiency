@@ -18,10 +18,24 @@ version = 'patV2_0'
 
 inputFilePath  = '/castor/cern.ch/user/v/veelken/TauIdCommissioning/'
 harvestingFilePath = '/castor/cern.ch/user/v/veelken/CMSSW_4_2_x/harvesting/TauIdCommissioning/'
-outputFilePath = '/data1/veelken/tmp/tauFakeRateAnalysis/'
+#outputFilePath = '/data1/veelken/tmp/tauFakeRateAnalysis/'
+outputFilePath = '/tmp/veelken/tauFakeRateAnalysis/'
 
 samplesToAnalyze = [
-    # modify in case you want to submit jobs for some of the samples only...
+    #
+    # NOTE: data samples are added according to the runPeriod chosen
+    #
+    'ZplusJets',
+    'WplusJets',
+    'qcdDiJetPtHat15to30s4',
+    'qcdDiJetPtHat30to50s4',
+    'qcdDiJetPtHat50to80s4',
+    'qcdDiJetPtHat80to120s4',
+    'qcdDiJetPtHat120to170s4',
+    'qcdDiJetPtHat170to300s4',
+    'qcdDiJetPtHat300to470s4',
+    'PPmuXptGt20Mu15',
+    'TTplusJets'
 ]
 
 eventSelectionsToAnalyze = [
@@ -30,6 +44,8 @@ eventSelectionsToAnalyze = [
 
 skipFWLiteTauFakeRateAnalyzer = False
 #skipFWLiteTauFakeRateAnalyzer = True
+skipLXBatchHarvesting = False
+#skipLXBatchHarvesting = True
 
 #runPeriod = '2011RunA'
 runPeriod = '2011RunB'
@@ -560,8 +576,9 @@ for sampleToAnalyze in samplesToAnalyze:
 
             bsubJobName = "harvest%s%s" % (sampleToAnalyze, eventSelectionToAnalyze)
             bsubJobNames_harvesting[sampleToAnalyze][eventSelectionToAnalyze] = bsubJobName
-  
-            bsubJobNames_harvesting_all.append(bsubJobName)
+
+            if len(retVal_make_harvest_scripts['final_harvest_files']) > 0:
+                bsubJobNames_harvesting_all.append(bsubJobName)
 
 bjobListFileName_harvesting = os.path.join(configFilePath, "batchJobs_harvesting_all.lst")
 bjobListFile_harvesting = open(bjobListFileName_harvesting, "w")
@@ -704,24 +721,26 @@ for sampleToAnalyze in samplesToAnalyze:
                        fileNameEntry['bsubScriptFileNames'][i]))
             else:
                 fileNames_FWLiteTauFakeRateAnalyzer[sampleToAnalyze][eventSelectionToAnalyze]['outputFileNames'] = []
-            makeFile.write("\n")
-            makeFile.write("%s: %s\n" %
-              (bsubJobNames_harvesting[sampleToAnalyze][eventSelectionToAnalyze],
-               make_MakeFile_vstring(fileNames_FWLiteTauFakeRateAnalyzer[sampleToAnalyze][eventSelectionToAnalyze]['outputFileNames'])))
-            if not skipFWLiteTauFakeRateAnalyzer:
+            if not skipLXBatchHarvesting:     
+                makeFile.write("\n")
+                makeFile.write("%s: %s\n" %
+                  (bsubJobNames_harvesting[sampleToAnalyze][eventSelectionToAnalyze],
+                   make_MakeFile_vstring(fileNames_FWLiteTauFakeRateAnalyzer[sampleToAnalyze][eventSelectionToAnalyze]['outputFileNames'])))
+                if not skipFWLiteTauFakeRateAnalyzer:
+                    makeFile.write("\t%s %s\n" %
+                      (executable_waitForLXBatchJobs,
+                       bjobListFileNames_FWLiteTauFakeRateAnalyzer[sampleToAnalyze][eventSelectionToAnalyze]))
                 makeFile.write("\t%s %s\n" %
-                  (executable_waitForLXBatchJobs,
-                   bjobListFileNames_FWLiteTauFakeRateAnalyzer[sampleToAnalyze][eventSelectionToAnalyze]))
-            makeFile.write("\t%s %s\n" %
-              (executable_shell,
-               bsubFileNames_harvesting[sampleToAnalyze][eventSelectionToAnalyze]['harvest_script_name']))
-            makeFile.write("\n")
+                  (executable_shell,
+                   bsubFileNames_harvesting[sampleToAnalyze][eventSelectionToAnalyze]['harvest_script_name']))
+                makeFile.write("\n")
 makeFile.write("%s: %s\n" %
   (haddOutputFileName,
    make_MakeFile_vstring(bsubJobNames_harvesting_all)))
-makeFile.write("\t%s %s\n" %
-  (executable_waitForLXBatchJobs,
-   bjobListFileName_harvesting))
+if not skipLXBatchHarvesting:    
+    makeFile.write("\t%s %s\n" %
+      (executable_waitForLXBatchJobs,
+       bjobListFileName_harvesting))
 for haddInputFileName in haddInputFileNames:
     makeFile.write("\t%s %s %s\n" %
       (executable_rfcp,

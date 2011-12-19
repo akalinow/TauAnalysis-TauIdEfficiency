@@ -27,61 +27,7 @@ def buildSequenceTauIdEffMeasSpecific(process,
     sequenceName = composeModuleName(["sequenceTauIdEffMeasSpecific", "".join(tauIdAlgorithmName)])
     sequence = cms.Sequence()
     setattr(process, sequenceName, sequence)
-
-    #--------------------------------------------------------------------------------
-    # produce collections of Tau-jet candidates shifted Up/Down in energy
-    #--------------------------------------------------------------------------------
-
-    tauSystematics = None
-    if isMC:
-        # CV: shift Tau-jet energy by 3 standard-deviations,
-        #     so that template morphing remains an interpolation and no extrapolation is needed
-        patTausJECshiftUpModuleName = "%sJECshiftUp" % patTauCollectionName
-        patTausJECshiftUpModule = cms.EDProducer("ShiftedPATTauJetProducer",
-            src = cms.InputTag(patTauCollectionName),
-            jetCorrPayloadName = cms.string('AK5PF'),
-            jetCorrUncertaintyTag = cms.string('Uncertainty'),
-            shiftBy = cms.double(+3.)
-        )
-        setattr(process, patTausJECshiftUpModuleName, patTausJECshiftUpModule)
-        sequence += patTausJECshiftUpModule
-
-        patTausJECshiftDownModuleName = "%sJECshiftDown" % patTauCollectionName
-        patTausJECshiftDownModule = patTausJECshiftUpModule.clone(
-            shiftBy = cms.double(-3.)
-        )
-        setattr(process, patTausJECshiftDownModuleName, patTausJECshiftDownModule)
-        sequence += patTausJECshiftDownModule
-
-        process.load("RecoMET.METProducers.METSigParams_cfi")
-        patTausJERshiftUpModuleName = "%sJERshiftUp" % patTauCollectionName
-        patTausJERshiftUpModule = cms.EDProducer("SmearedPATTauJetProducer",
-            src = cms.InputTag(patTauCollectionName),
-            inputFileName = cms.FileInPath('PhysicsTools/PatUtils/data/pfJetResolutionMCtoDataCorrLUT.root'),
-            lutName = cms.string('pfJetResolutionMCtoDataCorrLUT'),
-            jetResolutions = process.METSignificance_params,
-            srcGenJets = cms.InputTag('ak5GenJetsNoNu'),
-            dRmaxGenJetMatch = cms.double(0.5),
-            smearBy = cms.double(0.),                                     
-            shiftBy = cms.double(+3.)                          
-        )
-        setattr(process, patTausJERshiftUpModuleName, patTausJERshiftUpModule)
-        sequence += patTausJERshiftUpModule
-
-        patTausJERshiftDownModuleName = "%sJERshiftDown" % patTauCollectionName
-        patTausJERshiftDownModule = patTausJERshiftUpModule.clone(
-            shiftBy = cms.double(-3.)
-        )
-        setattr(process, patTausJERshiftDownModuleName, patTausJERshiftDownModule)
-        sequence += patTausJERshiftDownModule
-
-        tauSystematics = {   
-            "TauJetEnUp"    : cms.InputTag(patTausJECshiftUpModuleName),
-            "TauJetEnDown"  : cms.InputTag(patTausJECshiftDownModuleName),
-            "TauJetResUp"   : cms.InputTag(patTausJERshiftUpModuleName),
-            "TauJetResDown" : cms.InputTag(patTausJERshiftDownModuleName)
-        }
-
+    
     #--------------------------------------------------------------------------------
     # define loose Tau-jet candidate selection
     #--------------------------------------------------------------------------------
@@ -102,7 +48,7 @@ def buildSequenceTauIdEffMeasSpecific(process,
     selectedPatPFTausForTauIdEffName = \
         composeModuleName(["selectedPat%ss%s" % (tauIdAlgorithmName[0], tauIdAlgorithmName[1]), "ForTauIdEff"])
     selectedPatPFTausForTauIdEff = cms.EDFilter("PATPFTauSelectorForTauIdEff",
-        minJetPt = cms.double(20.0),
+        minJetPt = cms.double(15.0),
         maxJetEta = cms.double(2.3),
         trackQualityCuts = process.PFTauQualityCuts.signalQualityCuts,
         minLeadTrackPt = cms.double(5.0),
@@ -136,7 +82,7 @@ def buildSequenceTauIdEffMeasSpecific(process,
                 chargedToNeutralFactor = cms.double(0.50)
             )                                        
         ),
-        maxPFIsoPt = cms.double(2.5),
+        maxPFIsoPt = cms.double(5.0),
         srcPFIsoCandidates = cms.InputTag('particleFlow'),
         srcPFNoPileUpCandidates = cms.InputTag('pfNoPileUp'),                             
         srcBeamSpot = cms.InputTag('offlineBeamSpot'),
@@ -168,8 +114,6 @@ def buildSequenceTauIdEffMeasSpecific(process,
         pyModuleName = __name__,
         doSelIndividual = False
     )
-    if isMC:
-        setattr(patTauSelConfigurator, "systematics", tauSystematics)   
     patTauSelectionSequenceName = "selectPat%ss%sForTauIdEff" % (tauIdAlgorithmName[0], tauIdAlgorithmName[1])
     patTauSelectionSequence = patTauSelConfigurator.configure(process = process)
     setattr(process, patTauSelectionSequenceName, patTauSelectionSequence)
@@ -188,7 +132,60 @@ def buildSequenceTauIdEffMeasSpecific(process,
     patTauForTauIdEffCounterName = "pat%s%sForTauIdEffCounter" % (tauIdAlgorithmName[0], tauIdAlgorithmName[1])
     setattr(process, patTauForTauIdEffCounterName, patTauForTauIdEffCounter)
     sequence += patTauForTauIdEffCounter
-    
+
+    #--------------------------------------------------------------------------------
+    # produce collections of Tau-jet candidates shifted Up/Down in energy
+    #
+    # NOTE: Tau-jet energy shifts/smearing needs to be applied
+    #       **after** PATPFTauSelectorForTauIdEff module is run,
+    #       as the PATPFTauSelectorForTauIdEff module sets Tau-jet momentum to PFJet momentum,
+    #       regardless of any shifts/smearing applied to Tau-jet momentum
+    #
+    #--------------------------------------------------------------------------------
+
+    tauSystematics = None
+    if isMC:
+        # CV: shift Tau-jet energy by 3 standard-deviations,
+        #     so that template morphing remains an interpolation and no extrapolation is needed
+        patTausJECshiftUpModuleName = composeModuleName([patTauSelectionModule.label(), "TauJetEnUp", "cumulative"])
+        patTausJECshiftUpModule = cms.EDProducer("ShiftedPATTauJetProducer",
+            src = cms.InputTag(composeModuleName([selTauCollectionName, "cumulative"])),
+            jetCorrPayloadName = cms.string('AK5PF'),
+            jetCorrUncertaintyTag = cms.string('Uncertainty'),
+            shiftBy = cms.double(+3.)
+        )
+        setattr(process, patTausJECshiftUpModuleName, patTausJECshiftUpModule)
+        sequence += patTausJECshiftUpModule
+
+        patTausJECshiftDownModuleName = composeModuleName([patTauSelectionModule.label(), "TauJetEnDown", "cumulative"])
+        patTausJECshiftDownModule = patTausJECshiftUpModule.clone(
+            shiftBy = cms.double(-3.)
+        )
+        setattr(process, patTausJECshiftDownModuleName, patTausJECshiftDownModule)
+        sequence += patTausJECshiftDownModule
+
+        process.load("RecoMET.METProducers.METSigParams_cfi")
+        patTausJERshiftUpModuleName = composeModuleName([patTauSelectionModule.label(), "TauJetResUp", "cumulative"])
+        patTausJERshiftUpModule = cms.EDProducer("SmearedPATTauJetProducer",
+            src = cms.InputTag(composeModuleName([selTauCollectionName, "cumulative"])),
+            inputFileName = cms.FileInPath('PhysicsTools/PatUtils/data/pfJetResolutionMCtoDataCorrLUT.root'),
+            lutName = cms.string('pfJetResolutionMCtoDataCorrLUT'),
+            jetResolutions = process.METSignificance_params,
+            srcGenJets = cms.InputTag('ak5GenJetsNoNu'),
+            dRmaxGenJetMatch = cms.double(0.5),
+            smearBy = cms.double(0.),                                     
+            shiftBy = cms.double(+3.)                          
+        )
+        setattr(process, patTausJERshiftUpModuleName, patTausJERshiftUpModule)
+        sequence += patTausJERshiftUpModule
+
+        patTausJERshiftDownModuleName = composeModuleName([patTauSelectionModule.label(), "TauJetResDown", "cumulative"])
+        patTausJERshiftDownModule = patTausJERshiftUpModule.clone(
+            shiftBy = cms.double(-3.)
+        )
+        setattr(process, patTausJERshiftDownModuleName, patTausJERshiftDownModule)
+        sequence += patTausJERshiftDownModule
+
     #--------------------------------------------------------------------------------
     # define selection of Muon + Tau-jet candidate pairs
     #--------------------------------------------------------------------------------
@@ -224,19 +221,19 @@ def buildSequenceTauIdEffMeasSpecific(process,
     if isMC:
         muTauPairProdConfigurator_systematics = {
             "TauJetEnUp" : {
-                "srcLeg2" : cms.InputTag(composeModuleName([selTauCollectionName, "TauJetEnUp",   "cumulative"])),
+                "srcLeg2" : cms.InputTag(patTausJECshiftUpModuleName),
                 "srcMET"  : cms.InputTag(composeModuleName([patMEtCollectionName, "JetEnUp"]))
             },
             "TauJetEnDown" : {
-                "srcLeg2" : cms.InputTag(composeModuleName([selTauCollectionName, "TauJetEnDown", "cumulative"])),
+                "srcLeg2" : cms.InputTag(patTausJECshiftDownModuleName),
                 "srcMET"  : cms.InputTag(composeModuleName([patMEtCollectionName, "JetEnDown"]))
             },
             "TauJetResUp" : {
-                "srcLeg2" : cms.InputTag(composeModuleName([selTauCollectionName, "TauJetResUp",   "cumulative"])),
+                "srcLeg2" : cms.InputTag(patTausJERshiftUpModuleName),
                 "srcMET"  : cms.InputTag(composeModuleName([patMEtCollectionName, "JetResUp"]))
             },
             "TauJetResDown" : {
-                "srcLeg2" : cms.InputTag(composeModuleName([selTauCollectionName, "TauJetResDown", "cumulative"])),
+                "srcLeg2" : cms.InputTag(patTausJERshiftDownModuleName),
                 "srcMET"  : cms.InputTag(composeModuleName([patMEtCollectionName, "JetResDown"]))
             },
             "JetEnUp" : {

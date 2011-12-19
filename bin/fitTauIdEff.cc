@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.31 $
+ * \version $Revision: 1.32 $
  *
- * $Id: fitTauIdEff.cc,v 1.31 2011/11/26 15:37:58 veelken Exp $
+ * $Id: fitTauIdEff.cc,v 1.32 2011/11/27 18:25:17 veelken Exp $
  *
  */
 
@@ -95,7 +95,13 @@ struct fitParameterType
     : name_(fittedValue->GetName()),
       fittedValue_(fittedValue),
       expectedValue_(expectedValue)
-  {}
+  {
+    // CV: expected values close to either zero or one indicate low event statistics in template histogram
+    //    (potentially even empty template histogram)
+    //    --> declare fit parameter to be constant, so that it does not 'confuse' RooFit
+    const double pMin = 1.e-2;
+    if ( expectedValue_ < pMin || expectedValue_ > (1. - pMin) ) fittedValue_->setConstant(true);
+  }
   std::string name_;
   RooRealVar* fittedValue_;
   double expectedValue_;
@@ -140,7 +146,8 @@ void addToFormula(std::string& formula, const std::string& expression, TObjArray
   }
 }
 
-RooFormulaVar* makeRooFormulaVar_6regions(const std::string& process, const std::string& region,
+RooFormulaVar* makeRooFormulaVar_6regions(const std::string& process, 
+					  const std::string& region, const std::string& region_passed, const std::string& region_failed, 
 					  RooAbsReal* norm, double fittedFractionValue, unsigned numCategories,
 					  std::map<std::string, fitParameterType>& fitParameters)
 {
@@ -232,7 +239,8 @@ RooFormulaVar* makeRooFormulaVar_6regions(const std::string& process, const std:
   return retVal;
 }
 
-RooFormulaVar* makeRooFormulaVar_2regions(const std::string& process, const std::string& region,
+RooFormulaVar* makeRooFormulaVar_2regions(const std::string& process, 
+					  const std::string& region, const std::string& region_passed, const std::string& region_failed, 
 					  RooAbsReal* norm, double fittedFractionValue, unsigned numCategories,
 					  std::map<std::string, fitParameterType>& fitParameters)
 {
@@ -244,9 +252,11 @@ RooFormulaVar* makeRooFormulaVar_2regions(const std::string& process, const std:
   RooFormulaVar* retVal = 0;
 
   std::string exprTauId = "";
-  if      ( region.find("PASSED") != std::string::npos ) exprTauId = "regular";
-  else if ( region.find("FAILED") != std::string::npos ) exprTauId = "inverted";
-
+  if      ( region == region_passed ) exprTauId = "regular";
+  else if ( region == region_failed ) exprTauId = "inverted";
+  else throw cms::Exception("makeRooFormulaVar_2regions") 
+    << "Region = " << region << " matches neither 'passed' nor 'failed' region !!\n";
+  
   std::string fittedFractionName = std::string(norm->GetName()).append("_").append(region).append("_fittedFraction");
   //RooConstVar* fittedFraction = new RooConstVar(fittedFractionName.data(), fittedFractionName.data(), fittedFractionValue);
   // CV: fitted yields for all processes come-out factor 2 too high in closure test
@@ -278,10 +288,13 @@ RooFormulaVar* makeRooFormulaVar_2regions(const std::string& process, const std:
 
 RooHistPdf* makeRooHistPdf(TH1* templateHistogram, RooAbsReal* fitVariable)
 {
+  std::string templateHistogramName_normalized = std::string(templateHistogram->GetName()).append("_normalized");
+  TH1* templateHistogram_normalized = (TH1*)templateHistogram->Clone(templateHistogramName_normalized.data());
+
   std::string templateDataHistName = std::string(templateHistogram->GetName()).append("_dataHist");
   RooDataHist* templateDataHist = 
     new RooDataHist(templateDataHistName.data(), 
-		    templateDataHistName.data(), *fitVariable, templateHistogram);
+		    templateDataHistName.data(), *fitVariable, templateHistogram_normalized);
   std::string templatePdfName = std::string(templateHistogram->GetName()).append("_histPdf");
   RooHistPdf* templatePdf = 
     new RooHistPdf(templatePdfName.data(), 
@@ -291,7 +304,7 @@ RooHistPdf* makeRooHistPdf(TH1* templateHistogram, RooAbsReal* fitVariable)
 
 RooAbsPdf* makePdfHorizontalMorphing(histogramMap3& histograms,
 				     const std::string& region, fitVariableType& fitVariable, const vstring& sysUncertainties,
-				     std::map<std::string, std::vector<alphaParameterType> >& alphaParameters)
+				     std::map<std::string, alphaParameterType>& alphaParameters)
 {
   if ( sysUncertainties.size() != 1 )
     throw cms::Exception("makePdfHorizontalMorphing") 
@@ -309,7 +322,7 @@ RooAbsPdf* makePdfHorizontalMorphing(histogramMap3& histograms,
   
   std::string alphaName = std::string(templateHistName).append("_alpha");
   RooRealVar* alpha = new RooRealVar(alphaName.data(), alphaName.data(), 0.5, 0., 1.);
-  alphaParameters[region].push_back(alphaParameterType(alpha, false));
+  alphaParameters[sysUncertainty] = alphaParameterType(alpha, false);
 
   std::string pdfName = std::string(templateHistName).append("_pdf");
   RooIntegralMorph* pdf = new RooIntegralMorph(pdfName.data(), pdfName.data(), *pdfUp, *pdfDown, *fitVariable.xAxis_, *alpha);
@@ -319,7 +332,7 @@ RooAbsPdf* makePdfHorizontalMorphing(histogramMap3& histograms,
 
 RooAbsPdf* makePdfVerticalMorphing(histogramMap3& histograms,
 				   const std::string& region, fitVariableType& fitVariable, const vstring& sysUncertainties,
-				   std::map<std::string, std::vector<alphaParameterType> >& alphaParameters)
+				   std::map<std::string, alphaParameterType>& alphaParameters)
 {
   // NOTE: VerticalInterpPdf requires "up"/"down" systematic shifts to be passed as pdfs
   //       The pdfs are assumed to be ordered in the following way, together with the  morphing parameters:
@@ -329,7 +342,7 @@ RooAbsPdf* makePdfVerticalMorphing(histogramMap3& histograms,
   //     --> number of pdfs = 2*(numbers of alphas) + 1)
   //
 
-  std::cout << "<makePdfVerticalMorphing>:" << std::endl;
+  //std::cout << "<makePdfVerticalMorphing>:" << std::endl;
 
   TObjArray pdfs;
   TObjArray alphas;
@@ -350,11 +363,21 @@ RooAbsPdf* makePdfVerticalMorphing(histogramMap3& histograms,
     RooHistPdf* pdf_down = makeRooHistPdf(templateHist_down, fitVariable.xAxis_);
     pdfs.Add(pdf_down);
 
-    std::string alphaName = std::string(templateHistName).append("_alpha_").append(*sysUncertainty);
-    RooRealVar* alpha = new RooRealVar(alphaName.data(), alphaName.data(), 0., -1., +1.);
+    RooRealVar* alpha = 0;
+    if ( alphaParameters.find(*sysUncertainty) == alphaParameters.end() ) {
+      std::string alphaName = std::string(templateHistName).append("_alpha_").append(*sysUncertainty);
+      alpha = new RooRealVar(alphaName.data(), alphaName.data(), 0., -1., +1.);
+      alphaParameters[*sysUncertainty] = alphaParameterType(alpha, true);
+    } else {
+      alpha = alphaParameters[*sysUncertainty].alpha_;
+    }
     alphas.Add(alpha);
-    alphaParameters[region].push_back(alphaParameterType(alpha, true));
   }
+
+  if ( pdfs.GetEntries() != (2*alphas.GetEntries() + 1) ) 
+    throw cms::Exception("makePdfVerticalMorphing") 
+      << "Number of 'pdf' = " << pdfs.GetEntries() << " and 'alpha' parameter = " << alphas.GetEntries()
+      << " arguments not compatible !!\n";
 
   std::string pdfName = std::string(templateHistName).append("_pdf");
   VerticalInterpPdf* pdf = new VerticalInterpPdf(pdfName.data(), pdfName.data(), RooArgList(pdfs), RooArgList(alphas));
@@ -451,7 +474,8 @@ struct processEntryType
     norm_.expectedValue_ = numEvents_["ABCD"];
     norm_.fittedValue_ = new RooRealVar(norm_.name_.data(), norm_.name_.data(), norm_.expectedValue_, 0., 1.e+6);
 
-    RooFormulaVar* (*makeRooFormulaVar)(const std::string&, const std::string&, 
+    RooFormulaVar* (*makeRooFormulaVar)(const std::string&, 
+					const std::string&, const std::string&, const std::string&, 
 					RooAbsReal*, double, unsigned, 
 					std::map<std::string, fitParameterType>&) = 0;
 
@@ -505,6 +529,24 @@ struct processEntryType
     } else throw cms::Exception("processEntryType")  
 	<< "Invalid parameter 'regionsToFit' = " << format_vstring(regionsToFit) << "!!\n";
 
+//--- fix relative contribution of Zmumu/mu --> tau fake background to Monte Carlo prediction
+//    and take template histogram for 'failed' region from 'passed' region
+//   (to work-around problem with low MC statistics)
+    if ( //name_ == "Zmumu"     ||
+	 name_ == "EWKmuFake" ) {
+      fitParameters_["pTauId_passed_failed"].fittedValue_->setConstant(true);
+
+      const std::string& fitVariableName_passed = fitVariables[region_passed].name_;
+      histogramMap1& histograms_passed = histograms_[region_passed][fitVariableName_passed];
+      const std::string& fitVariableName_failed = fitVariables[region_failed].name_;
+      histogramMap1& histograms_failed = histograms_[region_failed][fitVariableName_failed];
+      for ( histogramMap1::const_iterator sysUnceryainty = histograms_[region_passed][fitVariableName_passed].begin();
+	    sysUnceryainty != histograms_[region_passed][fitVariableName_passed].end(); ++sysUnceryainty ) {
+	histograms_failed[sysUnceryainty->first] = histograms_passed[sysUnceryainty->first];
+	fittedFractions_[region_failed][fitVariableName_failed] = fittedFractions_[region_passed][fitVariableName_passed];
+      }    
+    }
+    
     assert(makeRooFormulaVar);
 
     numCategories_["A"]           = 4;
@@ -520,7 +562,7 @@ struct processEntryType
 
       assert(numCategories_.find(*region) != numCategories_.end());
       normFactors_[*region] =
-	(*makeRooFormulaVar)(name, *region, 
+	(*makeRooFormulaVar)(name, *region, region_passed, region_failed, 
 			     norm_.fittedValue_, fittedFractions_[*region][fitVariableName], numCategories_[*region], fitParameters_);
 
       if ( templateMorphingMode == kNoTemplateMorphing ) 
@@ -559,7 +601,7 @@ struct processEntryType
                                                           //      o 'pMuonIso_tight_loose'
                                                           //      o 'pDiTauKine_Sig_Bgr'
                                                           //      o 'pTauId_passed_failed'
-  std::map<std::string, std::vector<alphaParameterType> > alphaParameters_; // key = region
+  std::map<std::string, alphaParameterType> alphaParameters_; // key = systematic uncertainty
   histogramMap2 fittedTemplateShapes_; // key = (region, observable)
   std::map<std::string, RooAbsPdf*> pdfs_; // key = region
 };
@@ -578,46 +620,51 @@ double getTemplateNorm_fitted(processEntryType& processEntry, const std::string&
   return retVal;
 }
 
-TH1* compFittedTemplateShape(const TH1* histogram, const RooAbsPdf* pdf, RooRealVar* fitVariable,
-			     std::vector<alphaParameterType>* alphaParameters)
+TH1* compFittedTemplateShape(processEntryType& processEntry, const std::string& region, const std::string& fitVariableName)
 {
-  std::cout << "<compFittedTemplateShape>:" << std::endl;
-  std::cout << " histogram = " << histogram->GetName() << std::endl;
-  std::string histogramName_fitted = std::string(histogram->GetName()).append("_fittedShape");
-  TH1* histogram_fitted = (TH1*)histogram->Clone(histogramName_fitted.data());
-  TAxis* xAxis = histogram->GetXaxis();
+  //std::cout << "<compFittedTemplateShape>:" << std::endl;
+  TH1* histogram_central_value = processEntry.histograms_[region][fitVariableName][key_central_value];
+  //std::cout << " histogram_central_value = " << histogram_central_value << "," 
+  //	      << " name = " << histogram_central_value->GetName() << std::endl;
+
+  RooAbsPdf* pdf = processEntry.pdfs_[region];
+
+  std::string histogramName_fitted = std::string(histogram_central_value->GetName()).append("_fittedShape");
+  TH1* histogram_fitted = (TH1*)histogram_central_value->Clone(histogramName_fitted.data());
+
+  TAxis* xAxis = histogram_central_value->GetXaxis();
   for ( int iBin = 1; iBin <= (histogram_fitted->GetNbinsX() + 1); ++iBin ) {
     double xMin = xAxis->GetBinLowEdge(iBin);
     double xMax = xAxis->GetBinUpEdge(iBin);
-    fitVariable->setVal(0.5*(xMin + xMax));
-    std::cout << "value(" << 0.5*(xMin + xMax) << ") = " << pdf->getVal() << std::endl;
-    TString binLabel = Form("bin%i", iBin);
-    fitVariable->getBinning(binLabel.Data(), false, true);
-    fitVariable->setRange(binLabel.Data(), xMin, xMax);
-/*
-    TObjArray conditionalObservables;
-    if ( alphaParameters ) {
-      for ( std::vector<alphaParameterType>::iterator alphaParameter = alphaParameters->begin();
-	    alphaParameter != alphaParameters->end(); ++alphaParameter ) {
-	conditionalObservables.Add(alphaParameter->alpha_);
+    if ( dynamic_cast<VerticalInterpPdf*>(pdf) ) { // special handling for Giovanni's vertical morphing pdf
+      double binContent = histogram_central_value->GetBinContent(iBin);
+      for ( vstring::const_iterator sysUncertainty = processEntry.sysUncertainties_.begin();
+	    sysUncertainty != processEntry.sysUncertainties_.end(); ++sysUncertainty ) {
+	std::string key_up = std::string(*sysUncertainty).append("Up");
+	TH1* histogram_up = processEntry.histograms_[region][fitVariableName][key_up];
+	//std::cout << " histogram_up = " << histogram_up << std::endl;
+
+	std::string key_down = std::string(*sysUncertainty).append("Down");
+	TH1* histogram_down = processEntry.histograms_[region][fitVariableName][key_down];
+	//std::cout << " histogram_down = " << histogram_down << std::endl;
+
+	double coeff = processEntry.alphaParameters_[*sysUncertainty].alpha_->getVal();
+
+	if      ( coeff > 0. ) binContent += coeff*(histogram_up->GetBinContent(iBin) - histogram_central_value->GetBinContent(iBin));
+	else if ( coeff < 0. ) binContent += coeff*(histogram_central_value->GetBinContent(iBin) - histogram_down->GetBinContent(iBin));
       }
+      histogram_fitted->SetBinContent(iBin, binContent);
+    } else { // all other pdfs
+      RooRealVar* fitVariable = processEntry.fitVariables_[region].xAxis_;
+      TString binLabel = Form("bin%i", iBin);
+      fitVariable->getBinning(binLabel.Data(), false, true);
+      fitVariable->setRange(binLabel.Data(), xMin, xMax);
+      RooAbsReal* pdfIntegral_bin = pdf->createIntegral(*fitVariable, RooFit::NormSet(*fitVariable), RooFit::Range(binLabel.Data()));    
+      double integral = pdfIntegral_bin->getVal();
+      //std::cout << "integral(" << xMin << ".." << xMax << ") = " << integral << std::endl;
+      histogram_fitted->SetBinContent(iBin, integral);
+      delete pdfIntegral_bin;
     }
- */
-    RooAbsReal* pdfIntegral_bin = pdf->createIntegral(*fitVariable, RooFit::NormSet(*fitVariable), RooFit::Range(binLabel.Data()));    
-    std::cout << "integral(" << xMin << ".." << xMax << ") = " << pdfIntegral_bin->getVal() << std::endl;
-    double norm = pdfIntegral_bin->getVal();
-    double integral = 0.;
-    if ( norm > 0. ) {
-      double dx = (xMax - xMin)*1.e-2;
-      for ( double x = xMin + 0.5*dx; x < xMax; x += dx ) {
-	fitVariable->setVal(x);
-	integral += pdf->getVal();
-      }
-      integral /= norm;
-    }
-    std::cout << "setting bin-content(bin = " << iBin << ") = " << integral << std::endl;
-    histogram_fitted->SetBinContent(iBin, integral);
-    delete pdfIntegral_bin;
   }
   return histogram_fitted;
 }
@@ -636,13 +683,6 @@ void fitUsingRooFit(processEntryType& data, double intLumiData,
     std::cout << "<fitUsingRooFit>:" << std::endl;
     std::cout << " performing Fit of variable = " << data.fitVariables_[data.region_passed_].name_ 
 	      << " for Tau id. = " << tauId << std::endl;
-  }
-
-  double numEventsDataABCD = data.norm_.expectedValue_;
-  double numEventsMCsumABCD = processEntries["mcSum"]->norm_.expectedValue_;
-  if ( verbosity ) {
-    std::cout << "numEventsDataABCD = " << numEventsDataABCD << "," 
-	      << " numEventsMCsumABCD = " << numEventsMCsumABCD << ": ratio = " << numEventsDataABCD/numEventsMCsumABCD << std::endl;
   }
 
   std::map<std::string, RooAddPdf*> pdfsSum;
@@ -710,26 +750,102 @@ void fitUsingRooFit(processEntryType& data, double intLumiData,
     for ( std::map<std::string, processEntryType*>::const_iterator processEntry = processEntries.begin();
 	  processEntry != processEntries.end(); ++processEntry ) {
       if ( processEntry->first == "mcSum" ) continue;
-      for ( std::vector<alphaParameterType>::const_iterator alphaParameter = processEntry->second->alphaParameters_[*region].begin();
-	    alphaParameter != processEntry->second->alphaParameters_[*region].end(); ++alphaParameter ) {
-	std::cout << "process = " << processEntry->first << ": adding alpha-parameter = " << alphaParameter->name_ << std::endl;
-	if ( !alphaParameter->isBiDirectional_ ) // horizontal morphing
-	  fitConstraints->Add(makeFitConstraint(alphaParameter->alpha_, 0.5, 0.5/sysVariedByNsigma));
-	else                                               // vertical morphing
-	  fitConstraints->Add(makeFitConstraint(alphaParameter->alpha_, 0.0, 1.0/sysVariedByNsigma));
+      for ( vstring::const_iterator sysUncertainty = processEntry->second->sysUncertainties_.begin();
+	    sysUncertainty != processEntry->second->sysUncertainties_.end(); ++sysUncertainty ) {
+	alphaParameterType& alphaParameter = processEntry->second->alphaParameters_[*sysUncertainty];
+	if ( processEntry->first == "TTplusJets" ||
+	     processEntry->first == "Zmumu"      ||
+	     processEntry->first == "EWKmuFake"  ||
+	     //processEntry->first == "WplusJets"  ||	     
+	     processEntry->first == "QCD"        ) {
+	  alphaParameter.alpha_->setConstant(true);
+	} else {
+	  bool isAlreadyIncluded = false;
+	  for ( int iFitConstraint = 0; iFitConstraint < fitConstraints->GetEntries(); ++iFitConstraint ) {
+	    if ( dynamic_cast<RooGaussian*>(fitConstraints->At(iFitConstraint)) ) {
+	      RooGaussian* fitConstraint = dynamic_cast<RooGaussian*>(fitConstraints->At(iFitConstraint));
+	      if ( fitConstraint->GetName() == std::string(alphaParameter.alpha_->GetName()).append("_constraint") ) 
+		isAlreadyIncluded = true;
+	    }
+	  }
+	  if ( !isAlreadyIncluded ) {
+	    std::cout << "process = " << processEntry->first << ": adding alpha-parameter = " << alphaParameter.name_ << std::endl;
+	    if ( !alphaParameter.isBiDirectional_ ) // horizontal morphing
+	      fitConstraints->Add(makeFitConstraint(alphaParameter.alpha_, 0.5, 0.5/sysVariedByNsigma));
+	    else                                    // vertical morphing
+	      fitConstraints->Add(makeFitConstraint(alphaParameter.alpha_, 0.0, 1.0/sysVariedByNsigma));
+	  }
+	}
       }
     }
   }
-  
-  RooRealVar* fitVariableABC2D = data.fitVariables_["A"].xAxis_;
-  RooDataHist* dataABC2D = 
-    new RooDataHist("dataABC2D", 
-		    "dataABC2D", *fitVariableABC2D, *fitCategoriesABC2D, histogramDataMapABC2D);
-  RooLinkedList fitOptionsABC2D;
-  fitOptionsABC2D.Add(new RooCmdArg(RooFit::Extended()));
-  std::cout << "#fitConstraintsABC2D = " << fitConstraintsABC2D.GetEntries() << std::endl;
-  if ( fitConstraintsABC2D.GetEntries() > 0 ) 
-    fitOptionsABC2D.Add(new RooCmdArg(RooFit::ExternalConstraints(RooArgSet(fitConstraintsABC2D))));
+
+  if ( !doFitC1 )
+    throw cms::Exception("fitTauIdEff") 
+      << "No constraints defined for region 'C1' !!\n";
+
+  for ( std::map<std::string, processEntryType*>::const_iterator processEntry = processEntries.begin();
+	processEntry != processEntries.end(); ++processEntry ) {
+    std::cout << "process = " << processEntry->first << std::endl;
+    if ( processEntry->first == "mcSum" ) continue;
+
+    if ( !(processEntry->first == "EWKmuFake") ) { // CV: do not constrain mu --> tau fake-rate 
+	                                           //     to account for inefficiency of muon system in 2011 Run B data
+                                                   //     (not modeled by Monte Carlo simulation)
+      fitConstraintsC1.Add(makeFitConstraint(processEntry->second->norm_.fittedValue_, 
+					     processEntry->second->norm_.expectedValue_, 0.5*processEntry->second->norm_.expectedValue_));
+    }
+   
+    for ( std::map<std::string, fitParameterType>::const_iterator fitParameter = processEntry->second->fitParameters_.begin();
+	  fitParameter != processEntry->second->fitParameters_.end(); ++fitParameter ) {            
+      if ( fitParameter->first == "pDiTauCharge_OS_SS" ) {
+	if ( !(processEntry->first == "Zmumu"       ||
+	       processEntry->first == "WplusJets"   ||
+	       processEntry->first == "EWKjetFake") )
+	  fitConstraintsABC2D.Add(makeFitConstraint(fitParameter->second.fittedValue_, 
+						    fitParameter->second.expectedValue_, 0.5*fitParameter->second.expectedValue_));
+      } else if ( fitParameter->first == "pMuonIso_tight_loose" ) {
+	if ( processEntry->first == "Ztautau"    ||
+	     processEntry->first == "Zmumu"      ||
+	     processEntry->first == "WplusJets"  ||
+	     processEntry->first == "EWKmuFake"  ||
+	     processEntry->first == "EWKjetFake" )
+	  fitConstraintsABC2D.Add(makeFitConstraint(fitParameter->second.fittedValue_, 
+						    fitParameter->second.expectedValue_, 0.01));
+	else if ( processEntry->first == "TTplusJets" )
+	  fitConstraintsABC2D.Add(makeFitConstraint(fitParameter->second.fittedValue_, 
+						    fitParameter->second.expectedValue_, 0.02));
+        else if ( !(processEntry->first == "QCD") )
+          fitConstraintsABC2D.Add(makeFitConstraint(fitParameter->second.fittedValue_, 
+						    fitParameter->second.expectedValue_, 0.5*fitParameter->second.expectedValue_));
+      } else if ( fitParameter->first == "pDiTauKine_Sig_Bgr" ) {
+        fitConstraintsABC2D.Add(makeFitConstraint(fitParameter->second.fittedValue_, 
+						  fitParameter->second.expectedValue_, 0.5*fitParameter->second.expectedValue_));
+      } else if ( fitParameter->first == "pTauId_passed_failed" ) {
+        if ( !(processEntry->first != "Ztautau"   ||
+               processEntry->first != "Zmumu"     ||
+               processEntry->first != "EWKmuFake") )
+          fitConstraintsC1.Add(makeFitConstraint(fitParameter->second.fittedValue_, 
+						 fitParameter->second.expectedValue_, 0.5*fitParameter->second.expectedValue_));
+      }
+    }
+  }
+
+  TObjArray nlls;
+  if ( doFitABC2D ) {
+    RooRealVar* fitVariableABC2D = data.fitVariables_["A"].xAxis_;
+    RooDataHist* dataABC2D = 
+      new RooDataHist("dataABC2D", 
+		      "dataABC2D", *fitVariableABC2D, *fitCategoriesABC2D, histogramDataMapABC2D);
+    RooLinkedList fitOptionsABC2D;
+    fitOptionsABC2D.Add(new RooCmdArg(RooFit::Extended()));
+    std::cout << "#fitConstraintsABC2D = " << fitConstraintsABC2D.GetEntries() << std::endl;
+    if ( fitConstraintsABC2D.GetEntries() > 0 ) 
+      fitOptionsABC2D.Add(new RooCmdArg(RooFit::ExternalConstraints(RooArgSet(fitConstraintsABC2D))));
+    pdfSimultaneousFitABC2D->printCompactTree();
+    RooAbsReal* nllABC2D = pdfSimultaneousFitABC2D->createNLL(*dataABC2D, fitOptionsABC2D); 
+    nlls.Add(nllABC2D);
+  }
 
   RooRealVar* fitVariableC1 = data.fitVariables_[data.region_passed_].xAxis_;
   RooDataHist* dataC1 = 
@@ -740,15 +856,13 @@ void fitUsingRooFit(processEntryType& data, double intLumiData,
   std::cout << "#fitConstraintsC1 = " << fitConstraintsC1.GetEntries() << std::endl;
   if ( fitConstraintsC1.GetEntries() > 0 ) 
     fitOptionsC1.Add(new RooCmdArg(RooFit::ExternalConstraints(RooArgSet(fitConstraintsC1))));
+  pdfSimultaneousFitC1->printCompactTree();
+  RooAbsReal* nllC1 = pdfSimultaneousFitC1->createNLL(*dataC1, fitOptionsC1); 
+  nlls.Add(nllC1);
 
 //--- set tau id. efficiency to "random" value
   processEntries[processName_signal]->fitParameters_["pTauId_passed_failed"].fittedValue_->setVal(0.55);
 
-  RooAbsReal* nllABC2D = pdfSimultaneousFitABC2D->createNLL(*dataABC2D, fitOptionsABC2D); 
-  RooAbsReal* nllC1 = pdfSimultaneousFitC1->createNLL(*dataC1, fitOptionsC1); 
-  TObjArray nlls;
-  if ( doFitABC2D ) nlls.Add(nllABC2D);
-  if ( doFitC1    ) nlls.Add(nllC1);
   RooAddition nll("nll", "nll", RooArgSet(nlls));
   RooMinuit minuit(nll); 
   minuit.setErrorLevel(1);
@@ -775,9 +889,7 @@ void fitUsingRooFit(processEntryType& data, double intLumiData,
 	  region != data.regionsToFit_.end(); ++region ) {
       if ( processEntry->first == "mcSum" ) continue;
       processEntry->second->fittedTemplateShapes_[*region][data.fitVariables_[*region].name_] =
-	compFittedTemplateShape(processEntry->second->histograms_[*region][data.fitVariables_[*region].name_][key_central_value],
-				processEntry->second->pdfs_[*region], processEntry->second->fitVariables_[*region].xAxis_,
-				&processEntry->second->alphaParameters_[*region]);
+	compFittedTemplateShape(*processEntry->second, *region, data.fitVariables_[*region].name_);
       std::cout << " histogram[" << (*region) << "][" << data.fitVariables_[*region].name_ << "] = "
 		<< processEntry->second->fittedTemplateShapes_[*region][data.fitVariables_[*region].name_] << std::endl;
     }												 
@@ -829,6 +941,16 @@ void fitUsingRooFit(processEntryType& data, double intLumiData,
 	std::cout << "  " << fitParameter->first << " = " << fitParameter->second.fittedValue_->getVal()
 		  << " +/- " << fitParameter->second.fittedValue_->getError()
 		  << " (MC exp. = " << fitParameter->second.expectedValue_ << ")" << std::endl;
+      }
+
+      if ( processEntry->second->alphaParameters_.begin() != processEntry->second->alphaParameters_.end() ) {
+	std::cout << "  nuissance parameters:" << std::endl;
+	for ( vstring::const_iterator sysUncertainty = processEntry->second->sysUncertainties_.begin();
+	      sysUncertainty != processEntry->second->sysUncertainties_.end(); ++sysUncertainty ) {
+	  alphaParameterType& alphaParameter = processEntry->second->alphaParameters_[*sysUncertainty];
+	  std::cout << "   " << (*sysUncertainty) << " = " << alphaParameter.alpha_->getVal() 
+		    << " +/- " << alphaParameter.alpha_->getError() << std::endl;
+	}
       }
 
       for ( vstring::const_iterator region = data.regionsToFit_.begin();
@@ -903,9 +1025,10 @@ void drawHistograms(const std::string& region, const std::string& observable,
 // are already properly normalized (by cross-section)
 //--------------------------------------------------------------------------------
 
-  std::cout << "<drawHistograms>:" << std::endl;
-  std::cout << " region = " << region << std::endl;
-  std::cout << " observable = " << observable << std::endl;
+  //std::cout << "<drawHistograms>:" << std::endl;
+  //std::cout << " region = " << region << std::endl;
+  //std::cout << " observable = " << observable << std::endl;
+  //std::cout << " mcNamesToDraw = " << format_vstring(mcNamesToDraw) << std::endl;
 
   TCanvas* canvas = new TCanvas("canvas", "canvas", 800, 640);
   canvas->SetFillColor(10);
@@ -932,10 +1055,19 @@ void drawHistograms(const std::string& region, const std::string& observable,
   for ( vstring::const_iterator mcName = mcNamesToDraw.begin();
 	mcName != mcNamesToDraw.end(); ++mcName ) {
     TH1* histogramToDraw = 0;
-    if ( normalizeTemplatesToFit && processEntries[*mcName]->fittedTemplateShapes_[region][observable] ) {
-      histogramToDraw = 
-	normalize(processEntries[*mcName]->fittedTemplateShapes_[region][observable], 
-		  processEntries[*mcName]->normFactors_[region]->getVal()/processEntries[*mcName]->numCategories_[region]);
+    if ( normalizeTemplatesToFit ) {      
+      if ( processEntries[*mcName]->fittedTemplateShapes_[region][observable] ) {
+	histogramToDraw = 
+	  normalize(processEntries[*mcName]->fittedTemplateShapes_[region][observable], 
+		    processEntries[*mcName]->normFactors_[region]->getVal()/processEntries[*mcName]->numCategories_[region]);
+      } else {
+	histogramToDraw = 
+	  normalize(processEntries[*mcName]->histograms_[region][observable][key_central_value],
+		    processEntries[*mcName]->normFactors_[region]->getVal()/processEntries[*mcName]->numCategories_[region]);
+      }
+      //std::cout << "process = " << (*mcName) << ": norm-factor = " << processEntries[*mcName]->normFactors_[region]->getVal() << ","
+      //	  << " #categories = " << processEntries[*mcName]->numCategories_[region] 
+      //	  << " --> integral = " << histogramToDraw->Integral() << std::endl;
       histogramsToDelete.push_back(histogramToDraw);
     } else {
       histogramToDraw = processEntries[*mcName]->histograms_[region][observable][key_central_value];
@@ -1250,9 +1382,11 @@ int main(int argc, const char* argv[])
     processes.push_back(processName_signal);
 
     histogramMap3 histograms_Ztautau_genTau;
+    //loadHistograms(histograms_Ztautau_genTau, histogramInputDirectory, 
+    //	             "Ztautau", regionsToLoad, tauId, observables, sysUncertainties_expanded, "GenTau");
     loadHistograms(histograms_Ztautau_genTau, histogramInputDirectory, 
-		   "Ztautau", regionsToLoad, tauId, observables, sysUncertainties_expanded, "GenTau");
-    processEntries["Ztautau"] = 
+		   "ZplusJets_madgraph", regionsToLoad, tauId, observables, sysUncertainties_expanded, "GenTau");
+    processEntries["Ztautau"] =
       new processEntryType("Ztautau", histograms_Ztautau_genTau, fitVariables, regionsToFit, region_passed, region_failed, 
 			   sysUncertainties, templateMorphingMode, legendEntries["Ztautau"], fillColors["Ztautau"]);
     histograms_mc["Ztautau"] = histograms_Ztautau_genTau;
@@ -1260,8 +1394,9 @@ int main(int argc, const char* argv[])
     histogramMap4 histograms_EWK_muFake;
     histogramMap4 histograms_EWK_jetFake;
     vstring processes_EWK;
-    processes_EWK.push_back(std::string("Ztautau"));
-    processes_EWK.push_back(std::string("Zmumu"));
+    //processes_EWK.push_back(std::string("Ztautau"));
+    //processes_EWK.push_back(std::string("Zmumu"));
+    processes_EWK.push_back(std::string("ZplusJets_madgraph"));
     processes_EWK.push_back(std::string("WplusJets"));
     for ( vstring::const_iterator process = processes_EWK.begin();
 	  process != processes_EWK.end(); ++process ) {
@@ -1279,20 +1414,21 @@ int main(int argc, const char* argv[])
 
     histogramMap3 histograms_EWKsum_jetFake = sumHistograms(histograms_EWK_jetFake, processes_EWK, "EWKjetFake");
     processEntries["EWKjetFake"] = 
-      new processEntryType("EWKjetFake", histograms_EWKsum_muFake, fitVariables, regionsToFit, region_passed, region_failed, 
+      new processEntryType("EWKjetFake", histograms_EWKsum_jetFake, fitVariables, regionsToFit, region_passed, region_failed, 
 			   sysUncertainties, templateMorphingMode, legendEntries["EWKjetFake"], fillColors["EWKjetFake"]);
-    histograms_mc["EWKmuFake"] = histograms_EWKsum_jetFake;
+    histograms_mc["EWKjetFake"] = histograms_EWKsum_jetFake;
 
     histogramMap3 histograms_QCD;
     loadHistograms(histograms_QCD, histogramInputDirectory, 
-		   "QCD", regionsToLoad, tauId, observables, sysUncertainties);
+		   "QCD", regionsToLoad, tauId, observables, sysUncertainties_expanded);
     processEntries["QCD"] = 
       new processEntryType("QCD", histograms_QCD, fitVariables, regionsToFit, region_passed, region_failed, 
 			   sysUncertainties, templateMorphingMode, legendEntries["QCD"], fillColors["QCD"]);
     histograms_mc["QCD"] = histograms_QCD;
     
     histogramMap3 histograms_TTplusJets;
-    loadHistograms(histograms_TTplusJets, histogramInputDirectory, "TTplusJets", regionsToLoad, tauId, observables, sysUncertainties);
+    loadHistograms(histograms_TTplusJets, histogramInputDirectory, 
+		   "TTplusJets", regionsToLoad, tauId, observables, sysUncertainties_expanded);
     processEntries["TTplusJets"] = 
       new processEntryType("TTplusJets", histograms_TTplusJets, fitVariables, regionsToFit, region_passed, region_failed, 
 			   sysUncertainties, templateMorphingMode, legendEntries["TTplusJets"], fillColors["TTplusJets"]);
@@ -1333,10 +1469,13 @@ int main(int argc, const char* argv[])
 //    by ratio to Data to MC event yields in region 'ABCD', 
 //    in order to speed-up convergence of fit
   double scaleFactorMCtoData = data->numEvents_["ABCD"]/processEntries["mcSum"]->numEvents_["ABCD"];
+  std::cout << "number of events in region ABCD: data = " << data->numEvents_["ABCD"] << "," 
+	    << " sum(MC) = " << processEntries["mcSum"]->numEvents_["ABCD"] << std::endl;
   std::cout << "--> MC-to-Data scale-factor = " << scaleFactorMCtoData << std::endl;
   for ( std::map<std::string, processEntryType*>::iterator processEntry = processEntries.begin();
 	processEntry != processEntries.end(); ++processEntry ) {
-    processEntry->second->norm_.fittedValue_->setVal(scaleFactorMCtoData*processEntry->second->norm_.fittedValue_->getVal());
+    processEntry->second->norm_.expectedValue_ = scaleFactorMCtoData*processEntry->second->numEvents_["ABCD"];
+    processEntry->second->norm_.fittedValue_->setVal(processEntry->second->norm_.expectedValue_);
   }
 
 //--- obtain template for QCD background from data,

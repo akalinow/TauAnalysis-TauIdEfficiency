@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.13 $
+ * \version $Revision: 1.14 $
  *
- * $Id: FWLiteTauIdEffPreselNumbers.cc,v 1.13 2011/09/30 12:26:40 veelken Exp $
+ * $Id: FWLiteTauIdEffPreselNumbers.cc,v 1.14 2011/11/06 13:25:23 veelken Exp $
  *
  */
 
@@ -29,8 +29,12 @@
 #include "DataFormats/PatCandidates/interface/Tau.h"
 #include "DataFormats/PatCandidates/interface/Muon.h"
 #include "DataFormats/PatCandidates/interface/MET.h"
-#include "DataFormats/PatCandidates/interface/TriggerEvent.h"
-#include "DataFormats/PatCandidates/interface/TriggerAlgorithm.h"
+#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerReadoutRecord.h"
+#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerObjectMapRecord.h"
+#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerObjectMapFwd.h"
+#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerObjectMap.h"
+#include "DataFormats/Common/interface/TriggerResults.h"
+#include "FWCore/Common/interface/TriggerNames.h"
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
@@ -145,7 +149,8 @@ struct regionEntryType
   regionEntryType(fwlite::TFileService& fs,
 		  const std::string& process, const std::string& region, 
 		  const vstring& tauIdDiscriminators, const std::string& tauIdName, const std::string& sysShift,
-                  const edm::ParameterSet& cfgBinning)
+                  const edm::ParameterSet& cfgBinning,
+		  const edm::ParameterSet& cfgEventSelCuts)
     : process_(process),
       region_(region),
       tauIdDiscriminators_(tauIdDiscriminators),
@@ -158,7 +163,7 @@ struct regionEntryType
       numMuTauPairs_selected_(0),
       numMuTauPairsWeighted_selected_(0.)
   {
-    edm::ParameterSet cfgSelector;
+    edm::ParameterSet cfgSelector = cfgEventSelCuts;
     cfgSelector.addParameter<std::string>("region", region_);
     cfgSelector.addParameter<vstring>("tauIdDiscriminators", tauIdDiscriminators_);
     cfgSelector.addParameter<std::string>("tauChargeMode", "tauLeadTrackCharge");
@@ -389,8 +394,12 @@ int main(int argc, char* argv[])
 
   edm::InputTag srcMuTauPairs = cfgTauIdEffPreselNumbers.getParameter<edm::InputTag>("srcMuTauPairs");
   edm::InputTag srcGenParticles = cfgTauIdEffPreselNumbers.getParameter<edm::InputTag>("srcGenParticles");
-  edm::InputTag srcTrigger = cfgTauIdEffPreselNumbers.getParameter<edm::InputTag>("srcTrigger");
+  edm::ParameterSet cfgEventSelCuts = cfgTauIdEffPreselNumbers.getParameter<edm::ParameterSet>("eventSelCuts");
+  edm::InputTag srcHLTresults = cfgTauIdEffPreselNumbers.getParameter<edm::InputTag>("srcHLTresults");
+  edm::InputTag srcL1GtReadoutRecord = cfgTauIdEffPreselNumbers.getParameter<edm::InputTag>("srcL1GtReadoutRecord"); 
+  edm::InputTag srcL1GtObjectMapRecord = cfgTauIdEffPreselNumbers.getParameter<edm::InputTag>("srcL1GtObjectMapRecord");
   vstring hltPaths = cfgTauIdEffPreselNumbers.getParameter<vstring>("hltPaths");
+  vstring l1Bits = cfgTauIdEffPreselNumbers.getParameter<vstring>("l1Bits");
   edm::InputTag srcCaloMEt = cfgTauIdEffPreselNumbers.getParameter<edm::InputTag>("srcCaloMEt");
   edm::InputTag srcGoodMuons = cfgTauIdEffPreselNumbers.getParameter<edm::InputTag>("srcGoodMuons");
   edm::InputTag srcVertices = cfgTauIdEffPreselNumbers.getParameter<edm::InputTag>("srcVertices");
@@ -398,6 +407,9 @@ int main(int argc, char* argv[])
   vInputTag srcWeights = cfgTauIdEffPreselNumbers.getParameter<vInputTag>("weights");
   std::string sysShift = cfgTauIdEffPreselNumbers.exists("sysShift") ?
     cfgTauIdEffPreselNumbers.getParameter<std::string>("sysShift") : "CENTRAL_VALUE";
+
+  std::string selEventsFileName = ( cfgTauIdEffPreselNumbers.exists("selEventsFileName") ) ?
+    cfgTauIdEffPreselNumbers.getParameter<std::string>("selEventsFileName") : "";
 
   fwlite::InputSource inputFiles(cfg); 
   int maxEvents = inputFiles.maxEvents();
@@ -421,17 +433,20 @@ int main(int argc, char* argv[])
       vstring tauIdDiscriminators = cfgTauIdDiscriminator->getParameter<vstring>("discriminators");
       std::string tauIdName = cfgTauIdDiscriminator->getParameter<std::string>("name");
       regionEntryType* regionEntry = 
-	new regionEntryType(fs, process, *region, tauIdDiscriminators, tauIdName, sysShift, cfgBinning);
+	new regionEntryType(fs, process, *region, tauIdDiscriminators, tauIdName, sysShift, cfgBinning, cfgEventSelCuts);
       regionEntries.push_back(regionEntry);
     }
   }
 
-  edm::ParameterSet cfgSelectorABCD;
+  edm::ParameterSet cfgSelectorABCD = cfgEventSelCuts;
   cfgSelectorABCD.addParameter<vstring>("tauIdDiscriminators", vstring());
   cfgSelectorABCD.addParameter<std::string>("region", "ABCD");
   cfgSelectorABCD.addParameter<std::string>("tauChargeMode", "tauLeadTrackCharge");
   cfgSelectorABCD.addParameter<bool>("disableTauCandPreselCuts", false);
   TauIdEffEventSelector* selectorABCD = new TauIdEffEventSelector(cfgSelectorABCD);
+
+  std::ofstream* selEventsFile = ( selEventsFileName != "" ) ?
+    new std::ofstream(selEventsFileName.data(), std::ios::out) : 0;
 
   int    numEvents_processed                     = 0; 
   double numEventsWeighted_processed             = 0.;
@@ -479,21 +494,53 @@ int main(int argc, char* argv[])
       if ( maxEvents > 0 && numEvents_processed >= maxEvents ) maxEvents_processed = true;
 
 //--- check that event has passed triggers
-      edm::Handle<pat::TriggerEvent> hltEvent;
-      evt.getByLabel(srcTrigger, hltEvent);
-  
-      bool isTriggered = false;
-      for ( vstring::const_iterator hltPathName = hltPaths.begin();
-	    hltPathName != hltPaths.end() && !isTriggered; ++hltPathName ) {
-	if ( (*hltPathName) == "*" ) { // check for wildcard character "*" that accepts all events
-	  isTriggered = true;
-	} else {
-	  const pat::TriggerPath* hltPath = hltEvent->path(*hltPathName);
-	  if ( hltPath && hltPath->wasAccept() ) isTriggered = true;
+      bool anyHLTpath_passed = false;
+      if ( hltPaths.size() == 0 ) {
+	anyHLTpath_passed = true;
+      } else {
+	edm::Handle<edm::TriggerResults> hltResults;
+	evt.getByLabel(srcHLTresults, hltResults);
+	
+	const edm::TriggerNames& triggerNames = evt.triggerNames(*hltResults);
+	
+	for ( vstring::const_iterator hltPath = hltPaths.begin();
+	      hltPath != hltPaths.end(); ++hltPath ) {
+	  bool isHLTpath_passed = false;
+	  unsigned int idx = triggerNames.triggerIndex(*hltPath);
+	  if ( idx < triggerNames.size() ) isHLTpath_passed = hltResults->accept(idx);
+	  if ( isHLTpath_passed ) anyHLTpath_passed = true;
 	}
       }
 
-      if ( !isTriggered ) continue;
+      if ( !anyHLTpath_passed ) continue;
+
+      bool anyL1bit_passed = false;
+      if ( l1Bits.size() == 0 ) {
+	anyL1bit_passed = true;
+      } else {
+	edm::Handle<L1GlobalTriggerReadoutRecord> l1GtReadoutRecord;
+	evt.getByLabel(srcL1GtReadoutRecord, l1GtReadoutRecord);
+	edm::Handle<L1GlobalTriggerObjectMapRecord> l1GtObjectMapRecord;
+	evt.getByLabel(srcL1GtObjectMapRecord, l1GtObjectMapRecord);
+
+	DecisionWord l1GtDecision = l1GtReadoutRecord->decisionWord();
+	const std::vector<L1GlobalTriggerObjectMap>& l1GtObjectMaps = l1GtObjectMapRecord->gtObjectMap();
+
+	for ( vstring::const_iterator l1Bit = l1Bits.begin();
+	      l1Bit != l1Bits.end(); ++l1Bit ) {	  
+	  for ( std::vector<L1GlobalTriggerObjectMap>::const_iterator l1GtObjectMap = l1GtObjectMaps.begin();
+		l1GtObjectMap != l1GtObjectMaps.end(); ++l1GtObjectMap ) {
+	    bool isL1bit_passed = false;
+	    std::string l1Bit_idx = (*l1GtObjectMap).algoName();
+	    int idx = (*l1GtObjectMap).algoBitNumber();	    
+	    if ( l1Bit_idx == (*l1Bit) ) isL1bit_passed = l1GtDecision[idx];
+	    if ( isL1bit_passed ) anyL1bit_passed = true;
+	  }
+	}
+      }
+
+      if ( !anyL1bit_passed ) continue;
+
       ++numEvents_passedTrigger;
       numEventsWeighted_passedTrigger += evtWeight;
 
@@ -571,7 +618,19 @@ int main(int argc, char* argv[])
 				  caloMEt->front(),
 				  numVertices, 
 				  evtWeight);
-        }
+	}
+
+	if ( genMatchType == kGenTauHadMatched &&
+	     muTauPair->leg2()->tauID("decayModeFinding") > 0.5 &&
+	     muTauPair->leg2()->tauID("byLooseCombinedIsolationDeltaBetaCorr") > 0.5 &&
+	     muTauPair->leg2()->userFloat("hasLeadTrack") > 0.5 &&
+	     muTauPair->leg2()->userFloat("leadTrackPt") > 5.0 &&     
+	     muTauPair->leg2()->userFloat("preselLoosePFIsoPt") > 2.5 ) {
+	  std::cout << "run = " << evt.id().run() << "," 
+		    << " ls = " << evt.luminosityBlock() << ", event = " << evt.id().event() << ":" << std::endl;
+	  
+	  if ( selEventsFile ) (*selEventsFile) << evt.id().run() << ":" << evt.luminosityBlock() << ":" << evt.id().event() << std::endl;
+	}
       }
     }
 

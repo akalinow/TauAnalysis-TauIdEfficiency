@@ -17,6 +17,8 @@
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 
+#include "PhysicsTools/JetMCUtils/interface/JetMCTag.h"
+
 #include "DataFormats/Math/interface/deltaR.h"
 
 #include <TMath.h>
@@ -24,7 +26,8 @@
 typedef std::vector<pat::Tau> PATTauCollection;
 
 PATPFTauSelectorForTauIdEff::PATPFTauSelectorForTauIdEff(const edm::ParameterSet& cfg)
-  : trackQualityCuts_(0),
+  : moduleLabel_(cfg.getParameter<std::string>("@module_label")),
+    trackQualityCuts_(0),
     muonSelection_(0),				
     pfIsolationExtractor_(0),
     save_(0),
@@ -86,6 +89,7 @@ bool PATPFTauSelectorForTauIdEff::filter(edm::Event& evt, const edm::EventSetup&
 {
   if ( verbosity_ ) {
     std::cout << "<PATPFTauSelectorForTauIdEff::filter>:" << std::endl;
+    std::cout << " moduleLabel = " << moduleLabel_ << std::endl;
     std::cout << " src = " << src_.label() << std::endl;
   }
 
@@ -123,13 +127,22 @@ bool PATPFTauSelectorForTauIdEff::filter(edm::Event& evt, const edm::EventSetup&
     reco::PFJetRef pfJet = pfTau_input->pfJetRef();
 
     reco::Candidate::LorentzVector p4PFJetUncorrected = pfJet->p4();
-
+    
     double pfJetJEC = jetEnergyCorrector->correction(*pfJet, evt, es);
     if ( verbosity_ ) {
       std::cout << " PFJet: uncorrected Pt = " << p4PFJetUncorrected.pt() << "," 
     	        << " eta = " << p4PFJetUncorrected.eta() << ", phi = " << p4PFJetUncorrected.phi()
     	        << " --> pfJetJEC = " << pfJetJEC << std::endl;
+      if ( pfTau_input->genJet() ) 
+	std::cout << "matched to generated hadronic tau decay," 
+		  << " decay mode = " << JetMCTagUtils::genTauDecayMode(*pfTau_input->genJet()) << std::endl;
+      std::cout << " Tau id. discriminators:" << std::endl;
+      for ( std::vector<pat::Tau::IdPair>::const_iterator tauId = pfTau_input->tauIDs().begin();
+	    tauId != pfTau_input->tauIDs().end(); ++tauId ) {
+	std::cout << "  " << tauId->first << " = " << tauId->second << std::endl;
+      }
     }
+    if ( pfTau_input->hasUserFloat("pfJetJECshift") ) pfJetJEC *= pfTau_input->userFloat("pfJetJECshift");
     reco::Candidate::LorentzVector p4PFJetCorrected(pfJetJEC*p4PFJetUncorrected);
     
     bool isSaved = ( save_ ) ?
@@ -185,7 +198,7 @@ bool PATPFTauSelectorForTauIdEff::filter(edm::Event& evt, const edm::EventSetup&
     if ( leadPFChargedHadron ) 
       loosePFIsoPt = 
 	(*pfIsolationExtractor_)(*pfTau_input, leadPFChargedHadron->momentum(), 
-				 *pfIsoCandidates, *pfIsoCandidates, rhoFastJet);
+				 *pfIsoCandidates, *pfNoPileUpCandidates, rhoFastJet);
     if ( verbosity_ ) std::cout << " loosePFIsoPt = " << loosePFIsoPt << std::endl;
     if ( !(produceAll_  || isSaved) && loosePFIsoPt > maxPFIsoPt_ ) continue;
 

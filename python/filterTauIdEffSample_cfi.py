@@ -30,7 +30,11 @@ hltMu = cms.EDFilter("EventSelPluginFilter",
             'HLT_IsoMu15_L1ETM20_v3',
             'HLT_IsoMu15_L1ETM20_v4',                 
             'HLT_Mu15_L1ETM20_v3',
-            'HLT_Mu15_L1ETM20_v4'                 
+            'HLT_Mu15_L1ETM20_v4',
+            # monitor trigger for measurement of L1ETM20 efficiency
+            'HLT_IsoMu24_v9',
+            'HLT_IsoMu24_v12',
+            'HLT_IsoMu24_v13'
         )
     )
 )
