@@ -11,7 +11,7 @@ channel = 'ZtoMuTau_tauIdEff'
 jobId = '2011Oct30'
 
 version = 'V10_5tauEnRecovery'
-label = 'fitEWKbgSum_v4'
+label = 'fitEWKbgSum_v6'
 
 inputFilePath = '/data1/veelken/CMSSW_4_2_x/PATtuples/TauIdEffMeas/%s/%s/' % (jobId, version) \
                + 'user/v/veelken/CMSSW_4_2_x/PATtuples/TauIdEffMeas/%s/%s/' % (jobId, version)
@@ -40,6 +40,9 @@ sampleZtautau = 'Ztautau_powheg'
 
 #runPeriod = '2011RunA'
 runPeriod = '2011RunB'
+
+runClosureTest = False
+#runClosureTest = True
 
 intLumiData = None
 firstRunData = -1
@@ -115,8 +118,8 @@ fitVariables = [
     'diTauVisMass'
 ]    
 
-mode = 'tauIdEfficiency'
-#mode = 'tauChargeMisIdRate'
+#mode = 'tauIdEfficiency'
+mode = 'tauChargeMisIdRate'
 
 sysUncertainties = [
     "JetEn",        # needed for diTauMt/Pzeta
@@ -260,12 +263,8 @@ binning = {
     # NOTE: these strings need to match what is hard-coded in regionEntryType::regionEntryType constructor,
     #       defined in TauAnalysis/TauIdEfficiency/bin/FWLiteTauIdEffAnalyzer.cc 
     'tauPt' : {
-        'tauPtLt25' : {
+        'tauPtLt30' : {
             'min' :  20.0,
-            'max' :  25.0
-        },
-        'tauPt25to30' : {
-            'min' :  25.0,
             'max' :  30.0
         },
         'tauPt30to40' : {
@@ -344,8 +343,13 @@ passed_region                        = None
 failed_region                        = None
 regionQCDtemplateFromData_passed     = None
 regionQCDtemplateFromData_failed     = None
+regionQCDtemplateFromData_D          = None
 regionWplusJetsSideband_passed       = None
 regionWplusJetsSideband_failed       = None
+regionWplusJetsSideband_D            = None
+histQCDtemplateFromData_passed       = None
+histQCDtemplateFromData_failed       = None
+histQCDtemplateFromData_D            = None
 fitMethod                            = None
 tauChargeMode                        = None
 disableTauCandPreselCuts             = None
@@ -360,6 +364,7 @@ if mode == 'tauIdEfficiency':
     regions                              = [
         'ABCD',
         'A',
+        'A_mW', 
         'A1',  # QCD enriched control region (OS, loose muon isolation, Mt && Pzeta cuts applied)
         'A1_mW',
         #'A1_mW_tW',
@@ -369,6 +374,7 @@ if mode == 'tauIdEfficiency':
         'AWj_mW',
         #'AWj_mW_tW',
         'B',
+        'B_mW',
         'B1',  # QCD enriched control region (SS, loose muon isolation, Mt && Pzeta cuts applied)
         'B1_mW',
         #'B1_mW_tW',
@@ -398,10 +404,15 @@ if mode == 'tauIdEfficiency':
     failed_region                        = 'C1f'
     regionQCDtemplateFromData_passed     = 'A1_mW'
     regionQCDtemplateFromData_failed     = 'A1_mW'
+    regionQCDtemplateFromData_D          = 'A_mW'
     #regionWplusJetsSideband_passed       = 'CWj'
     #regionWplusJetsSideband_failed       = 'CWj'
     regionWplusJetsSideband_passed       = 'AWj'
     regionWplusJetsSideband_failed       = 'AWj'
+    regionWplusJetsSideband_D            = 'AWj'
+    histQCDtemplateFromData_passed       = ''.join([ passed_region, "_qcd" ])
+    histQCDtemplateFromData_failed       = ''.join([ failed_region, "_qcd" ])
+    histQCDtemplateFromData_D            = ''.join([ "D",           "_qcd" ])
     fitMethod                            = 'fitTauIdEff'
     tauChargeMode                        = 'tauLeadTrackCharge'
     disableTauCandPreselCuts             = False
@@ -412,9 +423,11 @@ if mode == 'tauIdEfficiency':
 elif mode == 'tauChargeMisIdRate':
     executable_compTauIdEffPreselNumbers = execDir + 'FWLiteTauChargeMisIdPreselNumbers'
     keyword_compTauIdEffPreselNumbers    = 'compTauChargeMisIdPreselNumbers'
-    suffix_noTauSel                      = ''
+    suffix_noTauSel                      = 'noTauSel'
     regions                              = [
+        'A1_mW',
         'B1',  # control region used to obtain QCD template from Data
+        'B1_mW',
         'B1p',
         'B1f',
         'B2',
@@ -422,18 +435,25 @@ elif mode == 'tauChargeMisIdRate':
         'C1p',
         'C1f',
         'C2',
+        'CWj',
         'D1',
         'D1p',
         'D1f',
-        'D2'
+        'D2',
+        'DWj'
     ]
     regionsToFit                         = [ 'C1p', 'D1p' ]
     passed_region                        = 'C1p'
     failed_region                        = 'D1p'
     regionQCDtemplateFromData_passed     = 'A1_mW'
     regionQCDtemplateFromData_failed     = 'B1_mW'
+    regionQCDtemplateFromData_D          = ''
     regionWplusJetsSideband_passed       = 'CWj'
     regionWplusJetsSideband_failed       = 'DWj'
+    regionWplusJetsSideband_D            = ''
+    histQCDtemplateFromData_passed       = ''.join([ passed_region, "_qcd" ])
+    histQCDtemplateFromData_failed       = ''.join([ failed_region, "_qcd" ])
+    histQCDtemplateFromData_D            = ''
     fitMethod                            = 'fitTauIdEff'
     tauChargeMode                        = 'tauSignalChargedHadronSum'
     disableTauCandPreselCuts             = True
@@ -443,9 +463,6 @@ elif mode == 'tauChargeMisIdRate':
     measEff_label                        = 'measRate'   
 else:
     raise ValueError("Invalid mode = %s !!" % mode)
-
-histQCDtemplateFromData_passed = "".join([ passed_region, "_qcd" ])
-histQCDtemplateFromData_failed = "".join([ failed_region, "_qcd" ])
 
 executable_FWLiteTauIdEffAnalyzer = execDir + 'FWLiteTauIdEffAnalyzer'
 executable_hadd = 'hadd -f'
@@ -528,9 +545,9 @@ logFileNames_makeTauIdEffQCDtemplate    = []
 retVal_makeTauIdEffQCDtemplate = \
   buildConfigFile_makeTauIdEffQCDtemplate("".join([ jobId, version ]), '', haddOutputFileName_stage1, tauIds.keys(),
                                           fitVariables, sysUncertainties, outputFilePath,
-                                          regionQCDtemplateFromData_passed, regionQCDtemplateFromData_failed,
-                                          regionWplusJetsSideband_passed, regionWplusJetsSideband_failed, 
-                                          histQCDtemplateFromData_passed, histQCDtemplateFromData_failed)
+                                          regionQCDtemplateFromData_passed, regionQCDtemplateFromData_failed, regionQCDtemplateFromData_D,
+                                          regionWplusJetsSideband_passed, regionWplusJetsSideband_failed, regionWplusJetsSideband_D, 
+                                          histQCDtemplateFromData_passed, histQCDtemplateFromData_failed, histQCDtemplateFromData_D)
 configFileNames_makeTauIdEffQCDtemplate.append(retVal_makeTauIdEffQCDtemplate['configFileName'])
 outputFileNames_makeTauIdEffQCDtemplate.append(retVal_makeTauIdEffQCDtemplate['outputFileName'])
 logFileNames_makeTauIdEffQCDtemplate.append(retVal_makeTauIdEffQCDtemplate['logFileName'])
@@ -540,9 +557,9 @@ for binVariable in binning.keys():
             retVal_makeTauIdEffQCDtemplate = \
               buildConfigFile_makeTauIdEffQCDtemplate("".join([ jobId, version ]), binName, haddOutputFileName_stage1, tauIds.keys(),
                                                       fitVariables, sysUncertainties, outputFilePath,
-                                                      regionQCDtemplateFromData_passed, regionQCDtemplateFromData_failed,
-                                                      regionWplusJetsSideband_passed, regionWplusJetsSideband_failed, 
-                                                      histQCDtemplateFromData_passed, histQCDtemplateFromData_failed)
+                                                      regionQCDtemplateFromData_passed, regionQCDtemplateFromData_failed, regionQCDtemplateFromData_D,
+                                                      regionWplusJetsSideband_passed, regionWplusJetsSideband_failed, regionWplusJetsSideband_D, 
+                                                      histQCDtemplateFromData_passed, histQCDtemplateFromData_failed, histQCDtemplateFromData_D)
             configFileNames_makeTauIdEffQCDtemplate.append(retVal_makeTauIdEffQCDtemplate['configFileName'])
             outputFileNames_makeTauIdEffQCDtemplate.append(retVal_makeTauIdEffQCDtemplate['outputFileName'])
             logFileNames_makeTauIdEffQCDtemplate.append(retVal_makeTauIdEffQCDtemplate['logFileName'])
@@ -577,8 +594,8 @@ for tauId in tauIds.keys():
           buildConfigFile_fitTauIdEff(fitMethod, "".join([ jobId, version ]), '', haddOutputFileName_stage2, tauId,
                                       fitVariable, templateMorphingMode, sysUncertainties, outputFilePath,
                                       regionsToFit, passed_region, failed_region,                              
-                                      histQCDtemplateFromData_passed, histQCDtemplateFromData_failed,
-                                      fitIndividualProcesses, intLumiData, True, outputFilePath_plots)
+                                      histQCDtemplateFromData_passed, histQCDtemplateFromData_failed, histQCDtemplateFromData_D,
+                                      fitIndividualProcesses, intLumiData, runClosureTest, True, outputFilePath_plots)
         configFileNames_fitTauIdEff.append(retVal_fitTauIdEff['configFileName'])
         outputFileNames_fitTauIdEff.append(retVal_fitTauIdEff['outputFileName'])
         logFileNames_fitTauIdEff.append(retVal_fitTauIdEff['logFileName'])
@@ -589,8 +606,8 @@ for tauId in tauIds.keys():
                       buildConfigFile_fitTauIdEff(fitMethod, "".join([ jobId, version ]), binName, haddOutputFileName_stage2, tauId,
                                                   fitVariable, templateMorphingMode, sysUncertainties, outputFilePath,
                                                   regionsToFit, passed_region, failed_region,
-                                                  histQCDtemplateFromData_passed, histQCDtemplateFromData_failed,
-                                                  fitIndividualProcesses, intLumiData, False, outputFilePath_plots)
+                                                  histQCDtemplateFromData_passed, histQCDtemplateFromData_failed, histQCDtemplateFromData_D,
+                                                  fitIndividualProcesses, intLumiData, runClosureTest, False, outputFilePath_plots)
                     configFileNames_fitTauIdEff.append(retVal_fitTauIdEff['configFileName'])
                     outputFileNames_fitTauIdEff.append(retVal_fitTauIdEff['outputFileName'])
                     logFileNames_fitTauIdEff.append(retVal_fitTauIdEff['logFileName'])
@@ -730,6 +747,8 @@ def make_MakeFile_vstring(list_of_strings):
 
 # done building config files, now build Makefile...
 makeFileName = "Makefile_TauIdEffMeasAnalysis_%s_%s_%s" % (jobId, version, label)
+##if runClosureTest:
+##    makeFileName += "_mcClosureTest"
 makeFile = open(makeFileName, "w")
 makeFile.write("\n")
 makeFile.write("all: %s %s\n" %

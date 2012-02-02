@@ -28,7 +28,7 @@ def make_drawOptions_string(drawOptions, namesToPlot):
 #--------------------------------------------------------------------------------
 
 def buildConfigFile_FWLiteTauFakeRateAnalyzer(sampleToAnalyze, evtSel, version, inputFilePath, tauIds, 
-                                              tauJetCandSelection, srcTauJetCandidates, srcMET, hltPaths, 
+                                              tauJetCandSelection, srcTauJetCandidates, srcMET, intLumiData, hltPaths, srcWeights,
                                               configFilePath, logFilePath, outputFilePath, recoSampleDefinitions):
 
     """Build cfg.py file to run FWLiteTauFakeRateAnalyzer macro to run on PAT-tuples,
@@ -82,6 +82,7 @@ def buildConfigFile_FWLiteTauFakeRateAnalyzer(sampleToAnalyze, evtSel, version, 
         hltPaths_string = make_inputFileNames_vstring(hltPaths[processType])
     else:
         hltPaths_string = make_inputFileNames_vstring(hltPaths)
+    weights_string = make_inputFileNames_vstring(srcWeights[processType])
 
     configFileNames = []
     outputFileNames = []
@@ -98,16 +99,11 @@ def buildConfigFile_FWLiteTauFakeRateAnalyzer(sampleToAnalyze, evtSel, version, 
 
         outputFileName = 'analyzeTauFakeRateHistograms_%s_%s_%s_chunk_%s.root' % (evtSel, sampleToAnalyze, version, jobId)
 
-        weights_string = ""
-        if not recoSampleDefinitions['MERGE_SAMPLES'][process_matched]['type'] == 'Data':
-            weights_string += "".join(["'", "ntupleProducer:tauIdEffNtuple#addPileupInfo#vtxMultReweight", "'"])
-
         allEvents_DBS = -1
         xSection = 0.0
         if not recoSampleDefinitions['MERGE_SAMPLES'][process_matched]['type'] == 'Data':
             allEvents_DBS = recoSampleDefinitions['RECO_SAMPLES'][sampleToAnalyze]['events_processed']
             xSection = recoSampleDefinitions['RECO_SAMPLES'][sampleToAnalyze]['x_sec']
-        intLumiData = recoSampleDefinitions['TARGET_LUMI']
 
         config = \
 """
@@ -191,8 +187,10 @@ process.tauFakeRateAnalyzer = cms.PSet(
     retVal['outputFileNames'] = outputFileNames
     retVal['logFileNames']    = logFileNames
 
-    #print "retVal['inputFileNames']  = %s" % inputFileNames_sample
-    #print "retVal['outputFileNames'] = %s" % outputFileNames
+    #print " inputFileNames = %s" % inputFileNames_sample
+    #print " configFileNames = %s" % configFileNames
+    #print " outputFileNames = %s" % outputFileNames
+    #print " logFileNames = %s" % logFileNames
 
     return retVal
 
@@ -216,6 +214,13 @@ def buildConfigFile_makeTauFakeRatePlots(inputFileName,
             if isinstance(drawOptionAttr, cms._ParameterTypeBase):
                 processes_string += "        " + "    %s = cms.%s(%s),\n" % \
                   (drawOptionAttrName, drawOptionAttr.__class__.__name__, drawOptionAttr.pythonValue())
+        ##if not 'markerStyle' in dir(drawOptions):
+        ##    markerStyle = None
+        ##    if processName.find("Data") != -1:
+        ##        markerStyle = 20
+        ##    else:
+        ##        markerStyle = 24
+        ##    processes_string += "        " + "    markerStyle  = cms.int32(%i),\n" % markerStyle
         processes_string += "        " + ")," + "\n"
         processesToPlot.append(processName)
 

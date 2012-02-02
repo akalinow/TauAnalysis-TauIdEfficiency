@@ -10,9 +10,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.4 $
+ * \version $Revision: 1.5 $
  *
- * $Id: FWLiteTauFakeRateAnalyzer.cc,v 1.4 2011/08/02 15:16:09 veelken Exp $
+ * $Id: FWLiteTauFakeRateAnalyzer.cc,v 1.5 2011/11/06 13:25:23 veelken Exp $
  *
  */
 
@@ -37,6 +37,7 @@
 #include "DataFormats/PatCandidates/interface/Tau.h"
 #include "DataFormats/PatCandidates/interface/MET.h"
 #include "DataFormats/PatCandidates/interface/TriggerEvent.h"
+#include "DataFormats/PatCandidates/interface/TriggerPath.h"
 #include "DataFormats/PatCandidates/interface/TriggerAlgorithm.h"
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
@@ -46,6 +47,7 @@
 
 #include "TauAnalysis/TauIdEfficiency/interface/TauFakeRateEventSelector.h"
 #include "TauAnalysis/TauIdEfficiency/interface/TauFakeRateHistManager.h"
+#include "TauAnalysis/CandidateTools/interface/generalAuxFunctions.h"
 
 #include <TFile.h>
 #include <TTree.h>
@@ -295,6 +297,7 @@ int main(int argc, char* argv[])
       double probFailedPrescale = 1.;
       for ( vstring::const_iterator hltPathName = hltPaths.begin();
 	    hltPathName != hltPaths.end() && !isTriggered; ++hltPathName ) {
+	//std::cout << "hltPathName = " << (*hltPathName) << std::endl;
 	if ( (*hltPathName) == "*" ) { // check for wildcard character "*" that accepts all events
 	  isTriggered = true;
 	  probFailedPrescale = 0.;
@@ -303,10 +306,38 @@ int main(int argc, char* argv[])
 	  const pat::TriggerPath* hltPath = hltEvent->path(*hltPathName);
 	  if ( hltPath && hltPath->wasAccept() ) {
 	    isTriggered = true;
-	    unsigned prescale = hltPath->prescale();
-	    if ( prescale <= 1 ) probFailedPrescale = 0.;
-	    else probFailedPrescale *= (1. - 1./prescale);
-	    std::cout << "HLT path = " << hltPath->name() << ": prescale = " << prescale << std::endl;
+	    unsigned hltPrescale = hltPath->prescale();
+	    if ( hltPrescale < 1 ) hltPrescale = 1;
+	    //std::cout << "HLT path = " << hltPath->name() << ": prescale = " << hltPrescale << std::endl;
+	    double probFailedL1Prescale = 1.;
+	    const pat::L1SeedCollection& l1Seeds = hltPath->l1Seeds();
+	    for ( pat::L1SeedCollection::const_iterator l1Seed_status = l1Seeds.begin();
+		  l1Seed_status != l1Seeds.end(); ++l1Seed_status ) {
+	      const std::string& l1SeedName = l1Seed_status->second;
+	      //std::cout << "l1SeedName = " << l1SeedName << std::endl;	      
+	      const pat::TriggerAlgorithm* l1Seed = hltEvent->algorithm(l1SeedName);
+	      if ( !l1Seed ) {
+		//std::cout << "Failed to access L1 seed = " << l1SeedName << "," 
+		//	    << " needed for HLT path = " << hltPath->name() << " !!" << std::endl;
+		vstring l1SeedNames;
+		const pat::TriggerAlgorithmCollection* l1Seeds = hltEvent->algorithms();
+		for ( pat::TriggerAlgorithmCollection::const_iterator l1Seed = l1Seeds->begin();
+		      l1Seed != l1Seeds->end(); ++l1Seed ) {
+		  l1SeedNames.push_back(l1Seed->name());
+		}
+		//std::cout << "Available L1 seeds = " << format_vstring(l1SeedNames) << std::endl;
+		continue;
+	      }
+	      bool l1Passed = l1Seed_status->first;
+	      if ( l1Passed ) {
+		unsigned l1Prescale = l1Seed->prescale();
+		if ( l1Prescale < 1 ) l1Prescale = 1;
+		//std::cout << " L1 seed = " << l1Seed->name() << ": prescale = " << l1Prescale << std::endl;
+		if ( l1Prescale <= 1 ) probFailedL1Prescale = 0.;
+		else probFailedL1Prescale *= (1. - 1./l1Prescale);
+	      }
+	    }
+	    probFailedPrescale *= (1. - (1./hltPrescale)*(1. - probFailedL1Prescale));
 	  }
 	}
       }
@@ -317,6 +348,7 @@ int main(int argc, char* argv[])
 
       if ( isData && probFailedPrescale > (1. - 1.e-9) ) continue;
       double prescaleCorrFactor = ( isData ) ? 1./(1. - probFailedPrescale) : 1.;
+      //std::cout << "prescaleCorrFactor = " << prescaleCorrFactor << std::endl;
       evtWeight *= prescaleCorrFactor;
 
 //--- determine number of vertices reconstructed in the event

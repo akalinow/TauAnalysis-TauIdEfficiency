@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.5 $
+ * \version $Revision: 1.6 $
  *
- * $Id: makeTauIdEffQCDtemplate.cc,v 1.5 2011/11/27 18:25:17 veelken Exp $
+ * $Id: makeTauIdEffQCDtemplate.cc,v 1.6 2011/12/19 14:11:19 veelken Exp $
  *
  */
 
@@ -156,9 +156,11 @@ int main(int argc, const char* argv[])
   vstring tauIdValues;
   tauIdValues.push_back("passed");
   tauIdValues.push_back("failed");
+  tauIdValues.push_back("D");
 
   vstring fitVariables = cfgMakeTauIdEffQCDtemplate.getParameter<vstring>("fitVariables");
   add_string_uniquely(fitVariables, "EventCounter"); // CV: for normalization purposes, always add 'EventCounter'
+  add_string_uniquely(fitVariables, "diTauMt");      // CV: add 'diTauMt' in order to take QCD template for region 'D' from data
 
   vstring sysUncertainties = cfgMakeTauIdEffQCDtemplate.getParameter<vstring>("sysUncertainties");
   vstring sysUncertainties_expanded;
@@ -210,17 +212,20 @@ int main(int argc, const char* argv[])
 
       std::string regionTakeQCDtemplateFromData = 
 	cfgMakeTauIdEffQCDtemplate.getParameter<std::string>(std::string("regionTakeQCDtemplateFromData_").append(*tauIdValue));
-      add_string_uniquely(regions, regionTakeQCDtemplateFromData);
-      //add_string_uniquely(regions, std::string(regionTakeQCDtemplateFromData).append("+"));
-      //add_string_uniquely(regions, std::string(regionTakeQCDtemplateFromData).append("-"));	  
       std::string regionWplusJetsSideband = 
-	cfgMakeTauIdEffQCDtemplate.getParameter<std::string>(std::string("regionWplusJetsSideband_").append(*tauIdValue));
-      add_string_uniquely(regions, regionWplusJetsSideband);
-      //add_string_uniquely(regions, std::string(regionWplusJetsSideband).append("+"));
-      //add_string_uniquely(regions, std::string(regionWplusJetsSideband).append("-"));
+	cfgMakeTauIdEffQCDtemplate.getParameter<std::string>(std::string("regionWplusJetsSideband_").append(*tauIdValue));      
       std::string regionStoreQCDtemplate = 
 	cfgMakeTauIdEffQCDtemplate.getParameter<std::string>(std::string("regionStoreQCDtemplate_").append(*tauIdValue));
       
+      if ( regionTakeQCDtemplateFromData == "" || regionWplusJetsSideband == "" || regionStoreQCDtemplate == "" ) continue;
+      
+      add_string_uniquely(regions, regionTakeQCDtemplateFromData);
+      //add_string_uniquely(regions, std::string(regionTakeQCDtemplateFromData).append("+"));
+      //add_string_uniquely(regions, std::string(regionTakeQCDtemplateFromData).append("-"));	
+      add_string_uniquely(regions, regionWplusJetsSideband);
+      //add_string_uniquely(regions, std::string(regionWplusJetsSideband).append("+"));
+      //add_string_uniquely(regions, std::string(regionWplusJetsSideband).append("-"));
+
       for ( vstring::const_iterator fitVariable = fitVariables.begin();
 	    fitVariable != fitVariables.end(); ++fitVariable ) {
 	for ( vstring::const_iterator sysUncertainty = sysUncertainties_expanded.begin();

@@ -94,7 +94,7 @@ void makeTauPtResPlot(TCanvas* canvas, TFile* inputFile,
   legend.Draw();
 
   canvas->Update();
-  canvas->Print(outputFileName);
+  canvas->Print(outputFileName.Data());
 }
 
 

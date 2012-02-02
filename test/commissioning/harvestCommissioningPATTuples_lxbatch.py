@@ -8,7 +8,7 @@ from TauAnalysis.Configuration.tools.harvestingLXBatch import make_harvest_scrip
 from TauAnalysis.Configuration.tools.harvesting import castor_source, clean_by_crab_id
 
 castorFilePath = '/castor/cern.ch/user/v/veelken/TauIdCommissioning/'
-version = 'patV2_0'
+version = 'patV2_1'
 
 SAMPLES_TO_ANALYZE = [
     # modify in case you want to submit jobs for some of the samples only...

@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.26 $
+ * \version $Revision: 1.27 $
  *
- * $Id: FWLiteTauIdEffAnalyzer.cc,v 1.26 2011/11/14 13:57:00 veelken Exp $
+ * $Id: FWLiteTauIdEffAnalyzer.cc,v 1.27 2011/12/19 14:11:18 veelken Exp $
  *
  */
 
@@ -75,7 +75,10 @@ struct histManagerEntryType
     : binVariable_(binVariable),
       min_(min),
       max_(max),
-      fillGenMatchHistograms_(fillGenMatchHistograms)
+      fillGenMatchHistograms_(fillGenMatchHistograms),
+      histManagerJetToTauFake_(0),
+      histManagerMuToTauFake_(0),
+      histManagerGenTau_(0)
   {
     histManager_ = new TauIdEffHistManager(cfg);
 
@@ -802,16 +805,24 @@ int main(int argc, char* argv[])
       std::cout << "    due to aborted skimming/crab or PAT-tuple production/lxbatch jobs." << std::endl;
     }
 
+    std::vector<histManagerEntryType*> histManagerEntriesToScale;
     for ( std::vector<regionEntryType*>::iterator regionEntry = regionEntries.begin();
 	  regionEntry != regionEntries.end(); ++regionEntry ) {  
-      (*regionEntry)->histogramsUnbinned_->histManager_->scaleHistograms(mcScaleFactor*lostStatCorrFactor);
+      histManagerEntriesToScale.push_back((*regionEntry)->histogramsUnbinned_);
       for ( std::vector<histManagerEntryType*>::iterator histManagerEntry = (*regionEntry)->histogramEntriesBinned_.begin();
 	    histManagerEntry != (*regionEntry)->histogramEntriesBinned_.end(); ++histManagerEntry ) {
-	(*histManagerEntry)->histManager_->scaleHistograms(mcScaleFactor*lostStatCorrFactor);
-	(*histManagerEntry)->histManagerJetToTauFake_->scaleHistograms(mcScaleFactor*lostStatCorrFactor);
-	(*histManagerEntry)->histManagerMuToTauFake_->scaleHistograms(mcScaleFactor*lostStatCorrFactor);
-        (*histManagerEntry)->histManagerGenTau_->scaleHistograms(mcScaleFactor*lostStatCorrFactor);
+	histManagerEntriesToScale.push_back(*histManagerEntry);
       }
+    }
+    for ( std::vector<histManagerEntryType*>::iterator histManagerEntry = histManagerEntriesToScale.begin();
+	  histManagerEntry != histManagerEntriesToScale.end(); ++histManagerEntry ) {
+      (*histManagerEntry)->histManager_->scaleHistograms(mcScaleFactor*lostStatCorrFactor);
+      if ( (*histManagerEntry)->histManagerJetToTauFake_ ) 
+	(*histManagerEntry)->histManagerJetToTauFake_->scaleHistograms(mcScaleFactor*lostStatCorrFactor);
+      if ( (*histManagerEntry)->histManagerMuToTauFake_ )
+	(*histManagerEntry)->histManagerMuToTauFake_->scaleHistograms(mcScaleFactor*lostStatCorrFactor);
+      if ( (*histManagerEntry)->histManagerGenTau_ )
+	(*histManagerEntry)->histManagerGenTau_->scaleHistograms(mcScaleFactor*lostStatCorrFactor);
     }
   }
 

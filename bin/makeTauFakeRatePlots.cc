@@ -68,6 +68,7 @@ int main(int argc, const char* argv[])
 //
 //    NOTE: average trigger prescales may be different for different event selections
 //         (HLT paths/Pt thresholds)
+//
   std::map<std::string, double> avTriggerPrescales; // key = eventSelection
   typedef std::vector<edm::ParameterSet> vParameterSet;
   vParameterSet cfgEventSelections = cfgMakeTauFakeRatePlots.getParameter<vParameterSet>("eventSelections");
@@ -108,9 +109,10 @@ int main(int argc, const char* argv[])
 //   (for one event selection at a time)
   std::map<std::string, graphDrawOptionType> drawOptionsTauIds; // key = tauId
   vParameterSet cfgTauIds = cfgMakeTauFakeRatePlots.getParameter<vParameterSet>("tauIds");
-  for ( vParameterSet::const_iterator cfgTauId = cfgTauIds.begin();
+  for ( vParameterSet::iterator cfgTauId = cfgTauIds.begin();
 	cfgTauId != cfgTauIds.end(); ++cfgTauId ) {
     std::string tauIdName = cfgTauId->getParameter<std::string>("name");
+    cfgTauId->addParameter<unsigned>("markerSize", 1);
     drawOptionsTauIds[tauIdName] = graphDrawOptionType(*cfgTauId);
   }
 
@@ -118,9 +120,10 @@ int main(int argc, const char* argv[])
 //    comparing fake-rates of different jets selected in QCD, W + jets and Zmumu events
 //   (for one tau id. discriminator at a time)
   std::map<std::string, graphDrawOptionType> drawOptionsEventSelections; // key = eventSelection
-  for ( vParameterSet::const_iterator cfgEventSelection = cfgEventSelections.begin();
+  for ( vParameterSet::iterator cfgEventSelection = cfgEventSelections.begin();
 	cfgEventSelection != cfgEventSelections.end(); ++cfgEventSelection ) {
     std::string eventSelectionName = cfgEventSelection->getParameter<std::string>("name");
+    cfgEventSelection->addParameter<unsigned>("markerSize", 2);
     drawOptionsEventSelections[eventSelectionName] = graphDrawOptionType(*cfgEventSelection);
   }
 
@@ -198,21 +201,21 @@ int main(int argc, const char* argv[])
 
     std::string label_eventSelection = drawOptionsEventSelections[*eventSelectionToPlot].legendEntry_;
     
-    drawGraphs("jetPt", "P_{T}^{jet} / GeV", 
+    drawGraphs("jetPt", 8, 20., 100., "P_{T}^{jet} / GeV", 
 	       canvas, frMapToPlot, "sum", processNameData, tauIdsToPlot, drawOptionsTauIds, 
 	       *eventSelectionToPlot, labels, label_eventSelection, outputFileName);
-    drawGraphs("jetEta", "#eta_{jet} / GeV", 
+    drawGraphs("jetEta", 25, -2.5, +2.5, "#eta_{jet} / GeV", 
 	       canvas, frMapToPlot, "sum", processNameData, tauIdsToPlot, drawOptionsTauIds, 
 	       *eventSelectionToPlot, labels, label_eventSelection, outputFileName);
-    drawGraphs("jetPhi", "#phi_{jet} / GeV", 
-	       canvas, frMapToPlot, "sum", processNameData, tauIdsToPlot, drawOptionsTauIds, 
-	       *eventSelectionToPlot, labels, label_eventSelection, outputFileName);
-    
-    drawGraphs("sumEt", "#Sigma E_{T} / GeV", 
+    drawGraphs("jetPhi", 36, -TMath::Pi(), +TMath::Pi(), "#phi_{jet} / GeV", 
 	       canvas, frMapToPlot, "sum", processNameData, tauIdsToPlot, drawOptionsTauIds, 
 	       *eventSelectionToPlot, labels, label_eventSelection, outputFileName);
     
-    drawGraphs("numVertices", "Num. Vertices", 
+    drawGraphs("sumEt", 8, 100., 500., "#Sigma E_{T} / GeV", 
+	       canvas, frMapToPlot, "sum", processNameData, tauIdsToPlot, drawOptionsTauIds, 
+	       *eventSelectionToPlot, labels, label_eventSelection, outputFileName);
+    
+    drawGraphs("numVertices", 20, -0.5, 19.5, "Num. Vertices", 
 	       canvas, frMapToPlot, "sum", processNameData, tauIdsToPlot, drawOptionsTauIds, 
 	       *eventSelectionToPlot, labels, label_eventSelection, outputFileName);
   }
@@ -230,21 +233,21 @@ int main(int argc, const char* argv[])
 
     std::string label_tauId = drawOptionsTauIds[*tauIdToPlot].legendEntry_;
     
-    drawGraphs("jetPt", "P_{T}^{jet} / GeV", 
+    drawGraphs("jetPt", 8, 20., 100., "P_{T}^{jet} / GeV", 
 	       canvas, frMapToPlot, "sum", processNameData, eventSelectionsToPlot, drawOptionsEventSelections, 
 	       *tauIdToPlot, labels, label_tauId, outputFileName);
-    drawGraphs("jetEta", "#eta_{jet} / GeV", 
+    drawGraphs("jetEta", 25, -2.5, +2.5, "#eta_{jet} / GeV", 
 	       canvas, frMapToPlot, "sum", processNameData, eventSelectionsToPlot, drawOptionsEventSelections, 
 	       *tauIdToPlot, labels, label_tauId, outputFileName);
-    drawGraphs("jetPhi", "#phi_{jet} / GeV", 
+    drawGraphs("jetPhi", 36, -TMath::Pi(), +TMath::Pi(), "#phi_{jet} / GeV", 
 	       canvas, frMapToPlot, "sum", processNameData, eventSelectionsToPlot, drawOptionsEventSelections, 
 	       *tauIdToPlot, labels, label_tauId, outputFileName);
 
-    drawGraphs("sumEt", "#Sigma E_{T} / GeV", 
+    drawGraphs("sumEt", 8, 100., 500., "#Sigma E_{T} / GeV", 
 	       canvas, frMapToPlot, "sum", processNameData, eventSelectionsToPlot, drawOptionsEventSelections, 
 	       *tauIdToPlot, labels, label_tauId, outputFileName);
     
-    drawGraphs("numVertices", "Num. Vertices", 
+    drawGraphs("numVertices", 20, -0.5, 19.5, "Num. Vertices", 
 	       canvas, frMapToPlot, "sum", processNameData, eventSelectionsToPlot, drawOptionsEventSelections, 
 	       *tauIdToPlot, labels, label_tauId, outputFileName);
   }

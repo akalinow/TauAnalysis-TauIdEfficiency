@@ -28,8 +28,8 @@ void TauFakeRateHistManager::bookHistograms(TFileDirectory& dir)
   histogramTauEta_      = book1D(dir, "tauJetEta",   "#eta_{#tau}",       25,         -2.5,         +2.5);
   histogramTauPhi_      = book1D(dir, "tauJetPhi",   "#phi_{#tau}",       36, -TMath::Pi(), +TMath::Pi());
 
-  histogramSumEt_       = book1D(dir, "sumEt",       "#Sigma E_{T}^{PF}",  8,        100.,          500.0);
-  histogramNumVertices_ = book1D(dir, "numVertices", "Num. Vertices",     20,         -0.5,         19.5);
+  histogramSumEt_       = book1D(dir, "sumEt",       "#Sigma E_{T}^{PF}",  8,        100.,          500.);
+  histogramNumVertices_ = book1D(dir, "numVertices", "Num. Vertices",     35,         -0.5,         34.5);
 }
 
 void TauFakeRateHistManager::fillHistograms(const pat::Tau& tauJetCand, size_t numVertices, double sumEt, double weight)
@@ -59,6 +59,7 @@ TH1* TauFakeRateHistManager::book1D(TFileDirectory& dir,
 				    const std::string& distribution, const std::string& title, int numBins, double min, double max)
 {
   TH1* retVal = dir.make<TH1D>(getHistogramName(distribution).data(), title.data(), numBins, min, max);
+  if ( !retVal->GetSumw2N() ) retVal->Sumw2();
   histograms_.push_back(retVal);
   return retVal;
 }
@@ -67,6 +68,7 @@ TH1* TauFakeRateHistManager::book1D(TFileDirectory& dir,
 				    const std::string& distribution, const std::string& title, int numBins, float* binning)
 {
   TH1* retVal = dir.make<TH1D>(getHistogramName(distribution).data(), title.data(), numBins, binning);
+  if ( !retVal->GetSumw2N() ) retVal->Sumw2();
   histograms_.push_back(retVal);
   return retVal;
 }

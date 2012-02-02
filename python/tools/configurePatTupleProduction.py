@@ -56,8 +56,7 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
     #--------------------------------------------------------------------------------
     # configure PAT trigger matching    
     switchOnTrigger(process, hltProcess = hltProcess, outputModule = '')
-    #process.patTrigger.addL1Algos = cms.bool(True)
-    # CV: disable L1Algos for now, to prevent error messages
+    # CV: disable L1Algos in MC for now, to prevent error messages
     #
     #     %MSG-e L1GlobalTriggerObjectMapRecord:  PATTriggerProducer:patTrigger
     #
@@ -66,8 +65,15 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
     #       Returning zero pointer for getObjectMap
     #
     #     to be printed for every event (06/05/2011)
-    process.patTrigger.addL1Algos = cms.bool(False)
-
+    #
+    #     for Data the L1Algos flag needs to be enabled,
+    #     in order for the prescale computation/correction for Data
+    #     implemented in TauAnalysis/TauIdEfficiency/bin/FWLiteTauIdEffAnalyzer.cc to work
+    if isMC:
+        process.patTrigger.addL1Algos = cms.bool(False)
+    else:
+        process.patTrigger.addL1Algos = cms.bool(True)
+        
     process.patTauTriggerMatchHLTprotoType = cms.EDProducer("PATTriggerMatcherDRLessByR",
         src                   = cms.InputTag("cleanLayer1Taus"),
         matched               = cms.InputTag("patTrigger"),

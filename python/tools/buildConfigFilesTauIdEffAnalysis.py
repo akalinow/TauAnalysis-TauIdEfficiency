@@ -302,9 +302,9 @@ process.tauIdEffAnalyzer = cms.PSet(
     return retVal
 
 def buildConfigFile_makeTauIdEffQCDtemplate(jobId, directory, inputFileName, tauIds, fitVariables, sysUncertainties, outputFilePath,
-                                            regionQCDtemplateFromData_passed, regionQCDtemplateFromData_failed,
-                                            regionWplusJetsSideband_passed, regionWplusJetsSideband_failed, 
-                                            histQCDtemplateFromData_passed, histQCDtemplateFromData_failed):
+                                            regionQCDtemplateFromData_passed, regionQCDtemplateFromData_failed, regionQCDtemplateFromData_D, 
+                                            regionWplusJetsSideband_passed, regionWplusJetsSideband_failed, regionWplusJetsSideband_D,  
+                                            histQCDtemplateFromData_passed, histQCDtemplateFromData_failed, histQCDtemplateFromData_D):
 
     """Build config file for correcting QCD template obtained from control region in Data
        for contributions of Ztautau signal plus Zmumu, W + jets and TTbar backgrounds"""
@@ -352,14 +352,17 @@ process.makeTauIdEffQCDtemplate = cms.PSet(
     # regions (in Data) from which templates for QCD background are taken
     regionTakeQCDtemplateFromData_passed = cms.string('%s'),
     regionTakeQCDtemplateFromData_failed = cms.string('%s'),
+    regionTakeQCDtemplateFromData_D      = cms.string('%s'),
 
     # regions (in Data) from which W + jets background contribution to QCD control region is estimated
     regionWplusJetsSideband_passed       = cms.string('%s'),
     regionWplusJetsSideband_failed       = cms.string('%s'),
+    regionWplusJetsSideband_D            = cms.string('%s'),
 
     # define "all", "passed" and "failed" regions
     regionStoreQCDtemplate_passed        = cms.string('%s'),
     regionStoreQCDtemplate_failed        = cms.string('%s'),
+    regionStoreQCDtemplate_D             = cms.string('%s'),
     
     tauIds = cms.vstring(
 %s
@@ -375,9 +378,9 @@ process.makeTauIdEffQCDtemplate = cms.PSet(
 )
 """ % (inputFileName, outputFileName_full,
        directory,
-       regionQCDtemplateFromData_passed, regionQCDtemplateFromData_failed,
-       regionWplusJetsSideband_passed, regionWplusJetsSideband_failed, 
-       histQCDtemplateFromData_passed, histQCDtemplateFromData_failed,
+       regionQCDtemplateFromData_passed, regionQCDtemplateFromData_failed, regionQCDtemplateFromData_D,
+       regionWplusJetsSideband_passed, regionWplusJetsSideband_failed, regionWplusJetsSideband_D, 
+       histQCDtemplateFromData_passed, histQCDtemplateFromData_failed, histQCDtemplateFromData_D,
        tauIds, fitVariables_makeTauIdEffQCDtemplate, sysUncertainties_string)
     
     configFileName = outputFileName.replace('.root', '_cfg.py')
@@ -399,8 +402,8 @@ process.makeTauIdEffQCDtemplate = cms.PSet(
 def buildConfigFile_fitTauIdEff(fitMethod, jobId, directory, inputFileName, tauId, fitVariable,
                                 templateMorphingMode, sysUncertainties, outputFilePath,
                                 regionsToFit, passed_region, failed_region, 
-                                regionQCDtemplateFromData_passed, regionQCDtemplateFromData_failed,
-                                fitIndividualProcesses, intLumiData, makeControlPlots, outputFilePath_plots):
+                                regionQCDtemplateFromData_passed, regionQCDtemplateFromData_failed, regionQCDtemplateFromData_D,
+                                fitIndividualProcesses, intLumiData, runClosureTest, makeControlPlots, outputFilePath_plots):
 
     """Fit Ztautau signal plus background templates to Mt and visMass distributions
        observed in regions A/B/C/D, in order to determined Ztautau signal contribution
@@ -442,9 +445,8 @@ process.%s = cms.PSet(
     #    (needs as many 'fitTauIdEff' jobs to be run in parallel as there are bins)
     directory = cms.string('%s'),
 
-    runClosureTest = cms.bool(False),
-    #runClosureTest = cms.bool(True),
-
+    runClosureTest = cms.bool(%s),
+    
     regions = cms.vstring(
 %s
     ),
@@ -452,6 +454,7 @@ process.%s = cms.PSet(
     # regions (Data or MC) from which templates for QCD background are taken
     regionQCDtemplate_passed = cms.string('%s'),
     regionQCDtemplate_failed = cms.string('%s'),
+    regionQCDtemplate_D      = cms.string('%s'),
 
     # define "passed" and "failed" regions
     region_passed = cms.string('%s'),
@@ -480,9 +483,9 @@ process.%s = cms.PSet(
     controlPlotFilePath = cms.string('%s')
 )
 """ % (inputFileName, outputFileName_full,
-       fitMethod, directory,
+       fitMethod, directory, getStringRep_bool(runClosureTest),
        regionsToFit_string,
-       regionQCDtemplateFromData_passed, regionQCDtemplateFromData_failed,
+       regionQCDtemplateFromData_passed, regionQCDtemplateFromData_failed, regionQCDtemplateFromData_D, 
        passed_region, failed_region, 
        tauId, fitVariable, fitIndividualProcesses_string, templateMorphingMode, sysUncertainties_string,
        intLumiData*1.e-3, makeControlPlots_string, outputFilePath_plots)
@@ -606,7 +609,7 @@ process.%s = cms.PSet(
        weights_string)
 
     configFileName = outputFileName.replace('.root', '_cfg.py')
-    configFileName_full = os.path.join(outputFilePath, configFileName)    
+    configFileName_full = os.path.join(outputFilePath, configFileName)
     configFile = open(configFileName_full, "w")
     configFile.write(config)
     configFile.close()

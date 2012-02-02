@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.14 $
+ * \version $Revision: 1.15 $
  *
- * $Id: FWLiteTauIdEffPreselNumbers.cc,v 1.14 2011/11/06 13:25:23 veelken Exp $
+ * $Id: FWLiteTauIdEffPreselNumbers.cc,v 1.15 2011/12/19 14:11:18 veelken Exp $
  *
  */
 
@@ -626,8 +626,8 @@ int main(int argc, char* argv[])
 	     muTauPair->leg2()->userFloat("hasLeadTrack") > 0.5 &&
 	     muTauPair->leg2()->userFloat("leadTrackPt") > 5.0 &&     
 	     muTauPair->leg2()->userFloat("preselLoosePFIsoPt") > 2.5 ) {
-	  std::cout << "run = " << evt.id().run() << "," 
-		    << " ls = " << evt.luminosityBlock() << ", event = " << evt.id().event() << ":" << std::endl;
+	  //std::cout << "run = " << evt.id().run() << "," 
+	  //	      << " ls = " << evt.luminosityBlock() << ", event = " << evt.id().event() << ":" << std::endl;
 	  
 	  if ( selEventsFile ) (*selEventsFile) << evt.id().run() << ":" << evt.luminosityBlock() << ":" << evt.id().event() << std::endl;
 	}

@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.4 $
+ * \version $Revision: 1.5 $
  *
- * $Id: FWLiteTauChargeMisIdPreselNumbers.cc,v 1.4 2011/08/10 16:23:07 veelken Exp $
+ * $Id: FWLiteTauChargeMisIdPreselNumbers.cc,v 1.5 2011/11/06 13:25:23 veelken Exp $
  *
  */
 
@@ -29,8 +29,12 @@
 #include "DataFormats/PatCandidates/interface/Tau.h"
 #include "DataFormats/PatCandidates/interface/Muon.h"
 #include "DataFormats/PatCandidates/interface/MET.h"
-#include "DataFormats/PatCandidates/interface/TriggerEvent.h"
-#include "DataFormats/PatCandidates/interface/TriggerAlgorithm.h"
+#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerReadoutRecord.h"
+#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerObjectMapRecord.h"
+#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerObjectMapFwd.h"
+#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerObjectMap.h"
+#include "DataFormats/Common/interface/TriggerResults.h"
+#include "FWCore/Common/interface/TriggerNames.h"
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
@@ -408,8 +412,11 @@ int main(int argc, char* argv[])
 
   edm::InputTag srcMuTauPairs = cfgTauChargeMisIdPreselNumbers.getParameter<edm::InputTag>("srcMuTauPairs");
   edm::InputTag srcGenParticles = cfgTauChargeMisIdPreselNumbers.getParameter<edm::InputTag>("srcGenParticles");
-  edm::InputTag srcTrigger = cfgTauChargeMisIdPreselNumbers.getParameter<edm::InputTag>("srcTrigger");
+  edm::InputTag srcHLTresults = cfgTauChargeMisIdPreselNumbers.getParameter<edm::InputTag>("srcHLTresults");
+  edm::InputTag srcL1GtReadoutRecord = cfgTauChargeMisIdPreselNumbers.getParameter<edm::InputTag>("srcL1GtReadoutRecord"); 
+  edm::InputTag srcL1GtObjectMapRecord = cfgTauChargeMisIdPreselNumbers.getParameter<edm::InputTag>("srcL1GtObjectMapRecord");
   vstring hltPaths = cfgTauChargeMisIdPreselNumbers.getParameter<vstring>("hltPaths");
+  vstring l1Bits = cfgTauChargeMisIdPreselNumbers.getParameter<vstring>("l1Bits");
   edm::InputTag srcCaloMEt = cfgTauChargeMisIdPreselNumbers.getParameter<edm::InputTag>("srcCaloMEt");
   edm::InputTag srcGoodMuons = cfgTauChargeMisIdPreselNumbers.getParameter<edm::InputTag>("srcGoodMuons");
   edm::InputTag srcVertices = cfgTauChargeMisIdPreselNumbers.getParameter<edm::InputTag>("srcVertices");
@@ -498,21 +505,53 @@ int main(int argc, char* argv[])
       if ( maxEvents > 0 && numEvents_processed >= maxEvents ) maxEvents_processed = true;
 
 //--- check that event has passed triggers
-      edm::Handle<pat::TriggerEvent> hltEvent;
-      evt.getByLabel(srcTrigger, hltEvent);
-  
-      bool isTriggered = false;
-      for ( vstring::const_iterator hltPathName = hltPaths.begin();
-	    hltPathName != hltPaths.end() && !isTriggered; ++hltPathName ) {
-	if ( (*hltPathName) == "*" ) { // check for wildcard character "*" that accepts all events
-	  isTriggered = true;
-	} else {
-	  const pat::TriggerPath* hltPath = hltEvent->path(*hltPathName);
-	  if ( hltPath && hltPath->wasAccept() ) isTriggered = true;
+      bool anyHLTpath_passed = false;
+      if ( hltPaths.size() == 0 ) {
+	anyHLTpath_passed = true;
+      } else {
+	edm::Handle<edm::TriggerResults> hltResults;
+	evt.getByLabel(srcHLTresults, hltResults);
+	
+	const edm::TriggerNames& triggerNames = evt.triggerNames(*hltResults);
+	
+	for ( vstring::const_iterator hltPath = hltPaths.begin();
+	      hltPath != hltPaths.end(); ++hltPath ) {
+	  bool isHLTpath_passed = false;
+	  unsigned int idx = triggerNames.triggerIndex(*hltPath);
+	  if ( idx < triggerNames.size() ) isHLTpath_passed = hltResults->accept(idx);
+	  if ( isHLTpath_passed ) anyHLTpath_passed = true;
 	}
       }
 
-      if ( !isTriggered ) continue;
+      if ( !anyHLTpath_passed ) continue;
+
+      bool anyL1bit_passed = false;
+      if ( l1Bits.size() == 0 ) {
+	anyL1bit_passed = true;
+      } else {
+	edm::Handle<L1GlobalTriggerReadoutRecord> l1GtReadoutRecord;
+	evt.getByLabel(srcL1GtReadoutRecord, l1GtReadoutRecord);
+	edm::Handle<L1GlobalTriggerObjectMapRecord> l1GtObjectMapRecord;
+	evt.getByLabel(srcL1GtObjectMapRecord, l1GtObjectMapRecord);
+
+	DecisionWord l1GtDecision = l1GtReadoutRecord->decisionWord();
+	const std::vector<L1GlobalTriggerObjectMap>& l1GtObjectMaps = l1GtObjectMapRecord->gtObjectMap();
+
+	for ( vstring::const_iterator l1Bit = l1Bits.begin();
+	      l1Bit != l1Bits.end(); ++l1Bit ) {	  
+	  for ( std::vector<L1GlobalTriggerObjectMap>::const_iterator l1GtObjectMap = l1GtObjectMaps.begin();
+		l1GtObjectMap != l1GtObjectMaps.end(); ++l1GtObjectMap ) {
+	    bool isL1bit_passed = false;
+	    std::string l1Bit_idx = (*l1GtObjectMap).algoName();
+	    int idx = (*l1GtObjectMap).algoBitNumber();	    
+	    if ( l1Bit_idx == (*l1Bit) ) isL1bit_passed = l1GtDecision[idx];
+	    if ( isL1bit_passed ) anyL1bit_passed = true;
+	  }
+	}
+      }
+
+      if ( !anyL1bit_passed ) continue;
+
       ++numEvents_passedTrigger;
       numEventsWeighted_passedTrigger += evtWeight;
 

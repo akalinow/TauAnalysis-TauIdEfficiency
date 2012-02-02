@@ -17,7 +17,7 @@ crabFilePath = "/tmp/veelken/crab/"
 pfCandidateCollection = "particleFlow" # pile-up removal disabled
 #pfCandidateCollection = "pfNoPileUp"   # pile-up removal enabled
 
-version = 'patV2_0'
+version = 'patV2_1'
 
 crab_template = """
 [CRAB]

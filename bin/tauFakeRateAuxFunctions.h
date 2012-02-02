@@ -55,6 +55,11 @@ int defaultLineSize    =    1;
 int defaultFillColor   =    5;
 int defaultFillStyle   = 1001;
 
+double square(double x)
+{
+  return x*x;
+}
+
 // define auxiliary class holding draw-options for control plots
 struct histogramDrawOptionType 
 {
@@ -103,6 +108,7 @@ struct graphDrawOptionType
       legendEntry_(cfg.getParameter<std::string>("legendEntry")),
       expMarkerStyle_(cfg.getParameter<unsigned>("markerStyleSim")),
       measMarkerStyle_(cfg.getParameter<unsigned>("markerStyleData")),
+      markerSize_(cfg.getParameter<unsigned>("markerSize")),
       color_(cfg.getParameter<unsigned>("color"))
   {}
   ~graphDrawOptionType() {}
@@ -110,6 +116,7 @@ struct graphDrawOptionType
   std::string legendEntry_;
   unsigned expMarkerStyle_;
   unsigned measMarkerStyle_;
+  unsigned markerSize_;
   unsigned color_;
 };
 
@@ -174,7 +181,7 @@ void applyStyleOption_histogram(
   
 void applyStyleOption_graph(
   TGraph* graph, const std::string& graphTitle,
-  unsigned markerStyle, unsigned color,
+  unsigned markerStyle, unsigned markerSize, unsigned color,
   const std::string& xAxisTitle, const std::string& yAxisTitle = "Fake-rate")
 {
   //std::cout << "<applyStyleOption_graph>:" << std::endl;
@@ -183,6 +190,7 @@ void applyStyleOption_graph(
   graph->SetTitle(graphTitle.data());
 
   graph->SetMarkerStyle(markerStyle);
+  graph->SetMarkerSize(markerSize);
   graph->SetMarkerColor(color);
 
   graph->SetLineColor(color);
@@ -271,6 +279,161 @@ void loadHistograms(
 //-------------------------------------------------------------------------------
 //
 
+void getBinomialBounds(Int_t n, Int_t r, Float_t& rMin, Float_t& rMax)
+{
+  //std::cout << "<getBinomialBounds>:" << std::endl;
+  //std::cout << " n = " << n << ", r = " << r << std::endl;
+
+  rMin = 0.;
+  rMax = 0.;
+
+  if ( n == 0 ){
+    return;
+  }
+  if ( r < 0 ){
+    std::cerr << "Error in <getBinomialBounds>: n = " << n << ", r = " << r << std::endl;
+    return;
+  }
+  
+  if ( ((Double_t)r*(n - r)) > (9.*n) ){
+    rMin = r - TMath::Sqrt((Double_t)r*(n - r)/((Double_t)n));
+    rMax = r + TMath::Sqrt((Double_t)r*(n - r)/((Double_t)n));
+    return;
+  }
+
+  Double_t rMinLeft       = 0.;
+  Double_t rMinMiddle     = TMath::Max(0.5*r, n - 1.5*r);
+  Double_t rMinRight      = n;
+  Double_t rMinLeftProb   = 0.;
+  Double_t rMinMiddleProb = 0.5;
+  Double_t rMinRightProb  = 1.;
+  while ( (rMinRight - rMinLeft) > (0.001*n) ){
+
+    rMinMiddleProb = TMath::BinomialI(rMinMiddle/n, n, r);
+
+    if ( rMinMiddleProb > 0.16 ){
+      rMinRight     = rMinMiddle;
+      rMinRightProb = rMinMiddleProb;
+    } else if ( rMinMiddleProb < 0.16 ){
+      rMinLeft      = rMinMiddle;
+      rMinLeftProb  = rMinMiddleProb;
+    } else {
+      rMinLeft      = rMinRight     = rMinMiddle;
+      rMinLeftProb  = rMinRightProb = rMinMiddleProb;
+    }
+
+    rMinMiddle = 0.5*(rMinLeft + rMinRight);
+
+    if ( rMinLeft > r ){
+      rMinMiddle = rMinLeft = rMinRight = 0.;
+    }
+  }
+
+  Double_t rMaxLeft       = 0.;
+  Double_t rMaxMiddle     = TMath::Min(1.5*r, n - 0.5*r);
+  Double_t rMaxRight      = n;
+  Double_t rMaxLeftProb   = 1.;
+  Double_t rMaxMiddleProb = 0.5;
+  Double_t rMaxRightProb  = 0.;
+  while ( (rMaxRight - rMaxLeft) > (0.001*n) ){
+
+    rMaxMiddleProb = 1. - TMath::BinomialI(rMaxMiddle/n, n, r);
+
+    if ( rMaxMiddleProb > 0.16 ){
+      rMaxLeft      = rMaxMiddle;
+      rMaxLeftProb  = rMaxMiddleProb;
+    } else if ( rMaxMiddleProb < 0.16 ){
+      rMaxRight     = rMaxMiddle;
+      rMaxRightProb = rMaxMiddleProb;
+    } else {
+      rMaxLeft      = rMaxRight     = rMaxMiddle;
+      rMaxLeftProb  = rMaxRightProb = rMaxMiddleProb;
+    }
+
+    rMaxMiddle = 0.5*(rMaxLeft + rMaxRight);
+
+    if ( rMaxRight < r ){
+      rMaxMiddle = rMaxLeft = rMaxRight = n;
+    }
+  }
+
+  rMin = rMinMiddle;
+  rMax = rMaxMiddle;
+}
+
+TGraphAsymmErrors* getEfficiency(const TH1* histogram_numerator, const TH1* histogram_denominator,
+				 bool applyEffStatCorrection = true)
+{
+  Int_t error = 0;
+  if ( !(histogram_numerator->GetNbinsX()           == histogram_denominator->GetNbinsX())           ) error = 1;
+  if ( !(histogram_numerator->GetXaxis()->GetXmin() == histogram_denominator->GetXaxis()->GetXmin()) ) error = 1;
+  if ( !(histogram_numerator->GetXaxis()->GetXmax() == histogram_denominator->GetXaxis()->GetXmax()) ) error = 1;
+  
+  if ( error ){
+    std::cerr << "Error in <getEfficiency>: Dimensionality of histograms does not match !!" << std::endl;
+    return 0;
+  }
+  
+  TAxis* xAxis = histogram_numerator->GetXaxis();
+
+  Int_t nBins = xAxis->GetNbins();
+  TArrayF x(nBins);
+  TArrayF dxUp(nBins);
+  TArrayF dxDown(nBins);
+  TArrayF y(nBins);
+  TArrayF dyUp(nBins);
+  TArrayF dyDown(nBins);
+
+  for ( Int_t iBin = 1; iBin <= nBins; iBin++ ){
+    Float_t nObs_float = histogram_denominator->GetBinContent(iBin);
+    Float_t rObs_float = histogram_numerator->GetBinContent(iBin);
+    
+    if ( applyEffStatCorrection && histogram_denominator->GetBinContent(iBin) > 0. && histogram_denominator->GetBinError(iBin) > 0. ) {
+      Float_t effNum = square(histogram_denominator->GetBinContent(iBin)/histogram_denominator->GetBinError(iBin));
+      Float_t scaleFactor = effNum/histogram_denominator->GetBinContent(iBin);
+      nObs_float *= scaleFactor;
+      rObs_float *= scaleFactor;
+    }
+
+    Int_t nObs = TMath::Nint(nObs_float);
+    Int_t rObs = TMath::Nint(rObs_float);
+
+    Float_t xCenter = histogram_denominator->GetBinCenter(iBin);
+    Float_t xWidth  = histogram_denominator->GetBinWidth(iBin);
+
+    x[iBin - 1]      = xCenter;
+    dxUp[iBin - 1]   = 0.5*xWidth;
+    dxDown[iBin - 1] = 0.5*xWidth;
+    
+    if ( nObs > 0 ){
+      Float_t rMin = 0.;
+      Float_t rMax = 0.;
+      
+      getBinomialBounds(nObs, rObs, rMin, rMax);
+
+      y[iBin - 1]      = rObs/((Float_t)nObs);
+      dyUp[iBin - 1]   = (rMax - rObs)/((Float_t)nObs);
+      dyDown[iBin - 1] = (rObs - rMin)/((Float_t)nObs);
+    } else{
+      y[iBin - 1]      = 0.;
+      dyUp[iBin - 1]   = 0.;
+      dyDown[iBin - 1] = 0.;
+    }
+  }
+  
+  TString name  = TString(histogram_numerator->GetName()).Append("Graph");
+  TString title = histogram_numerator->GetTitle();
+
+  TGraphAsymmErrors* graph = 
+    new TGraphAsymmErrors(nBins, x.GetArray(), y.GetArray(), 
+			  dxDown.GetArray(), dxUp.GetArray(), dyDown.GetArray(), dyUp.GetArray());
+
+  graph->SetName(name);
+  graph->SetTitle(title);
+
+  return graph;
+}
+
 void compFakeRates(
   histogramMapType5& histogramMap,
   frMapType4& frMap,
@@ -298,8 +461,16 @@ void compFakeRates(
 	    throw cms::Exception("compFakeRates") 
 	      << "Incompatible binning of histograms for 'passed' = " << histogram_passed->GetName() 
 	      << " and 'failed' = " << histogram_failed->GetName() << " region !!\n";
-	  
+
 //--- compute efficiency graph from numerator and denominator histograms.
+	  std::string numeratorName = std::string(process->first).append("_numerator_");
+	  numeratorName.append(observable->first).append("_").append(tauId->first);
+	  TH1* numerator = (TH1*)histogram_passed->Clone(numeratorName.data());
+	  
+	  std::string denominatorName = std::string(process->first).append("_denominator_");
+	  denominatorName.append(observable->first).append("_").append(tauId->first);
+	  TH1* denominator = (TH1*)histogram_failed->Clone(denominatorName.data());
+	  denominator->Add(numerator);
 //
 //    CV: Make numerator and denominator histograms integer
 //        before computing the tau id. efficiency/fake-rate,
@@ -309,20 +480,14 @@ void compFakeRates(
 //
 //        The binContents of numerator and denominator histograms are scaled
 //        to the "effective" number of (denominator) entries:
-//          effNum = (sum(weights)/sqrt(sum(weights^2)))^2 = binContent/(binError^2)
-
-	  std::string numeratorName = std::string(process->first).append("_numerator_");
-	  numeratorName.append(observable->first).append("_").append(tauId->first);
-	  TH1* numerator = (TH1*)histogram_passed->Clone(numeratorName.data());
-	  
-	  std::string denominatorName = std::string(process->first).append("_denominator_");
-	  denominatorName.append(observable->first).append("_").append(tauId->first);
-	  TH1* denominator = (TH1*)histogram_failed->Clone(denominatorName.data());
-	  denominator->Add(numerator);
-	  
+//          effNum = (sum(weights)/sqrt(sum(weights^2)))^2 = (binContent/binError)^2	  
+//
 	  for ( int iBin = 1; iBin <= (numerator->GetNbinsX() + 1); ++iBin ) {
-	    double scaleFactor = ( denominator->GetBinError(iBin) > 0. ) ?
-	      denominator->GetBinContent(iBin)/TMath::Power(denominator->GetBinError(iBin), 2.) : 0.;
+	    double scaleFactor = 0.;
+	    if ( denominator->GetBinContent(iBin) > 0. && denominator->GetBinError(iBin) > 0. ) {
+	      double effNum = square(denominator->GetBinContent(iBin)/denominator->GetBinError(iBin));
+	      scaleFactor = effNum/denominator->GetBinContent(iBin);
+	    }
 	    
 	    numerator->SetBinContent(iBin, TMath::Nint(scaleFactor*numerator->GetBinContent(iBin)));
 	    numerator->SetBinError(iBin, TMath::Sqrt(numerator->GetBinContent(iBin)));
@@ -332,7 +497,8 @@ void compFakeRates(
 	  }
 	  
 	  TGraphAsymmErrors* fr = new TGraphAsymmErrors(numerator, denominator);
-	  
+	  //TGraphAsymmErrors* fr = getEfficiency(numerator, denominator);
+
 	  frMap[eventSelection->first][process->first][tauId->first][observable->first] = fr;
 	  
 	  delete numerator;
@@ -516,11 +682,19 @@ void drawHistograms(
 	std::vector<TPaveText*> labels_text = drawLabels(labels);
 	
 	canvas->Update();
+
 	std::string outputFilePath = getOutputFilePath(outputFileName);
 	gSystem->mkdir(outputFilePath.data(), true);
 	std::string suffix = std::string("_").append(*eventSelection).append("_").append(*tauId).append("_").append(*region);
 	suffix.append("_").append(observable);
-	canvas->Print(std::string(outputFilePath).append(getOutputFileName(outputFileName, suffix)).data());
+	std::string outputFileName_full = std::string(outputFilePath).append(getOutputFileName(outputFileName, suffix));
+	size_t idx = outputFileName_full.find_last_of('.');
+	std::string outputFileName_plot = std::string(outputFileName_full, 0, idx);
+	if ( idx != std::string::npos ) 
+	  canvas->Print(std::string(outputFileName_plot).append(std::string(outputFileName_full, idx)).data());
+	canvas->Print(std::string(outputFileName_plot).append(".png").data());
+	canvas->Print(std::string(outputFileName_plot).append(".pdf").data());
+
 	for ( std::vector<TPaveText*>::iterator it = labels_text.begin();
 	      it != labels_text.end(); ++it ) {
 	  delete (*it);
@@ -530,18 +704,15 @@ void drawHistograms(
   }
 }
 
-double square(double x)
-{
-  return x*x;
-}
-
 void drawGraphs(
-  const std::string& observable, const std::string& xAxisTitle,
+  const std::string& observable, int numBinsX, double xMin, double xMax, const std::string& xAxisTitle,
   TCanvas* canvas, frMapType3& frMapToPlot, 
   const std::string& processNameSim, const std::string& processNameData, 
   const vstring& graphsToPlot, std::map<std::string, graphDrawOptionType>& drawOptions,
   const std::string& plotName, const vstring& labels, const std::string& addPlotLabel, const std::string& outputFileName)
 {
+  //std::cout << "<drawGraphs>:" << std::endl;
+
   canvas->SetLogy(false);
   canvas->Clear();
   canvas->SetLeftMargin(0.12);
@@ -569,32 +740,39 @@ void drawGraphs(
   canvas->cd();
   topPad->Draw();
   topPad->cd();
+
+  TH1* dummyHistogram_top = new TH1F("dummyHistogram_top", "dummyHistogram_top", numBinsX, xMin, xMax);
+
+  TAxis* xAxis_top = dummyHistogram_top->GetXaxis();
+  xAxis_top->SetLabelColor(10);
+  xAxis_top->SetTitleColor(10);
+    
+  TAxis* yAxis_top = dummyHistogram_top->GetYaxis();
+  yAxis_top->SetTitle("Fake-rate");
+  yAxis_top->SetTitleOffset(0.90);
+  yAxis_top->SetTitleSize(0.06);
+
+  dummyHistogram_top->SetTitle("");
+  dummyHistogram_top->SetStats(false);
+  dummyHistogram_top->SetMaximum(5.e-1);
+  dummyHistogram_top->SetMinimum(1.e-4);
+  dummyHistogram_top->Draw("axis");
+
   for ( vstring::const_iterator graphName = graphsToPlot.begin();
 	graphName != graphsToPlot.end(); ++graphName ) {
     TGraph* graphSim = frMapToPlot[processNameSim][*graphName][observable];
     //std::cout << processNameSim << ", graphName = " << (*graphName) << ", observable = " << observable << ":"
     //	        << " graph = " << graphSim << std::endl;
-    applyStyleOption_graph(graphSim, "", drawOptions[*graphName].expMarkerStyle_, drawOptions[*graphName].color_, xAxisTitle);
+    applyStyleOption_graph(graphSim, "", drawOptions[*graphName].expMarkerStyle_, drawOptions[*graphName].markerSize_, 
+			   drawOptions[*graphName].color_, xAxisTitle);    
 
     TGraph* graphData = frMapToPlot[processNameData][*graphName][observable];
     //std::cout << processNameData << ", graphName = " << (*graphName) << ", observable = " << observable << ":"
     //	        << " graph = " << graphSim << std::endl;
-    applyStyleOption_graph(graphData, "", drawOptions[*graphName].measMarkerStyle_, drawOptions[*graphName].color_, xAxisTitle);
+    applyStyleOption_graph(graphData, "", drawOptions[*graphName].measMarkerStyle_, drawOptions[*graphName].markerSize_, 
+			   drawOptions[*graphName].color_, xAxisTitle);
 
-    TAxis* xAxis = graphData->GetXaxis();
-    xAxis->SetLabelColor(10);
-    xAxis->SetTitleColor(10);
-    
-    TAxis* yAxis = graphData->GetYaxis();
-    yAxis->SetTitle("Fake-rate");
-    yAxis->SetTitleOffset(0.90);
-    yAxis->SetTitleSize(0.06);
-
-    graphData->SetTitle("");
-    graphData->SetMaximum(5.e-1);
-    graphData->SetMinimum(1.e-4);
-    std::string drawOption_string = ( graphName == graphsToPlot.begin() ) ? "A" : "";
-    graphData->Draw(drawOption_string.append("P").data());      
+    graphData->Draw("P");
     legend.AddEntry(graphData, std::string(drawOptions[*graphName].legendEntry_).append(" Data").data(), "p");
 
     graphSim->Draw("P");      
@@ -620,6 +798,8 @@ void drawGraphs(
     
     TGraphAsymmErrors* graphDiff = (TGraphAsymmErrors*)graphData->Clone();
 
+    std::vector<bool> drawPoints(graphDiff->GetN()); // true = draw/false = remove point
+    
     int numPoints = graphData->GetN();
     for ( int iPoint = 0; iPoint < numPoints; ++iPoint ) {
       double xCenter, ySim, yData, dummy;
@@ -640,9 +820,16 @@ void drawGraphs(
         double dyUpDiff2 = square(dyUpData/ySim) + square((yData/ySim)*(dyLowSim/ySim));
 
 	graphDiff->SetPointError(iPoint, dxLow, dxUp, TMath::Sqrt(dyLowDiff2), TMath::Sqrt(dyUpDiff2));
+	drawPoints[iPoint] = true;
+      } else { 
+	drawPoints[iPoint] = false;
       }
     }
-
+    
+    for ( int iPoint = (numPoints - 1); iPoint >= 0; --iPoint ) {
+      if ( !drawPoints[iPoint] ) graphDiff->RemovePoint(iPoint);
+    }
+    
     frMapDiff[*graphName] = graphDiff;
   }
 
@@ -667,43 +854,53 @@ void drawGraphs(
   bottomPad->Draw();
   bottomPad->cd();
 
+  TH1* dummyHistogram_bottom = (TH1*)dummyHistogram_top->Clone("dummyHistogram_bottom");
+
+  TAxis* xAxis_bottom = dummyHistogram_bottom->GetXaxis();
+  xAxis_bottom->SetTitle(xAxisTitle.data());
+  xAxis_bottom->SetTitleOffset(1.20);
+  xAxis_bottom->SetTitleSize(0.08);
+  xAxis_bottom->SetLabelOffset(0.02);
+  xAxis_bottom->SetLabelSize(0.08);
+  xAxis_bottom->SetTickLength(0.055);
+  xAxis_bottom->SetLabelColor(1);
+  xAxis_bottom->SetTitleColor(1);
+
+  TAxis* yAxis_bottom = dummyHistogram_bottom->GetYaxis();
+  yAxis_bottom->SetTitle("#frac{Data - Simulation}{Simulation}");
+  yAxis_bottom->SetTitleOffset(0.85);
+  yAxis_bottom->SetNdivisions(505);
+  yAxis_bottom->CenterTitle();
+  yAxis_bottom->SetTitleSize(0.08);
+  yAxis_bottom->SetLabelSize(0.08);
+  yAxis_bottom->SetTickLength(0.04);
+
+  dummyHistogram_bottom->SetTitle("");
+  dummyHistogram_bottom->SetStats(false);
+  dummyHistogram_bottom->SetMaximum(+0.5);
+  dummyHistogram_bottom->SetMinimum(-0.5);
+  dummyHistogram_bottom->Draw("axis");
+
   for ( vstring::const_iterator graphName = graphsToPlot.begin();
 	graphName != graphsToPlot.end(); ++graphName ) {
     TGraph* graphDiff = frMapDiff[*graphName];
-    applyStyleOption_graph(graphDiff, "", drawOptions[*graphName].measMarkerStyle_, drawOptions[*graphName].color_, xAxisTitle);
-
-    TAxis* xAxis = graphDiff->GetXaxis();
-    xAxis->SetTitle(xAxisTitle.data());
-    xAxis->SetTitleOffset(1.20);
-    xAxis->SetTitleSize(0.08);
-    xAxis->SetLabelOffset(0.02);
-    xAxis->SetLabelSize(0.08);
-    xAxis->SetTickLength(0.055);
-
-    TAxis* yAxis = graphDiff->GetYaxis();
-    yAxis->SetTitle("#frac{Data - Simulation}{Simulation}");
-    yAxis->SetTitleOffset(0.85);
-    yAxis->SetNdivisions(505);
-    yAxis->CenterTitle();
-    yAxis->SetTitleSize(0.08);
-    yAxis->SetLabelSize(0.08);
-    yAxis->SetTickLength(0.04);
-
-    graphDiff->SetTitle("");
-    //double maxDiff01 = 0.1*TMath::Ceil(1.2*maxDiff*10.);
-    double maxDiff01 = 0.5;
-    graphDiff->SetMaximum(+maxDiff01);
-    graphDiff->SetMinimum(-maxDiff01);
-
-    std::string drawOption_string = ( graphName == graphsToPlot.begin() ) ? "A" : "";
-    graphDiff->Draw(drawOption_string.append("P").data());   
+    applyStyleOption_graph(graphDiff, "", drawOptions[*graphName].measMarkerStyle_, 
+			   drawOptions[*graphName].markerSize_, drawOptions[*graphName].color_, xAxisTitle);
+    graphDiff->Draw("P");
   }
 
   canvas->Update();
+
   std::string outputFilePath = getOutputFilePath(outputFileName);
   gSystem->mkdir(outputFilePath.data(), true);
   std::string suffix = std::string("_fr").append(plotName).append("_").append(observable);
-  canvas->Print(std::string(outputFilePath).append(getOutputFileName(outputFileName, suffix)).data());
+  std::string outputFileName_full = std::string(outputFilePath).append(getOutputFileName(outputFileName, suffix));
+  size_t idx = outputFileName_full.find_last_of('.');
+  std::string outputFileName_plot = std::string(outputFileName_full, 0, idx);
+  if ( idx != std::string::npos ) 
+    canvas->Print(std::string(outputFileName_plot).append(std::string(outputFileName_full, idx)).data());
+  canvas->Print(std::string(outputFileName_plot).append(".png").data());
+  canvas->Print(std::string(outputFileName_plot).append(".pdf").data());
 
   for ( std::vector<TPaveText*>::iterator it = labels_text.begin();
 	it != labels_text.end(); ++it ) {
@@ -717,7 +914,9 @@ void drawGraphs(
     delete it->second;
   }
 
+  delete dummyHistogram_bottom;
   delete topPad;
+  delete dummyHistogram_top;
   delete bottomPad;
 }
 

@@ -2,7 +2,10 @@
 
 import copy
 import os
+import shlex
 import socket
+import subprocess
+import sys
 import time
 
 from TauAnalysis.TauIdEfficiency.recoSampleDefinitionsTauIdCommissioning_7TeV_grid_cfi import recoSampleDefinitionsTauIdCommissioning_7TeV
@@ -13,13 +16,14 @@ from TauAnalysis.DQMTools.plotterStyleDefinitions_cfi import *
 from TauAnalysis.Configuration.tools.jobtools import make_bsub_script
 from TauAnalysis.Configuration.tools.harvestingLXBatch import make_harvest_scripts
 from TauAnalysis.Configuration.tools.harvesting import castor_source
+import TauAnalysis.Configuration.tools.castor as castor
 
-version = 'patV2_0'
+version = 'patV2_1'
 
 inputFilePath  = '/castor/cern.ch/user/v/veelken/TauIdCommissioning/'
 harvestingFilePath = '/castor/cern.ch/user/v/veelken/CMSSW_4_2_x/harvesting/TauIdCommissioning/'
 #outputFilePath = '/data1/veelken/tmp/tauFakeRateAnalysis/'
-outputFilePath = '/tmp/veelken/tauFakeRateAnalysis/'
+outputFilePath = '/tmp/veelken/tauFakeRateAnalysis/' 
 
 samplesToAnalyze = [
     #
@@ -42,10 +46,12 @@ eventSelectionsToAnalyze = [
     # modify in case you want to submit jobs for some of the event selections only...
 ]
 
-skipFWLiteTauFakeRateAnalyzer = False
-#skipFWLiteTauFakeRateAnalyzer = True
-skipLXBatchHarvesting = False
-#skipLXBatchHarvesting = True
+#runFWLiteTauFakeRateAnalyzer = True
+runFWLiteTauFakeRateAnalyzer = False
+#runLXBatchHarvesting = True
+runLXBatchHarvesting = False
+runMakePlots = True
+#runMakePlots = False
 
 #runPeriod = '2011RunA'
 runPeriod = '2011RunB'
@@ -188,8 +194,7 @@ elif runPeriod == '2011RunB':
     }
     srcWeights = {
         'Data' : [],
-        ##'smMC' : [ 'vertexMultiplicityReweight3dRunB' ]
-        'smMC' : []
+        'smMC' : [ 'vertexMultiplicityReweight3dRunB' ]
     }
 else:
     raise ValueError("Invalid runPeriod = %s !!" % runPeriod)
@@ -249,7 +254,7 @@ eventSelections = {
         'jobNameInRecoSampleDef' : 'qcdMuEnriched',
         'tauJetCandSelection'    : [], 
         'inputFileNames'         : "tauCommissioningQCDmuEnrichedPATtuple.root",
-        'srcTauJetCandidates'    : 'patPFTausLoosePFIsoEmbedded06HPS',
+        'srcTauJetCandidates'    : 'patPFTausJetIdEmbeddedHPS',
         'legendEntry'            : 'QCD#mu',
         'markerStyleData'        : 33,
         'markerStyleSim'         : 27,
@@ -259,7 +264,7 @@ eventSelections = {
         'jobNameInRecoSampleDef' : 'WplusJets',
         'tauJetCandSelection'    : [], 
         'inputFileNames'         : "tauCommissioningWplusJetsEnrichedPATtuple.root",
-        'srcTauJetCandidates'    : 'patPFTausLoosePFIsoEmbedded06HPS',
+        'srcTauJetCandidates'    : 'patPFTausJetIdEmbeddedHPS',
         'legendEntry'            : 'W #rightarrow #mu #nu',
         'markerStyleData'        : 33,
         'markerStyleSim'         : 27,
@@ -269,7 +274,7 @@ eventSelections = {
         'jobNameInRecoSampleDef' : 'Zmumu',
         'tauJetCandSelection'    : [], 
         'inputFileNames'         : "tauCommissioningZmumuEnrichedPATtuple.root",
-        'srcTauJetCandidates'    : 'patPFTausLoosePFIsoEmbedded06HPS',
+        'srcTauJetCandidates'    : 'patPFTausJetIdEmbeddedHPS',
         'legendEntry'            : 'Z #rightarrow #mu^{+} #mu^{-}',
         'markerStyleData'        : 33,
         'markerStyleSim'         : 27,
@@ -385,27 +390,42 @@ labels = [
 
 srcMET = 'patPFMet'
 
+def createFilePath_recursively(filePath):
+    filePath_items = filePath.split('/')
+    currentFilePath = "/"
+    for filePath_item in filePath_items:
+        currentFilePath = os.path.join(currentFilePath, filePath_item)
+        if len(currentFilePath) <= 1:
+            continue
+        if not os.path.exists(currentFilePath):
+            #sys.stdout.write("creating directory %s\n" % currentFilePath)
+            os.mkdir(currentFilePath)
+
 hostname = socket.gethostname()
 print "hostname = %s" % hostname
 if hostname == 'ucdavis.cern.ch':
-    if not os.path.exists(outputFilePath):
-        os.mkdir(outputFilePath)
+    print "Running on %s" % hostname
 
-    outputFilePath = os.path.join(outputFilePath, version)
-    if not os.path.exists(outputFilePath):
-        os.mkdir(outputFilePath)
-
-    outputFilePath = os.path.join(outputFilePath, runPeriod)
-    if not os.path.exists(outputFilePath):
-        os.mkdir(outputFilePath)
+#harvestingFilePath = os.path.join(harvestingFilePath, runPeriod)
+try:
+    castor.rfstat(harvestingFilePath)
+except RuntimeError:
+    # harvestingFilePath does not yet exist, create it
+    print "harvestingFilePath does not yet exist, creating it."
+    os.system("rfmkdir %s" % harvestingFilePath)
+    os.system("rfchmod 777 %s" % harvestingFilePath)
+    
+outputFilePath = os.path.join(outputFilePath, version, runPeriod)
+print "outputFilePath = %s" % outputFilePath
+createFilePath_recursively(outputFilePath)
 
 configFilePath = os.path.join(os.getcwd(), "lxbatch")
-logFilePath    = os.path.join(os.getcwd(), "lxbatch_log")
+print "configFilePath = %s" % configFilePath
+createFilePath_recursively(configFilePath)
 
-if not os.path.exists(configFilePath):
-    os.makedirs(configFilePath)
-if not os.path.exists(logFilePath):
-    os.makedirs(logFilePath)
+logFilePath = os.path.join(os.getcwd(), "lxbatch_log")
+print "logFilePath = %s" % logFilePath
+createFilePath_recursively(logFilePath)
 
 execDir = "%s/bin/%s/" % (os.environ['CMSSW_BASE'], os.environ['SCRAM_ARCH'])
 
@@ -413,7 +433,7 @@ executable_FWLiteTauFakeRateAnalyzer = execDir + 'FWLiteTauFakeRateAnalyzer'
 executable_bsub = 'bsub'
 executable_waitForLXBatchJobs = 'python %s/src/TauAnalysis/Configuration/python/tools/waitForLXBatchJobs.py' % os.environ['CMSSW_BASE']
 executable_rfcp = 'rfcp'
-executable_rfrm = '- rfrm' # CV: ignore error code returned by 'rfrm' in case file on castor does not exist
+executable_rfrm = 'rfrm' # CV: ignore error code returned by 'rfrm' in case file on castor does not exist
 executable_hadd = 'hadd -f'
 executable_makeTauFakeRatePlots = execDir + 'makeTauFakeRatePlots'
 executable_shell = '/bin/csh'
@@ -427,6 +447,19 @@ if len(eventSelectionsToAnalyze) == 0:
 
 print "samplesToAnalyze = %s" % samplesToAnalyze
 print "eventSelectionsToAnalyze = %s" % eventSelectionsToAnalyze
+
+def runCommand(commandLine):
+    sys.stdout.write("%s\n" % commandLine)
+    args = shlex.split(commandLine)
+    retVal = subprocess.Popen(args, stdout = subprocess.PIPE)
+    retVal.wait()
+    return retVal
+
+# find and delete "bad" files
+files = [ file_info for file_info in castor.nslsl(harvestingFilePath) ]
+for file in files:
+    if file['size'] < 1000:
+        runCommand("%s %s" % (executable_rfrm, file['path']))
 
 #--------------------------------------------------------------------------------
 #
@@ -453,7 +486,8 @@ for sampleToAnalyze in samplesToAnalyze:
             retVal_FWLiteTauFakeRateAnalyzer = \
               buildConfigFile_FWLiteTauFakeRateAnalyzer(sampleToAnalyze, eventSelectionToAnalyze, version,
                                                         os.path.join(inputFilePath, jobNameInRecoSampleDef, version, sampleToAnalyze),
-                                                        tauIds, tauJetCandSelection, srcTauJetCandidates, srcMET, hltPaths_sample, 
+                                                        tauIds, tauJetCandSelection, srcTauJetCandidates, srcMET,
+                                                        intLumiData, hltPaths_sample, srcWeights,
                                                         configFilePath, logFilePath, harvestingFilePath,
                                                         recoSampleDefinitionsTauIdCommissioning_7TeV)
         
@@ -482,7 +516,10 @@ for sampleToAnalyze in samplesToAnalyze:
                                         retVal_FWLiteTauFakeRateAnalyzer['inputFileNames'][i])) ]
 
                 def log_file_maker(job_hash):
-                    return os.path.join(logFilePath, retVal_FWLiteTauFakeRateAnalyzer['logFileNames'][i])
+                    log_fileName = os.path.join(logFilePath, retVal_FWLiteTauFakeRateAnalyzer['logFileNames'][i])
+                    # CV: delete log-files from previous job submissions
+                    os.system("rm -f %s" % log_fileName)
+                    return log_fileName
 
                 # Build script for batch job submission
                 jobName, bsubScript = make_bsub_script(
@@ -693,19 +730,36 @@ def make_MakeFile_vstring(list_of_strings):
 makeFileName = "Makefile_TauFakeRateAnalysis"
 makeFile = open(makeFileName, "w")
 makeFile.write("\n")
-outputFileNames_makeTauFakeRatePlots = []
-for fileNameEntry in fileNames_makeTauFakeRatePlots:
-    outputFileNames_makeTauFakeRatePlots.append(fileNameEntry['outputFileName'])
-makeFile.write("all: %s %s\n" %
-  (haddOutputFileName,
-   make_MakeFile_vstring(outputFileNames_makeTauFakeRatePlots)))
+outputFileNames_make = []
+if runFWLiteTauFakeRateAnalyzer:
+    for sampleToAnalyze in samplesToAnalyze:
+        for eventSelectionToAnalyze in eventSelectionsToAnalyze:
+            jobNameInRecoSampleDef = eventSelections[eventSelectionToAnalyze]['jobNameInRecoSampleDef']
+            if jobNameInRecoSampleDef in recoSampleDefinitionsTauIdCommissioning_7TeV['RECO_SAMPLES'][sampleToAnalyze]['jobs']:
+                fileNameEntry = fileNames_FWLiteTauFakeRateAnalyzer[sampleToAnalyze][eventSelectionToAnalyze]
+                if fileNameEntry is None or len(fileNameEntry['inputFileNames']) == 0:
+                    continue
+                for i in range(len(fileNameEntry['inputFileNames'])):
+                    outputFileNames_make.append(fileNameEntry['outputFileNames'][i])
+if runLXBatchHarvesting:
+    for sampleToAnalyze in samplesToAnalyze:
+        for eventSelectionToAnalyze in eventSelectionsToAnalyze:
+            jobNameInRecoSampleDef = eventSelections[eventSelectionToAnalyze]['jobNameInRecoSampleDef']
+            if jobNameInRecoSampleDef in recoSampleDefinitionsTauIdCommissioning_7TeV['RECO_SAMPLES'][sampleToAnalyze]['jobs']:
+                outputFileNames_make.append(bsubJobNames_harvesting[sampleToAnalyze][eventSelectionToAnalyze])
+if runMakePlots:
+    for fileNameEntry in fileNames_makeTauFakeRatePlots:
+        outputFileNames_make.append(fileNameEntry['outputFileName'])
+    outputFileNames_make.append(haddOutputFileName)
+makeFile.write("all: %s\n" %
+  (make_MakeFile_vstring(outputFileNames_make)))
 makeFile.write("\techo 'Finished running TauFakeRateAnalysis.'\n")
 makeFile.write("\n")
-for sampleToAnalyze in samplesToAnalyze:
-    for eventSelectionToAnalyze in eventSelectionsToAnalyze:
-        jobNameInRecoSampleDef = eventSelections[eventSelectionToAnalyze]['jobNameInRecoSampleDef']
-        if jobNameInRecoSampleDef in recoSampleDefinitionsTauIdCommissioning_7TeV['RECO_SAMPLES'][sampleToAnalyze]['jobs']:
-            if not skipFWLiteTauFakeRateAnalyzer:
+if runFWLiteTauFakeRateAnalyzer:
+    for sampleToAnalyze in samplesToAnalyze:
+        for eventSelectionToAnalyze in eventSelectionsToAnalyze:
+            jobNameInRecoSampleDef = eventSelections[eventSelectionToAnalyze]['jobNameInRecoSampleDef']
+            if jobNameInRecoSampleDef in recoSampleDefinitionsTauIdCommissioning_7TeV['RECO_SAMPLES'][sampleToAnalyze]['jobs']:
                 fileNameEntry = fileNames_FWLiteTauFakeRateAnalyzer[sampleToAnalyze][eventSelectionToAnalyze]
                 if fileNameEntry is None or len(fileNameEntry['inputFileNames']) == 0:
                     continue
@@ -720,46 +774,67 @@ for sampleToAnalyze in samplesToAnalyze:
                        bsubJobEntry[i],
                        fileNameEntry['bsubScriptFileNames'][i]))
             else:
-                fileNames_FWLiteTauFakeRateAnalyzer[sampleToAnalyze][eventSelectionToAnalyze]['outputFileNames'] = []
-            if not skipLXBatchHarvesting:     
-                makeFile.write("\n")
-                makeFile.write("%s: %s\n" %
-                  (bsubJobNames_harvesting[sampleToAnalyze][eventSelectionToAnalyze],
-                   make_MakeFile_vstring(fileNames_FWLiteTauFakeRateAnalyzer[sampleToAnalyze][eventSelectionToAnalyze]['outputFileNames'])))
-                if not skipFWLiteTauFakeRateAnalyzer:
+                if sampleToAnalyze in fileNames_FWLiteTauFakeRateAnalyzer.keys() and eventSelectionToAnalyze in fileNames_FWLiteTauFakeRateAnalyzer[sampleToAnalyze].keys():
+                    fileNames_FWLiteTauFakeRateAnalyzer[sampleToAnalyze][eventSelectionToAnalyze]['outputFileNames'] = []
+makeFile.write("\n")
+if runLXBatchHarvesting:     
+    for sampleToAnalyze in samplesToAnalyze:
+        for eventSelectionToAnalyze in eventSelectionsToAnalyze:
+            jobNameInRecoSampleDef = eventSelections[eventSelectionToAnalyze]['jobNameInRecoSampleDef']
+            if jobNameInRecoSampleDef in recoSampleDefinitionsTauIdCommissioning_7TeV['RECO_SAMPLES'][sampleToAnalyze]['jobs']:
+                if runFWLiteTauFakeRateAnalyzer:
+                    makeFile.write("%s: %s\n" %
+                      (bsubJobNames_harvesting[sampleToAnalyze][eventSelectionToAnalyze],
+                       make_MakeFile_vstring(fileNames_FWLiteTauFakeRateAnalyzer[sampleToAnalyze][eventSelectionToAnalyze]['outputFileNames'])))
                     makeFile.write("\t%s %s\n" %
                       (executable_waitForLXBatchJobs,
                        bjobListFileNames_FWLiteTauFakeRateAnalyzer[sampleToAnalyze][eventSelectionToAnalyze]))
+                else:
+                    makeFile.write("%s:\n" %
+                      (bsubJobNames_harvesting[sampleToAnalyze][eventSelectionToAnalyze]))
                 makeFile.write("\t%s %s\n" %
                   (executable_shell,
                    bsubFileNames_harvesting[sampleToAnalyze][eventSelectionToAnalyze]['harvest_script_name']))
-                makeFile.write("\n")
-makeFile.write("%s: %s\n" %
-  (haddOutputFileName,
-   make_MakeFile_vstring(bsubJobNames_harvesting_all)))
-if not skipLXBatchHarvesting:    
-    makeFile.write("\t%s %s\n" %
-      (executable_waitForLXBatchJobs,
-       bjobListFileName_harvesting))
-for haddInputFileName in haddInputFileNames:
-    makeFile.write("\t%s %s %s\n" %
-      (executable_rfcp,
-       os.path.join(harvestingFilePath, os.path.basename(haddInputFileName)),
-       outputFilePath))
-makeFile.write("\t%s %s &> %s\n" %
-  (executable_shell,
-   haddShellFileName,
-   haddLogFileName))
 makeFile.write("\n")
-for fileNameEntry in fileNames_makeTauFakeRatePlots:
-    makeFile.write("%s: %s %s\n" %
-      (fileNameEntry['outputFileName'],
-       executable_makeTauFakeRatePlots,
-       haddOutputFileName))
+if runMakePlots:
+    if not runLXBatchHarvesting:
+        # check that all files needed as input exist on castor        
+        castor_files = [ file_info['file'] for file_info in castor.nslsl(harvestingFilePath) ]
+        missing_files = []
+        for haddInputFileName in haddInputFileNames:
+            if not os.path.basename(haddInputFileName) in castor_files:
+                missing_files.append(os.path.basename(haddInputFileName))
+        if len(missing_files) > 0:
+            raise ValueError("Cannot start running '%s', the following files are missing: %s !!" % (executable_makeTauFakeRatePlots, missing_files))
+    if runLXBatchHarvesting:                  
+        makeFile.write("%s: %s\n" %
+          (haddOutputFileName,
+           make_MakeFile_vstring(bsubJobNames_harvesting_all)))
+        makeFile.write("\t%s %s\n" %
+          (executable_waitForLXBatchJobs,
+           bjobListFileName_harvesting))
+    else:
+        makeFile.write("%s:\n" %
+          (haddOutputFileName))
+    for haddInputFileName in haddInputFileNames:
+        makeFile.write("\t%s %s %s\n" %
+          (executable_rfcp,
+           os.path.join(harvestingFilePath, os.path.basename(haddInputFileName)),
+           outputFilePath))
     makeFile.write("\t%s %s &> %s\n" %
-      (executable_makeTauFakeRatePlots,
-       fileNameEntry['configFileName'],
-       fileNameEntry['logFileName']))
+      (executable_shell,
+       haddShellFileName,
+       haddLogFileName))
+    makeFile.write("\n")
+    for fileNameEntry in fileNames_makeTauFakeRatePlots:
+        makeFile.write("%s: %s %s\n" %
+          (fileNameEntry['outputFileName'],
+           executable_makeTauFakeRatePlots,
+           haddOutputFileName))
+        makeFile.write("\t%s %s &> %s\n" %
+          (executable_makeTauFakeRatePlots,
+           fileNameEntry['configFileName'],
+           fileNameEntry['logFileName']))
 makeFile.write("\n")
 makeFile.write(".PHONY: clean\n")
 makeFile.write("clean:\n")
@@ -767,20 +842,21 @@ for sampleToAnalyze in samplesToAnalyze:
     for eventSelectionToAnalyze in eventSelectionsToAnalyze:
         jobNameInRecoSampleDef = eventSelections[eventSelectionToAnalyze]['jobNameInRecoSampleDef']
         if jobNameInRecoSampleDef in recoSampleDefinitionsTauIdCommissioning_7TeV['RECO_SAMPLES'][sampleToAnalyze]['jobs']:
-            if not skipFWLiteTauFakeRateAnalyzer:
+            if runFWLiteTauFakeRateAnalyzer:
                 fileNameEntry = fileNames_FWLiteTauFakeRateAnalyzer[sampleToAnalyze][eventSelectionToAnalyze]
                 if fileNameEntry is None:
                     continue
                 for outputFileName in fileNameEntry['outputFileNames']:
-                    makeFile.write("\t%s %s\n" %
+                    makeFile.write("\t- %s %s\n" %
                       (executable_rfrm,
                        os.path.join(harvestingFilePath, outputFileName)))
-            for final_harvest_file in bsubFileNames_harvesting[sampleToAnalyze][eventSelectionToAnalyze]['final_harvest_files']:
-                # CV: file name of final harvesting output file is stored at index[1] in final_harvest_file-tuple
-                #    (cf. TauAnalysis/Configuration/python/tools/harvestingLXBatch.py)    
-                makeFile.write("\t%s %s\n" %
-                  (executable_rfrm,
-                   os.path.join(harvestingFilePath, final_harvest_file[1])))
+            if runLXBatchHarvesting: 
+                for final_harvest_file in bsubFileNames_harvesting[sampleToAnalyze][eventSelectionToAnalyze]['final_harvest_files']:
+                    # CV: file name of final harvesting output file is stored at index[1] in final_harvest_file-tuple
+                    #    (cf. TauAnalysis/Configuration/python/tools/harvestingLXBatch.py)    
+                    makeFile.write("\t- %s %s\n" %
+                      (executable_rfrm,
+                       os.path.join(harvestingFilePath, final_harvest_file[1])))
 makeFile.write("\trm -f %s\n" % make_MakeFile_vstring(haddInputFileNames))            
 makeFile.write("\trm -f %s\n" % haddShellFileName)
 makeFile.write("\trm -f %s\n" % haddOutputFileName)

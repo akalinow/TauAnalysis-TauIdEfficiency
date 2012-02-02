@@ -184,12 +184,16 @@ void makePlot(const TString& title,
   canvas->SetLeftMargin(0.12);
   canvas->SetBottomMargin(0.12);
 
-  TPad* topPad = new TPad("topPad", "topPad", 0.00, 0.35, 1.00, 1.00);
+  //TPad* topPad = new TPad("topPad", "topPad", 0.00, 0.35, 1.00, 1.00);
+  TPad* topPad = new TPad("topPad", "topPad", 0.00, 1.00 - 0.65*(0.93/0.84), 1.00, 1.00);
   topPad->SetFillColor(10);
   topPad->SetTopMargin(0.04);
   topPad->SetLeftMargin(0.15);
-  topPad->SetBottomMargin(0.03);
+  //topPad->SetBottomMargin(0.03);
+  topPad->SetBottomMargin(0.12);
   topPad->SetRightMargin(0.05);
+  topPad->SetGridx();
+  topPad->SetGridy();
 
   canvas->cd();
   topPad->Draw();
@@ -204,14 +208,15 @@ void makePlot(const TString& title,
   TAxis* xAxis_top = dummyHistogram_top->GetXaxis();
   xAxis_top->SetTitle("calo-E_{T}^{miss} / GeV");
   xAxis_top->SetTitleOffset(1.15);
-  xAxis_top->SetLabelColor(10);
-  xAxis_top->SetTitleColor(10);
+  //xAxis_top->SetLabelColor(10);
+  //xAxis_top->SetTitleColor(10);
 
   TAxis* yAxis_top = dummyHistogram_top->GetYaxis();
   yAxis_top->SetTitle("#varepsilon");
   yAxis_top->SetTitleOffset(1.2);
 
-  dummyHistogram_top->Draw("axis");
+  dummyHistogram_top->Draw();
+  //dummyHistogram_top->Draw("axis");
 
   //graph_Data_passed->SetLineColor(4);
   //graph_Data_passed->SetMarkerColor(4);
@@ -268,18 +273,20 @@ void makePlot(const TString& title,
     label->SetBorderSize(0);
     label->Draw();
   }
-  
+
   TPad* bottomPad = new TPad("bottomPad", "bottomPad", 0.00, 0.00, 1.00, 0.35);
   bottomPad->SetFillColor(10);
   bottomPad->SetTopMargin(0.02);
   bottomPad->SetLeftMargin(0.15);
   bottomPad->SetBottomMargin(0.24);
   bottomPad->SetRightMargin(0.05);
+  bottomPad->SetGridx();
+  bottomPad->SetGridy();
 
   canvas->cd();
   bottomPad->Draw();
   bottomPad->cd();
-  
+
   TH1* dummyHistogram_bottom = new TH1D("dummyHistogram_bottom", "dummyHistogram_bottom", 10, 0., 100.);
   
   dummyHistogram_bottom->SetMinimum(-1.0);
@@ -341,7 +348,10 @@ void makePlot(const TString& title,
   fit_Data_div_mc_failed->SetLineColor(graph_Data_div_mc_failed->GetLineColor());
   fit_Data_div_mc_failed->SetLineWidth(2);
   fit_Data_div_mc_failed->Draw("same");
- 
+
+  topPad->RedrawAxis();
+  bottomPad->RedrawAxis();
+
   canvas->Update();
   size_t idx = outputFileName.Last('.');
   std::string outputFileName_plot = std::string(outputFileName.Data(), 0, idx);

@@ -56,10 +56,12 @@
   <use   name="FWCore/Utilities"/>
   <use   name="PhysicsTools/FWLite"/>
   <use   name="TauAnalysis/TauIdEfficiency"/>
+  <use   name="TauAnalysis/CandidateTools"/>
 </bin>
 <bin   file="FWLiteTauChargeMisIdPreselNumbers.cc" name="FWLiteTauChargeMisIdPreselNumbers">
   <use   name="DataFormats/Common"/>
   <use   name="DataFormats/FWLite"/>
+  <use   name="DataFormats/L1GlobalTrigger"/>
   <use   name="DataFormats/HepMCCandidate"/>
   <use   name="DataFormats/PatCandidates"/>
   <use   name="DataFormats/StdDictionaries"/>
@@ -106,6 +108,7 @@
 <bin   file="FWLiteTauIdEffPreselNumbers.cc" name="FWLiteTauIdEffPreselNumbers">
   <use   name="DataFormats/Common"/>
   <use   name="DataFormats/FWLite"/>
+  <use   name="DataFormats/L1GlobalTrigger"/>
   <use   name="DataFormats/HepMCCandidate"/>
   <use   name="DataFormats/PatCandidates"/>
   <use   name="DataFormats/StdDictionaries"/>

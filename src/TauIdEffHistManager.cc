@@ -112,6 +112,7 @@ TH1* TauIdEffHistManager::book1D(TFileDirectory& dir,
 				 const std::string& distribution, const std::string& title, int numBins, double min, double max)
 {
   TH1* retVal = dir.make<TH1D>(getHistogramName(distribution).data(), title.data(), numBins, min, max);
+  if ( !retVal->GetSumw2N() ) retVal->Sumw2();
   histograms_.push_back(retVal);
   return retVal;
 }
@@ -120,6 +121,7 @@ TH1* TauIdEffHistManager::book1D(TFileDirectory& dir,
 				 const std::string& distribution, const std::string& title, int numBins, float* binning)
 {
   TH1* retVal = dir.make<TH1D>(getHistogramName(distribution).data(), title.data(), numBins, binning);
+  if ( !retVal->GetSumw2N() ) retVal->Sumw2();
   histograms_.push_back(retVal);
   return retVal;
 }

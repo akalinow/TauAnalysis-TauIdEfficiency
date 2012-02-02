@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.32 $
+ * \version $Revision: 1.33 $
  *
- * $Id: fitTauIdEff.cc,v 1.32 2011/11/27 18:25:17 veelken Exp $
+ * $Id: fitTauIdEff.cc,v 1.33 2011/12/19 14:11:18 veelken Exp $
  *
  */
 
@@ -737,7 +737,7 @@ void fitUsingRooFit(processEntryType& data, double intLumiData,
       fitConstraints = &fitConstraintsABC2D;
       doFitABC2D = true;
     } else if ( (*region) == "C1p" ||
-		(*region) == "C1f" ) {
+		(*region) == "C1f" || (*region) == "D1p" ) {
       fitCategoriesC1->defineType(region->data());
       pdfSimultaneousFitC1->addPdf(*pdfsSum[*region], region->data());
       histogramDataMapC1[*region] = data.histograms_[*region][data.fitVariables_[*region].name_][key_central_value];
@@ -755,25 +755,33 @@ void fitUsingRooFit(processEntryType& data, double intLumiData,
 	alphaParameterType& alphaParameter = processEntry->second->alphaParameters_[*sysUncertainty];
 	if ( processEntry->first == "TTplusJets" ||
 	     processEntry->first == "Zmumu"      ||
-	     processEntry->first == "EWKmuFake"  ||
-	     //processEntry->first == "WplusJets"  ||	     
+	     processEntry->first == "EWKmuFake"  ||   
 	     processEntry->first == "QCD"        ) {
 	  alphaParameter.alpha_->setConstant(true);
 	} else {
-	  bool isAlreadyIncluded = false;
-	  for ( int iFitConstraint = 0; iFitConstraint < fitConstraints->GetEntries(); ++iFitConstraint ) {
-	    if ( dynamic_cast<RooGaussian*>(fitConstraints->At(iFitConstraint)) ) {
-	      RooGaussian* fitConstraint = dynamic_cast<RooGaussian*>(fitConstraints->At(iFitConstraint));
-	      if ( fitConstraint->GetName() == std::string(alphaParameter.alpha_->GetName()).append("_constraint") ) 
-		isAlreadyIncluded = true;
-	    }
+	  bool isLowStatistics = false;
+	  for ( vstring::const_iterator region = processEntry->second->regionsToFit_.begin(); 
+		region != processEntry->second->regionsToFit_.end(); ++region ) {
+	    if ( processEntry->second->histograms_[*region][processEntry->second->fitVariables_[*region].name_][key_central_value]->GetEntries() < 10 ) isLowStatistics = true;
 	  }
-	  if ( !isAlreadyIncluded ) {
-	    std::cout << "process = " << processEntry->first << ": adding alpha-parameter = " << alphaParameter.name_ << std::endl;
-	    if ( !alphaParameter.isBiDirectional_ ) // horizontal morphing
-	      fitConstraints->Add(makeFitConstraint(alphaParameter.alpha_, 0.5, 0.5/sysVariedByNsigma));
-	    else                                    // vertical morphing
-	      fitConstraints->Add(makeFitConstraint(alphaParameter.alpha_, 0.0, 1.0/sysVariedByNsigma));
+	  if ( isLowStatistics ) {
+	    alphaParameter.alpha_->setConstant(true);
+	  } else {
+	    bool isAlreadyIncluded = false;
+	    for ( int iFitConstraint = 0; iFitConstraint < fitConstraints->GetEntries(); ++iFitConstraint ) {
+	      if ( dynamic_cast<RooGaussian*>(fitConstraints->At(iFitConstraint)) ) {
+		RooGaussian* fitConstraint = dynamic_cast<RooGaussian*>(fitConstraints->At(iFitConstraint));
+		if ( fitConstraint->GetName() == std::string(alphaParameter.alpha_->GetName()).append("_constraint") ) 
+		  isAlreadyIncluded = true;
+	      }
+	    }
+	    if ( !isAlreadyIncluded ) {
+	      std::cout << "process = " << processEntry->first << ": adding alpha-parameter = " << alphaParameter.name_ << std::endl;
+	      if ( !alphaParameter.isBiDirectional_ ) // horizontal morphing
+		fitConstraints->Add(makeFitConstraint(alphaParameter.alpha_, 0.5, 0.5/sysVariedByNsigma));
+	      else                                    // vertical morphing
+		fitConstraints->Add(makeFitConstraint(alphaParameter.alpha_, 0.0, 1.0/sysVariedByNsigma));
+	    } 
 	  }
 	}
       }
@@ -789,44 +797,93 @@ void fitUsingRooFit(processEntryType& data, double intLumiData,
     std::cout << "process = " << processEntry->first << std::endl;
     if ( processEntry->first == "mcSum" ) continue;
 
-    if ( !(processEntry->first == "EWKmuFake") ) { // CV: do not constrain mu --> tau fake-rate 
-	                                           //     to account for inefficiency of muon system in 2011 Run B data
+    if ( processEntry->first == "Ztautau"    ||
+	 processEntry->first == "WplusJets"  ||
+	 processEntry->first == "EWKjetFake" ||
+	 processEntry->first == "TTplusJets" ||
+	 processEntry->first == "QCD"        )
+      fitConstraintsC1.Add(makeFitConstraint(processEntry->second->norm_.fittedValue_, 
+					     processEntry->second->norm_.expectedValue_, TMath::Max(1.e+1, 0.5*processEntry->second->norm_.expectedValue_)));
+    else if ( processEntry->first == "Zmumu"    || 
+	      processEntry->first == "EWKmuFake" ) // CV: add no/very loose constraint on mu --> tau fake-rate 
+	                                           //     in order to account for inefficiency of muon system in 2011 Run B data
                                                    //     (not modeled by Monte Carlo simulation)
       fitConstraintsC1.Add(makeFitConstraint(processEntry->second->norm_.fittedValue_, 
-					     processEntry->second->norm_.expectedValue_, 0.5*processEntry->second->norm_.expectedValue_));
+					     processEntry->second->norm_.expectedValue_, TMath::Max(1.e+1, 1.0*processEntry->second->norm_.expectedValue_)));
+    processEntry->second->norm_.fittedValue_->setMin(1.);
+    if ( processEntry->first == "EWKmuFake" ) processEntry->second->norm_.fittedValue_->setMax(5.*processEntry->second->norm_.expectedValue_);
+    
+    std::map<std::string, bool> isLowStatistics; // key = region
+    for ( vstring::const_iterator region = processEntry->second->regionsToFit_.begin(); 
+	  region != processEntry->second->regionsToFit_.end(); ++region ) {
+      if ( processEntry->second->histograms_[*region][processEntry->second->fitVariables_[*region].name_][key_central_value]->GetEntries() < 10 ) isLowStatistics[*region] = true;
+      else isLowStatistics[*region] = false;
     }
-   
+
     for ( std::map<std::string, fitParameterType>::const_iterator fitParameter = processEntry->second->fitParameters_.begin();
-	  fitParameter != processEntry->second->fitParameters_.end(); ++fitParameter ) {            
+	  fitParameter != processEntry->second->fitParameters_.end(); ++fitParameter ) {           
       if ( fitParameter->first == "pDiTauCharge_OS_SS" ) {
-	if ( !(processEntry->first == "Zmumu"       ||
-	       processEntry->first == "WplusJets"   ||
-	       processEntry->first == "EWKjetFake") )
-	  fitConstraintsABC2D.Add(makeFitConstraint(fitParameter->second.fittedValue_, 
-						    fitParameter->second.expectedValue_, 0.5*fitParameter->second.expectedValue_));
+	if ( isLowStatistics["A"] && 
+	     isLowStatistics["B"] && 
+	     isLowStatistics["D"] ) {
+	  fitParameter->second.fittedValue_->setConstant(true);
+	} else {
+	  if ( processEntry->first == "Ztautau" )
+	    fitConstraintsABC2D.Add(makeFitConstraint(fitParameter->second.fittedValue_, 
+						      fitParameter->second.expectedValue_, 0.025));
+	  else if ( processEntry->first == "Zmumu"      ||
+		    processEntry->first == "WplusJets"  ||
+		    processEntry->first == "EWKjetFake" )
+	    fitConstraintsABC2D.Add(makeFitConstraint(fitParameter->second.fittedValue_,
+						      fitParameter->second.expectedValue_, 0.10));
+	  else 
+	    fitConstraintsABC2D.Add(makeFitConstraint(fitParameter->second.fittedValue_, 
+						      fitParameter->second.expectedValue_, 0.05));
+	}
       } else if ( fitParameter->first == "pMuonIso_tight_loose" ) {
-	if ( processEntry->first == "Ztautau"    ||
-	     processEntry->first == "Zmumu"      ||
-	     processEntry->first == "WplusJets"  ||
-	     processEntry->first == "EWKmuFake"  ||
-	     processEntry->first == "EWKjetFake" )
-	  fitConstraintsABC2D.Add(makeFitConstraint(fitParameter->second.fittedValue_, 
-						    fitParameter->second.expectedValue_, 0.01));
-	else if ( processEntry->first == "TTplusJets" )
-	  fitConstraintsABC2D.Add(makeFitConstraint(fitParameter->second.fittedValue_, 
-						    fitParameter->second.expectedValue_, 0.02));
-        else if ( !(processEntry->first == "QCD") )
-          fitConstraintsABC2D.Add(makeFitConstraint(fitParameter->second.fittedValue_, 
-						    fitParameter->second.expectedValue_, 0.5*fitParameter->second.expectedValue_));
+	if ( isLowStatistics["A"] && 
+	     isLowStatistics["B"] && 
+	     isLowStatistics["D"] ) {
+	  fitParameter->second.fittedValue_->setConstant(true);
+	} else {
+	  if ( processEntry->first == "Ztautau"    ||
+	       processEntry->first == "Zmumu"      ||
+	       processEntry->first == "WplusJets"  ||
+	       processEntry->first == "EWKmuFake"  ||
+	       processEntry->first == "EWKjetFake" )
+	    fitConstraintsABC2D.Add(makeFitConstraint(fitParameter->second.fittedValue_, 
+						      fitParameter->second.expectedValue_, 0.01));
+	  else if ( processEntry->first == "TTplusJets" )
+	    fitConstraintsABC2D.Add(makeFitConstraint(fitParameter->second.fittedValue_, 
+						      fitParameter->second.expectedValue_, 0.02));
+	  else if ( !(processEntry->first == "QCD") )
+	    fitConstraintsABC2D.Add(makeFitConstraint(fitParameter->second.fittedValue_, 
+						      fitParameter->second.expectedValue_, TMath::Max(0.05, 0.5*fitParameter->second.expectedValue_)));
+	}
       } else if ( fitParameter->first == "pDiTauKine_Sig_Bgr" ) {
-        fitConstraintsABC2D.Add(makeFitConstraint(fitParameter->second.fittedValue_, 
-						  fitParameter->second.expectedValue_, 0.5*fitParameter->second.expectedValue_));
+	if ( isLowStatistics["C1p"] && 
+	     isLowStatistics["C1f"] && 
+	     isLowStatistics["C2"]  ) {
+	  fitParameter->second.fittedValue_->setConstant(true);
+	} else {
+	  fitConstraintsABC2D.Add(makeFitConstraint(fitParameter->second.fittedValue_, 
+						    fitParameter->second.expectedValue_, TMath::Max(0.01, 0.10*fitParameter->second.expectedValue_)));
+	}
       } else if ( fitParameter->first == "pTauId_passed_failed" ) {
-        if ( !(processEntry->first != "Ztautau"   ||
-               processEntry->first != "Zmumu"     ||
-               processEntry->first != "EWKmuFake") )
-          fitConstraintsC1.Add(makeFitConstraint(fitParameter->second.fittedValue_, 
-						 fitParameter->second.expectedValue_, 0.5*fitParameter->second.expectedValue_));
+	if ( isLowStatistics["C1p"] && 
+	     isLowStatistics["C1f"] ) { 
+	  fitParameter->second.fittedValue_->setConstant(true);
+	} else {
+	  if ( processEntry->first == "WplusJets"  ||
+	       processEntry->first == "EWKjetFake" ||
+	       processEntry->first == "QCD"        )
+	    fitConstraintsC1.Add(makeFitConstraint(fitParameter->second.fittedValue_, 
+						   fitParameter->second.expectedValue_, TMath::Max(0.01, 0.2*fitParameter->second.expectedValue_)));
+	  else if ( processEntry->first == "Zmumu"     ||
+		    processEntry->first == "EWKmuFake" )
+	    fitConstraintsC1.Add(makeFitConstraint(fitParameter->second.fittedValue_, 
+						   fitParameter->second.expectedValue_, TMath::Max(0.05, 0.5*fitParameter->second.expectedValue_)));
+	}
       }
     }
   }
@@ -1294,9 +1351,11 @@ int main(int argc, const char* argv[])
 
   std::string regionQCDtemplate_passed = cfgFitTauIdEff.getParameter<std::string>("regionQCDtemplate_passed");
   std::string regionQCDtemplate_failed = cfgFitTauIdEff.getParameter<std::string>("regionQCDtemplate_failed");
+  std::string regionQCDtemplate_D      = cfgFitTauIdEff.getParameter<std::string>("regionQCDtemplate_D");
   vstring regionsQCDtemplate;
   add_string_uniquely(regionsQCDtemplate, regionQCDtemplate_passed);
   add_string_uniquely(regionsQCDtemplate, regionQCDtemplate_failed);
+  if ( regionQCDtemplate_D != "" ) add_string_uniquely(regionsQCDtemplate, regionQCDtemplate_D);
 
   std::string templateMorphingMode_string = cfgFitTauIdEff.getParameter<std::string>("templateMorphingMode");
   int templateMorphingMode = -1;
@@ -1444,20 +1503,35 @@ int main(int argc, const char* argv[])
   vstring sysUncertainties_data;
   sysUncertainties_data.push_back(key_central_value);
   histogramMap3 histograms_data; // key = (region, observable, key_central_value)
-  loadHistograms(histograms_data, histogramInputDirectory, 
-		 "Data", regionsToLoad, tauId, observables, sysUncertainties_data);
-  loadHistograms(histograms_data, histogramInputDirectory, 
-		 "Data", regionsQCDtemplate, tauId, observables, sysUncertainties_expanded);  
+//--- closure test: fit sum(MC) instead of Data
+  if ( runClosureTest ) {
+    std::cout << "<fitTauIdEfficiency>:" << std::endl;
+    std::cout << " running closure-test...fluctuating histograms..." << std::endl; 
+    for ( vstring::const_iterator region = regionsToFit.begin();
+	  region != regionsToFit.end(); ++region ) {
+      for ( vstring::const_iterator observable = observables.begin();  
+	    observable != observables.end(); ++observable ) {
+	TH1* origHistogram = histograms_mc["mcSum"][*region][*observable][key_central_value];
+	    
+	TH1* fluctHistogram = (TH1*)origHistogram->Clone(TString(origHistogram->GetName()).Append("_fluctuated"));
+	fluctHistogram->Reset();
+	sampleHistogram_stat(origHistogram, fluctHistogram, -1., true);
+	
+	std::cout << "histograms_data[region = " << (*region) << "][observable = " << (*observable) << "]" 
+		  << " = " << fluctHistogram << " (original = " << origHistogram << ")" << std::endl;
+	std::cout << " (name = " << fluctHistogram->GetName() << ", integral = " << fluctHistogram->Integral() << ")" << std::endl;
+	histograms_data[*region][*observable][key_central_value] = fluctHistogram;
+      }
+    }
+  } else {
+    loadHistograms(histograms_data, histogramInputDirectory, 
+		   "Data", regionsToLoad, tauId, observables, sysUncertainties_data);
+    loadHistograms(histograms_data, histogramInputDirectory, 
+		   "Data", regionsQCDtemplate, tauId, observables, sysUncertainties_expanded);  
+  }
   processEntryType* data = 
     new processEntryType("Data", histograms_data, fitVariables, regionsToFit, region_passed, region_failed, 
 			 sysUncertainties_data, kNoTemplateMorphing, "Data", 1);
-  
-//--- closure test: fit sum(MC) instead of Data
-  if ( runClosureTest ) {
-    regionQCDtemplate_passed = "A1";
-    regionQCDtemplate_failed = "A1";
-    data = processEntries["mcSum"];   
-  }
   
   bool runPseudoExperiments = cfgFitTauIdEff.getParameter<bool>("runPseudoExperiments");
   unsigned numPseudoExperiments = cfgFitTauIdEff.getParameter<unsigned>("numPseudoExperiments");
@@ -1489,6 +1563,25 @@ int main(int argc, const char* argv[])
 	  data->histograms_[regionQCDtemplate_passed][*observable][*sysUncertainty];
 	processEntries["QCD"]->histograms_[region_failed][*observable][*sysUncertainty] =
 	  data->histograms_[regionQCDtemplate_failed][*observable][*sysUncertainty];
+	if ( regionQCDtemplate_D != "" )
+	  processEntries["QCD"]->histograms_["D"][*observable][*sysUncertainty] =
+	    data->histograms_[regionQCDtemplate_D][*observable][*sysUncertainty];
+      }
+    }
+
+    std::cout << "<fitTauIdEfficiency>:" << std::endl;
+    std::cout << " taking QCD template from data...updating histogramMap..." << std::endl; 
+    for ( vstring::const_iterator region = regionsToFit.begin();
+	  region != regionsToFit.end(); ++region ) {
+      for ( vstring::const_iterator observable = observables.begin();
+	    observable != observables.end(); ++observable ) {
+	for ( vstring::const_iterator sysUncertainty = sysUncertainties_expanded.begin();
+	      sysUncertainty != sysUncertainties_expanded.end(); ++sysUncertainty ) {
+	  TH1* histogram = processEntries["QCD"]->histograms_[*region][*observable][*sysUncertainty];
+	  std::cout << "histogramMap[region = " << (*region) << "][observable = " << (*observable) << "]" 
+		    << "[sysUncertainty = " << (*sysUncertainty) << "] = " << histogram << std::endl;
+	  std::cout << " (name = " << histogram->GetName() << ", integral = " << histogram->Integral() << ")" << std::endl;
+	}
       }
     }
   }
