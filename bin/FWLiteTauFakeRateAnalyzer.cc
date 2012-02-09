@@ -10,9 +10,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.5 $
+ * \version $Revision: 1.6 $
  *
- * $Id: FWLiteTauFakeRateAnalyzer.cc,v 1.5 2011/11/06 13:25:23 veelken Exp $
+ * $Id: FWLiteTauFakeRateAnalyzer.cc,v 1.6 2012/02/02 09:03:32 veelken Exp $
  *
  */
 
@@ -321,14 +321,18 @@ int main(int argc, char* argv[])
 		//	    << " needed for HLT path = " << hltPath->name() << " !!" << std::endl;
 		vstring l1SeedNames;
 		const pat::TriggerAlgorithmCollection* l1Seeds = hltEvent->algorithms();
-		for ( pat::TriggerAlgorithmCollection::const_iterator l1Seed = l1Seeds->begin();
-		      l1Seed != l1Seeds->end(); ++l1Seed ) {
-		  l1SeedNames.push_back(l1Seed->name());
+		if ( l1Seeds ) {
+		  for ( pat::TriggerAlgorithmCollection::const_iterator l1Seed = l1Seeds->begin();
+			l1Seed != l1Seeds->end(); ++l1Seed ) {
+		    l1SeedNames.push_back(l1Seed->name());
+		  }
+		  //std::cout << "Available L1 seeds = " << format_vstring(l1SeedNames) << std::endl;
+		} else {
+		  //std::cout << "No L1 seeds available in pat::TriggerEvent !!" << std::endl;
 		}
-		//std::cout << "Available L1 seeds = " << format_vstring(l1SeedNames) << std::endl;
 		continue;
 	      }
-	      bool l1Passed = l1Seed_status->first;
+	      bool l1Passed = l1Seed->gtlResult();
 	      if ( l1Passed ) {
 		unsigned l1Prescale = l1Seed->prescale();
 		if ( l1Prescale < 1 ) l1Prescale = 1;
@@ -346,7 +350,9 @@ int main(int argc, char* argv[])
       ++numEvents_passedTrigger;
       numEventsWeighted_passedTrigger += evtWeight;
 
+      //std::cout << "probFailedPrescale = " << probFailedPrescale << std::endl;
       if ( isData && probFailedPrescale > (1. - 1.e-9) ) continue;
+
       double prescaleCorrFactor = ( isData ) ? 1./(1. - probFailedPrescale) : 1.;
       //std::cout << "prescaleCorrFactor = " << prescaleCorrFactor << std::endl;
       evtWeight *= prescaleCorrFactor;
