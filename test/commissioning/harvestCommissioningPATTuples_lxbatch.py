@@ -6,6 +6,7 @@ import re
 from TauAnalysis.TauIdEfficiency.recoSampleDefinitionsTauIdCommissioning_7TeV_grid_cfi import recoSampleDefinitionsTauIdCommissioning_7TeV
 from TauAnalysis.Configuration.tools.harvestingLXBatch import make_harvest_scripts
 from TauAnalysis.Configuration.tools.harvesting import castor_source, clean_by_crab_id
+import TauAnalysis.Configuration.tools.castor as castor
 
 castorFilePath = '/castor/cern.ch/user/v/veelken/TauIdCommissioning/'
 version = 'patV2_1'
@@ -22,17 +23,17 @@ SAMPLES_TO_ANALYZE = [
     'data_SingleMu_Run2011A_Aug05ReReco_v1',
     'data_SingleMu_Run2011A_PromptReco_v6',
     'data_SingleMu_Run2011B_PromptReco_v1a',
-    'ZplusJets',
-    'WplusJets',
-    'qcdDiJetPtHat15to30s4',
-    'qcdDiJetPtHat30to50s4',
-    'qcdDiJetPtHat50to80s4',
-    'qcdDiJetPtHat80to120s4',
-    'qcdDiJetPtHat120to170s4',
-    'qcdDiJetPtHat170to300s4',
-    'qcdDiJetPtHat300to470s4',
-    'PPmuXptGt20Mu15',
-    'TTplusJets'
+    #'ZplusJets',
+    #'WplusJets',
+    #'qcdDiJetPtHat15to30s4',
+    #'qcdDiJetPtHat30to50s4',
+    #'qcdDiJetPtHat50to80s4',
+    #'qcdDiJetPtHat80to120s4',
+    #'qcdDiJetPtHat120to170s4',
+    #'qcdDiJetPtHat170to300s4',
+    #'qcdDiJetPtHat300to470s4',
+    #'PPmuXptGt20Mu15',
+    #'TTplusJets'
 ]
 
 JOBS_TO_ANALYZE = [
@@ -43,6 +44,9 @@ JOBS_TO_ANALYZE = [
     #  o Z --> mu+ mu-:     'Zmumu'
     # only...
 ]   
+
+#deleteOldHarvestFiles = True
+deleteOldHarvestFiles = False
 
 if len(SAMPLES_TO_ANALYZE) == 0:
     SAMPLES_TO_ANALYZE = recoSampleDefinitionsTauIdCommissioning_7TeV['SAMPLES_TO_RUN']
@@ -69,6 +73,16 @@ for sample in SAMPLES_TO_ANALYZE:
         plot_regex = r"dont match anything"
         skim_regex = r"%s" % recoSampleDefinitionsTauIdCommissioning_7TeV['ROOT_FILE_NAMES'][evtSel].replace(
             ".root", "_(?P<gridJob>\d*)(_(?P<gridTry>\d*))*_(?P<hash>[a-zA-Z0-9]*).root")
+
+        if deleteOldHarvestFiles:
+            print "deleting old harvest files..."
+            files = [ file_info['path'] for file_info in castor.nslsl(outputFilePath) ]
+            harvest_regex = r"[a-zA-Z0-9_/:.]*skim__%s_%s_%s_chunk_(?P<jobId>\d*)_(?P<hash>[a-zA-Z0-9]*).root" % (sample, evtSel, version)
+            harvest_regex_matcher = re.compile(harvest_regex)
+            for file in files:
+                if harvest_regex_matcher.match(file):
+                    print "deleting file = %s" % file
+                    os.system('rfrm %s' % file)
         
         def matches_either(files):
             # Check if the file matches either of the regexes we are interested in.

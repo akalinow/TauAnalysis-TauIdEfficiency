@@ -285,14 +285,24 @@ eventSelections = {
 tauIds = {
     # HPS isolation with no deltaBeta corrections applied
     # (separate isolation requirements wrt. PFChargedHadrons and PFGammas)
+    'tauDiscrHPSvloose'  : {
+        'discriminators' : [
+            'decayModeFinding',
+            'byVLooseIsolation'
+        ],
+        'legendEntry' : "HPS vLoose",
+        'markerStyleData' : 20,
+        'markerStyleSim' : 24,
+        'color' : 856
+    },
     'tauDiscrHPSloose'  : {
         'discriminators' : [
             'decayModeFinding',
             'byLooseIsolation'
         ],
         'legendEntry' : "HPS Loose",
-        'markerStyleData' : 20,
-        'markerStyleSim' : 24,
+        'markerStyleData' : 21,
+        'markerStyleSim' : 25,
         'color' : 418
     },
     'tauDiscrHPSmedium' : {
@@ -301,8 +311,8 @@ tauIds = {
             'byMediumIsolation'
         ],
         'legendEntry' : "HPS Medium",
-        'markerStyleData' : 21,
-        'markerStyleSim' : 25,
+        'markerStyleData' : 22,
+        'markerStyleSim' : 26,
         'color' : 807
     },
     'tauDiscrHPStight' : {
@@ -311,21 +321,31 @@ tauIds = {
             'byTightIsolation'
         ],
         'legendEntry' : "HPS Tight",
-        'markerStyleData' : 22,
-        'markerStyleSim' : 26,
+        'markerStyleData' : 23,
+        'markerStyleSim' : 32,
         'color' : 618
     },
             
     # HPS isolation with deltaBeta corrections applied
     # (separate isolation requirements wrt. PFChargedHadrons and PFGammas)
+      'tauDiscrHPSvlooseDBcorr'  : {
+        'discriminators' : [
+            'decayModeFinding',
+            'byVLooseIsolationDeltaBetaCorr'
+        ],
+        'legendEntry' : "HPS #delta#beta vLoose",
+        'markerStyleData' : 20,
+        'markerStyleSim' : 24,
+        'color' : 856
+    },
     'tauDiscrHPSlooseDBcorr'  : {
         'discriminators' : [
             'decayModeFinding',
             'byLooseIsolationDeltaBetaCorr'
         ],
         'legendEntry' : "HPS #delta#beta Loose",
-        'markerStyleData' : 20,
-        'markerStyleSim' : 24,
+        'markerStyleData' : 21,
+        'markerStyleSim' : 25,
         'color' : 418
     },
     'tauDiscrHPSmediumDBcorr' : {
@@ -334,8 +354,8 @@ tauIds = {
             'byMediumIsolationDeltaBetaCorr'
         ],
         'legendEntry' : "HPS #delta#beta Medium",
-        'markerStyleData' : 21,
-        'markerStyleSim' : 25,
+        'markerStyleData' : 22,
+        'markerStyleSim' : 26,
         'color' : 807
     },
     'tauDiscrHPStightDBcorr' : {
@@ -344,21 +364,31 @@ tauIds = {
             'byTightIsolationDeltaBetaCorr'
         ],
         'legendEntry' : "HPS #delta#beta Tight",
-        'markerStyleData' : 22,
-        'markerStyleSim' : 26,
+        'markerStyleData' : 23,
+        'markerStyleSim' : 32,
         'color' : 618
     },
     
     # HPS combined isolation discriminators
     # (based on isolation sumPt of PFChargedHadrons + PFGammas)
+    'tauDiscrHPScombVLooseDBcorr'  : {
+        'discriminators' : [
+            'decayModeFinding',
+            'byVLooseCombinedIsolationDeltaBetaCorr'
+        ],
+        'legendEntry' : "HPS comb. vLoose",
+        'markerStyleData' : 20,
+        'markerStyleSim' : 24,
+        'color' : 856
+    },
     'tauDiscrHPScombLooseDBcorr'  : {
         'discriminators' : [
             'decayModeFinding',
             'byLooseCombinedIsolationDeltaBetaCorr'
         ],
         'legendEntry' : "HPS comb. Loose",
-        'markerStyleData' : 20,
-        'markerStyleSim' : 24,
+        'markerStyleData' : 21,
+        'markerStyleSim' : 25,
         'color' : 418
     },
     'tauDiscrHPScombMediumDBcorr' : {
@@ -367,8 +397,8 @@ tauIds = {
             'byMediumCombinedIsolationDeltaBetaCorr'
         ],
         'legendEntry' : "HPS comb. Medium",
-        'markerStyleData' : 21,
-        'markerStyleSim' : 25,
+        'markerStyleData' : 22,
+        'markerStyleSim' : 26,
         'color' : 807
     },
     'tauDiscrHPScombTightDBcorr' : {
@@ -377,8 +407,8 @@ tauIds = {
             'byTightCombinedIsolationDeltaBetaCorr'
         ],
         'legendEntry' : "HPS comb. Tight",
-        'markerStyleData' : 22,
-        'markerStyleSim' : 26,
+        'markerStyleData' : 23,
+        'markerStyleSim' : 32,
         'color' : 618
     }
 }
@@ -406,7 +436,7 @@ print "hostname = %s" % hostname
 if hostname == 'ucdavis.cern.ch':
     print "Running on %s" % hostname
 
-#harvestingFilePath = os.path.join(harvestingFilePath, runPeriod)
+harvestingFilePath = os.path.join(harvestingFilePath, runPeriod)
 try:
     castor.rfstat(harvestingFilePath)
 except RuntimeError:
@@ -683,6 +713,7 @@ for evtSelName, evtSelJob in evtSelJobs.items():
 
     # make plots for HPS isolation with no deltaBeta corrections applied
     discriminators_HPS = [
+        'tauDiscrHPSvloose',
         'tauDiscrHPSloose',
         'tauDiscrHPSmedium',
         'tauDiscrHPStight'
@@ -695,6 +726,7 @@ for evtSelName, evtSelJob in evtSelJobs.items():
 
     # make plots for HPS isolation with no applied deltaBeta corrections
     discriminators_HPSdbCorr = [
+        'tauDiscrHPSvlooseDBcorr',
         'tauDiscrHPSlooseDBcorr',
         'tauDiscrHPSmediumDBcorr',
         'tauDiscrHPStightDBcorr'
@@ -707,6 +739,7 @@ for evtSelName, evtSelJob in evtSelJobs.items():
           
     # make plots for HPS combined isolation discriminators
     discriminators_HPScombined = [
+        'tauDiscrHPScombVLooseDBcorr',
         'tauDiscrHPScombLooseDBcorr',
         'tauDiscrHPScombMediumDBcorr',
         'tauDiscrHPScombTightDBcorr'

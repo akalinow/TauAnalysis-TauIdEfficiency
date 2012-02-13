@@ -152,6 +152,7 @@ def buildSequenceTauIdEffMeasSpecific(process,
             src = cms.InputTag(composeModuleName([selTauCollectionName, "cumulative"])),
             jetCorrPayloadName = cms.string('AK5PF'),
             jetCorrUncertaintyTag = cms.string('Uncertainty'),
+            addResidualJES = cms.bool(False),                                     
             shiftBy = cms.double(+3.)
         )
         setattr(process, patTausJECshiftUpModuleName, patTausJECshiftUpModule)

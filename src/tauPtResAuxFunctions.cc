@@ -14,9 +14,8 @@ std::string getGenTauDecayMode(const pat::Tau& patTau, const reco::GenParticleCo
   else return "";
 }
 
-std::string getPFCandidateType(const reco::PFCandidate& pfCandidate)
+std::string getPFCandidateType(reco::PFCandidate::ParticleType pfCandidateType)
 {
-  reco::PFCandidate::ParticleType pfCandidateType = pfCandidate.particleId();
   if      ( pfCandidateType == reco::PFCandidate::X         ) return "undefined";
   else if ( pfCandidateType == reco::PFCandidate::h         ) return "PFChargedHadron";
   else if ( pfCandidateType == reco::PFCandidate::e         ) return "PFElectron";
@@ -26,6 +25,12 @@ std::string getPFCandidateType(const reco::PFCandidate& pfCandidate)
   else if ( pfCandidateType == reco::PFCandidate::h_HF      ) return "HF_had";
   else if ( pfCandidateType == reco::PFCandidate::egamma_HF ) return "HF_em";
   else assert(0);
+}
+
+std::string getPFCandidateType(const reco::PFCandidate& pfCandidate)
+{
+  reco::PFCandidate::ParticleType pfCandidateType = pfCandidate.particleId();
+  return getPFCandidateType(pfCandidateType);
 }
 
 const reco::TrackBaseRef getTrack(const reco::PFCandidate& cand) 

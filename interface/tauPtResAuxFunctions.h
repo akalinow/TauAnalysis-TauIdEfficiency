@@ -18,6 +18,7 @@
 
 std::string getGenTauDecayMode(const pat::Tau&, const reco::GenParticleCollection&);
 
+std::string getPFCandidateType(reco::PFCandidate::ParticleType);
 std::string getPFCandidateType(const reco::PFCandidate&);
 const reco::TrackBaseRef getTrack(const reco::PFCandidate&);
 

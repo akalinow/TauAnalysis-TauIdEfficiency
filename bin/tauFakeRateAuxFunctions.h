@@ -241,7 +241,6 @@ void loadHistograms(
 	<< "No trigger prescale defined for event selection = " << (*eventSelection) << " !!\n";
     double avTriggerPrescale = avTriggerPrescales.find(*eventSelection)->second;
     assert(avTriggerPrescale > 0.);
-    avTriggerPrescale *= 0.10; // CV: fudge factor to account for 'weird' luminosity units
     
     for ( vstring::const_iterator process = processes.begin();
 	  process != processes.end(); ++process ) {
@@ -733,7 +732,8 @@ void drawGraphs(
   bottomPad->SetBottomMargin(0.24);
   bottomPad->SetRightMargin(0.05);
   
-  TLegend legend(0.53, 0.59, 0.94, 0.95, "", "brNDC"); 
+  double legendY0 = 0.95 - 2*graphsToPlot.size()*0.05;
+  TLegend legend(0.53, legendY0, 0.94, 0.95, "", "brNDC"); 
   legend.SetBorderSize(0);
   legend.SetFillColor(0);
 
@@ -754,7 +754,7 @@ void drawGraphs(
 
   dummyHistogram_top->SetTitle("");
   dummyHistogram_top->SetStats(false);
-  dummyHistogram_top->SetMaximum(5.e-1);
+  dummyHistogram_top->SetMaximum(1.e-0);
   dummyHistogram_top->SetMinimum(1.e-4);
   dummyHistogram_top->Draw("axis");
 

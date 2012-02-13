@@ -2,7 +2,9 @@
 
 #include "DataFormats/PatCandidates/interface/Tau.h"
 
-typedef ShiftedJetProducerT<pat::Tau> ShiftedPATTauJetProducer;
+#include "TauAnalysis/TauIdEfficiency/interface/PATTauJetCorrExtractor.h"
+
+typedef ShiftedJetProducerT<pat::Tau, PATTauJetCorrExtractor> ShiftedPATTauJetProducer;
 
 #include "FWCore/Framework/interface/MakerMacros.h"
 

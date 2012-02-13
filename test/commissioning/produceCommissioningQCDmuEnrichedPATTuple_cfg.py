@@ -17,7 +17,8 @@ process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
 #--------------------------------------------------------------------------------
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
-        'file:/data2/friis/CMSSW_4_2_X/skims/06-27-MatthewsZTTEvents/crab_0_110627_082505/ZTTCands_merged_v1.root'
+        #'file:/data2/friis/CMSSW_4_2_X/skims/06-27-MatthewsZTTEvents/crab_0_110627_082505/ZTTCands_merged_v1.root'
+        'rfio:/castor/cern.ch/user/v/veelken/CMSSW_4_2_x/skims/PPmuXptGt20Mu15/RecMuPtGt15/2012Jan11/skimRecMuPtGt15_PPmuXptGt20Mu15_2012Jan11_252_0_ZVZ.root'         
     ),
     skipEvents = cms.untracked.uint32(0)            
 )
