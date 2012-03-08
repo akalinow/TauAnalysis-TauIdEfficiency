@@ -1,4 +1,5 @@
 import os
+import shlex
 import sys
 import subprocess
 import threading
@@ -72,26 +73,26 @@ def local_version_current(castor_file, local_directory = LOCAL_DIRECTORY):
         return False
     return True
 
-
 class CopyWorker(threading.Thread):
-    def __init__(self, work_queue, results_queue, local_directory):
+    def __init__(self, work_queue, results_queue, local_directory, skipWaiting=False):
         super(CopyWorker, self).__init__()
         self.work_queue = work_queue
         self.results_queue = results_queue
         self.local_directory = local_directory
+        self.skipWaiting = skipWaiting
     def run(self):
         while True:
             try:
                 castor_file = self.work_queue.get()
                 if castor_file is None:
                     break
-                self.mirror(castor_file, self.local_directory)
+                self.mirror(castor_file, self.local_directory, self.skipWaiting)
             except KeyboardInterrupt:
                 sys.exit(2)
             finally:
                 self.work_queue.task_done()
 
-    def mirror(self, castor_file, local_directory):
+    def mirror(self, castor_file, local_directory, skipWaiting=False):
         ''' Initiate copy a castor file to the local directory.
 
         Returns a dictionary containing the background subprocess
@@ -105,6 +106,54 @@ class CopyWorker(threading.Thread):
             print "Creating local directory %s" % local_dirname
             os.makedirs(local_dirname, 0777)
         command = ['nice', '--adjustment=15', 'rfcp', castor_file, local_path]
+        # CV: check if users run certain interactive processes on local machine;
+        #     postpone starting 'rfcp' command in case they do
+        jobsToWaitFor = {
+            'squires' : [
+                'gdb',
+                'root',
+                ##'screen',
+                'xemacs',
+                'vi',
+                ##'vim'
+            ],
+            'vasquez' : [
+                'root',
+                'xemacs'
+            ],
+            'veelken' : [
+                ##'root',
+                ##'xemacs'
+            ]
+        }
+        waitFor = 300 # time to wait in seconds
+        waitForJobToFinish = True
+        while waitForJobToFinish:
+            waitForJobToFinish = False
+            args = shlex.split('ps aux')
+            running_jobs = subprocess.Popen(args, stdout = subprocess.PIPE)
+            running_jobs.wait()
+            running_jobs = running_jobs.stdout.readlines()
+            for running_job in running_jobs:
+                columns = running_job.split()
+                if len(columns) < 11:
+                    continue
+                running_job_user = columns[0]
+                running_job_executable = columns[10]
+                for user, executables in jobsToWaitFor.items():
+                    for executable in executables:
+                        if user == running_job_user and executable == running_job_executable:
+                            print "User %s is running %s --> waiting for %i seconds." % (user, executable, waitFor)
+                            waitForJobToFinish = True
+            current_time = time.localtime()
+	    if current_time.tm_hour >= 22 or current_time.tm_hour <= 8:
+	        print "Don't sleep during nighttime!"
+                waitForJobToFinish = False
+            if skipWaiting:
+                print "Don't wait, it's urgent!"
+                waitForJobToFinish = False
+            if waitForJobToFinish:
+                time.sleep(waitFor)        
         print "Requesting %s -> %s" % (castor_file, local_path)
         result = subprocess.call(command)
         #result = 0
@@ -121,7 +170,7 @@ def print_results(results_queue):
         finally:
             results_queue.task_done()
 
-def mirror_files(castor_files, local_directory = LOCAL_DIRECTORY, max_jobs=10):
+def mirror_files(castor_files, local_directory = LOCAL_DIRECTORY, max_jobs=10, skipWaiting=False):
     ''' Copy [castor_files] to local disk.
 
     max_jobs specifies maximum number of concurrent copies
@@ -129,7 +178,7 @@ def mirror_files(castor_files, local_directory = LOCAL_DIRECTORY, max_jobs=10):
     work_queue = Queue.Queue()
     results_queue = Queue.Queue()
     print "Building %i worker threads" % max_jobs
-    workers = [CopyWorker(work_queue, results_queue, local_directory) for i in range(max_jobs)]
+    workers = [CopyWorker(work_queue, results_queue, local_directory, skipWaiting) for i in range(max_jobs)]
     # Start all our workers
     map(CopyWorker.start, workers)
     results_worker = threading.Thread(
