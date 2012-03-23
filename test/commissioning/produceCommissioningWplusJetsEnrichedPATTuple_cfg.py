@@ -17,20 +17,21 @@ process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
 #--------------------------------------------------------------------------------
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
-        'file:/data2/friis/CMSSW_4_2_X/skims/06-27-MatthewsZTTEvents/crab_0_110627_082505/ZTTCands_merged_v1.root'
+        #'file:/data2/friis/CMSSW_4_2_X/skims/06-27-MatthewsZTTEvents/crab_0_110627_082505/ZTTCands_merged_v1.root'
+        'rfio:/castor/cern.ch/user/v/veelken/CMSSW_4_2_x/skims/TauFakeRate_WJets_RunB_fromArun/selEvents_Data_2011RunB_Wmunu_AOD.root'
     ),
     skipEvents = cms.untracked.uint32(0)            
 )
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(1000)
+    input = cms.untracked.int32(-1)
 )
 
 #--------------------------------------------------------------------------------
 # define configuration parameter default values
 
-isMC = True # use for MC
-##isMC = False # use for Data
+##isMC = True # use for MC
+isMC = False # use for Data
 ##HLTprocessName = "HLT" # use for 2011 Data
 HLTprocessName = "HLT" # use for Summer'11 MC
 pfCandidateCollection = "particleFlow" # pile-up removal disabled
@@ -184,9 +185,10 @@ process.patTupleOutputModule = cms.OutputModule("PoolOutputModule",
             'keep *_%s_*_*' % retVal['pfTauCollectionHPSpTaNC'],
             'keep *_%s_*_*' % retVal['muonPFTauCollectionHPSpTaNC'],
             'keep *_selectedPatMuonsVBTFid_*_*',                                         
-            'keep *_offlinePrimaryVertices_*_*',
-            'keep *_offlinePrimaryVerticesWithBS_*_*',                                                        
-            'keep *_selectedPrimaryVertexHighestPtTrackSum_*_*',                                         
+            'keep *_offlinePrimaryVertices_*_*', 
+            'keep *_selectedPrimaryVertexPosition_*_*', 
+            'keep *_selectedPrimaryVertexHighestPtTrackSum_*_*', 
+            'keep *_offlinePrimaryVerticesWithBS_*_*',
             'keep *_patPFMet_*_*',
             ##'keep *_patMETs_*_*',                                            
             'keep *_patJetsAK5PFnotOverlappingWithLeptonsForMEtUncertainty_*_*',

@@ -240,7 +240,7 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
     #--------------------------------------------------------------------------------
 
     pfJetCollection = 'patJetsAK5PFnotOverlappingWithLeptonsForMEtUncertainty'
-    pfMEtCollection = 'patPFMet'
+    pfMEtCollection = 'patType1CorrectedPFMet'
     if isMC:
         pfJetCollection = 'smearedPatJetsAK5PF'
 

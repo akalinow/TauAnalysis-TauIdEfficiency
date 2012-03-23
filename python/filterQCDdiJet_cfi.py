@@ -94,7 +94,7 @@ caloTauSkimPath = cms.Path(
 # define loose PFTau candidate/PFJet selection
 #
 selectedPFTaus = cms.EDFilter("PFTauSelector",
-    src = cms.InputTag('shrinkingConePFTauProducer'),
+    src = cms.InputTag('hpsPFTauProducer'),
     discriminators = cms.VPSet(),                          
     cut = cms.string("abs(jetRef().eta) < 2.5 & jetRef().pt > 10."),
     filter = cms.bool(True)

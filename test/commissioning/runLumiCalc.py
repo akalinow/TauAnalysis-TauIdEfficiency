@@ -31,7 +31,8 @@ hltPaths = [
     #'HLT_Ele32_CaloIdVL_CaloIsoVL_TrkIdVL_TrkIsoVL_v*',
     #'HLT_Ele32_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_v*'
     #'HLT_Ele27_WP80_PFMT50_v*'
-    'HLT_Ele32_WP70_v2'
+    #'HLT_Ele32_WP70_v2'
+    'HLT_Ele17_CaloIdVT_CaloIsoVT_TrkIdT_TrkIsoVT_SC8_Mass30_v*'
 ]
 
 jsonFiles = {

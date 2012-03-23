@@ -149,7 +149,7 @@ process.tauFakeRateAnalyzer = cms.PSet(
     
     srcMET = cms.InputTag('%s'),
 
-    srcVertices = cms.InputTag('offlinePrimaryVertices'),
+    srcVertices = cms.InputTag('selectedPrimaryVertexPosition'),
 
     weights = cms.VInputTag(%s),
 
