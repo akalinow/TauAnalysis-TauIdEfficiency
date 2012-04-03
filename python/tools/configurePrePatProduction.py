@@ -4,8 +4,8 @@ import PhysicsTools.PatAlgos.tools.helpers as patutils
 import RecoMET.METProducers.METSigParams_cfi as jetResolutions
 
 def configurePrePatProduction(process, pfCandidateCollection = "particleFlow",
-                              addGenInfo = False):
-
+                              isMC = False):
+    
     process.prePatProductionSequence = cms.Sequence()
     
     #--------------------------------------------------------------------------------
@@ -29,7 +29,7 @@ def configurePrePatProduction(process, pfCandidateCollection = "particleFlow",
         inputFileName = cms.FileInPath("TauAnalysis/RecoTools/data/expPUpoissonMean_runs175832to180252.root"),
         type = cms.string("gen3d")
     )
-    if addGenInfo:
+    if isMC:
         process.prePatProductionSequence += process.vertexMultiplicityReweight3dRunA
         process.prePatProductionSequence += process.vertexMultiplicityReweight3dRunB
     #--------------------------------------------------------------------------------
@@ -56,25 +56,53 @@ def configurePrePatProduction(process, pfCandidateCollection = "particleFlow",
         #    (L1FastjetCorrector::correction function always returns 1.0 if jet area is not set)
         process.ak5PFJets.doAreaFastjet = cms.bool(True)
         process.prePatProductionSequence += process.ak5PFJets
+    ##process.dumpAK5PFJets = cms.EDAnalyzer("DumpPFJets",
+    ##    src = cms.InputTag('ak5PFJets')
+    ##)
+    ##process.prePatProductionSequence += process.dumpAK5PFJets
+
+    # apply jet energy corrections
+    #
+    # for MC   apply L1FastJet + L2 + L3 jet-energy corrections,
+    # for Data apply L1FastJet + L2 + L3 + L2/L3 residual corrections
+    #
+    # CV: Ztautau samples produced via MCEmbedding technique are technically "Data',
+    #     L2/L3 residual jet energy corrections **must not** be applied, however,
+    #     since the tau-jet response is taken from the Monte Carlo simulation
+    #
+    process.load("JetMETCorrections/Configuration/JetCorrectionServices_cff")
+    pfMEtCorrector = None
+    if isMC:
+        pfJetCorrector = "ak5PFL1FastL2L3"
+    else:
+        pfJetCorrector = "ak5PFL1FastL2L3Residual"
+    process.calibratedAK5PFJets   = cms.EDProducer('PFJetCorrectionProducer',
+        src = cms.InputTag('ak5PFJets'),
+        correctors = cms.vstring(pfJetCorrector)
+    )
+    process.prePatProductionSequence += process.calibratedAK5PFJets
+    ##process.dumpCalibratedAK5PFJets = cms.EDAnalyzer("DumpPFJets",
+    ##    src = cms.InputTag('calibratedAK5PFJets')
+    ##)
+    ##process.prePatProductionSequence += process.dumpCalibratedAK5PFJets
 
     # smear momenta of ak5PFJets,
     # to account for Data/MC difference in PFJet resolutions (cf. JME-10-014)
-    if addGenInfo:
-
+    if isMC:
         process.load("RecoJets/Configuration/GenJetParticles_cff")
         process.load("RecoJets/Configuration/RecoGenJets_cff")
         process.prePatProductionSequence += process.genParticlesForJetsNoNu
         process.prePatProductionSequence += process.ak5GenJetsNoNu
         
         process.smearedAK5PFJets = cms.EDProducer("SmearedPFJetProducer",
-            src = cms.InputTag('ak5PFJets'),                                                  
+            src = cms.InputTag('calibratedAK5PFJets'),
+            dRmaxGenJetMatch = cms.string('TMath::Min(0.5, 0.1 + 0.3*TMath::Exp(-0.05*genJetPt - 10.))'),
             inputFileName = cms.FileInPath('PhysicsTools/PatUtils/data/pfJetResolutionMCtoDataCorrLUT.root'),
             lutName = cms.string('pfJetResolutionMCtoDataCorrLUT'),
             jetResolutions = jetResolutions.METSignificance_params,
-            jetCorrLabel = cms.string("ak5PFL1FastL2L3"),
-            smearBy = cms.double(1.0),
-            srcGenJets = cms.InputTag('ak5GenJetsNoNu'),
-            dRmaxGenJetMatch = cms.double(0.5)
+            skipRawJetPtThreshold = cms.double(10.), # GeV
+            skipCorrJetPtThreshold = cms.double(1.e-2),
+            srcGenJets = cms.InputTag('ak5GenJetsNoNu')
         )
         process.prePatProductionSequence += process.smearedAK5PFJets
     #--------------------------------------------------------------------------------
@@ -114,8 +142,10 @@ def configurePrePatProduction(process, pfCandidateCollection = "particleFlow",
 
     # switch input to PFTau reconstruction to collection of smearedAK5PFJets,
     # in order to account for Data/MC different in PFJet resolution
-    if addGenInfo:
+    if isMC:
         patutils.massSearchReplaceAnyInputTag(process.PFTau, cms.InputTag('ak5PFJets'), cms.InputTag('smearedAK5PFJets'))
+    else:
+        patutils.massSearchReplaceAnyInputTag(process.PFTau, cms.InputTag('ak5PFJets'), cms.InputTag('calibratedAK5PFJets'))
     
     # CV: discriminator against calo. muons currently disabled per default;
     #     add manually
@@ -151,7 +181,7 @@ def configurePrePatProduction(process, pfCandidateCollection = "particleFlow",
     # if running on Monte Carlo, produce ak5GenJets collection "on-the-fly",
     # as it is needed for matching reconstructed particles to generator level information by PAT,
     # but not contained in Monte Carlo samples produced with CMSSW_3_5_x
-    if addGenInfo:
+    if isMC:
         process.load("RecoJets.Configuration.GenJetParticles_cff")
         process.load("RecoJets.JetProducers.ak5GenJets_cfi")
         process.prePatProductionSequenceGen = cms.Sequence(process.genParticlesForJets * process.ak5GenJets)
