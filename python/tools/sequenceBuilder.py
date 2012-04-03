@@ -119,12 +119,6 @@ def buildTauSequence(
     patTauTriggerEmbedderName = collectionName[0] + "TriggerEmbedder" + collectionName[1]
     setattr(process, patTauTriggerEmbedderName, patTauTriggerEmbedder)
     outputSequence += getattr(process, patTauTriggerEmbedderName)
-    ##dumpPatTauTriggerEmbedded = cms.EDAnalyzer("DumpPATTaus",
-    ##    src = cms.InputTag(patTauTriggerEmbedderName)
-    ##)
-    ##dumpPatTauTriggerEmbeddedName = "dump" + collectionName[0] + "TriggerEmbedded" + collectionName[1]
-    ##setattr(process, dumpPatTauTriggerEmbeddedName, dumpPatTauTriggerEmbedded)
-    ##outputSequence += getattr(process, dumpPatTauTriggerEmbeddedName)
 
     # configure PATTauCleaner module
     # for removal of tau-jet candidates "overlapping" with electrons or muons
@@ -133,12 +127,6 @@ def buildTauSequence(
     patTauCleanerName = collectionName[0] + "Cleaned" + collectionName[1]
     setattr(process, patTauCleanerName, patTauCleaner)
     outputSequence += getattr(process, patTauCleanerName)
-    ##dumpPatTauCleaned = cms.EDAnalyzer("DumpPATTaus",
-    ##    src = cms.InputTag(patTauCleanerName)
-    ##)
-    ##dumpPatTauCleanedName = "dump" + collectionName[0] + "Cleaned" + collectionName[1]
-    ##setattr(process, dumpPatTauCleanedName, dumpPatTauCleaned)
-    ##outputSequence += getattr(process, dumpPatTauCleanedName)
 
     # require pat::Taus to originate from "the" orimary event vertex
     # (NOTE: per default, "the" orimary event vertex is the vertex of maximal sum(trackPt))
@@ -164,12 +152,6 @@ def buildTauSequence(
     patTauJetIdEmbedderName = collectionName[0] + "JetIdEmbedded" + collectionName[1]
     setattr(process, patTauJetIdEmbedderName, patTauJetIdEmbedder)
     outputSequence += getattr(process, patTauJetIdEmbedderName)
-    ##dumpPatTauJetIdEmbedded = cms.EDAnalyzer("DumpPATTaus",
-    ##    src = cms.InputTag(patTauJetIdEmbedderName)
-    ##)
-    ##dumpPatTauJetIdEmbeddedName = "dump" + collectionName[0] + "JetIdEmbedded" + collectionName[1]
-    ##setattr(process, dumpPatTauJetIdEmbeddedName, dumpPatTauJetIdEmbedded)
-    ##outputSequence += getattr(process, dumpPatTauJetIdEmbeddedName)
     
     # return sequence for production of basic tau collection,
     # generator level particle and jet matches and trigger primitives embedded;
