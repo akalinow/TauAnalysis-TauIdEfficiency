@@ -132,7 +132,6 @@ process.eventCounterPath = cms.Path(process.totalEventsProcessed)
 #
 # produce Ntuple
 #
-process.load("TauAnalysis.TauIdEfficiency.ntupleConfigVertex_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigGenPhaseSpaceEventInfo_cfi")
 process.load("TauAnalysis.TauIdEfficiency.ntupleConfigGenPileUpEventInfo_cfi")
 
@@ -140,19 +139,12 @@ process.ntupleProducer = cms.EDProducer("ObjValEDNtupleProducer",
 
     ntupleName = cms.string("tauIdEffNtuple"),
 
-    sources = cms.PSet(
-        # number of reconstructed primary event vertices
-        # with sum(trackPt) exceeding different thresholds
-        vertexMultiplicity = process.vertexMultiplicity_template,
-    )
+    sources = cms.PSet()
 )
 
 if isMC:
     setattr(process.ntupleProducer.sources, "genPhaseSpaceEventInfo", process.genPhaseSpaceEventInfo_template)
     setattr(process.ntupleProducer.sources, "genPileUpEventInfo", process.genPileUpEventInfo_template)
-    # add reweighting factors to be applied to Monte Carlo simulated events
-    # in order to match vertex multiplicity distribution in Data                                             
-    setattr(process.ntupleProducer.sources, "vertexMultReweight", process.vertexMultReweight_template)    
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------

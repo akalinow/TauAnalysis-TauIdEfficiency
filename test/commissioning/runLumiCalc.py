@@ -3,17 +3,11 @@
 import os
 
 hltPaths = [
-    #'HLT_L1SingleMuOpen_v*',
-    #'HLT_L1SingleMuOpen_DT_v*',
-    #'HLT_L1SingleMu10_v*',
-    #'HLT_IsoMu15_v*',
-    #'HLT_IsoMu12_v*',
     #'HLT_Mu15_v*',    # for QCD muon enriched 
     #'HLT_IsoMu17_v*', # for W --> mu nu, Z --> mu+ mu- and Tau id. efficiency
     #'HLT_IsoMu24_v*',
-    #'HLT_DoubleMu7_v*',
-    #'HLT_Mu13_Mu8_v*',
-    #'HLT_Mu17_Mu8_v*',
+    'HLT_Mu13_Mu8_v*',
+    'HLT_DoubleMu11_Acoplanarity03_v3',
     #'HLT_Jet30_v*',   # for QCD multi-jet
     #'HLT_Jet60_v*',
     #'HLT_Jet80_v*',
@@ -32,7 +26,7 @@ hltPaths = [
     #'HLT_Ele32_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_v*'
     #'HLT_Ele27_WP80_PFMT50_v*'
     #'HLT_Ele32_WP70_v2'
-    'HLT_Ele17_CaloIdVT_CaloIsoVT_TrkIdT_TrkIsoVT_SC8_Mass30_v*'
+    #'HLT_Ele17_CaloIdVT_CaloIsoVT_TrkIdT_TrkIsoVT_SC8_Mass30_v*'
 ]
 
 jsonFiles = {
@@ -40,8 +34,8 @@ jsonFiles = {
     #                     + 'Cert_2011RunA_7TeV_PromptReco_Collisions11_JSON.txt',
     #'2011RunB'          : '/afs/cern.ch/user/v/veelken/scratch0/CMSSW_4_2_4_patch1/src/TauAnalysis/TauIdEfficiency/test/commissioning/' \
     #                     + 'Cert_2011RunB_7TeV_PromptReco_Collisions11_JSON.txt',
-    'runs160404-180252' : '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions11/7TeV/Prompt/' \
-                         + 'Cert_160404-180252_7TeV_PromptReco_Collisions11_JSON.txt',
+    #'runs160404-180252' : '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions11/7TeV/Prompt/' \
+    #                     + 'Cert_160404-180252_7TeV_PromptReco_Collisions11_JSON.txt',
     #'May10ReReco-v1'     : '/afs/cern.ch/user/v/veelken/scratch0/CMSSW_4_2_4_patch1/src/TauAnalysis/TauIdEfficiency/test/commissioning/' \
     #                      + 'Cert_May10ReReco-v1_JSON.txt',
     #'PromptReco-v4'      : '/afs/cern.ch/user/v/veelken/scratch0/CMSSW_4_2_4_patch1/src/TauAnalysis/TauIdEfficiency/test/commissioning/' \
@@ -50,9 +44,10 @@ jsonFiles = {
     #                      + 'Cert_05Aug2011-v1_JSON.txt',
     #'PromptReco-v6'      : '/afs/cern.ch/user/v/veelken/scratch0/CMSSW_4_2_4_patch1/src/TauAnalysis/TauIdEfficiency/test/commissioning/' \
     #                      + 'Cert_PromptReco-v6_JSON.txt'
+    '2012RunA'          : '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/DCSOnly/json_DCSONLY.txt'
 }
 
-executable_lumiCalc = '/afs/cern.ch/user/v/veelken/scratch0/CMSSW_4_2_4_patch1/src/RecoLuminosity/LumiDB/scripts/lumiCalc2.py'
+executable_lumiCalc = '/afs/cern.ch/user/v/veelken/scratch0/CMSSW_5_2_3_patch3/src/RecoLuminosity/LumiDB/scripts/lumiCalc2.py'
 executable_analyzeLumiCalcOutput = './analyzeLumiCalcOutput.py'
 
 MakeFile_dict = {}
@@ -65,7 +60,7 @@ for hltPath in hltPaths:
         hltPath_abbr = hltPath_abbr.replace("*", "")    
         MakeFile_dict[hltPath][jsonFileName]['outputFileName'] = 'lumiCalc_%s_%s.out' % (hltPath_abbr, jsonFileName)
         MakeFile_dict[hltPath][jsonFileName]['lumiCalc_command'] = \
-          '%s recorded -hltpath "%s" -i %s' % (executable_lumiCalc, hltPath, jsonFile)
+          '%s recorded --hltpath "%s" -i %s' % (executable_lumiCalc, hltPath, jsonFile)
 
 def make_MakeFile_vstring(list_of_strings):
     retVal = ""
