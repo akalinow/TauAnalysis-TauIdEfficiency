@@ -68,7 +68,7 @@ def produceTauIdEffMeasPATTuple_base(process, isMC, isEmbedded, HLTprocessName, 
     # (e.g. rerun reco::Tau identification algorithms with latest tags)
     #
     
-    configurePrePatProduction(process, pfCandidateCollection = pfCandidateCollection, addGenInfo = isMC)
+    configurePrePatProduction(process, pfCandidateCollection = pfCandidateCollection, isMC = isMC)
     
     #process.prePatProductionSequence.remove(process.tautagging)
     #--------------------------------------------------------------------------------
