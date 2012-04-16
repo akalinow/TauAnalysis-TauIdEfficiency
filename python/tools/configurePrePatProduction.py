@@ -56,10 +56,6 @@ def configurePrePatProduction(process, pfCandidateCollection = "particleFlow",
         #    (L1FastjetCorrector::correction function always returns 1.0 if jet area is not set)
         process.ak5PFJets.doAreaFastjet = cms.bool(True)
         process.prePatProductionSequence += process.ak5PFJets
-    ##process.dumpAK5PFJets = cms.EDAnalyzer("DumpPFJets",
-    ##    src = cms.InputTag('ak5PFJets')
-    ##)
-    ##process.prePatProductionSequence += process.dumpAK5PFJets
 
     # apply jet energy corrections
     #
@@ -81,10 +77,6 @@ def configurePrePatProduction(process, pfCandidateCollection = "particleFlow",
         correctors = cms.vstring(pfJetCorrector)
     )
     process.prePatProductionSequence += process.calibratedAK5PFJets
-    ##process.dumpCalibratedAK5PFJets = cms.EDAnalyzer("DumpPFJets",
-    ##    src = cms.InputTag('calibratedAK5PFJets')
-    ##)
-    ##process.prePatProductionSequence += process.dumpCalibratedAK5PFJets
 
     # smear momenta of ak5PFJets,
     # to account for Data/MC difference in PFJet resolutions (cf. JME-10-014)

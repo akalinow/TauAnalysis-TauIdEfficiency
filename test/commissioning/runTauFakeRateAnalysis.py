@@ -18,7 +18,7 @@ from TauAnalysis.Configuration.tools.harvestingLXBatch import make_harvest_scrip
 from TauAnalysis.Configuration.tools.harvesting import castor_source
 import TauAnalysis.Configuration.tools.castor as castor
 
-version = 'patV2_1'
+version = 'patV2_2'
 
 inputFilePath  = '/castor/cern.ch/user/v/veelken/TauIdCommissioning/'
 harvestingFilePath = '/castor/cern.ch/user/v/veelken/CMSSW_4_2_x/harvesting/TauIdCommissioning/'
@@ -46,12 +46,12 @@ eventSelectionsToAnalyze = [
     # modify in case you want to submit jobs for some of the event selections only...
 ]
 
-#runFWLiteTauFakeRateAnalyzer = True
-runFWLiteTauFakeRateAnalyzer = False
+runFWLiteTauFakeRateAnalyzer = True
+#runFWLiteTauFakeRateAnalyzer = False
 #runLXBatchHarvesting = True
 runLXBatchHarvesting = False
-runMakePlots = True
-#runMakePlots = False
+#runMakePlots = True
+runMakePlots = False
 
 #runPeriod = '2011RunA'
 runPeriod = '2011RunB'
