@@ -118,7 +118,7 @@ bool PATPFTauSelectorForTauIdEff::filter(edm::Event& evt, const edm::EventSetup&
   edm::Handle<PATTauCollection> pfTaus_input;
   evt.getByLabel(src_, pfTaus_input);
 
-  const JetCorrector* jetEnergyCorrector = JetCorrector::getJetCorrector(jetEnergyCorrection_, es);
+  //const JetCorrector* jetEnergyCorrector = JetCorrector::getJetCorrector(jetEnergyCorrection_, es);
   
   std::auto_ptr<PATTauCollection> pfTaus_output(new PATTauCollection());
 
@@ -128,20 +128,23 @@ bool PATPFTauSelectorForTauIdEff::filter(edm::Event& evt, const edm::EventSetup&
 
     reco::Candidate::LorentzVector p4PFJetUncorrected = pfJet->p4();
     
-    double pfJetJEC = jetEnergyCorrector->correction(*pfJet, evt, es);
-    if ( verbosity_ ) {
-      std::cout << " PFJet: uncorrected Pt = " << p4PFJetUncorrected.pt() << "," 
-    	        << " eta = " << p4PFJetUncorrected.eta() << ", phi = " << p4PFJetUncorrected.phi()
-    	        << " --> pfJetJEC = " << pfJetJEC << std::endl;
-      if ( pfTau_input->genJet() ) 
-	std::cout << "matched to generated hadronic tau decay," 
-		  << " decay mode = " << JetMCTagUtils::genTauDecayMode(*pfTau_input->genJet()) << std::endl;
-      std::cout << " Tau id. discriminators:" << std::endl;
-      for ( std::vector<pat::Tau::IdPair>::const_iterator tauId = pfTau_input->tauIDs().begin();
-	    tauId != pfTau_input->tauIDs().end(); ++tauId ) {
-	std::cout << "  " << tauId->first << " = " << tauId->second << std::endl;
-      }
-    }
+    // CV: jet energy corrections are applied to 'ak5PFJets' used as input for PFTau reconstruction
+    //    (--> no need anymore to apply JEC factor here)
+    double pfJetJEC = 1.0;
+    //double pfJetJEC = jetEnergyCorrector->correction(*pfJet, evt, es);
+    //if ( verbosity_ ) {
+    //  std::cout << " PFJet: uncorrected Pt = " << p4PFJetUncorrected.pt() << "," 
+    //	        << " eta = " << p4PFJetUncorrected.eta() << ", phi = " << p4PFJetUncorrected.phi()
+    //	        << " --> pfJetJEC = " << pfJetJEC << std::endl;
+    //  if ( pfTau_input->genJet() ) 
+    //	std::cout << "matched to generated hadronic tau decay," 
+    //		  << " decay mode = " << JetMCTagUtils::genTauDecayMode(*pfTau_input->genJet()) << std::endl;
+    //  std::cout << " Tau id. discriminators:" << std::endl;
+    //  for ( std::vector<pat::Tau::IdPair>::const_iterator tauId = pfTau_input->tauIDs().begin();
+    //	    tauId != pfTau_input->tauIDs().end(); ++tauId ) {
+    //	std::cout << "  " << tauId->first << " = " << tauId->second << std::endl;
+    //  }
+    //}
     if ( pfTau_input->hasUserFloat("pfJetJECshift") ) pfJetJEC *= pfTau_input->userFloat("pfJetJECshift");
     reco::Candidate::LorentzVector p4PFJetCorrected(pfJetJEC*p4PFJetUncorrected);
     
