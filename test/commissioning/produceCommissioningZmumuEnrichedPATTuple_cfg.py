@@ -76,7 +76,7 @@ if isMC:
 #
 from TauAnalysis.TauIdEfficiency.tools.configurePrePatProduction import configurePrePatProduction
 
-configurePrePatProduction(process, pfCandidateCollection = pfCandidateCollection, addGenInfo = isMC)
+configurePrePatProduction(process, pfCandidateCollection = pfCandidateCollection, isMC = isMC)
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
