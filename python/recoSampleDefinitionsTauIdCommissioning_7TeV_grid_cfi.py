@@ -15,17 +15,17 @@ SAMPLES_TO_RUN = [
     'data_SingleMu_Run2011A_Aug05ReReco_v1',
     'data_SingleMu_Run2011A_PromptReco_v6',
     'data_SingleMu_Run2011B_PromptReco_v1a',
-    #'ZplusJets',
-    #'WplusJets',
-    #'qcdDiJetPtHat15to30s4',
-    #'qcdDiJetPtHat30to50s4',
-    #'qcdDiJetPtHat50to80s4',
-    #'qcdDiJetPtHat80to120s4',
-    #'qcdDiJetPtHat120to170s4',
-    #'qcdDiJetPtHat170to300s4',
-    #'qcdDiJetPtHat300to470s4',
-    #'PPmuXptGt20Mu15',
-    #'TTplusJets'
+    'ZplusJets',
+    'WplusJets',
+    'qcdDiJetPtHat15to30s4',
+    'qcdDiJetPtHat30to50s4',
+    'qcdDiJetPtHat50to80s4',
+    'qcdDiJetPtHat80to120s4',
+    'qcdDiJetPtHat120to170s4',
+    'qcdDiJetPtHat170to300s4',
+    'qcdDiJetPtHat300to470s4',
+    'PPmuXptGt20Mu15',
+    'TTplusJets'
 ]
 
 JOBS_TO_RUN = [
