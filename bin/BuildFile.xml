@@ -1,17 +1,3 @@
-<bin name="HistoFitter.exe"  file="HistoFitter.cc">
-  <use   name="root"/>
-  <use   name="boost"/>
-  <use   name="rootcintex"/>
-  <use   name="FWCore/FWLite"/>
-  <use   name="DataFormats/FWLite"/>
-  <use   name="DataFormats/Luminosity"/>
-  <use   name="FWCore/PythonParameterSet"/>
-  <use   name="CommonTools/Utils"/>
-  <use   name="PhysicsTools/FWLite"/>
-  <use   name="PhysicsTools/Utilities"/>
-  <use   name="PhysicsTools/SelectorUtils"/>
-  <use   name="roofit"/>
-</bin>
 <bin   file="FWLiteTauPtResAnalyzer.cc" name="FWLiteTauPtResAnalyzer">
   <use   name="DataFormats/Common"/>
   <use   name="DataFormats/FWLite"/>
@@ -26,22 +12,6 @@
   <use   name="FWCore/Utilities"/>
   <use   name="PhysicsTools/FWLite"/>
   <use   name="TauAnalysis/TauIdEfficiency"/>
-</bin>
-<bin name="SystematicsMacro.exe"  file="SystematicsMacro.cc">
-  <use   name="root"/>
-  <use   name="boost"/>
-  <use   name="boost_program_options"/>
-  <use   name="rootcintex"/>
-  <use   name="FWCore/FWLite"/>
-  <use   name="DataFormats/FWLite"/>
-  <use   name="DataFormats/Luminosity"/>
-  <use   name="FWCore/PythonParameterSet"/>
-  <use   name="CommonTools/Utils"/>
-  <use   name="PhysicsTools/FWLite"/>
-  <use   name="PhysicsTools/JetMCUtils"/>
-  <use   name="PhysicsTools/Utilities"/>
-  <use   name="PhysicsTools/SelectorUtils"/>
-  <use   name="roofit"/>
 </bin>
 <bin   file="FWLiteTauFakeRateAnalyzer.cc" name="FWLiteTauFakeRateAnalyzer">
   <use   name="DataFormats/Common"/>

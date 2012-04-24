@@ -18,24 +18,8 @@ hltMu = cms.EDFilter("EventSelPluginFilter",
         pluginType = cms.string('TriggerResultEventSelector'),
         src = cms.InputTag('TriggerResults::HLT'),
         triggerPaths = cms.vstring(
-            'HLT_IsoMu17_v5', # Summer'11 MC
-            'HLT_IsoMu17_v6',
-            'HLT_IsoMu17_v8',
-            'HLT_IsoMu17_v9',
-            'HLT_IsoMu17_v11',
-            'HLT_IsoMu17_v12',
-            'HLT_IsoMu17_v13',
-            'HLT_IsoMu17_v14',
-            'HLT_IsoMu24_v1',
-            'HLT_IsoMu24_v2',
-            'HLT_IsoMu24_v4',
-            'HLT_IsoMu24_v5',
-            'HLT_IsoMu24_v6',
-            'HLT_IsoMu24_v7',
-            'HLT_IsoMu24_v8',
-            'HLT_IsoMu24_v9',
-            'HLT_IsoMu24_v12',
-            'HLT_IsoMu24_v13'
+            'HLT_IsoMu24_eta2p1_v9', # Summer'12 MC, produced with CMSSW_5_2_x
+            'HLT_IsoMu24_eta2p1_v11' # 2012 Run A Data
         )
     )
 )
@@ -68,8 +52,11 @@ from PhysicsTools.PatAlgos.producersLayer1.muonProducer_cfi import patMuons
 
 # compute muon IsoDeposits and add muon isolation sums to pat::Muon objects
 from RecoMuon.MuonIsolation.muonPFIsolation_cff import *
-import PhysicsTools.PatAlgos.tools.helpers as patutils
-patutils.massSearchReplaceAnyInputTag(muonPFIsolationDepositsSequence, cms.InputTag('muons1stStep'), cms.InputTag('muons'))
+muPFIsoDepositCharged.src = cms.InputTag('muons')
+muPFIsoDepositNeutral.src = cms.InputTag('muons')
+muPFIsoDepositGamma.src = cms.InputTag('muons')
+muPFIsoDepositChargedAll.src = cms.InputTag('muons')
+muPFIsoDepositPU.src = cms.InputTag('muons')
 patMuons.isoDeposits = cms.PSet(
     # CV: strings for IsoDeposits defined in PhysicsTools/PatAlgos/plugins/PATMuonProducer.cc
     pfChargedHadrons = cms.InputTag("muPFIsoDepositCharged"),
@@ -125,7 +112,7 @@ patMuons.usePV = cms.bool(False) # compute transverse impact parameter wrt. beam
 selectedMuons = cms.EDFilter("PATMuonSelector",
   src = cms.InputTag("patMuons"),
     cut = cms.string(
-      'pt > 20 & abs(eta) < 2.5 & isGlobalMuon' \
+      'pt > 25 & abs(eta) < 2.5 & isGlobalMuon' \
      + ' & innerTrack.hitPattern.numberOfValidTrackerHits > 9 & innerTrack.hitPattern.numberOfValidPixelHits > 0' \
      + ' & abs(dB) < 0.2 & globalTrack.normalizedChi2 < 10' \
      + ' & globalTrack.hitPattern.numberOfValidMuonHits > 0 & numberOfMatches > 1' 

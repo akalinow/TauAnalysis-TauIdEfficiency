@@ -6,8 +6,10 @@ hltPaths = [
     #'HLT_Mu15_v*',    # for QCD muon enriched 
     #'HLT_IsoMu17_v*', # for W --> mu nu, Z --> mu+ mu- and Tau id. efficiency
     #'HLT_IsoMu24_v*',
-    'HLT_Mu13_Mu8_v*',
-    'HLT_DoubleMu11_Acoplanarity03_v3',
+    #'HLT_Mu13_Mu8_v*',
+    #'HLT_DoubleMu11_Acoplanarity03_v3',
+    'HLT_Mu17_Mu8_v*',
+    #'HLT_Mu17_v3',
     #'HLT_Jet30_v*',   # for QCD multi-jet
     #'HLT_Jet60_v*',
     #'HLT_Jet80_v*',
@@ -44,7 +46,9 @@ jsonFiles = {
     #                      + 'Cert_05Aug2011-v1_JSON.txt',
     #'PromptReco-v6'      : '/afs/cern.ch/user/v/veelken/scratch0/CMSSW_4_2_4_patch1/src/TauAnalysis/TauIdEfficiency/test/commissioning/' \
     #                      + 'Cert_PromptReco-v6_JSON.txt'
-    '2012RunA'          : '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/DCSOnly/json_DCSONLY.txt'
+    #'2012RunA'          : '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/DCSOnly/json_DCSONLY.txt'
+    '2012RunA'          : '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Prompt/' \
+                         + 'Cert_190456-191276_8TeV_PromptReco_Collisions12_JSON.txt'
 }
 
 executable_lumiCalc = '/afs/cern.ch/user/v/veelken/scratch0/CMSSW_5_2_3_patch3/src/RecoLuminosity/LumiDB/scripts/lumiCalc2.py'
@@ -81,12 +85,16 @@ makeFile.write("all: parseLumiCalcOutput\n")
 makeFile.write("\n")
 for hltPath in hltPaths:
     for jsonFileName in jsonFiles.keys():
-        makeFile.write("%s:\n" % MakeFile_dict[hltPath][jsonFileName]['outputFileName'])
+        makeFile.write("%s %s:\n" %
+          (jsonFiles[jsonFileName],
+           MakeFile_dict[hltPath][jsonFileName]['outputFileName']))
         makeFile.write("\t%s &> %s\n" %
           (MakeFile_dict[hltPath][jsonFileName]['lumiCalc_command'],
            MakeFile_dict[hltPath][jsonFileName]['outputFileName']))
 makeFile.write("\n")    
-makeFile.write("parseLumiCalcOutput: %s\n" % make_MakeFile_vstring(outputFileNames))
+makeFile.write("parseLumiCalcOutput: %s %s\n" %
+  (make_MakeFile_vstring([ jsonFiles[jsonFileName] for jsonFileName in jsonFiles.keys() ]),
+   make_MakeFile_vstring(outputFileNames)))
 for hltPath in hltPaths:
     for jsonFileName in jsonFiles.keys():
         makeFile.write("\t%s %s\n" %

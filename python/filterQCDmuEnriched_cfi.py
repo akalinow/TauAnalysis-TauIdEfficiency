@@ -18,15 +18,8 @@ hltMu = cms.EDFilter("EventSelPluginFilter",
         pluginType = cms.string('TriggerResultEventSelector'),
         src = cms.InputTag('TriggerResults::HLT'),
         triggerPaths = cms.vstring(
-            'HLT_Mu15_v2', # Summer'11 MC
-            'HLT_Mu15_v3',
-            'HLT_Mu15_v4',
-            'HLT_Mu15_v5',
-            'HLT_Mu15_v6',
-            'HLT_Mu15_v8',
-            'HLT_Mu15_v9',
-            'HLT_Mu15_v12',
-            'HLT_Mu15_v13'                 
+            'HLT_Mu17_v1', # Summer'12 MC, produced with CMSSW_5_2_x
+            'HLT_Mu17_v3'  # 2012 Run A Data
         )
     )
 )
@@ -52,7 +45,7 @@ diMuonVeto = cms.EDFilter("PATCandViewCountFilter",
 #
 selectedMuons = cms.EDFilter("PATMuonSelector",
     src = cms.InputTag('patMuons'),
-    cut = cms.string("isGlobalMuon & pt > 15. & abs(eta) < 2.1"),
+    cut = cms.string("isGlobalMuon & pt > 18. & abs(eta) < 2.1"),
     filter = cms.bool(True)
 )
 #--------------------------------------------------------------------------------

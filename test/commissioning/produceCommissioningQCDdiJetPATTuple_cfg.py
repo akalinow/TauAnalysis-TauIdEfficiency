@@ -23,7 +23,7 @@ process.source = cms.Source("PoolSource",
 )
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(100)
+    input = cms.untracked.int32(-1)
 )
 
 #--------------------------------------------------------------------------------
@@ -52,9 +52,9 @@ applyEventSelection = True
 #--------------------------------------------------------------------------------
 # define GlobalTag to be used for event reconstruction
 if isMC:
-    process.GlobalTag.globaltag = cms.string('START42_V13::All')
+    process.GlobalTag.globaltag = cms.string('START52_V9::All')
 else:
-    process.GlobalTag.globaltag = cms.string('GR_R_42_V20::All')
+    process.GlobalTag.globaltag = cms.string('GR_R_52_V7::All')
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------

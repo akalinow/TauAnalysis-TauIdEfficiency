@@ -169,7 +169,7 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
                      genJetCollection = cms.InputTag("ak5GenJets"),
                      doJetID          = True,
                      jetIdLabel       = "ak5",
-                     outputModule     = ''
+                     outputModules    = []
     )
                 
     addJetCollection(process, cms.InputTag('ak5CaloJets'),
@@ -181,7 +181,7 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
                      genJetCollection = cms.InputTag("ak5GenJets"),
                      doJetID          = True,
                      jetIdLabel       = "ak5",
-                     outputModule     = ''
+                     outputModules    = []
     )
     #--------------------------------------------------------------------------------
 
@@ -202,8 +202,6 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
         process.selectedPatJetsForMETtype2CorrNoSmearing.src = process.selectedPatJetsForMETtype1p2CorrNoSmearing.src 
 
     process.patMEtProductionSequence = cms.Sequence()
-    process.patMEtProductionSequence += process.kt6PFJets
-    process.patMEtProductionSequence += process.ak5PFJets
     process.patMEtProductionSequence += process.patDefaultSequence
 
     from PhysicsTools.PatUtils.tools.metUncertaintyTools import runMEtUncertainties

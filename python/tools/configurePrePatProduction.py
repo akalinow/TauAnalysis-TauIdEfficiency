@@ -16,11 +16,9 @@ def configurePrePatProduction(process, pfCandidateCollection = "particleFlow",
     process.prePatProductionSequence += process.selectedPrimaryVertexPosition
     process.prePatProductionSequence += process.selectedPrimaryVertexHighestPtTrackSum
 
-    process.load("TauAnalysis.RecoTools.vertexMultiplicityReweight_cfi")
-    process.prePatProductionSequence += process.selectedPrimaryVerticesTrackPtSumGt10
-
     # add reweighting factors to be applied to Monte Carlo simulated events
     # in order to match vertex multiplicity distribution in Data
+    process.load("TauAnalysis.RecoTools.vertexMultiplicityReweight_cfi")
     process.vertexMultiplicityReweight3dRunA = process.vertexMultiplicityReweight.clone(
         inputFileName = cms.FileInPath("TauAnalysis/RecoTools/data/expPUpoissonMean_runs160404to173692.root"),
         type = cms.string("gen3d")
@@ -48,6 +46,8 @@ def configurePrePatProduction(process, pfCandidateCollection = "particleFlow",
     process.load("JetMETCorrections/Type1MET/pfMETCorrections_cff")
     process.prePatProductionSequence += process.producePFMETCorrections
 
+<<<<<<< configurePrePatProduction.py
+=======
     if not hasattr(process, "ak5PFJets"):
         process.load("RecoJets.JetProducers.ak5PFJets_cfi")
         process.ak5PFJets.src = cms.InputTag(pfCandidateCollection)
@@ -57,6 +57,7 @@ def configurePrePatProduction(process, pfCandidateCollection = "particleFlow",
         process.ak5PFJets.doAreaFastjet = cms.bool(True)
         process.prePatProductionSequence += process.ak5PFJets
 
+>>>>>>> 1.27
     # apply jet energy corrections
     #
     # for MC   apply L1FastJet + L2 + L3 jet-energy corrections,
@@ -99,17 +100,6 @@ def configurePrePatProduction(process, pfCandidateCollection = "particleFlow",
         process.prePatProductionSequence += process.smearedAK5PFJets
     #--------------------------------------------------------------------------------
 
-    #--------------------------------------------------------------------------------
-    # produce collections of kT PFJets for dR = 0.6 needed for rho (FastJet) pile-up corrections
-    if not hasattr(process, "kt6PFJets"):
-        process.load("RecoJets.JetProducers.kt4PFJets_cfi")
-        process.kt6PFJets = process.kt4PFJets.clone(
-            rParam = cms.doube(0.6)
-        )
-        process.kt6PFJets.Rho_EtaMax = cms.double(2.5)
-        process.kt6PFJets.doRhoFastjet = True
-        process.prePatProductionSequence += process.kt6PFJets
-    #--------------------------------------------------------------------------------
 
     #--------------------------------------------------------------------------------
     # recreate collection of PFTaus
