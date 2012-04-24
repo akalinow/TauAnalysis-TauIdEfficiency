@@ -46,18 +46,6 @@ def configurePrePatProduction(process, pfCandidateCollection = "particleFlow",
     process.load("JetMETCorrections/Type1MET/pfMETCorrections_cff")
     process.prePatProductionSequence += process.producePFMETCorrections
 
-<<<<<<< configurePrePatProduction.py
-=======
-    if not hasattr(process, "ak5PFJets"):
-        process.load("RecoJets.JetProducers.ak5PFJets_cfi")
-        process.ak5PFJets.src = cms.InputTag(pfCandidateCollection)
-        # CV: need to enable jet area computation for 'ak5PFJets' module,
-        #     in order for L1FastJet corrections to work
-        #    (L1FastjetCorrector::correction function always returns 1.0 if jet area is not set)
-        process.ak5PFJets.doAreaFastjet = cms.bool(True)
-        process.prePatProductionSequence += process.ak5PFJets
-
->>>>>>> 1.27
     # apply jet energy corrections
     #
     # for MC   apply L1FastJet + L2 + L3 jet-energy corrections,
