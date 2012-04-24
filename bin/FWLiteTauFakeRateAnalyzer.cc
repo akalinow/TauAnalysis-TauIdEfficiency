@@ -10,9 +10,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.7 $
+ * \version $Revision: 1.6 $
  *
- * $Id: FWLiteTauFakeRateAnalyzer.cc,v 1.7 2012/02/09 13:54:16 veelken Exp $
+ * $Id: FWLiteTauFakeRateAnalyzer.cc,v 1.6 2012/02/02 09:03:32 veelken Exp $
  *
  */
 
@@ -102,11 +102,8 @@ struct regionEntryType
     ++numTauJetCands_processed_;
     numTauJetCandsWeighted_processed_ += evtWeight;
 
-    pat::strbitset evtSelFlags;   
+    pat::strbitset evtSelFlags;
     if ( selector_->operator()(tauJetCand, evtSelFlags) ) {
-      //if      ( region_ == "P" ) std::cout << " passes tauId." << std::endl;
-      //else if ( region_ == "F" ) std::cout << " fails tauId." << std::endl;
-
       histograms_->fillHistograms(tauJetCand, numVertices, sumEt, evtWeight);
 
       ++numTauJetCands_selected_;
@@ -165,12 +162,6 @@ int main(int argc, char* argv[])
   vInputTag srcWeights = cfgTauFakeRateAnalyzer.getParameter<vInputTag>("weights");
   edm::InputTag srcEventCounter = cfgTauFakeRateAnalyzer.getParameter<edm::InputTag>("srcEventCounter");
 
-  std::string selEventsFileName = ( cfgTauFakeRateAnalyzer.exists("selEventsFileName") ) ? 
-    cfgTauFakeRateAnalyzer.getParameter<std::string>("selEventsFileName") : "";
-
-  int verbosity = ( cfgTauFakeRateAnalyzer.exists("verbosity") ) ? 
-    cfgTauFakeRateAnalyzer.getParameter<int>("verbosity") : 0;
-
   fwlite::InputSource inputFiles(cfg); 
   int maxEvents = inputFiles.maxEvents();
 
@@ -221,9 +212,6 @@ int main(int argc, char* argv[])
     histogramEventCounter->SetBinContent(1, -1.);
   }
   
-  std::ofstream* selEventsFile = ( selEventsFileName != "" ) ?
-    new std::ofstream(selEventsFileName.data(), std::ios::out) : 0;
-  
   double xSection = cfgTauFakeRateAnalyzer.getParameter<double>("xSection");
   double intLumiData = cfgTauFakeRateAnalyzer.getParameter<double>("intLumiData");
 
@@ -256,9 +244,8 @@ int main(int argc, char* argv[])
     fwlite::Event evt(inputFile);
     for ( evt.toBegin(); !(evt.atEnd() || maxEvents_processed); ++evt ) {
 
-      if ( verbosity ) 
-	std::cout << "processing run = " << evt.id().run() << ":" 
-		  << " ls = " << evt.luminosityBlock() << ", event = " << evt.id().event() << std::endl;
+      //std::cout << "processing run = " << evt.id().run() << ":" 
+      //	  << " ls = " << evt.luminosityBlock() << ", event = " << evt.id().event() << std::endl;
 
 //--- compute event weight
 //   (pile-up reweighting, Data/MC correction factors,...)
@@ -310,7 +297,7 @@ int main(int argc, char* argv[])
       double probFailedPrescale = 1.;
       for ( vstring::const_iterator hltPathName = hltPaths.begin();
 	    hltPathName != hltPaths.end() && !isTriggered; ++hltPathName ) {
-	if ( verbosity ) std::cout << "hltPathName = " << (*hltPathName) << std::endl;
+	//std::cout << "hltPathName = " << (*hltPathName) << std::endl;
 	if ( (*hltPathName) == "*" ) { // check for wildcard character "*" that accepts all events
 	  isTriggered = true;
 	  probFailedPrescale = 0.;
@@ -321,18 +308,17 @@ int main(int argc, char* argv[])
 	    isTriggered = true;
 	    unsigned hltPrescale = hltPath->prescale();
 	    if ( hltPrescale < 1 ) hltPrescale = 1;
-	    if ( verbosity ) std::cout << "HLT path = " << hltPath->name() << ": prescale = " << hltPrescale << std::endl;
+	    //std::cout << "HLT path = " << hltPath->name() << ": prescale = " << hltPrescale << std::endl;
 	    double probFailedL1Prescale = 1.;
 	    const pat::L1SeedCollection& l1Seeds = hltPath->l1Seeds();
 	    for ( pat::L1SeedCollection::const_iterator l1Seed_status = l1Seeds.begin();
 		  l1Seed_status != l1Seeds.end(); ++l1Seed_status ) {
 	      const std::string& l1SeedName = l1Seed_status->second;
-	      if ( verbosity ) std::cout << "l1SeedName = " << l1SeedName << std::endl;	      
+	      //std::cout << "l1SeedName = " << l1SeedName << std::endl;	      
 	      const pat::TriggerAlgorithm* l1Seed = hltEvent->algorithm(l1SeedName);
 	      if ( !l1Seed ) {
-		if ( verbosity ) 
-		  std::cout << "Failed to access L1 seed = " << l1SeedName << "," 
-			    << " needed for HLT path = " << hltPath->name() << " !!" << std::endl;
+		//std::cout << "Failed to access L1 seed = " << l1SeedName << "," 
+		//	    << " needed for HLT path = " << hltPath->name() << " !!" << std::endl;
 		vstring l1SeedNames;
 		const pat::TriggerAlgorithmCollection* l1Seeds = hltEvent->algorithms();
 		if ( l1Seeds ) {
@@ -340,9 +326,9 @@ int main(int argc, char* argv[])
 			l1Seed != l1Seeds->end(); ++l1Seed ) {
 		    l1SeedNames.push_back(l1Seed->name());
 		  }
-		  if ( verbosity ) std::cout << "Available L1 seeds = " << format_vstring(l1SeedNames) << std::endl;
+		  //std::cout << "Available L1 seeds = " << format_vstring(l1SeedNames) << std::endl;
 		} else {
-		  if ( verbosity ) std::cout << "No L1 seeds available in pat::TriggerEvent !!" << std::endl;
+		  //std::cout << "No L1 seeds available in pat::TriggerEvent !!" << std::endl;
 		}
 		continue;
 	      }
@@ -350,7 +336,7 @@ int main(int argc, char* argv[])
 	      if ( l1Passed ) {
 		unsigned l1Prescale = l1Seed->prescale();
 		if ( l1Prescale < 1 ) l1Prescale = 1;
-		if ( verbosity ) std::cout << " L1 seed = " << l1Seed->name() << ": prescale = " << l1Prescale << std::endl;
+		//std::cout << " L1 seed = " << l1Seed->name() << ": prescale = " << l1Prescale << std::endl;
 		if ( l1Prescale <= 1 ) probFailedL1Prescale = 0.;
 		else probFailedL1Prescale *= (1. - 1./l1Prescale);
 	      }
@@ -364,11 +350,11 @@ int main(int argc, char* argv[])
       ++numEvents_passedTrigger;
       numEventsWeighted_passedTrigger += evtWeight;
 
-      if ( verbosity ) std::cout << "probFailedPrescale = " << probFailedPrescale << std::endl;
+      //std::cout << "probFailedPrescale = " << probFailedPrescale << std::endl;
       if ( isData && probFailedPrescale > (1. - 1.e-9) ) continue;
 
       double prescaleCorrFactor = ( isData ) ? 1./(1. - probFailedPrescale) : 1.;
-      if ( verbosity ) std::cout << "prescaleCorrFactor = " << prescaleCorrFactor << std::endl;
+      //std::cout << "prescaleCorrFactor = " << prescaleCorrFactor << std::endl;
       evtWeight *= prescaleCorrFactor;
 
 //--- determine number of vertices reconstructed in the event
@@ -391,8 +377,6 @@ int main(int argc, char* argv[])
 //    fill corresponding histograms
       edm::Handle<pat::TauCollection> tauJetCandidates;
       evt.getByLabel(srcTauJetCandidates, tauJetCandidates);
-      //std::cout << "numJets = " << tauJetCandidates->size() << std::endl;
-      unsigned idxTauJetCand = 0;
       for ( pat::TauCollection::const_iterator tauJetCand = tauJetCandidates->begin();
 	    tauJetCand != tauJetCandidates->end(); ++tauJetCand ) {
 	bool passesTauJetCandSelection = true;
@@ -404,24 +388,13 @@ int main(int argc, char* argv[])
 	  }
 	}
 
-	//std::cout << "jet #" << idxTauJetCand << ": Pt = " << tauJetCand->p4Jet().pt() << "," 
-	//	    << " eta = " << tauJetCand->p4Jet().eta() << ", phi = " << tauJetCand->p4Jet().phi() << std::endl;
-	//if ( passesTauJetCandSelection ) std::cout << " passes preselection";
-	//else std::cout << " fails preselection";
-	//std::cout <<  std::endl;
-
 	if ( !passesTauJetCandSelection ) continue;
 
 	for ( std::vector<regionEntryType*>::iterator regionEntry = regionEntries.begin();
 	      regionEntry != regionEntries.end(); ++regionEntry ) {
 	  (*regionEntry)->analyze(*tauJetCand, numVertices, sumEt, evtWeight);
 	}
-
-	++idxTauJetCand;
       }
-
-      if ( selEventsFile && numVertices == 17 ) 
-	(*selEventsFile) << evt.id().run() << ":" << evt.luminosityBlock() << ":" << evt.id().event() << std::endl;      
     }
 
 //--- close input file
@@ -443,11 +416,6 @@ int main(int argc, char* argv[])
       (*regionEntry)->histograms_->scaleHistograms(mcScaleFactor);
     }
   }
-
-//--- close ASCII file containing 
-//     run:lumi-section:event 
-//    numbers of events with MET > 40 GeV
-  delete selEventsFile;
 
   std::cout << "<FWLiteTauFakeRateAnalyzer>:" << std::endl;
   std::cout << " numEvents_processed: " << numEvents_processed 

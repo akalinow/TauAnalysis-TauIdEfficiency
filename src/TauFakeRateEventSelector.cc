@@ -20,7 +20,7 @@ TauFakeRateEventSelector::TauFakeRateEventSelector(const edm::ParameterSet& cfg)
   vstring tauJetCandPreselCriteria_string;
   tauJetCandPreselCriteria_string.push_back("userFloat('jetIdLoose') > 0.5");
   tauJetCandPreselCriteria_string.push_back("tauID('againstElectronLoose') > 0.5");
-  tauJetCandPreselCriteria_string.push_back("tauID('againstMuonMedium') > 0.5");
+  tauJetCandPreselCriteria_string.push_back("tauID('againstMuonTight') > 0.5");
 
 //--- check if additional preselection criteria are to be applied
 //   (e.g. 'tag'/'probe' flags for HLT single jet trigger matching)

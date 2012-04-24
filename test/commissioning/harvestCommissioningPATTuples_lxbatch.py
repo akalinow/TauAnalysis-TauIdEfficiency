@@ -9,7 +9,7 @@ from TauAnalysis.Configuration.tools.harvesting import castor_source, clean_by_c
 import TauAnalysis.Configuration.tools.castor as castor
 
 castorFilePath = '/castor/cern.ch/user/v/veelken/TauIdCommissioning/'
-version = 'patV2_2'
+version = 'patV2_1'
 
 SAMPLES_TO_ANALYZE = [
     # modify in case you want to submit jobs for some of the samples only...
@@ -23,17 +23,17 @@ SAMPLES_TO_ANALYZE = [
     'data_SingleMu_Run2011A_Aug05ReReco_v1',
     'data_SingleMu_Run2011A_PromptReco_v6',
     'data_SingleMu_Run2011B_PromptReco_v1a',
-    'ZplusJets',
-    'WplusJets',
-    'qcdDiJetPtHat15to30s4',
-    'qcdDiJetPtHat30to50s4',
-    'qcdDiJetPtHat50to80s4',
-    'qcdDiJetPtHat80to120s4',
-    'qcdDiJetPtHat120to170s4',
-    'qcdDiJetPtHat170to300s4',
-    'qcdDiJetPtHat300to470s4',
-    'PPmuXptGt20Mu15',
-    'TTplusJets'
+    #'ZplusJets',
+    #'WplusJets',
+    #'qcdDiJetPtHat15to30s4',
+    #'qcdDiJetPtHat30to50s4',
+    #'qcdDiJetPtHat50to80s4',
+    #'qcdDiJetPtHat80to120s4',
+    #'qcdDiJetPtHat120to170s4',
+    #'qcdDiJetPtHat170to300s4',
+    #'qcdDiJetPtHat300to470s4',
+    #'PPmuXptGt20Mu15',
+    #'TTplusJets'
 ]
 
 JOBS_TO_ANALYZE = [

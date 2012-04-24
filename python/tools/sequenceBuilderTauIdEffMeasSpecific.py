@@ -96,8 +96,8 @@ def buildSequenceTauIdEffMeasSpecific(process,
     setattr(process, selectedPatPFTausForTauIdEffName, selectedPatPFTausForTauIdEff)
     patTauSelectionModules.append(selectedPatPFTausForTauIdEff)
 
-    # for MC   apply L1FastJet + L2 + L3 jet-energy corrections,
-    # for Data apply L1FastJet + L2 + L3 + L2/L3 residual corrections
+    # for MC   apply L1Offset + L2 + L3 jet-energy corrections,
+    # for Data apply L1Offset + L2 + L3 + L2/L3 residual corrections
     #
     # CV: Ztautau samples produced via MCEmbedding technique are technically "Data',
     #     L2/L3 residual jet energy corrections **must not** be applied, however,
