@@ -47,7 +47,7 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
         process.allMuTauPairsLooseMuonIsolation.doPFMEtSign = cms.bool(False)
 
     if not isMC:
-        removeMCMatching(process, outputInProcess = False)
+        removeMCMatching(process, ["All"], outputModules = [])
     else:
         # match pat::Taus to all genJets
         # (including to genJets build from electrons/muons produced in tau --> e/mu decays)
