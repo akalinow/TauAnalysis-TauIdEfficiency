@@ -19,25 +19,23 @@ def configurePrePatProduction(process, pfCandidateCollection = "particleFlow",
     # add reweighting factors to be applied to Monte Carlo simulated events
     # in order to match vertex multiplicity distribution in Data
     process.load("TauAnalysis.RecoTools.vertexMultiplicityReweight_cfi")
-    process.vertexMultiplicityReweight3dRunA = process.vertexMultiplicityReweight.clone(
-        inputFileName = cms.FileInPath("TauAnalysis/RecoTools/data/expPUpoissonMean_runs160404to173692.root"),
-        type = cms.string("gen3d")
-    )
-    process.vertexMultiplicityReweight3dRunB = process.vertexMultiplicityReweight.clone(
-        inputFileName = cms.FileInPath("TauAnalysis/RecoTools/data/expPUpoissonMean_runs175832to180252.root"),
-        type = cms.string("gen3d")
+    process.vertexMultiplicityReweight3d2012RunA = process.vertexMultiplicityReweight.clone(
+        inputFileName = cms.FileInPath("TauAnalysis/RecoTools/data/expPUpoissonMean_runs190456to191859_Mu17_Mu8_v16.root"),
+        type = cms.string("gen3d"),
+        mcPeriod = cms.string("Summer12")
     )
     if isMC:
-        process.prePatProductionSequence += process.vertexMultiplicityReweight3dRunA
-        process.prePatProductionSequence += process.vertexMultiplicityReweight3dRunB
+        process.prePatProductionSequence += process.vertexMultiplicityReweight3d2012RunA
     #--------------------------------------------------------------------------------
 
     #--------------------------------------------------------------------------------
     # PFCandidate pile-up removal
     process.load("CommonTools.ParticleFlow.pfNoPileUp_cff")
+    process.pfPileUp.PFCandidates = cms.InputTag('particleFlow')
     process.pfPileUp.Enable = cms.bool(True)
     process.pfPileUp.checkClosestZVertex = cms.bool(True)
     process.pfPileUp.Vertices = cms.InputTag('selectedPrimaryVertexPosition')
+    process.pfNoPileUp.bottomCollection = cms.InputTag('particleFlow')
     process.prePatProductionSequence += process.pfNoPileUpSequence
 
     process.load("CommonTools/ParticleFlow/pfParticleSelection_cff")
@@ -61,7 +59,7 @@ def configurePrePatProduction(process, pfCandidateCollection = "particleFlow",
         pfJetCorrector = "ak5PFL1FastL2L3"
     else:
         pfJetCorrector = "ak5PFL1FastL2L3Residual"
-    process.calibratedAK5PFJets   = cms.EDProducer('PFJetCorrectionProducer',
+    process.calibratedAK5PFJets = cms.EDProducer('PFJetCorrectionProducer',
         src = cms.InputTag('ak5PFJets'),
         correctors = cms.vstring(pfJetCorrector)
     )

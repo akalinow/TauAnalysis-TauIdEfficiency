@@ -9,10 +9,6 @@ import PhysicsTools.PatAlgos.tools.helpers as patutils
 
 from TauAnalysis.Configuration.tools.metTools import *
 
-# Get the files to support embedding of TaNC inputs
-from RecoTauTag.TauTagTools.PFTauMVAInputDiscriminatorTranslator_cfi import \
-     loadMVAInputsIntoPatTauDiscriminants
-
 from TauAnalysis.TauIdEfficiency.tools.sequenceBuilder import buildGenericTauSequence
 
 def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSequence, 
@@ -218,6 +214,7 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
         tauCollection = '',
         jetCollection = cms.InputTag('patJetsAK5PF'),
         doSmearJets = doSmearJets,
+        doApplyType0corr = True,
         # CV: shift Jet energy by 3 standard-deviations,
         #     so that template morphing remains an interpolation and no extrapolation is needed
         varyByNsigmas = 3.0, 
@@ -320,10 +317,6 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
     #
     #switchToPFTauShrinkingCone(process)
     #process.patPFTauProducerShrinkingCone = copy.deepcopy(process.patTaus)
-    #
-    # load TaNC inputs into pat::Tau
-    #process.load("RecoTauTag.TauTagTools.PFTauMVAInputDiscriminatorTranslator_cfi")
-    #loadMVAInputsIntoPatTauDiscriminants(process.patPFTauProducerShrinkingCone)
     #
     #retVal_pfTauShrinkingCone = patSequenceBuilder(
     #    process,

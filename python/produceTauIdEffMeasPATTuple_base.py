@@ -20,9 +20,7 @@ def produceTauIdEffMeasPATTuple_base(process, isMC, isEmbedded, HLTprocessName, 
     #--------------------------------------------------------------------------------
     process.source = cms.Source("PoolSource",
         fileNames = cms.untracked.vstring(
-            #'file:/data2/friis/CMSSW_4_2_X/skims/06-27-MatthewsZTTEvents/crab_0_110627_082505/ZTTCands_merged_v1.root'
-            #'file:/data1/veelken/tmp/tauIdEffSample_data_SingleMu_Run2011A_PromptReco_v4_2011Jul06_RECO_995_1_hYS.root'
-            'file:/data1/veelken/CMSSW_4_2_x/skims/selEvents_Ztautau_tauIdPassed_but_loosePFIsoFailed_AOD.root'                        
+            'file:/data1/veelken/CMSSW_5_2_x/skims/simZplusJets_AOD_1_1_ZkM.root'            
         )
     )
 
@@ -44,9 +42,9 @@ def produceTauIdEffMeasPATTuple_base(process, isMC, isEmbedded, HLTprocessName, 
     # define GlobalTag to be used for event reconstruction
     # (only relevant for HPS tau reconstruction algorithm)
     if isMC:
-        process.GlobalTag.globaltag = cms.string('START42_V13::All')
+        process.GlobalTag.globaltag = cms.string('START52_V9::All')
     else:
-        process.GlobalTag.globaltag = cms.string('GR_R_42_V20::All')
+        process.GlobalTag.globaltag = cms.string('GR_R_52_V7::All')
     #--------------------------------------------------------------------------------    
 
     #--------------------------------------------------------------------------------

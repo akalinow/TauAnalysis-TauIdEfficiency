@@ -50,26 +50,18 @@ lastRunData = -1
 hltPaths = None
 l1Bits = None
 srcWeights = None
-if runPeriod == '2011RunA':
+if runPeriod == '2012RunA':
     samplesToAnalyze.extend([
-        'data_SingleMu_Run2011A_May10ReReco_v1',
-        'data_SingleMu_Run2011A_PromptReco_v4',
-        'data_SingleMu_Run2011A_Aug05ReReco_v1',
-        'data_SingleMu_Run2011A_PromptReco_v6'       
+        'data_TauPlusX_Run2012A_PromptReco_v1_runs190456to191859'
     ])
-    intLumiData = 1522.7 # runs 160431-173198
+    intLumiData = 367.6 # runs 190456-191859
     hltPaths = {
         'Data' : [
-            'HLT_IsoMu17_v5',
-            'HLT_IsoMu17_v6',
-            'HLT_IsoMu17_v8',
-            'HLT_IsoMu17_v9',
-            'HLT_IsoMu17_v10',
-            'HLT_IsoMu17_v11',
-            'HLT_IsoMu17_v13'
+            'HLT_IsoMu15_eta2p1_L1ETM20_v3',
+            'HLT_IsoMu15_eta2p1_L1ETM20_v4'
         ],
         'smMC' : [
-            'HLT_IsoMu17_v5'
+            'HLT_IsoMu15_eta2p1_L1ETM20_v1'
         ]
     }
     l1Bits = {
@@ -78,29 +70,7 @@ if runPeriod == '2011RunA':
     }
     srcWeights = {
         'Data' : [],
-        'smMC' : [ 'vertexMultiplicityReweight3dRunA' ]
-    }
-elif runPeriod == '2011RunB':
-    samplesToAnalyze.extend([
-        'data_MET_Run2011B_PromptReco_v1s1'
-    ])
-    intLumiData = 773.9 # runs 178420-180252
-    hltPaths = {
-        'Data' : [
-            'HLT_IsoMu15_L1ETM20_v3',
-            'HLT_IsoMu15_L1ETM20_v4'
-        ],
-        'smMC' : [
-            'HLT_IsoMu15_v5'
-        ]
-    }
-    l1Bits = {
-        'Data' : [],
-        'smMC' : [ 'L1_ETM20' ]
-    }
-    srcWeights = {
-        'Data' : [],
-        'smMC' : [ 'vertexMultiplicityReweight3dRunB' ]
+        'smMC' : [ 'vertexMultiplicityReweight3d2012RunA' ]
     }
 else:
     raise ValueError("Invalid runPeriod = %s !!" % runPeriod)
@@ -136,72 +106,6 @@ templateMorphingMode = "vertical"
 fitIndividualProcesses = False
 
 tauIds = {
-    # HPS isolation with no deltaBeta corrections applied
-    # (separate isolation requirements wrt. PFChargedHadrons and PFGammas)
-    'tauDiscrHPSloose'  : {
-        'discriminators' : [
-            'decayModeFinding',
-            'byLooseIsolation'
-        ],
-        'legendEntry' : "HPS Loose",
-        'markerStyleData' : 20,
-        'markerStyleSim' : 24,
-        'color' : 418
-    },
-    'tauDiscrHPSmedium' : {
-        'discriminators' : [
-            'decayModeFinding',
-            'byMediumIsolation'
-        ],
-        'legendEntry' : "HPS Medium",
-        'markerStyleData' : 21,
-        'markerStyleSim' : 25,
-        'color' : 807
-    },
-    'tauDiscrHPStight' : {
-        'discriminators' : [
-            'decayModeFinding',
-            'byTightIsolation'
-        ],
-        'legendEntry' : "HPS Tight",
-        'markerStyleData' : 22,
-        'markerStyleSim' : 26,
-        'color' : 618
-    },
-            
-    # HPS isolation with deltaBeta corrections applied
-    # (separate isolation requirements wrt. PFChargedHadrons and PFGammas)
-    'tauDiscrHPSlooseDBcorr'  : {
-        'discriminators' : [
-            'decayModeFinding',
-            'byLooseIsolationDeltaBetaCorr'
-        ],
-        'legendEntry' : "HPS #delta#beta Loose",
-        'markerStyleData' : 20,
-        'markerStyleSim' : 24,
-        'color' : 418
-    },
-    'tauDiscrHPSmediumDBcorr' : {
-        'discriminators' : [
-            'decayModeFinding',
-            'byMediumIsolationDeltaBetaCorr'
-        ],
-        'legendEntry' : "HPS #delta#beta Medium",
-        'markerStyleData' : 21,
-        'markerStyleSim' : 25,
-        'color' : 807
-    },
-    'tauDiscrHPStightDBcorr' : {
-        'discriminators' : [
-            'decayModeFinding',
-            'byTightIsolationDeltaBetaCorr'
-        ],
-        'legendEntry' : "HPS #delta#beta Tight",
-        'markerStyleData' : 22,
-        'markerStyleSim' : 26,
-        'color' : 618
-    },
-    
     # HPS combined isolation discriminators
     # (based on isolation sumPt of PFChargedHadrons + PFGammas)
     'tauDiscrHPScombLooseDBcorr'  : {
@@ -218,7 +122,7 @@ tauIds = {
         'discriminators' : [
             'decayModeFinding',
             'byLooseCombinedIsolationDeltaBetaCorr',
-            'againstElectronMVA'
+            'againstElectronTightMVA2'
             
         ],
         'legendEntry' : "HPS comb. Loose & e-Veto",
@@ -253,6 +157,61 @@ tauIds = {
             'byTightCombinedIsolationDeltaBetaCorr'
         ],
         'legendEntry' : "HPS comb. Tight",
+        'markerStyleData' : 22,
+        'markerStyleSim' : 26,
+        'color' : 618
+    },
+    # HPS ring isolation discriminators
+    # (based on MVA)
+    'tauDiscrHPSlooseMVA'  : {
+        'discriminators' : [
+            'decayModeFinding',
+            'byLooseIsolationMVA'
+        ],
+        'legendEntry' : "HPS Loose MVA",
+        'markerStyleData' : 20,
+        'markerStyleSim' : 24,
+        'color' : 418
+    },
+    'tauDiscrHPSlooseMVAandElectronVeto'  : {
+        'discriminators' : [
+            'decayModeFinding',
+            'byLooseIsolationMVA',
+            'againstElectronTightMVA2'
+            
+        ],
+        'legendEntry' : "HPS Loose MVA & e-Veto",
+        'markerStyleData' : 20,
+        'markerStyleSim' : 24,
+        'color' : 418
+    },
+    'tauDiscrHPSlooseMVAandMuonVeto'  : {
+        'discriminators' : [
+            'decayModeFinding',
+            'byLooseIsolationMVA',
+            'againstMuonTight'
+        ],
+        'legendEntry' : "HPS Loose MVA & #mu-Veto",
+        'markerStyleData' : 20,
+        'markerStyleSim' : 24,
+        'color' : 418
+    },
+    'tauDiscrHPSmediumMVA' : {
+        'discriminators' : [
+            'decayModeFinding',
+            'byMediumIsolationMVA'
+        ],
+        'legendEntry' : "HPS Medium MVA",
+        'markerStyleData' : 21,
+        'markerStyleSim' : 25,
+        'color' : 807
+    },
+    'tauDiscrHPStightMVA' : {
+        'discriminators' : [
+            'decayModeFinding',
+            'byTightIsolationMVA'
+        ],
+        'legendEntry' : "HPS Tight MVA",
         'markerStyleData' : 22,
         'markerStyleSim' : 26,
         'color' : 618

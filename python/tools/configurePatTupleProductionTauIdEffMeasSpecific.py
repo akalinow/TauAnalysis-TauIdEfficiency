@@ -89,6 +89,10 @@ def configurePatTupleProductionTauIdEffMeasSpecific(process, patSequenceBuilder 
     #--------------------------------------------------------------------------------
 
     process.load("TauAnalysis.RecoTools.patMuonMomentumCorrection_cfi")
+    if isMC:
+        process.poolDBESSourceMuScleFitCentralValue.toGet[0].tag = cms.string('MuScleFit_Scale_Z_MC_Startup_innerTrack')
+    else:
+        process.poolDBESSourceMuScleFitCentralValue.toGet[0].tag = cms.string('MuScleFit_Scale_Z_36_invPb_innerTrack_Dec22_v1')
     process.patMuonsMuScleFitCorrectedMomentum.MuonLabel = cms.InputTag('selectedPatMuonsVBTFid')
     process.producePatTupleTauIdEffMeasSpecific += process.patMuonsMuScleFitCorrectedMomentum
 

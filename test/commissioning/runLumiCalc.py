@@ -8,7 +8,7 @@ hltPaths = [
     #'HLT_IsoMu24_v*',
     #'HLT_Mu13_Mu8_v*',
     #'HLT_DoubleMu11_Acoplanarity03_v3',
-    'HLT_Mu17_Mu8_v*',
+    #'HLT_Mu17_Mu8_v*',
     #'HLT_Mu17_v3',
     #'HLT_Jet30_v*',   # for QCD multi-jet
     #'HLT_Jet60_v*',
@@ -19,8 +19,9 @@ hltPaths = [
     #'HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_v*',
     #'HLT_Mu17_Ele8_CaloIdL_v*',
     #'HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_v*'
-    #'HLT_IsoMu15_L1ETM20_v*', # for Tau id. efficiency in RunB (NOTE: events are in MET dataset)
+    #'HLT_IsoMu15_L1ETM20_v*', # for Tau id. efficiency in 2011 RunB (NOTE: events are in MET dataset)
     #'HLT_Mu15_L1ETM20_v*'     #   -""-
+    'HLT_IsoMu15_eta2p1_L1ETM20_v*', # for Tau id. efficiency in 2012 RunA (NOTE: events are in Tau+X dataset)
     #'HLT_IsoMu15_LooseIsoPFTau15_v*',
     #'HLT_IsoMu15_eta2p1_LooseIsoPFTau20_v*'
     #'HLT_Ele25_CaloIdL_CaloIsoVL_TrkIdVL_TrkIsoVL_v*',
@@ -46,9 +47,9 @@ jsonFiles = {
     #                      + 'Cert_05Aug2011-v1_JSON.txt',
     #'PromptReco-v6'      : '/afs/cern.ch/user/v/veelken/scratch0/CMSSW_4_2_4_patch1/src/TauAnalysis/TauIdEfficiency/test/commissioning/' \
     #                      + 'Cert_PromptReco-v6_JSON.txt'
-    #'2012RunA'          : '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/DCSOnly/json_DCSONLY.txt'
+    #'2012RunA'          : '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/DCSOnly/json_DCSONLY.txt' 
     '2012RunA'          : '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Prompt/' \
-                         + 'Cert_190456-191276_8TeV_PromptReco_Collisions12_JSON.txt'
+                         + 'Cert_190456-191859_8TeV_PromptReco_Collisions12_JSON.txt'
 }
 
 executable_lumiCalc = '/afs/cern.ch/user/v/veelken/scratch0/CMSSW_5_2_3_patch3/src/RecoLuminosity/LumiDB/scripts/lumiCalc2.py'

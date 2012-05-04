@@ -13,10 +13,9 @@ import subprocess
 channel = 'ZtoMuTau_tauIdEff'
 
 #jobId = getJobId(channel)
-jobId = '2011Oct30'
-#jobId = '2011Dec15'
+jobId = '2012May04'
 
-version = 'V10_5tauEnRecovery'
+version = 'V1_0'
 
 lxbatch_queue = '1nd'
 
@@ -24,47 +23,31 @@ pfCandidateCollection = "particleFlow" # pile-up removal disabled
 #pfCandidateCollection = "pfNoPileUp"   # pile-up removal enabled
 
 samplesToAnalyze = [
-    #'data_SingleMu_Run2011A_May10ReReco_v1',
-    #'data_SingleMu_Run2011A_PromptReco_v4',
-    #'data_SingleMu_Run2011A_Aug05ReReco_v1',
-    #'data_SingleMu_Run2011A_PromptReco_v6',
-    #'data_MET_Run2011B_PromptReco_v1s1',
-    'data_SingleMu_Run2011B_PromptReco_v1',
-    #'Ztautau_powheg',
-    #'Ztautau_embedded_Run2011A_May10ReReco',
-    #'Ztautau_embedded_Run2011A_PromptReco_v4',
-    #'Ztautau_embedded_Run2011A_Aug05ReReco_v1',
-    #'Ztautau_embedded_Run2011A_PromptReco_v6',
-    #'Ztautau_embedded_Run2011B_PromptReco_v1',
-    #'Zmumu_powheg',
-    #'ZplusJets_madgraph',
-    #'PPmuXptGt20Mu15',
+    'data_TauPlusX_Run2012A_PromptReco_v1_runs190456to191859',
+    'ZplusJets_madgraph',
+    'Ztautau_pythia',
     #'WplusJets_madgraph',
-    #'TTplusJets_madgraph'
+    'Wenu_pythia',
+    'Wmunu_pythia',
+    'Wtaunu_pythia',  
+    'PPmuXptGt20Mu15',      
+    'TTplusJets_madgraph'
 ]
 
 samplesToAnalyze_noTauSel = [
-    #'Ztautau_powheg'
+    'Ztautau_pythia'
 ]    
 
 numInputFilesPerJob = {
-    'data_SingleMu_Run2011A_May10ReReco_v1'    : 10,
-    'data_SingleMu_Run2011A_PromptReco_v4'     : 10,
-    'data_SingleMu_Run2011A_Aug05ReReco_v1'    :  5,
-    'data_SingleMu_Run2011A_PromptReco_v6'     :  5,
-    'data_MET_Run2011B_PromptReco_v1s1'        :  5,
-    'data_SingleMu_Run2011B_PromptReco_v1'     :  5,
-    'Ztautau_powheg'                           :  3,
-    'Ztautau_embedded_Run2011A_May10ReReco'    :  5,
-    'Ztautau_embedded_Run2011A_PromptReco_v4'  :  5,
-    'Ztautau_embedded_Run2011A_Aug05ReReco_v1' :  5,
-    'Ztautau_embedded_Run2011A_PromptReco_v6'  :  5,
-    'Ztautau_embedded_Run2011B_PromptReco_v1'  :  5,
-    'Zmumu_powheg'                             :  5,
-    'ZplusJets_madgraph'                       :  1,
-    'PPmuXptGt20Mu15'                          :  5,
-    'WplusJets_madgraph'                       :  5,
-    'TTplusJets_madgraph'                      :  3
+    'data_TauPlusX_Run2012A_PromptReco_v1_runs190456to191859' : 5,
+    'ZplusJets_madgraph'                                      : 1,
+    'Ztautau_pythia'                                          : 5,
+    #'WplusJets_madgraph'                                     : 5,
+    'Wenu_pythia'                                             : 5,
+    'Wmunu_pythia'                                            : 5,
+    'Wtaunu_pythia'                                           : 5,
+    'PPmuXptGt20Mu15'                                         : 5,
+    'TTplusJets_madgraph'                                     : 3
 }    
 
 # Get all the skim files from the castor directory
@@ -73,9 +56,10 @@ print("inputFilePath = %s" % inputFilePath)
 
 skipExistingPATtuples = True
 
-#outputFilePath = "/castor/cern.ch/user/m/mverzett/tagprobe/patTuples_v6"
-#outputFilePath = "/castor/cern.ch/user/m/mverzett/tagprobe/"
-outputFilePath = "/castor/cern.ch/user/v/veelken/CMSSW_4_2_x/PATtuples/TauIdEffMeas/%s/%s" % (jobId, version)
+outputFilePath = "/castor/cern.ch/user/v/veelken/CMSSW_5_2_x/PATtuples/TauIdEffMeas/%s/%s" % (jobId, version)
+
+print "outputFilePath = %s" % outputFilePath
+castor.rfmkdir(outputFilePath, permissions = 777)
 
 configFile = 'produceTauIdEffMeasPATTuple_cfg.py'
 configFile_noTauSel = 'produceTauIdEffMeasPATTuple_noTauSel_cfg.py'
@@ -95,7 +79,7 @@ logFilePath = os.path.join(os.getcwd(), "lxbatch_log")
 # Function that maps a sample name to its skim file
 def input_mapper(inputFileNames, sample, jobId):
     inputFile_regex = \
-      r"[a-zA-Z0-9_./]*tauIdEffSample_%s_%s_RECO_(?P<gridJob>\d*)(_(?P<gridTry>\d*))*_(?P<hash>[a-zA-Z0-9]*).root" % (sample, jobId)
+      r"[a-zA-Z0-9_./]*tauIdEffSample_%s_%s_AOD_(?P<gridJob>\d*)(_(?P<gridTry>\d*))*_(?P<hash>[a-zA-Z0-9]*).root" % (sample, jobId)
     inputFile_matcher = re.compile(inputFile_regex)
     for input_file in inputFileNames:        
         #print "sample = %s:  unmatched file: %s" % (sample, input_file)
