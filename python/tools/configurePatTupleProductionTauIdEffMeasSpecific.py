@@ -94,13 +94,14 @@ def configurePatTupleProductionTauIdEffMeasSpecific(process, patSequenceBuilder 
     else:
         process.poolDBESSourceMuScleFitCentralValue.toGet[0].tag = cms.string('MuScleFit_Scale_Z_36_invPb_innerTrack_Dec22_v1')
     process.patMuonsMuScleFitCorrectedMomentum.MuonLabel = cms.InputTag('selectedPatMuonsVBTFid')
-    process.producePatTupleTauIdEffMeasSpecific += process.patMuonsMuScleFitCorrectedMomentum
+    # CV: MuScleFit muon momentum corrections do not work in CMSSW_5_2_x (May 4th 2012)
+    ##process.producePatTupleTauIdEffMeasSpecific += process.patMuonsMuScleFitCorrectedMomentum
 
-    process.load("TauAnalysis.RecoTools.patLeptonSystematics_cff")
-    process.patMuonsMuScleFitCorrectedMomentumShiftUp.MuonLabel = process.patMuonsMuScleFitCorrectedMomentum.MuonLabel
-    process.patMuonsMuScleFitCorrectedMomentumShiftDown.MuonLabel = process.patMuonsMuScleFitCorrectedMomentum.MuonLabel
-    process.producePatTupleTauIdEffMeasSpecific += process.patMuonsMuScleFitCorrectedMomentumShiftUp
-    process.producePatTupleTauIdEffMeasSpecific += process.patMuonsMuScleFitCorrectedMomentumShiftDown
+    ##process.load("TauAnalysis.RecoTools.patLeptonSystematics_cff")
+    ##process.patMuonsMuScleFitCorrectedMomentumShiftUp.MuonLabel = process.patMuonsMuScleFitCorrectedMomentum.MuonLabel
+    ##process.patMuonsMuScleFitCorrectedMomentumShiftDown.MuonLabel = process.patMuonsMuScleFitCorrectedMomentum.MuonLabel
+    ##process.producePatTupleTauIdEffMeasSpecific += process.patMuonsMuScleFitCorrectedMomentumShiftUp
+    ##process.producePatTupleTauIdEffMeasSpecific += process.patMuonsMuScleFitCorrectedMomentumShiftDown
 
     #--------------------------------------------------------------------------------
     # define Muon selection
@@ -117,7 +118,9 @@ def configurePatTupleProductionTauIdEffMeasSpecific(process, patSequenceBuilder 
 
     patMuonSelConfiguratorForTauIdEff = objSelConfigurator(
         [ process.selectedPatMuonsForTauIdEffPFRelIso ],
-        src = "patMuonsMuScleFitCorrectedMomentum",
+        # CV: MuScleFit muon momentum corrections do not work in CMSSW_5_2_x (May 4th 2012)
+        #src = "patMuonsMuScleFitCorrectedMomentum",
+        src = "selectedPatMuonsVBTFid",
         pyModuleName = __name__,
         doSelIndividual = False
     )
