@@ -78,7 +78,6 @@
 <bin   file="FWLiteTauIdEffPreselNumbers.cc" name="FWLiteTauIdEffPreselNumbers">
   <use   name="DataFormats/Common"/>
   <use   name="DataFormats/FWLite"/>
-  <use   name="DataFormats/L1GlobalTrigger"/>
   <use   name="DataFormats/HepMCCandidate"/>
   <use   name="DataFormats/PatCandidates"/>
   <use   name="DataFormats/StdDictionaries"/>

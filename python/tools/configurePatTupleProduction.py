@@ -215,6 +215,8 @@ def configurePatTupleProduction(process, patSequenceBuilder = buildGenericTauSeq
         jetCollection = cms.InputTag('patJetsAK5PF'),
         doSmearJets = doSmearJets,
         doApplyType0corr = True,
+        sysShiftCorrParameter = None,
+        doApplySysShiftCorr = False,
         # CV: shift Jet energy by 3 standard-deviations,
         #     so that template morphing remains an interpolation and no extrapolation is needed
         varyByNsigmas = 3.0, 

@@ -8,6 +8,7 @@
 <use   name="DataFormats/HepMCCandidate"/>
 <use   name="DataFormats/ParticleFlowCandidate"/>
 <use   name="DataFormats/PatCandidates"/>
+<use   name="DataFormats/VertexReco"/>
 <use   name="TauAnalysis/CandidateTools"/>
 <use   name="TauAnalysis/Core"/>
 <use   name="AnalysisDataFormats/TauAnalysis"/>

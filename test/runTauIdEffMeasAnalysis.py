@@ -21,25 +21,21 @@ samplesToAnalyze = [
     #
     # NOTE: data samples are added according to the runPeriod chosen
     #
-    'Ztautau_powheg',
-    #'Ztautau_embedded_Run2011A_May10ReReco',
-    #'Ztautau_embedded_Run2011A_PromptReco_v4',
-    #'Ztautau_embedded_Run2011A_Aug05ReReco_v1',
-    #'Ztautau_embedded_Run2011A_PromptReco_v6',
-    #'Ztautau_embedded_Run2011B_PromptReco_v1',
-    'Zmumu_powheg',
     'ZplusJets_madgraph',
-    'PPmuXptGt20Mu15',
-    'WplusJets_madgraph',
+    'Ztautau_pythia',
+    #'WplusJets_madgraph',
+    'Wenu_pythia',
+    'Wmunu_pythia',
+    'Wtaunu_pythia',  
+    'PPmuXptGt20Mu15',      
     'TTplusJets_madgraph'
 ]
 
 # define sample name and jobId of Ztautau sample
 # used to compute preselection efficiencies and purities in C1p and C1f/D1p regions
-sampleZtautau = 'Ztautau_powheg'
+sampleZtautau = 'Ztautau_pythia'
 
-#runPeriod = '2011RunA'
-runPeriod = '2011RunB'
+runPeriod = '2012RunA'
 
 runClosureTest = False
 #runClosureTest = True
@@ -48,7 +44,6 @@ intLumiData = None
 firstRunData = -1
 lastRunData = -1
 hltPaths = None
-l1Bits = None
 srcWeights = None
 if runPeriod == '2012RunA':
     samplesToAnalyze.extend([
@@ -64,10 +59,6 @@ if runPeriod == '2012RunA':
             'HLT_IsoMu15_eta2p1_L1ETM20_v1'
         ]
     }
-    l1Bits = {
-        'Data' : [],
-        'smMC' : []
-    }
     srcWeights = {
         'Data' : [],
         'smMC' : [ 'vertexMultiplicityReweight3d2012RunA' ]
@@ -81,7 +72,6 @@ cut_tauAbsIsoMax      =  5.0
 cut_caloMEtPtMin      = 20.0
 cut_pfMEtPtMin        = 20.0
 
-plot_l1Bits   = []
 plot_hltPaths = []
 
 fitVariables = [
@@ -468,10 +458,10 @@ for sampleToAnalyze in samplesToAnalyze:
       buildConfigFile_FWLiteTauIdEffAnalyzer(sampleToAnalyze, version, inputFilePath, fwliteInput_firstRun, fwliteInput_lastRun, tauIds,
                                              binning, sysUncertainties, outputFilePath,
                                              recoSampleDefinitionsTauIdEfficiency_7TeV,
-                                             regions, intLumiData, hltPaths, l1Bits, srcWeights,
+                                             regions, intLumiData, hltPaths, srcWeights,
                                              tauChargeMode, disableTauCandPreselCuts,
                                              cut_muonPtMin, cut_tauLeadTrackPtMin, cut_tauAbsIsoMax, cut_caloMEtPtMin, cut_pfMEtPtMin,
-                                             plot_l1Bits, plot_hltPaths)
+                                             plot_hltPaths)
 
     if retVal_FWLiteTauIdEffAnalyzer is None:
         continue
@@ -578,7 +568,7 @@ for tauId in tauIds.keys():
 #
 retVal_FWLiteTauIdEffPreselNumbers = \
   buildConfigFile_FWLiteTauIdEffPreselNumbers(inputFilePath, sampleZtautau, "_".join([ suffix_noTauSel, version ]), tauIds,
-                                              binning, outputFilePath, hltPaths, l1Bits, srcWeights, keyword_compTauIdEffPreselNumbers,
+                                              binning, outputFilePath, hltPaths, srcWeights, keyword_compTauIdEffPreselNumbers,
                                               cut_muonPtMin, cut_tauLeadTrackPtMin, cut_tauAbsIsoMax, cut_caloMEtPtMin, cut_pfMEtPtMin)
 configFileName_FWLiteTauIdEffPreselNumbers = retVal_FWLiteTauIdEffPreselNumbers['configFileName']
 outputFileName_FWLiteTauIdEffPreselNumbers = retVal_FWLiteTauIdEffPreselNumbers['outputFileName']

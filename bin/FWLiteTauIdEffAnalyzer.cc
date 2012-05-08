@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.27 $
+ * \version $Revision: 1.28 $
  *
- * $Id: FWLiteTauIdEffAnalyzer.cc,v 1.27 2011/12/19 14:11:18 veelken Exp $
+ * $Id: FWLiteTauIdEffAnalyzer.cc,v 1.28 2012/02/02 09:03:32 veelken Exp $
  *
  */
 
@@ -31,10 +31,6 @@
 #include "DataFormats/PatCandidates/interface/Tau.h"
 #include "DataFormats/PatCandidates/interface/Muon.h"
 #include "DataFormats/PatCandidates/interface/MET.h"
-#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerReadoutRecord.h"
-#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerObjectMapRecord.h"
-#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerObjectMapFwd.h"
-#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerObjectMap.h"
 #include "DataFormats/Common/interface/TriggerResults.h"
 #include "FWCore/Common/interface/TriggerNames.h"
 #include "DataFormats/VertexReco/interface/Vertex.h"
@@ -286,43 +282,6 @@ struct regionEntryType
   std::ofstream* selEventsFile_;
 };
 
-void checkL1Bits(const fwlite::Event& evt,
-		 const vstring& l1Bits, 
-		 const edm::InputTag& srcL1GtReadoutRecord, const edm::InputTag& srcL1GtObjectMapRecord,
-		 std::map<std::string, bool>* l1Bits_passed, bool* anyL1bit_passed)
-{
-  edm::Handle<L1GlobalTriggerReadoutRecord> l1GtReadoutRecord;
-  evt.getByLabel(srcL1GtReadoutRecord, l1GtReadoutRecord);
-  edm::Handle<L1GlobalTriggerObjectMapRecord> l1GtObjectMapRecord;
-  evt.getByLabel(srcL1GtObjectMapRecord, l1GtObjectMapRecord);
-
-  DecisionWord l1GtDecision = l1GtReadoutRecord->decisionWord();
-  const std::vector<L1GlobalTriggerObjectMap>& l1GtObjectMaps = l1GtObjectMapRecord->gtObjectMap();
-
-  if ( anyL1bit_passed ) {
-    (*anyL1bit_passed) = false;
-  }
-
-  for ( vstring::const_iterator l1Bit = l1Bits.begin();
-	l1Bit != l1Bits.end(); ++l1Bit ) {	  
-    bool isL1bit_passed = false;
-    for ( std::vector<L1GlobalTriggerObjectMap>::const_iterator l1GtObjectMap = l1GtObjectMaps.begin();
-	  l1GtObjectMap != l1GtObjectMaps.end(); ++l1GtObjectMap ) {
-      std::string l1Bit_idx = (*l1GtObjectMap).algoName();
-      int idx = (*l1GtObjectMap).algoBitNumber();	    
-      if ( l1Bit_idx == (*l1Bit) ) isL1bit_passed = l1GtDecision[idx];
-    }
-
-    if ( l1Bits_passed ) {
-      (*l1Bits_passed)[*l1Bit] = isL1bit_passed;
-    }
-
-    if ( anyL1bit_passed ) {
-      if ( isL1bit_passed ) (*anyL1bit_passed) = true;
-    }
-  }
-}
-
 std::string getHLTpath_key(const std::string& hltPath)
 {
   std::string key = hltPath;
@@ -468,10 +427,7 @@ int main(int argc, char* argv[])
   bool disableTauCandPreselCuts = cfgTauIdEffAnalyzer.getParameter<bool>("disableTauCandPreselCuts");
   edm::ParameterSet cfgEventSelCuts = cfgTauIdEffAnalyzer.getParameter<edm::ParameterSet>("eventSelCuts");
   edm::InputTag srcHLTresults = cfgTauIdEffAnalyzer.getParameter<edm::InputTag>("srcHLTresults");
-  edm::InputTag srcL1GtReadoutRecord = cfgTauIdEffAnalyzer.getParameter<edm::InputTag>("srcL1GtReadoutRecord"); 
-  edm::InputTag srcL1GtObjectMapRecord = cfgTauIdEffAnalyzer.getParameter<edm::InputTag>("srcL1GtObjectMapRecord");
   vstring hltPaths = cfgTauIdEffAnalyzer.getParameter<vstring>("hltPaths");
-  vstring l1Bits = cfgTauIdEffAnalyzer.getParameter<vstring>("l1Bits");
   edm::InputTag srcCaloMEt = cfgTauIdEffAnalyzer.getParameter<edm::InputTag>("srcCaloMEt");
   edm::InputTag srcGoodMuons = cfgTauIdEffAnalyzer.getParameter<edm::InputTag>("srcGoodMuons");
   edm::InputTag srcVertices = cfgTauIdEffAnalyzer.getParameter<edm::InputTag>("srcVertices");
@@ -479,10 +435,8 @@ int main(int argc, char* argv[])
   bool fillGenMatchHistograms = cfgTauIdEffAnalyzer.getParameter<bool>("fillGenMatchHistograms");
   typedef std::vector<int> vint;
   vint skipPdgIdsGenParticleMatch = cfgTauIdEffAnalyzer.getParameter<vint>("skipPdgIdsGenParticleMatch");  
-  vstring plot_l1Bits = cfgTauIdEffAnalyzer.getParameter<vstring>("plot_l1Bits");
   vstring plot_hltPaths = cfgTauIdEffAnalyzer.getParameter<vstring>("plot_hltPaths");
   vstring plot_triggerBits;
-  plot_triggerBits.insert(plot_triggerBits.end(), plot_l1Bits.begin(), plot_l1Bits.end());
   for ( vstring::const_iterator plot_hltPath = plot_hltPaths.begin();
 	plot_hltPath != plot_hltPaths.end(); ++plot_hltPath ) {
     plot_triggerBits.push_back(getHLTpath_key(*plot_hltPath));
@@ -501,8 +455,12 @@ int main(int argc, char* argv[])
 
   TF1* triggerEffCorrection = new TF1("triggerEffCorrection", &integralCrystalBall_data_div_mc, 0., 1.e+6, 10);
   double triggerEffCorr_parameter[] = {
-    3.08698e+01, 4.12547e+00, 7.67225e+00, 1.55325e+02, 1.00826e+00,
-    3.07315e+01, -4.16879e+00, 1.37289e+01, 1.02238e+00, 1.03602e+00
+    // CV: HLT_IsoMu15_L1ETM20 efficiency correction parameters for 2011 run B
+    //3.08698e+01, 4.12547e+00, 7.67225e+00, 1.55325e+02, 1.00826e+00,
+    //3.07315e+01, -4.16879e+00, 1.37289e+01, 1.02238e+00, 1.03602e+00
+    // CV: HLT_IsoMu15_eta2p1_L1ETM20 efficiency correction parameters for 2012 run A
+    3.55718e+01, 9.05828e+00, 7.10953e+01, 3.85292e-01, 9.91771e-01, // Zmumu Data
+    3.46164e+0, 9.02199e+00, 2.88052e+01, 8.79657e-01, 9.92301e-01   // Zmumu Spring'12 MC (pile-up reweighted)
   };
   for ( int iPar = 0; iPar < triggerEffCorrection->GetNpar(); ++iPar ) {
     triggerEffCorrection->SetParameter(iPar, triggerEffCorr_parameter[iPar]);
@@ -692,15 +650,6 @@ int main(int argc, char* argv[])
 
       if ( !anyHLTpath_passed ) continue;
 
-      bool anyL1bit_passed = false;
-      if ( l1Bits.size() == 0 ) {
-	anyL1bit_passed = true;
-      } else {
-	checkL1Bits(evt, l1Bits, srcL1GtReadoutRecord, srcL1GtObjectMapRecord, NULL, &anyL1bit_passed);
-      }
-
-      if ( !anyL1bit_passed ) continue;
-
       ++numEvents_passedTrigger;
       numEventsWeighted_passedTrigger += evtWeight;
 
@@ -738,9 +687,6 @@ int main(int argc, char* argv[])
       
 //--- check L1 bits for trigger efficiency control plots
       std::map<std::string, bool> plot_triggerBits_passed;
-      if ( plot_l1Bits.size() > 0 ) {
-	checkL1Bits(evt, plot_l1Bits, srcL1GtReadoutRecord, srcL1GtObjectMapRecord, &plot_triggerBits_passed, NULL);
-      }	
       if ( plot_hltPaths.size() > 0 ) {
 	checkHLTpaths(evt, plot_hltPaths, srcHLTresults, &plot_triggerBits_passed, NULL);
       }
