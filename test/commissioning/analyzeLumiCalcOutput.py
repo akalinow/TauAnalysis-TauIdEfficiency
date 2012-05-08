@@ -26,7 +26,7 @@ units = {
     '/fb' : 1.0
 }
 
-recLumiSum = 0.
+recLumi_ref = None
 effLumiSum = 0.
 hltPaths = defaultdict(float)
     
@@ -47,7 +47,11 @@ for line in inputFile.readlines():
             raise ValueError("Undefined units = %s !!" % recUnits)
         recLumi = float(recValue)*units[recUnits]
         #print("recLumi = %f" % recLumi)
-        effLumiSum += recLumi
+
+        if recLumi_ref is not None:
+            if recLumi != recLumi_ref:
+                raise ValueError("Recorded luminosity is ambiguous !!")
+        recLumi_ref = recLumi
         
         effValue = summaryRowMatch.group('effValue')
         effUnits = summaryRowMatch.group('effUnits')
@@ -62,9 +66,9 @@ for line in inputFile.readlines():
         hltPath = summaryRowMatch.group('hltPath')
         hltPaths[hltPath] += effLumi
 
-print(" recLumi = %f /fb" % recLumiSum)
+print(" recLumi = %f /fb" % recLumi_ref)
 print(" effLumi = %f /fb" % effLumiSum)
-print("--> average Prescale factor = %f" % (recLumiSum/effLumiSum))
+print("--> average Prescale factor = %f" % (recLumi_ref/effLumiSum))
 print("hltPaths:")
 for hltPathName, effLumiSum_hltPath in hltPaths.items():
     print(" %s: %f /fb" % (hltPathName, effLumiSum_hltPath)) 
