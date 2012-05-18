@@ -20,7 +20,7 @@ def configurePrePatProduction(process, pfCandidateCollection = "particleFlow",
     # in order to match vertex multiplicity distribution in Data
     process.load("TauAnalysis.RecoTools.vertexMultiplicityReweight_cfi")
     process.vertexMultiplicityReweight3d2012RunA = process.vertexMultiplicityReweight.clone(
-        inputFileName = cms.FileInPath("TauAnalysis/RecoTools/data/expPUpoissonMean_runs190456to191859_Mu17_Mu8_v16.root"),
+        inputFileName = cms.FileInPath("TauAnalysis/RecoTools/data/expPUpoissonMean_runs190456to193557_Mu17_Mu8_v16.root"),
         type = cms.string("gen3d"),
         mcPeriod = cms.string("Summer12")
     )
