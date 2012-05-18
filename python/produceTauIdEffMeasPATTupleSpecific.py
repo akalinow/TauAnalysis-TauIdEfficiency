@@ -153,8 +153,8 @@ def produceTauIdEffMeasPATTuple(process, isMC, isEmbedded, HLTprocessName, pfCan
           cms.untracked.vstring(
                 'keep *_smearedPatJetsAK5PF*_*_*',
                 'keep *_muonTriggerEfficiencyCorrection_*_*',
-                'keep *_vertexMultiplicityReweight3dRunA_*_*',
-                'keep *_vertexMultiplicityReweight3dRunB_*_*',
+                'keep *_vertexMultiplicityReweight3d2012RunA_*_*',
+                'keep *_vertexMultiplicityReweight3d2012RunB_*_*',
                 'keep *_vertexMultiplicityVsRhoPFNeutralReweight_*_*',
                 'keep *_addPileupInfo_*_*',
                 'keep *_genParticles_*_*',
