@@ -7,9 +7,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.9 $
+ * \version $Revision: 1.10 $
  *
- * $Id: TauIdEffHistManager.h,v 1.9 2011/11/27 18:25:18 veelken Exp $
+ * $Id: TauIdEffHistManager.h,v 1.10 2011/12/19 14:12:20 veelken Exp $
  *
  */
 
@@ -82,7 +82,10 @@ class TauIdEffHistManager
   TH1* histogramPFSumEt_;
   TH1* histogramCaloMEt_;
   TH1* histogramCaloSumEt_;
+
   TH1* histogramNumVertices_;
+
+  TH1* histogramLogEvtWeight_;
 
   std::map<std::string, TH1*> histogramNumCaloMEt_; // key = L1 bit; numerator for trigger efficiency control plots
   TH1* histogramDenomCaloMEt_;                      // denominator for trigger efficiency control plots

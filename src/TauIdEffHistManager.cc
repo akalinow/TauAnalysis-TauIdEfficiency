@@ -40,7 +40,10 @@ void TauIdEffHistManager::bookHistograms(TFileDirectory& dir)
   histogramPFSumEt_         = book1D(dir, "pfSumEt",            "#Sigma E_{T}^{PF}",                     50,          0.,         500.0);
   histogramCaloMEt_         = book1D(dir, "caloMEt",            "calo-E_{T}^{miss}",                     20,          0.0,        100.0);
   histogramCaloSumEt_       = book1D(dir, "caloSumEt",          "#Sigma E_{T}^{calo}",                   50,          0.,         500.0);
-  histogramNumVertices_     = book1D(dir, "numVertices",        "Num. Vertices",                         20,         -0.5,         19.5);
+
+  histogramNumVertices_     = book1D(dir, "numVertices",        "Num. Vertices",                         35,         -0.5,         34.5);
+
+  histogramLogEvtWeight_    = book1D(dir, "logEvtWeight",       "log(Event weight)",                    101,        -5.05,        +5.05);
 
   for ( vstring::const_iterator triggerBit = triggerBits_.begin();
 	triggerBit != triggerBits_.end(); ++triggerBit ) {
@@ -84,8 +87,16 @@ void TauIdEffHistManager::fillHistograms(const PATMuTauPair& muTauPair, const pa
   histogramPFSumEt_->Fill(muTauPair.met()->sumEt(), weight);
   histogramCaloMEt_->Fill(caloMEt.pt(), weight);
   histogramCaloSumEt_->Fill(caloMEt.sumEt(), weight);
+
   histogramNumVertices_->Fill(numVertices, weight);
 
+  if ( weight > 0. ) {
+    double logWeight = TMath::Log(weight);
+    if      ( logWeight < -5.0 ) logWeight = -5.0;
+    else if ( logWeight > +5.0 ) logWeight = +5.0;
+    histogramLogEvtWeight_->fill(logWeight);
+  }
+  
   for ( std::map<std::string, bool>::const_iterator triggerBit_passed = triggerBits_passed.begin();
 	triggerBit_passed != triggerBits_passed.end(); ++triggerBit_passed ) {    
     //std::cout << "histogramNumCaloMEt[" << triggerBit_passed->first << "] = " 
