@@ -8,27 +8,26 @@ import os
 
 channel = 'ZtoMuTau_tauIdEff'
 #jobId = getJobId(channel)
-jobId = '2011Oct30'
+jobId = '2012May12'
 
-version = 'V10_5tauEnRecovery'
-label = 'fitEWKbgSum_v6'
+version = 'v1_2'
+label = 'fitEWKbgSum_v7'
 
-inputFilePath = '/data1/veelken/CMSSW_4_2_x/PATtuples/TauIdEffMeas/%s/%s/' % (jobId, version) \
-               + 'user/v/veelken/CMSSW_4_2_x/PATtuples/TauIdEffMeas/%s/%s/' % (jobId, version)
+inputFilePath = '/data1/veelken/CMSSW_5_2_x/PATtuples/TauIdEffMeas/%s/%s/' % (jobId, version) \
+               + 'user/v/veelken/CMSSW_5_2_x/PATtuples/TauIdEffMeas/%s/%s/' % (jobId, version)
 outputFilePath = '/data1/veelken/tmp/muonPtGt17/%s_%s/' % (version, label)
 
 samplesToAnalyze = [
     #
     # NOTE: data samples are added according to the runPeriod chosen
     #
-    'ZplusJets_madgraph',
     'Ztautau_pythia',
-    #'WplusJets_madgraph',
-    'Wenu_pythia',
-    'Wmunu_pythia',
-    'Wtaunu_pythia',  
-    'PPmuXptGt20Mu15',      
-    'TTplusJets_madgraph'
+    'Zmumu_pythia',
+    'DYmumuM10to20_pythia',
+    'ZplusJets_madgraph2',
+    'WplusJets_madgraph',
+    'PPmuXptGt20Mu15v2',      
+    'TTplusJets_madgraph2'
 ]
 
 # define sample name and jobId of Ztautau sample
@@ -47,21 +46,27 @@ hltPaths = None
 srcWeights = None
 if runPeriod == '2012RunA':
     samplesToAnalyze.extend([
-        'data_TauPlusX_Run2012A_PromptReco_v1_runs190456to191859'
+        ##'data_TauPlusX_Run2012A_PromptReco_v1_runs190456to193557'
+        'data_TauPlusX_Run2012A_PromptReco_v1_runs190456to193621',
+        'data_TauPlusX_Run2012B_PromptReco_v1_runs193752to194076'
     ])
-    intLumiData = 367.6 # runs 190456-191859
+    ##intLumiData = 560.7 # runs 190456-193557
+    intLumiData = 560.7 # runs 190456-194076
     hltPaths = {
         'Data' : [
             'HLT_IsoMu15_eta2p1_L1ETM20_v3',
-            'HLT_IsoMu15_eta2p1_L1ETM20_v4'
+            'HLT_IsoMu15_eta2p1_L1ETM20_v4',
+            'HLT_IsoMu15_eta2p1_L1ETM20_v5'
         ],
         'smMC' : [
-            'HLT_IsoMu15_eta2p1_L1ETM20_v1'
+            'HLT_IsoMu15_eta2p1_L1ETM20_v1',
+            'HLT_IsoMu15_eta2p1_L1ETM20_v3',
+            'HLT_IsoMu15_L1ETM20_v5' # CV: PPmuXptGt20Mu15 sample generated with old trigger table
         ]
     }
     srcWeights = {
         'Data' : [],
-        'smMC' : [ 'vertexMultiplicityReweight3d2012RunA' ]
+        'smMC' : [ 'vertexMultiplicityReweight1d2012RunAplusB' ]
     }
 else:
     raise ValueError("Invalid runPeriod = %s !!" % runPeriod)
@@ -78,8 +83,8 @@ fitVariables = [
     'diTauVisMass'
 ]    
 
-#mode = 'tauIdEfficiency'
-mode = 'tauChargeMisIdRate'
+mode = 'tauIdEfficiency'
+#mode = 'tauChargeMisIdRate'
 
 sysUncertainties = [
     "JetEn",        # needed for diTauMt/Pzeta
@@ -108,18 +113,30 @@ tauIds = {
         'markerStyleSim' : 24,
         'color' : 418
     },
-    'tauDiscrHPScombLooseDBcorrAndElectronVeto'  : {
+    'tauDiscrHPScombLooseDBcorrAndElectronVetoMVA'  : {
         'discriminators' : [
             'decayModeFinding',
             'byLooseCombinedIsolationDeltaBetaCorr',
-            'againstElectronTightMVA2'
+            'againstElectronMVA'
             
         ],
-        'legendEntry' : "HPS comb. Loose & e-Veto",
+        'legendEntry' : "HPS comb. Loose & e-Veto MVA",
         'markerStyleData' : 20,
         'markerStyleSim' : 24,
         'color' : 418
     },
+    ##'tauDiscrHPScombLooseDBcorrAndElectronVetoMVA2'  : {
+    ##    'discriminators' : [
+    ##        'decayModeFinding',
+    ##        'byLooseCombinedIsolationDeltaBetaCorr',
+    ##        'againstElectronTightMVA2'
+    ##        
+    ##    ],
+    ##    'legendEntry' : "HPS comb. Loose & e-Veto MVA2",
+    ##    'markerStyleData' : 20,
+    ##    'markerStyleSim' : 24,
+    ##    'color' : 418
+    ##},
     'tauDiscrHPScombLooseDBcorrAndMuonVeto'  : {
         'discriminators' : [
             'decayModeFinding',
@@ -131,26 +148,26 @@ tauIds = {
         'markerStyleSim' : 24,
         'color' : 418
     },
-    'tauDiscrHPScombMediumDBcorr' : {
-        'discriminators' : [
-            'decayModeFinding',
-            'byMediumCombinedIsolationDeltaBetaCorr'
-        ],
-        'legendEntry' : "HPS comb. Medium",
-        'markerStyleData' : 21,
-        'markerStyleSim' : 25,
-        'color' : 807
-    },
-    'tauDiscrHPScombTightDBcorr' : {
-        'discriminators' : [
-            'decayModeFinding',
-            'byTightCombinedIsolationDeltaBetaCorr'
-        ],
-        'legendEntry' : "HPS comb. Tight",
-        'markerStyleData' : 22,
-        'markerStyleSim' : 26,
-        'color' : 618
-    },
+    ##'tauDiscrHPScombMediumDBcorr' : {
+    ##    'discriminators' : [
+    ##        'decayModeFinding',
+    ##        'byMediumCombinedIsolationDeltaBetaCorr'
+    ##    ],
+    ##    'legendEntry' : "HPS comb. Medium",
+    ##    'markerStyleData' : 21,
+    ##    'markerStyleSim' : 25,
+    ##    'color' : 807
+    ##},
+    ##'tauDiscrHPScombTightDBcorr' : {
+    ##    'discriminators' : [
+    ##        'decayModeFinding',
+    ##        'byTightCombinedIsolationDeltaBetaCorr'
+    ##    ],
+    ##    'legendEntry' : "HPS comb. Tight",
+    ##    'markerStyleData' : 22,
+    ##    'markerStyleSim' : 26,
+    ##    'color' : 618
+    ##},
     # HPS ring isolation discriminators
     # (based on MVA)
     'tauDiscrHPSlooseMVA'  : {
@@ -163,122 +180,138 @@ tauIds = {
         'markerStyleSim' : 24,
         'color' : 418
     },
-    'tauDiscrHPSlooseMVAandElectronVeto'  : {
-        'discriminators' : [
-            'decayModeFinding',
-            'byLooseIsolationMVA',
-            'againstElectronTightMVA2'
-            
-        ],
-        'legendEntry' : "HPS Loose MVA & e-Veto",
-        'markerStyleData' : 20,
-        'markerStyleSim' : 24,
-        'color' : 418
-    },
-    'tauDiscrHPSlooseMVAandMuonVeto'  : {
-        'discriminators' : [
-            'decayModeFinding',
-            'byLooseIsolationMVA',
-            'againstMuonTight'
-        ],
-        'legendEntry' : "HPS Loose MVA & #mu-Veto",
-        'markerStyleData' : 20,
-        'markerStyleSim' : 24,
-        'color' : 418
-    },
-    'tauDiscrHPSmediumMVA' : {
-        'discriminators' : [
-            'decayModeFinding',
-            'byMediumIsolationMVA'
-        ],
-        'legendEntry' : "HPS Medium MVA",
-        'markerStyleData' : 21,
-        'markerStyleSim' : 25,
-        'color' : 807
-    },
-    'tauDiscrHPStightMVA' : {
-        'discriminators' : [
-            'decayModeFinding',
-            'byTightIsolationMVA'
-        ],
-        'legendEntry' : "HPS Tight MVA",
-        'markerStyleData' : 22,
-        'markerStyleSim' : 26,
-        'color' : 618
-    }
+    ##'tauDiscrHPSlooseMVAandElectronVetoMVA'  : {
+    ##    'discriminators' : [
+    ##        'decayModeFinding',
+    ##        'byLooseIsolationMVA',
+    ##        'againstElectronMVA'
+    ##        
+    ##    ],
+    ##    'legendEntry' : "HPS Loose MVA & e-Veto MVA",
+    ##    'markerStyleData' : 20,
+    ##    'markerStyleSim' : 24,
+    ##    'color' : 418
+    ##},
+    ##'tauDiscrHPSlooseMVAandElectronVetoMVA2'  : {
+    ##    'discriminators' : [
+    ##        'decayModeFinding',
+    ##        'byLooseIsolationMVA',
+    ##        'againstElectronTightMVA2'
+    ##        
+    ##    ],
+    ##    'legendEntry' : "HPS Loose MVA & e-Veto MVA2",
+    ##    'markerStyleData' : 20,
+    ##    'markerStyleSim' : 24,
+    ##    'color' : 418
+    ##},
+    ##'tauDiscrHPSlooseMVAandMuonVeto'  : {
+    ##    'discriminators' : [
+    ##        'decayModeFinding',
+    ##        'byLooseIsolationMVA',
+    ##        'againstMuonTight'
+    ##    ],
+    ##    'legendEntry' : "HPS Loose MVA & #mu-Veto",
+    ##    'markerStyleData' : 20,
+    ##    'markerStyleSim' : 24,
+    ##    'color' : 418
+    ##},
+    ##'tauDiscrHPSmediumMVA' : {
+    ##    'discriminators' : [
+    ##        'decayModeFinding',
+    ##        'byMediumIsolationMVA'
+    ##    ],
+    ##    'legendEntry' : "HPS Medium MVA",
+    ##    'markerStyleData' : 21,
+    ##    'markerStyleSim' : 25,
+    ##    'color' : 807
+    ##},
+    ##'tauDiscrHPStightMVA' : {
+    ##    'discriminators' : [
+    ##        'decayModeFinding',
+    ##        'byTightIsolationMVA'
+    ##    ],
+    ##    'legendEntry' : "HPS Tight MVA",
+    ##    'markerStyleData' : 22,
+    ##    'markerStyleSim' : 26,
+    ##    'color' : 618
+    ##}
 }
 
 binning = {
     # NOTE: these strings need to match what is hard-coded in regionEntryType::regionEntryType constructor,
     #       defined in TauAnalysis/TauIdEfficiency/bin/FWLiteTauIdEffAnalyzer.cc 
-    'tauPt' : {
-        'tauPtLt30' : {
-            'min' :  20.0,
-            'max' :  30.0
-        },
-        'tauPt30to40' : {
-            'min' :  30.0,
-            'max' :  40.0
-        },
-        'tauPtGt40' : {
-            'min' :  40.0,
-            'max' : 100.0
-        },
-        'xAxisTitle' : "P_{T}^{#tau}"
-    },
-    'tauAbsEta' : {
-        'tauAbsEtaLt14' : {
-            'min' :  0.0,
-            'max' :  1.4
-        },
-        'tauAbsEta14to19' : {
-            'min' :  1.4,
-            'max' :  1.9
-        },
-        'tauAbsEta19to23' : {
-            'min' :  1.9,
-            'max' :  2.3
-        },
-        'xAxisTitle' : "|#eta_{#tau}|"
-    },
-    'numVertices' : {
-        'numVerticesLe6' : {
-            'min' :  -0.5,
-            'max' :   6.5
-        },
-        'numVertices7to9' : {
-            'min' :   6.5,
-            'max' :   9.5
-        },
-        'numVertices10to12' : {
-            'min' :   9.5,
-            'max' :  12.5
-        },
-        'numVerticesGt12' : {
-            'min' :  12.5,
-            'max' :  24.5
-        },
-        'xAxisTitle' : "Num. Vertices"
-    },
-    'sumEt' : {
-        'sumEtLt250' : {
-            'min' :    0.0,
-            'max' :  250.0
-        },
-        'sumEt250to350' : {
-            'min' :  250.0,
-            'max' :  350.0
-        },
-        'sumEt350to450' : {
-            'min' :  350.0,
-            'max' :  450.0
-        },
-        'sumEtGt450' : {
-            'min' :  450.0,
-            'max' : 1000.0
-        },
-        'xAxisTitle' : "#Sigma E_{T}"
-    }
+    ##'tauPt' : {
+    ##    'tauPtLt30' : {
+    ##        'min' :  20.0,
+    ##        'max' :  30.0
+    ##    },
+    ##    'tauPt30to40' : {
+    ##        'min' :  30.0,
+    ##        'max' :  40.0
+    ##    },
+    ##    'tauPtGt40' : {
+    ##        'min' :  40.0,
+    ##        'max' : 100.0
+    ##    },
+    ##    'xAxisTitle' : "P_{T}^{#tau}"
+    ##},
+    ##'tauAbsEta' : {
+    ##    'tauAbsEtaLt14' : {
+    ##        'min' :  0.0,
+    ##        'max' :  1.4
+    ##    },
+    ##    'tauAbsEta14to19' : {
+    ##        'min' :  1.4,
+    ##        'max' :  1.9
+    ##    },
+    ##    'tauAbsEta19to23' : {
+    ##        'min' :  1.9,
+    ##        'max' :  2.3
+    ##    },
+    ##    'xAxisTitle' : "|#eta_{#tau}|"
+    ##},
+    ##'numVertices' : {
+    ##    'numVerticesLe5' : {
+    ##        'min' :  -0.5,
+    ##        'max' :   5.5
+    ##    },
+    ##    'numVertices6to10' : {
+    ##        'min' :   5.5,
+    ##        'max' :  10.5
+    ##    },
+    ##    'numVertices11to15' : {
+    ##        'min' :  10.5,
+    ##        'max' :  15.5
+    ##    },
+    ##    'numVertices16to20' : {
+    ##        'min' :  15.5,
+    ##        'max' :  20.5
+    ##    },
+    ##    'numVerticesGe21' : {
+    ##        'min' :  20.5,
+    ##        'max' :  29.5
+    ##    },
+    ##    'xAxisTitle' : "Num. Vertices"
+    ##},
+    ##'sumEt' : {
+    ##    'sumEtLt250' : {
+    ##        'min' :    0.0,
+    ##        'max' :  250.0
+    ##    },
+    ##    'sumEt250to350' : {
+    ##        'min' :  250.0,
+    ##        'max' :  350.0
+    ##    },
+    ##    'sumEt350to450' : {
+    ##        'min' :  350.0,
+    ##        'max' :  450.0
+    ##    },
+    ##    'sumEtGt450' : {
+    ##        'min' :  450.0,
+    ##        'max' : 1000.0
+    ##    },
+    ##    'xAxisTitle' : "#Sigma E_{T}"
+    ##}
 }
 
 execDir = "%s/bin/%s/" % (os.environ['CMSSW_BASE'], os.environ['SCRAM_ARCH'])
@@ -640,36 +673,6 @@ outputFileNames_makeTauIdEffFinalPlots = []
 logFileNames_makeTauIdEffFinalPlots    = []
 for binVariable in binning.keys():
 
-    # make plots for HPS isolation with no deltaBeta corrections applied
-    discriminators_HPS = [
-        'tauDiscrHPSloose',
-        'tauDiscrHPSmedium',
-        'tauDiscrHPStight'
-    ]
-    outputFileName_HPS = 'makeTauIdEffFinalPlots_HPS_%s.eps' % binVariable
-    retVal_makeTauIdEffFinalPlots = \
-      buildConfigFile_makeTauIdEffFinalPlots(haddOutputFileName_stage4, tauIds, discriminators_HPS,
-                                             binning[binVariable], fitVariables, outputFilePath, outputFileName_HPS,
-                                             expEff_label, measEff_label, intLumiData)
-    configFileNames_makeTauIdEffFinalPlots.append(retVal_makeTauIdEffFinalPlots['configFileName'])
-    outputFileNames_makeTauIdEffFinalPlots.append(retVal_makeTauIdEffFinalPlots['outputFileName'])
-    logFileNames_makeTauIdEffFinalPlots.append(retVal_makeTauIdEffFinalPlots['logFileName'])
-
-    # make plots for HPS isolation with no applied deltaBeta corrections
-    discriminators_HPSdbCorr = [
-        'tauDiscrHPSlooseDBcorr',
-        'tauDiscrHPSmediumDBcorr',
-        'tauDiscrHPStightDBcorr'
-    ]
-    outputFileName_HPSdbCorr = 'makeTauIdEffFinalPlots_HPSdbCorr_%s.eps' % binVariable
-    retVal_makeTauIdEffFinalPlots = \
-      buildConfigFile_makeTauIdEffFinalPlots(haddOutputFileName_stage4, tauIds, discriminators_HPSdbCorr,
-                                             binning[binVariable], fitVariables, outputFilePath, outputFileName_HPSdbCorr,
-                                             expEff_label, measEff_label, intLumiData)
-    configFileNames_makeTauIdEffFinalPlots.append(retVal_makeTauIdEffFinalPlots['configFileName'])
-    outputFileNames_makeTauIdEffFinalPlots.append(retVal_makeTauIdEffFinalPlots['outputFileName'])
-    logFileNames_makeTauIdEffFinalPlots.append(retVal_makeTauIdEffFinalPlots['logFileName'])
-          
     # make plots for HPS combined isolation discriminators
     discriminators_HPScombined = [
         'tauDiscrHPScombLooseDBcorr',
@@ -680,6 +683,21 @@ for binVariable in binning.keys():
     retVal_makeTauIdEffFinalPlots = \
       buildConfigFile_makeTauIdEffFinalPlots(haddOutputFileName_stage4, tauIds, discriminators_HPScombined,
                                              binning[binVariable], fitVariables, outputFilePath, outputFileName_HPScombined,
+                                             expEff_label, measEff_label, intLumiData)
+    configFileNames_makeTauIdEffFinalPlots.append(retVal_makeTauIdEffFinalPlots['configFileName'])
+    outputFileNames_makeTauIdEffFinalPlots.append(retVal_makeTauIdEffFinalPlots['outputFileName'])
+    logFileNames_makeTauIdEffFinalPlots.append(retVal_makeTauIdEffFinalPlots['logFileName'])
+
+    # make plots for HPS isolation with MVA-based isolation discriminators
+    discriminators_HPSmva = [
+        'tauDiscrHPSlooseMVA',
+        'tauDiscrHPSmediumMVA',
+        'tauDiscrHPStightMVA'
+    ]
+    outputFileName_HPSmva = 'makeTauIdEffFinalPlots_HPSmva_%s.eps' % binVariable
+    retVal_makeTauIdEffFinalPlots = \
+      buildConfigFile_makeTauIdEffFinalPlots(haddOutputFileName_stage4, tauIds, discriminators_HPSmva,
+                                             binning[binVariable], fitVariables, outputFilePath, outputFileName_HPSmva,
                                              expEff_label, measEff_label, intLumiData)
     configFileNames_makeTauIdEffFinalPlots.append(retVal_makeTauIdEffFinalPlots['configFileName'])
     outputFileNames_makeTauIdEffFinalPlots.append(retVal_makeTauIdEffFinalPlots['outputFileName'])

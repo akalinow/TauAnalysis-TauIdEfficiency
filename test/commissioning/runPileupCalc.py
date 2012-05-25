@@ -43,8 +43,10 @@ print " lastRun = %i " % lastRun
 
 outputFileName_csv = "my" + os.path.basename(inputFileName_JSON).replace(".txt", "_%s.csv" % HLT_path)
 outputFileName_JSONforHLTpath =  "my" + os.path.basename(inputFileName_JSON).replace(".txt", "_%s.txt" % HLT_path)
-outputFileName_histogram = "expPUpoissonMean_runs%ito%i_%s.root" % (firstRun, lastRun, HLT_path)
-outputFileName_histogram = outputFileName_histogram.replace("_HLT_", "_")
+outputFileName_histogram3d = "expPUpoissonMean_runs%ito%i_%s.root" % (firstRun, lastRun, HLT_path)
+outputFileName_histogram3d = outputFileName_histogram3d.replace("_HLT_", "_")
+outputFileName_histogram1d = "expPUpoissonDist_runs%ito%i_%s.root" % (firstRun, lastRun, HLT_path)
+outputFileName_histogram1d = outputFileName_histogram1d.replace("_HLT_", "_")
 
 def runCommand(commandLine):
     sys.stdout.write("%s\n" % commandLine)
@@ -63,7 +65,12 @@ commandLine_pileupReCalc_HLTpath = \
     (outputFileName_csv, inputFileName_lumiJSON, outputFileName_JSONforHLTpath)
 runCommand(commandLine_pileupReCalc_HLTpath)
 
-commandLine_pileupCalc = \
+commandLine_pileupCalc3d = \
   "pileupCalc.py -i %s --inputLumiJSON %s --calcMode true --minBiasXsec 69400 --maxPileupBin 50 --numPileupBins 500 %s" % \
-    (inputFileName_JSON, outputFileName_JSONforHLTpath, outputFileName_histogram)
-runCommand(commandLine_pileupCalc)
+    (inputFileName_JSON, outputFileName_JSONforHLTpath, outputFileName_histogram3d)
+runCommand(commandLine_pileupCalc3d)
+
+commandLine_pileupCalc1d = \
+  "pileupCalc.py -i %s --inputLumiJSON %s --calcMode observed --minBiasXsec 69400 --maxPileupBin 60 --numPileupBins 60 %s" % \
+    (inputFileName_JSON, outputFileName_JSONforHLTpath, outputFileName_histogram1d)
+runCommand(commandLine_pileupCalc1d)

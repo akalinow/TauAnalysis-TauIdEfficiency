@@ -19,13 +19,19 @@ def configurePrePatProduction(process, pfCandidateCollection = "particleFlow",
     # add reweighting factors to be applied to Monte Carlo simulated events
     # in order to match vertex multiplicity distribution in Data
     process.load("TauAnalysis.RecoTools.vertexMultiplicityReweight_cfi")
-    process.vertexMultiplicityReweight3d2012RunA = process.vertexMultiplicityReweight.clone(
-        inputFileName = cms.FileInPath("TauAnalysis/RecoTools/data/expPUpoissonMean_runs190456to193557_Mu17_Mu8_v16.root"),
+    process.vertexMultiplicityReweight3d2012RunAplusB = process.vertexMultiplicityReweight.clone(
+        inputFileName = cms.FileInPath("TauAnalysis/RecoTools/data/expPUpoissonMean_runs190456to194076_Mu17_Mu8_v16.root"),
         type = cms.string("gen3d"),
         mcPeriod = cms.string("Summer12")
     )
+    process.vertexMultiplicityReweight1d2012RunAplusB = process.vertexMultiplicityReweight.clone(
+        inputFileName = cms.FileInPath("TauAnalysis/RecoTools/data/expPUpoissonDist_runs190456to194076_Mu17_Mu8_v16.root"),
+        type = cms.string("gen"),
+        mcPeriod = cms.string("Summer12")
+    )
     if isMC:
-        process.prePatProductionSequence += process.vertexMultiplicityReweight3d2012RunA
+        process.prePatProductionSequence += process.vertexMultiplicityReweight3d2012RunAplusB
+        process.prePatProductionSequence += process.vertexMultiplicityReweight1d2012RunAplusB
     #--------------------------------------------------------------------------------
 
     #--------------------------------------------------------------------------------

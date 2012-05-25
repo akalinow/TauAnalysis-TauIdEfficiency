@@ -7,9 +7,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.10 $
+ * \version $Revision: 1.11 $
  *
- * $Id: TauIdEffHistManager.h,v 1.10 2011/12/19 14:12:20 veelken Exp $
+ * $Id: TauIdEffHistManager.h,v 1.11 2012/05/21 20:36:55 veelken Exp $
  *
  */
 
@@ -34,7 +34,7 @@ class TauIdEffHistManager
 
   /// book and fill histograms
   void bookHistograms(TFileDirectory&);
-  void fillHistograms(const PATMuTauPair&, const pat::MET&, size_t, const std::map<std::string, bool>&, double);
+  void fillHistograms(const PATMuTauPair&, const pat::MET&, size_t, size_t, size_t, const std::map<std::string, bool>&, double);
   
   /// scale all bin-contents/bin-errors by factor given as function argument
   /// (to account for events lost, due to aborted skimming/crab or PAT-tuple production/lxbatch jobs)
@@ -77,6 +77,9 @@ class TauIdEffHistManager
   TH1* histogramSVfitMass_;
   TH1* histogramMt_;
   TH1* histogramPzetaDiff_;
+
+  TH1* histogramNumJets_;
+  TH1* histogramNumJetsBtagged_;
 
   TH1* histogramPFMEt_;
   TH1* histogramPFSumEt_;

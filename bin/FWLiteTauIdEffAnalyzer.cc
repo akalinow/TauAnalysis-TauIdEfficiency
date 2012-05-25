@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.28 $
+ * \version $Revision: 1.29 $
  *
- * $Id: FWLiteTauIdEffAnalyzer.cc,v 1.28 2012/02/02 09:03:32 veelken Exp $
+ * $Id: FWLiteTauIdEffAnalyzer.cc,v 1.29 2012/05/08 10:29:12 veelken Exp $
  *
  */
 
@@ -30,6 +30,7 @@
 
 #include "DataFormats/PatCandidates/interface/Tau.h"
 #include "DataFormats/PatCandidates/interface/Muon.h"
+#include "DataFormats/PatCandidates/interface/Jet.h"
 #include "DataFormats/PatCandidates/interface/MET.h"
 #include "DataFormats/Common/interface/TriggerResults.h"
 #include "FWCore/Common/interface/TriggerNames.h"
@@ -42,6 +43,7 @@
 #include "DataFormats/Common/interface/Handle.h"
 
 #include "PhysicsTools/JetMCUtils/interface/JetMCTag.h"
+#include "PhysicsTools/SelectorUtils/interface/PFJetIDSelectionFunctor.h"
 
 #include "TauAnalysis/TauIdEfficiency/interface/TauIdEffEventSelector.h"
 #include "TauAnalysis/TauIdEfficiency/interface/TauIdEffHistManager.h"
@@ -109,19 +111,28 @@ struct histManagerEntryType
     }
   }
   void fillHistograms(double x, const PATMuTauPair& muTauPair, const pat::MET& caloMEt, 
+		      size_t numJets, size_t numJets_bTagged,
 		      size_t numVertices, const std::map<std::string, bool>& plot_triggerBits_passed, int genMatchType, double weight)
   {
     if ( x > min_ && x <= max_ ) {
-      histManager_->fillHistograms(muTauPair, caloMEt, numVertices, plot_triggerBits_passed, weight);
+      histManager_->fillHistograms(muTauPair, caloMEt, 
+				   numJets, numJets_bTagged, 
+				   numVertices, plot_triggerBits_passed, weight);
 
       if ( fillGenMatchHistograms_ ) {
 	if      ( genMatchType == kJetToTauFakeMatched ) 
-	  histManagerJetToTauFake_->fillHistograms(muTauPair, caloMEt, numVertices, plot_triggerBits_passed, weight);
+	  histManagerJetToTauFake_->fillHistograms(muTauPair, caloMEt, 
+						   numJets, numJets_bTagged, 
+						   numVertices, plot_triggerBits_passed, weight);
 	else if ( genMatchType == kMuToTauFakeMatched  ) 
-	  histManagerMuToTauFake_->fillHistograms(muTauPair, caloMEt, numVertices, plot_triggerBits_passed, weight);
+	  histManagerMuToTauFake_->fillHistograms(muTauPair, caloMEt, 
+						  numJets, numJets_bTagged, 
+						  numVertices, plot_triggerBits_passed, weight);
 	else if ( genMatchType == kGenTauHadMatched    ||
 		  genMatchType == kGenTauOtherMatched  ) 
-	  histManagerGenTau_->fillHistograms(muTauPair, caloMEt, numVertices, plot_triggerBits_passed, weight);
+	  histManagerGenTau_->fillHistograms(muTauPair, caloMEt, 
+					     numJets, numJets_bTagged, 
+					     numVertices, plot_triggerBits_passed, weight);
       }
     }
   }
@@ -228,12 +239,15 @@ struct regionEntryType
     delete selEventsFile_;
   }
   void analyze(const fwlite::Event& evt, const PATMuTauPair& muTauPair, const pat::MET& caloMEt, 
+	       size_t numJets, size_t numJets_bTagged,
 	       size_t numVertices, const std::map<std::string, bool>& plot_triggerBits_passed, int genMatchType, double evtWeight)
   {
     pat::strbitset evtSelFlags;
     if ( selector_->operator()(muTauPair, caloMEt, evtSelFlags) ) {
 //--- fill histograms for "inclusive" tau id. efficiency measurement
-      histogramsUnbinned_->fillHistograms(0., muTauPair, caloMEt, numVertices, plot_triggerBits_passed, genMatchType, evtWeight);
+      histogramsUnbinned_->fillHistograms(0., muTauPair, caloMEt, 
+					  numJets, numJets_bTagged,
+					  numVertices, plot_triggerBits_passed, genMatchType, evtWeight);
 
 //--- fill histograms for tau id. efficiency measurement as function of 
 //   o tau-jet transverse momentum
@@ -250,7 +264,9 @@ struct regionEntryType
 	else if ( (*histManagerEntry)->binVariable_ == "sumEt"       ) x = muTauPair.met()->sumEt();
 	else throw cms::Exception("regionEntryType::analyze")
 	  << "Invalid binVariable = " << (*histManagerEntry)->binVariable_ << " !!\n";
-	(*histManagerEntry)->fillHistograms(x, muTauPair, caloMEt, numVertices, plot_triggerBits_passed, genMatchType, evtWeight);
+	(*histManagerEntry)->fillHistograms(x, muTauPair, caloMEt, 
+					    numJets, numJets_bTagged,
+					    numVertices, plot_triggerBits_passed, genMatchType, evtWeight);
       }
  
       if ( selEventsFile_ ) 
@@ -430,6 +446,11 @@ int main(int argc, char* argv[])
   vstring hltPaths = cfgTauIdEffAnalyzer.getParameter<vstring>("hltPaths");
   edm::InputTag srcCaloMEt = cfgTauIdEffAnalyzer.getParameter<edm::InputTag>("srcCaloMEt");
   edm::InputTag srcGoodMuons = cfgTauIdEffAnalyzer.getParameter<edm::InputTag>("srcGoodMuons");
+  edm::InputTag srcJets = cfgTauIdEffAnalyzer.getParameter<edm::InputTag>("srcJets");
+  edm::ParameterSet cfgJetId;
+  cfgJetId.addParameter<std::string>("version", "FIRSTDATA");
+  cfgJetId.addParameter<std::string>("quality", "LOOSE");
+  PFJetIDSelectionFunctor jetId(cfgJetId);
   edm::InputTag srcVertices = cfgTauIdEffAnalyzer.getParameter<edm::InputTag>("srcVertices");
   edm::InputTag srcGenParticles = cfgTauIdEffAnalyzer.getParameter<edm::InputTag>("srcGenParticles");
   bool fillGenMatchHistograms = cfgTauIdEffAnalyzer.getParameter<bool>("fillGenMatchHistograms");
@@ -448,16 +469,15 @@ int main(int argc, char* argv[])
   edm::InputTag srcEventCounter = cfgTauIdEffAnalyzer.getParameter<edm::InputTag>("srcEventCounter");
 
   PATMuonLUTvalueExtractorFromKNN* muonIsoProbExtractor = 0;
+  bool applyMuonIsoWeights = false;
   if ( cfgTauIdEffAnalyzer.exists("muonIsoProbExtractor") ) {
     edm::ParameterSet cfgMuonIsoProbExtractor = cfgTauIdEffAnalyzer.getParameter<edm::ParameterSet>("muonIsoProbExtractor");
     muonIsoProbExtractor = new PATMuonLUTvalueExtractorFromKNN(cfgMuonIsoProbExtractor);
+    applyMuonIsoWeights = cfgTauIdEffAnalyzer.getParameter<bool>("applyMuonIsoWeights");
   }
 
   TF1* triggerEffCorrection = new TF1("triggerEffCorrection", &integralCrystalBall_data_div_mc, 0., 1.e+6, 10);
   double triggerEffCorr_parameter[] = {
-    // CV: HLT_IsoMu15_L1ETM20 efficiency correction parameters for 2011 run B
-    //3.08698e+01, 4.12547e+00, 7.67225e+00, 1.55325e+02, 1.00826e+00,
-    //3.07315e+01, -4.16879e+00, 1.37289e+01, 1.02238e+00, 1.03602e+00
     // CV: HLT_IsoMu15_eta2p1_L1ETM20 efficiency correction parameters for 2012 run A
     3.55718e+01, 9.05828e+00, 7.10953e+01, 3.85292e-01, 9.91771e-01, // Zmumu Data
     3.46164e+0, 9.02199e+00, 2.88052e+01, 8.79657e-01, 9.92301e-01   // Zmumu Spring'12 MC (pile-up reweighted)
@@ -679,6 +699,9 @@ int main(int argc, char* argv[])
       ++numEvents_passedDiMuTauPairVeto;
       numEventsWeighted_passedDiMuTauPairVeto += evtWeight;
 
+      edm::Handle<pat::JetCollection> jets;
+      evt.getByLabel(srcJets, jets);         
+      
 //--- determine number of vertices reconstructed in the event
 //   (needed to parametrize dependency of tau id. efficiency on number of pile-up interactions)
       edm::Handle<reco::VertexCollection> vertices;
@@ -698,6 +721,25 @@ int main(int argc, char* argv[])
       for ( PATMuTauPairCollection::const_iterator muTauPair = muTauPairs->begin();
 	    muTauPair != muTauPairs->end(); ++muTauPair ) {
 
+//--- require event to contain to b-jets
+//   (not overlapping with muon or tau-jet candidate)
+	size_t numJets         = 0;
+	size_t numJets_bTagged = 0;
+	for ( pat::JetCollection::const_iterator jet = jets->begin();
+	      jet != jets->end(); ++jet ) {
+	  if ( jet->pt() > 30. && TMath::Abs(jet->eta()) < 2.4 && jetId(*jet) ) {
+	    //std::cout << "jet: Pt = " << jet->pt() << ", eta = " << jet->eta() << ", phi = " << jet->phi() << std::endl;
+	    //std::vector<std::pair<std::string, float> > bTagDiscriminators = jet->getPairDiscri();
+	    //for ( std::vector<std::pair<std::string, float> >::const_iterator bTagDiscriminator = bTagDiscriminators.begin();
+	    //	bTagDiscriminator != bTagDiscriminators.end(); ++bTagDiscriminator ) {
+	    //  std::cout << " " << bTagDiscriminator->first << ": " << bTagDiscriminator->second << std::endl;
+	    //}
+	    ++numJets;
+	    if ( jet->bDiscriminator("combinedSecondaryVertexBJetTags") > 0.679 ) ++numJets_bTagged; // "medium" WP
+	  }
+	}
+	//std::cout << "numJets = " << numJets << " (b-Tagged = " << numJets_bTagged << ")" << std::endl;
+
 //--- determine type of particle matching reconstructed tau-jet candidate
 //    on generator level (used in case of Ztautau or Zmumu Monte Carlo samples only,
 //    in order to distinguish between jet --> tau fakes, muon --> tau fakes and genuine taus)
@@ -711,9 +753,10 @@ int main(int argc, char* argv[])
 	for ( std::vector<regionEntryType*>::iterator regionEntry = regionEntries.begin();
 	      regionEntry != regionEntries.end(); ++regionEntry ) {	  
 	  double evtWeight_region = evtWeight;
-	  if ( muonIsoProbExtractor && (*regionEntry)->region_.find("_mW") != std::string::npos ) 
+	  if ( muonIsoProbExtractor && applyMuonIsoWeights && (*regionEntry)->region_.find("_mW") != std::string::npos ) 
 	    evtWeight_region *= (*muonIsoProbExtractor)(*muTauPair->leg1());
 	  (*regionEntry)->analyze(evt, *muTauPair, caloMEt->front(), 
+				  numJets, numJets_bTagged,
 				  numVertices, plot_triggerBits_passed, genMatchType, evtWeight_region);
 
 	  //pat::strbitset evtSelFlags;

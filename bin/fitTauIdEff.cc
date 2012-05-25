@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.33 $
+ * \version $Revision: 1.34 $
  *
- * $Id: fitTauIdEff.cc,v 1.33 2011/12/19 14:11:18 veelken Exp $
+ * $Id: fitTauIdEff.cc,v 1.34 2012/02/02 09:03:32 veelken Exp $
  *
  */
 
@@ -856,7 +856,8 @@ void fitUsingRooFit(processEntryType& data, double intLumiData,
 	  else if ( processEntry->first == "TTplusJets" )
 	    fitConstraintsABC2D.Add(makeFitConstraint(fitParameter->second.fittedValue_, 
 						      fitParameter->second.expectedValue_, 0.02));
-	  else if ( !(processEntry->first == "QCD") )
+	  //else if ( !(processEntry->first == "QCD") )
+          else
 	    fitConstraintsABC2D.Add(makeFitConstraint(fitParameter->second.fittedValue_, 
 						      fitParameter->second.expectedValue_, TMath::Max(0.05, 0.5*fitParameter->second.expectedValue_)));
 	}
@@ -1444,7 +1445,7 @@ int main(int argc, const char* argv[])
     //loadHistograms(histograms_Ztautau_genTau, histogramInputDirectory, 
     //	             "Ztautau", regionsToLoad, tauId, observables, sysUncertainties_expanded, "GenTau");
     loadHistograms(histograms_Ztautau_genTau, histogramInputDirectory, 
-		   "ZplusJets_madgraph", regionsToLoad, tauId, observables, sysUncertainties_expanded, "GenTau");
+		   "ZplusJets", regionsToLoad, tauId, observables, sysUncertainties_expanded, "GenTau");
     processEntries["Ztautau"] =
       new processEntryType("Ztautau", histograms_Ztautau_genTau, fitVariables, regionsToFit, region_passed, region_failed, 
 			   sysUncertainties, templateMorphingMode, legendEntries["Ztautau"], fillColors["Ztautau"]);
@@ -1455,7 +1456,7 @@ int main(int argc, const char* argv[])
     vstring processes_EWK;
     //processes_EWK.push_back(std::string("Ztautau"));
     //processes_EWK.push_back(std::string("Zmumu"));
-    processes_EWK.push_back(std::string("ZplusJets_madgraph"));
+    processes_EWK.push_back(std::string("ZplusJets"));
     processes_EWK.push_back(std::string("WplusJets"));
     for ( vstring::const_iterator process = processes_EWK.begin();
 	  process != processes_EWK.end(); ++process ) {

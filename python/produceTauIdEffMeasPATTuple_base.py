@@ -20,7 +20,8 @@ def produceTauIdEffMeasPATTuple_base(process, isMC, isEmbedded, HLTprocessName, 
     #--------------------------------------------------------------------------------
     process.source = cms.Source("PoolSource",
         fileNames = cms.untracked.vstring(
-            'file:/data1/veelken/CMSSW_5_2_x/skims/simZplusJets_AOD_1_1_ZkM.root'            
+            ##'file:/data1/veelken/CMSSW_5_2_x/skims/simZplusJets_AOD_1_1_ZkM.root'
+            'file:/data1/veelken/CMSSW_5_2_x/skims/tauIdEffSample_TTplusJets_madgraph2_2012May12_AOD_97_1_8KH.root'
         )
     )
 

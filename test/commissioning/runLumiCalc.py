@@ -19,6 +19,7 @@ hltPaths = [
     #'HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_v*',
     #'HLT_Mu17_Ele8_CaloIdL_v*',
     #'HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_v*'
+    #'HLT_IsoMu24_eta2p1_v*'
     #'HLT_IsoMu15_L1ETM20_v*', # for Tau id. efficiency in 2011 RunB (NOTE: events are in MET dataset)
     #'HLT_Mu15_L1ETM20_v*'     #   -""-
     'HLT_IsoMu15_eta2p1_L1ETM20_v*', # for Tau id. efficiency in 2012 RunA (NOTE: events are in Tau+X dataset)
@@ -30,6 +31,10 @@ hltPaths = [
     #'HLT_Ele27_WP80_PFMT50_v*'
     #'HLT_Ele32_WP70_v2'
     #'HLT_Ele17_CaloIdVT_CaloIsoVT_TrkIdT_TrkIsoVT_SC8_Mass30_v*'
+    #'HLT_IsoMu18_eta2p1_LooseIsoPFTau20_v*',
+    #'HLT_IsoMu17_eta2p1_LooseIsoPFTau20_v*',
+    #'HLT_Ele20_CaloIdVT_CaloIsoRhoT_TrkIdT_TrkIsoT_LooseIsoPFTau20_v*',
+    #'HLT_Ele22_eta2p1_WP90Rho_LooseIsoPFTau20_v*',
 ]
 
 jsonFiles = {
@@ -48,8 +53,15 @@ jsonFiles = {
     #'PromptReco-v6'      : '/afs/cern.ch/user/v/veelken/scratch0/CMSSW_4_2_4_patch1/src/TauAnalysis/TauIdEfficiency/test/commissioning/' \
     #                      + 'Cert_PromptReco-v6_JSON.txt'
     #'2012RunA'          : '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/DCSOnly/json_DCSONLY.txt' 
-    '2012RunA'          : '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Prompt/' \
-                         + 'Cert_190456-191859_8TeV_PromptReco_Collisions12_JSON.txt'
+    #'2012RunA'          : '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Prompt/' \
+    #                     + 'Cert_190456-191859_8TeV_PromptReco_Collisions12_JSON.txt'
+    #'2012RunA'          : '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Prompt/' \
+    #                      + 'Cert_190456-193336_8TeV_PromptReco_Collisions12_JSON.txt'
+    #'2012RunA'          : '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Prompt/' \
+    #                       + 'Cert_190456-193557_8TeV_PromptReco_Collisions12_JSON.txt'
+    '2012RunAplusB'      : '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Prompt/' \
+                            + 'Cert_190456-194076_8TeV_PromptReco_Collisions12_JSON.txt'
+    #'2012RunAplusB'      : '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/DCSOnly/json_DCSONLY.txt'
 }
 
 executable_lumiCalc = '/afs/cern.ch/user/v/veelken/scratch0/CMSSW_5_2_3_patch3/src/RecoLuminosity/LumiDB/scripts/lumiCalc2.py'

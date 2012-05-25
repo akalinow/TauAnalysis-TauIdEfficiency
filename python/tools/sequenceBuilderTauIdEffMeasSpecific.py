@@ -86,7 +86,7 @@ def buildSequenceTauIdEffMeasSpecific(process,
         srcPFIsoCandidates = cms.InputTag('particleFlow'),
         srcPFNoPileUpCandidates = cms.InputTag('pfNoPileUp'),                             
         srcBeamSpot = cms.InputTag('offlineBeamSpot'),
-        srcVertex = cms.InputTag('offlinePrimaryVerticesWithBS'),
+        srcVertex = cms.InputTag('offlinePrimaryVertices'),
         filter = cms.bool(False)                                                  
     )
     # CV: comment-out for now, in order to make sure there is no bias

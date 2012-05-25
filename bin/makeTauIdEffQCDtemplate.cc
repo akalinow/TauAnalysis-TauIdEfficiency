@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.6 $
+ * \version $Revision: 1.7 $
  *
- * $Id: makeTauIdEffQCDtemplate.cc,v 1.6 2011/12/19 14:11:19 veelken Exp $
+ * $Id: makeTauIdEffQCDtemplate.cc,v 1.7 2012/02/02 09:03:32 veelken Exp $
  *
  */
 
@@ -69,8 +69,7 @@ struct regionEntryType
     double numEventsWplusJetsSideband_data = 
       getIntegral(histograms_data[regionWplusJetsSideband_]["EventCounter"][key_central_value], true, true);
     double numEventsWplusJetsSideband_expBgr = 
-      (numEvents_mc["Ztautau"][regionWplusJetsSideband_][sysUncertainty_]
-     + numEvents_mc["Zmumu"][regionWplusJetsSideband_][sysUncertainty_]
+      (numEvents_mc["ZplusJets"][regionWplusJetsSideband_][sysUncertainty_]
      + numEvents_mc["QCD"][regionWplusJetsSideband_][sysUncertainty_]
      + numEvents_mc["TTplusJets"][regionWplusJetsSideband_][sysUncertainty_]);
     double numEventsWplusJetsSideband_obsWplusJets = numEventsWplusJetsSideband_data - numEventsWplusJetsSideband_expBgr;
@@ -84,8 +83,7 @@ struct regionEntryType
     double scaleFactorWplusJets = numEventsWplusJetsSideband_obsWplusJets/numEventsWplusJetsSideband_expWplusJets;
 
     TH1* distributionDataQCDsideband = histograms_data[regionTakeQCDtemplateFromData_][fitVariable_][key_central_value];
-    TH1* templateZtautauQCDsideband = histograms_mc["Ztautau"][regionTakeQCDtemplateFromData_][fitVariable_][sysUncertainty_];
-    TH1* templateZmumuQCDsideband = histograms_mc["Zmumu"][regionTakeQCDtemplateFromData_][fitVariable_][sysUncertainty_];
+    TH1* templateZtautauQCDsideband = histograms_mc["ZplusJets"][regionTakeQCDtemplateFromData_][fitVariable_][sysUncertainty_];
     TH1* templateWplusJetsQCDsideband = histograms_mc["WplusJets"][regionTakeQCDtemplateFromData_][fitVariable_][sysUncertainty_];
     TH1* templateTTplusJetsQCDsideband = histograms_mc["TTplusJets"][regionTakeQCDtemplateFromData_][fitVariable_][sysUncertainty_];
 
@@ -107,7 +105,6 @@ struct regionEntryType
     }
     templateQCDsideband_obsQCD->Add(distributionDataQCDsideband, +1.);
     templateQCDsideband_obsQCD->Add(templateZtautauQCDsideband, -1.);
-    templateQCDsideband_obsQCD->Add(templateZmumuQCDsideband, -1.);
     templateQCDsideband_obsQCD->Add(templateWplusJetsQCDsideband, -1.*scaleFactorWplusJets);
     templateQCDsideband_obsQCD->Add(templateTTplusJetsQCDsideband, -1.);
   }
@@ -195,8 +192,7 @@ int main(int argc, const char* argv[])
     fs.mkdir(directory.data()) : fs;
 
   vstring processes;
-  processes.push_back(std::string("Ztautau"));
-  processes.push_back(std::string("Zmumu"));
+  processes.push_back(std::string("ZplusJets"));
   processes.push_back(std::string("QCD"));
   processes.push_back(std::string("WplusJets"));
   processes.push_back(std::string("TTplusJets"));

@@ -115,7 +115,7 @@ void drawCMSprelimaryLabels(double intLumiData, double xOffset = 0.160, double y
   static TPaveText* cmsPreliminaryLabel = 0;
   if ( !cmsPreliminaryLabel ) {
     cmsPreliminaryLabel = new TPaveText(xOffset, yOffset + 0.0525, xOffset + 0.32, yOffset + 0.0925, "NDC");
-    cmsPreliminaryLabel->AddText("CMS Preliminary 2011");
+    cmsPreliminaryLabel->AddText("CMS Preliminary 2012");
     cmsPreliminaryLabel->SetTextAlign(13);
     cmsPreliminaryLabel->SetTextSize(0.045);
     cmsPreliminaryLabel->SetFillStyle(0);
@@ -126,7 +126,7 @@ void drawCMSprelimaryLabels(double intLumiData, double xOffset = 0.160, double y
   static TPaveText* cmsLuminosityLabel = 0;
   if ( !cmsLuminosityLabel ) {
     cmsLuminosityLabel = new TPaveText(xOffset + 0.005, yOffset, xOffset + 0.32, yOffset + 0.0400, "NDC");
-    TString cmsLuminosityLabel_text = Form("#sqrt{s} = 7 TeV, L = %1.2f fb^{-1}", intLumiData);
+    TString cmsLuminosityLabel_text = Form("#sqrt{s} = 8 TeV, L = %1.2f fb^{-1}", intLumiData);
     cmsLuminosityLabel->AddText(cmsLuminosityLabel_text.Data());
     cmsLuminosityLabel->SetTextAlign(13);
     cmsLuminosityLabel->SetTextSize(0.045);

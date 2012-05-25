@@ -18,7 +18,8 @@ hltMu = cms.EDFilter("EventSelPluginFilter",
             'HLT_IsoMu15_L1ETM20_v5',                
             'HLT_IsoMu15_eta2p1_L1ETM20_v1',
             'HLT_IsoMu15_eta2p1_L1ETM20_v3',
-            'HLT_IsoMu15_eta2p1_L1ETM20_v4'
+            'HLT_IsoMu15_eta2p1_L1ETM20_v4',
+            'HLT_IsoMu15_eta2p1_L1ETM20_v5'
         )
     )
 )

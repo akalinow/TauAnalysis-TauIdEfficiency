@@ -8,6 +8,7 @@ from TauAnalysis.TauIdEfficiency.tools.configurePatTupleProduction import config
 from TauAnalysis.TauIdEfficiency.tools.sequenceBuilder import buildGenericTauSequence
 from TauAnalysis.TauIdEfficiency.tools.sequenceBuilderTauIdEffMeasSpecific import buildSequenceTauIdEffMeasSpecific
 import PhysicsTools.PatAlgos.tools.helpers as patutils
+from PhysicsTools.PatAlgos.tools.jetTools import *
 
 def configurePatTupleProductionTauIdEffMeasSpecific(process, patSequenceBuilder = buildGenericTauSequence,
                                                     hltProcess = "HLT",
@@ -40,6 +41,18 @@ def configurePatTupleProductionTauIdEffMeasSpecific(process, patSequenceBuilder 
 
     patTupleConfig = configurePatTupleProduction(process, patSequenceBuilder,
                                                  patPFTauCleanerPrototype, patCaloTauCleanerPrototype, True, hltProcess, isMC, False)
+
+    addJetCollection(process, cms.InputTag('smearedAK5PFJets'),
+                     'SmearedAK5', 'PF',
+                     doJTA            = False,
+                     doBTagging       = True,
+                     jetCorrLabel     = None, # CV: jet corrections already applied on reco::PFJet input
+                     doType1MET       = False,
+                     genJetCollection = cms.InputTag("ak5GenJets"),
+                     doJetID          = True,
+                     jetIdLabel       = "ak5",
+                     outputModules    = []
+    )
 
     # add "raw" (uncorrected) CaloMET,
     # needed to parametrize efficiency turn-on of HLT_IsoMu15_L1ETM20 cross-trigger

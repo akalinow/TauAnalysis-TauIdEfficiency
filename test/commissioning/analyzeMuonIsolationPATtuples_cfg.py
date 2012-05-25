@@ -65,7 +65,7 @@ process.muonIsolationAnalyzer = cms.PSet(
     muonIsoThresholdsTight = cms.vdouble(0.10),
 
     muonIsoProbExtractor = cms.PSet(
-        inputFileName = cms.FileInPath('TauAnalysis/TauIdEfficiency/data/train_kNNmuonIsolation_kNN.weights.xml'),
+        inputFileName = cms.FileInPath('TauAnalysis/TauIdEfficiency/data_nocrab/train_kNNmuonIsolation_kNN.weights.xml'),
         parametrization = cms.VPSet(            
             cms.PSet(
                 name = cms.string('logMuonPt'),

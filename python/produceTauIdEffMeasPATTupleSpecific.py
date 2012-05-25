@@ -117,7 +117,7 @@ def produceTauIdEffMeasPATTuple(process, isMC, isEmbedded, HLTprocessName, pfCan
                 'keep *_selectedPatMuonsForTauIdEffPFRelIsoCumulative_*_*',
                 'keep *_selectedPatMuonsForTauIdEffZmumuHypotheses_*_*',
                 'keep *_selectedDiMuPairForTauIdEffZmumuHypotheses_*_*',
-                'keep *_patJetsAK5PFnotOverlappingWithLeptonsForMEtUncertainty*_*_*',
+                'keep *_patJetsSmearedAK5PF_*_*',
                 #'keep *_selectedPatPFTausFixedConeForTauIdEff*_*_*',
                 #'keep *_selectedPatPFTausShrinkingConeForTauIdEff*_*_*',
                 'keep *_selectedPatPFTausHPSforTauIdEff*_*_*',
@@ -130,12 +130,10 @@ def produceTauIdEffMeasPATTuple(process, isMC, isEmbedded, HLTprocessName, pfCan
                 'keep *_offlinePrimaryVerticesWithBS_*_*',
                 'keep *_selectedPrimaryVertexHighestPtTrackSum_*_*',
                 # keep CaloMEt objects                                                            
-                'keep *_patMETs*_*_*',
                 'keep *_patCaloMet*_*_*',                                  
                 # keep PFMEt objects                                               
-                'keep *_patPFMet*_*_*',
-                'keep *_patType1CorrectedPFMet*_*_*',
-                'keep *_patType1p2CorrectedPFMet*_*_*',
+                'keep *_patPFMet_*_*',
+                'keep *_patType1CorrectedPFMet_*_*',
                 # CV: additional collections needed to run nSVfit algorithm                                                        
                 #'keep recoTracks_generalTracks_*_*',                                             
                 #'keep *_ak5PFJets_*_*',
@@ -153,8 +151,8 @@ def produceTauIdEffMeasPATTuple(process, isMC, isEmbedded, HLTprocessName, pfCan
           cms.untracked.vstring(
                 'keep *_smearedPatJetsAK5PF*_*_*',
                 'keep *_muonTriggerEfficiencyCorrection_*_*',
-                'keep *_vertexMultiplicityReweight3d2012RunA_*_*',
-                'keep *_vertexMultiplicityReweight3d2012RunB_*_*',
+                'keep *_vertexMultiplicityReweight3d2012RunAplusB_*_*',
+                'keep *_vertexMultiplicityReweight1d2012RunAplusB_*_*',
                 'keep *_vertexMultiplicityVsRhoPFNeutralReweight_*_*',
                 'keep *_addPileupInfo_*_*',
                 'keep *_genParticles_*_*',

@@ -13,9 +13,9 @@ import subprocess
 channel = 'ZtoMuTau_tauIdEff'
 
 #jobId = getJobId(channel)
-jobId = '2012May04'
+jobId = '2012May12'
 
-version = 'V1_0'
+version = 'v1_3'
 
 lxbatch_queue = '1nd'
 
@@ -23,15 +23,14 @@ pfCandidateCollection = "particleFlow" # pile-up removal disabled
 #pfCandidateCollection = "pfNoPileUp"   # pile-up removal enabled
 
 samplesToAnalyze = [
-    'data_TauPlusX_Run2012A_PromptReco_v1_runs190456to191859',
-    'ZplusJets_madgraph',
+    'data_TauPlusX_Run2012A_PromptReco_v1_runs190456to193557',
+    #'data_TauPlusX_Run2012A_PromptReco_v1_runs190456to193621',
+    #'data_TauPlusX_Run2012B_PromptReco_v1_runs193752to194076v2',
+    'ZplusJets_madgraph2',
     'Ztautau_pythia',
-    #'WplusJets_madgraph',
-    'Wenu_pythia',
-    'Wmunu_pythia',
-    'Wtaunu_pythia',  
-    'PPmuXptGt20Mu15',      
-    'TTplusJets_madgraph'
+    'WplusJets_madgraph',
+    'PPmuXptGt20Mu15v2',      
+    'TTplusJets_madgraph2'
 ]
 
 samplesToAnalyze_noTauSel = [
@@ -39,15 +38,14 @@ samplesToAnalyze_noTauSel = [
 ]    
 
 numInputFilesPerJob = {
-    'data_TauPlusX_Run2012A_PromptReco_v1_runs190456to191859' : 5,
-    'ZplusJets_madgraph'                                      : 1,
-    'Ztautau_pythia'                                          : 5,
-    #'WplusJets_madgraph'                                     : 5,
-    'Wenu_pythia'                                             : 5,
-    'Wmunu_pythia'                                            : 5,
-    'Wtaunu_pythia'                                           : 5,
-    'PPmuXptGt20Mu15'                                         : 5,
-    'TTplusJets_madgraph'                                     : 3
+    'data_TauPlusX_Run2012A_PromptReco_v1_runs190456to193557'   : 2,
+    'data_TauPlusX_Run2012A_PromptReco_v1_runs190456to193621'   : 2,
+    'data_TauPlusX_Run2012B_PromptReco_v1_runs193752to194076v2' : 2,
+    'ZplusJets_madgraph2'                                       : 1,
+    'Ztautau_pythia'                                            : 5,
+    'WplusJets_madgraph'                                        : 5,
+    'PPmuXptGt20Mu15v2'                                         : 5,
+    'TTplusJets_madgraph2'                                      : 1
 }    
 
 # Get all the skim files from the castor directory
@@ -57,9 +55,14 @@ print("inputFilePath = %s" % inputFilePath)
 skipExistingPATtuples = True
 
 outputFilePath = "/castor/cern.ch/user/v/veelken/CMSSW_5_2_x/PATtuples/TauIdEffMeas/%s/%s" % (jobId, version)
-
 print "outputFilePath = %s" % outputFilePath
-castor.rfmkdir(outputFilePath, permissions = 777)
+try:
+    castor.rfstat(outputFilePath)
+except RuntimeError:
+    # outputFilePath does not yet exist, create it
+    print "outputFilePath does not yet exist, creating it."
+    os.system("rfmkdir %s" % outputFilePath)
+    os.system("rfchmod 777 %s" % outputFilePath)
 
 configFile = 'produceTauIdEffMeasPATTuple_cfg.py'
 configFile_noTauSel = 'produceTauIdEffMeasPATTuple_noTauSel_cfg.py'

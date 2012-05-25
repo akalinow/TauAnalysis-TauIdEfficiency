@@ -69,6 +69,7 @@
   <use   name="FWCore/Utilities"/>
   <use   name="PhysicsTools/FWLite"/>
   <use   name="PhysicsTools/JetMCUtils"/>
+  <use   name="PhysicsTools/SelectorUtils"/>
   <use   name="TauAnalysis/CandidateTools"/>
   <use   name="TauAnalysis/GenSimTools"/>
   <use   name="TauAnalysis/RecoTools"/>

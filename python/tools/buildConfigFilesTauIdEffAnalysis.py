@@ -97,12 +97,19 @@ def buildConfigFile_FWLiteTauIdEffAnalyzer(sampleToAnalyze, jobId, inputFilePath
     process_matched = None
     processes = recoSampleDefinitions['MERGE_SAMPLES'].keys()
     for process in processes:
-        for sample in recoSampleDefinitions['MERGE_SAMPLES'][process]['samples']:
+        process_samples = []
+        if 'samples' in recoSampleDefinitions['MERGE_SAMPLES'][process].keys():
+            process_samples = recoSampleDefinitions['MERGE_SAMPLES'][process]['samples']
+        else:
+            process_samples.append(process)
+        for sample in process_samples:
             if sample == sampleToAnalyze:
-                process_matched = process
-    if process_matched.startswith('Data'):
+                process_matched = process                
+    if process_matched and process_matched.startswith('Data'):
         process_matched = 'Data'
 
+    print("sample = %s: process_matched = %s" % (sampleToAnalyze, process_matched))
+    
     if not process_matched:
         print("No process associated to sample %s --> skipping !!" % sampleToAnalyze)
         return
@@ -213,6 +220,7 @@ process.tauIdEffAnalyzer = cms.PSet(
     srcMuTauPairs = cms.InputTag('%s'),
     requireUniqueMuTauPair = cms.bool(%s),
     srcCaloMEt = cms.InputTag('patCaloMetNoHF'),
+    srcJets = cms.InputTag('patJetsSmearedAK5PF'),
     svFitMassHypothesis = cms.string('psKine_MEt_logM_fit'),
     tauChargeMode = cms.string('%s'),
     disableTauCandPreselCuts = cms.bool(%s),
@@ -252,9 +260,11 @@ process.tauIdEffAnalyzer = cms.PSet(
             '          - 0.5*userIsolation("pat::User2Iso"))) > 0.20*pt'
         )
     ),
+    #applyMuonIsoWeights = cms.bool(False),
+    applyMuonIsoWeights = cms.bool(True),
 
     # CV: 'srcEventCounter' is defined in TauAnalysis/Skimming/test/skimTauIdEffSample_cfg.py
-    srcEventCounter = cms.InputTag('totalEventsProcessed'),
+    srcEventCounter = cms.InputTag('processedEventsSkimming'),
     allEvents_DBS = cms.int32(%i),
     
     xSection = cms.double(%f),
@@ -786,6 +796,9 @@ def buildConfigFile_hadd(haddCommand, shellFileName_full, inputFileNames, output
 
     shellFile = open(shellFileName_full, "w")
     shellFile.write("#!/bin/csh -f\n")
+    shellFile.write("\n")
+    # CV: delete output file in case it exists 
+    shellFile.write("rm -f %s\n" % outputFileName_full)
     shellFile.write("\n")
     haddCommandLine = "%s %s" % (haddCommand, outputFileName_full)
     for inputFileName in inputFileNames:

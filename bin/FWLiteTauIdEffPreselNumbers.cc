@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.16 $
+ * \version $Revision: 1.17 $
  *
- * $Id: FWLiteTauIdEffPreselNumbers.cc,v 1.16 2012/02/02 09:03:32 veelken Exp $
+ * $Id: FWLiteTauIdEffPreselNumbers.cc,v 1.17 2012/05/08 10:29:13 veelken Exp $
  *
  */
 
@@ -392,8 +392,6 @@ int main(int argc, char* argv[])
   edm::InputTag srcGenParticles = cfgTauIdEffPreselNumbers.getParameter<edm::InputTag>("srcGenParticles");
   edm::ParameterSet cfgEventSelCuts = cfgTauIdEffPreselNumbers.getParameter<edm::ParameterSet>("eventSelCuts");
   edm::InputTag srcHLTresults = cfgTauIdEffPreselNumbers.getParameter<edm::InputTag>("srcHLTresults");
-  edm::InputTag srcL1GtReadoutRecord = cfgTauIdEffPreselNumbers.getParameter<edm::InputTag>("srcL1GtReadoutRecord"); 
-  edm::InputTag srcL1GtObjectMapRecord = cfgTauIdEffPreselNumbers.getParameter<edm::InputTag>("srcL1GtObjectMapRecord");
   vstring hltPaths = cfgTauIdEffPreselNumbers.getParameter<vstring>("hltPaths");
   edm::InputTag srcCaloMEt = cfgTauIdEffPreselNumbers.getParameter<edm::InputTag>("srcCaloMEt");
   edm::InputTag srcGoodMuons = cfgTauIdEffPreselNumbers.getParameter<edm::InputTag>("srcGoodMuons");
