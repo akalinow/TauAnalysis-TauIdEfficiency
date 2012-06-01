@@ -47,7 +47,7 @@ for line in inputFile.readlines():
             raise ValueError("Undefined units = %s !!" % recUnits)
         recLumi = float(recValue)*units[recUnits]
         #print("recLumi = %f" % recLumi)
-        effLumiSum += recLumi
+        recLumiSum += recLumi
         
         effValue = summaryRowMatch.group('effValue')
         effUnits = summaryRowMatch.group('effUnits')
