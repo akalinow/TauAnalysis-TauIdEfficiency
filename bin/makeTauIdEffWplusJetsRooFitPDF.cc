@@ -408,18 +408,26 @@ int main(int argc, const char* argv[])
   processes.push_back(std::string("TTplusJets"));
 
 
-  //TH1F* htest[vHistoToFit.size()];
 
-   for ( vstring::const_iterator histogramName = vHistoToFit.begin();
+  map< string, TH1* > htest;
+
+  for ( vstring::const_iterator histogramName = vHistoToFit.begin();
        histogramName != vHistoToFit.end(); ++histogramName ) {
 
        //Get the Hitsto to be fit 
-       //TH1F* htest[histogramName->data()] = (TH1F*)histogramInputFile->Get(histogramName->data());
+       htest[histogramName->data()] = (TH1F*)histogramInputFile->Get(histogramName->data());
+
+   //int pos = vHistoToFit.at(*histogramName);
+
+     //htest[] = (TH1*)histogramInputFile->Get(histogramName->data());
+
+
+
        //Fit the histo with the Good function
-    TH1F* htest = (TH1F*)histogramInputFile->Get(histogramName->data());
+       //TH1F* htest = (TH1F*)histogramInputFile->Get(histogramName->data());
 
 
-      FitHisto(htest);
+      FitHisto(htest[histogramName->data()] );
 
    } 
 
