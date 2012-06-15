@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.2 $
+ * \version $Revision: 1.4 $
  *
- * $Id: makeTauIdEffWplusJetsRooFitPDF.cc,v 1.2 2012/06/15 08:07:06 calpas Exp $
+ * $Id: makeTauIdEffWplusJetsRooFitPDF.cc,v 1.4 2012/06/15 15:16:17 calpas Exp $
  *
  */
 
@@ -54,114 +54,17 @@
 #include "RooAbsReal.h"
 #include "RooConstVar.h"
 
-
 using namespace RooFit;
-
-
-typedef std::map<std::string, std::map<std::string, TH1*> > histogramMap;
-typedef std::map<std::string, std::map<std::string, std::map<std::string, double> > > numEventsMap;
-
-struct regionEntryType
-{
-  regionEntryType(const std::string& regionTakeQCDtemplateFromData, 
-		  const std::string& regionWplusJetsSideband, 
-		  const std::string& regionStoreQCDtemplate, 
-		  const std::string& tauId, const std::string& fitVariable, const std::string& sysUncertainty)
-    : regionTakeQCDtemplateFromData_(regionTakeQCDtemplateFromData),
-      regionWplusJetsSideband_(regionWplusJetsSideband),
-      regionStoreQCDtemplate_(regionStoreQCDtemplate),
-      tauId_(tauId),
-      fitVariable_(fitVariable),
-      sysUncertainty_(sysUncertainty)
-  {}
-  ~regionEntryType() {}
-  
-  void makeQCDtemplate(TFileDirectory& dir, 
-		       histogramMap3& histograms_data, histogramMap4& histograms_mc, valueMap3& numEvents_mc)
-  {
-    //std::cout << "<regionEntryType::makeQCDtemplate>" << std::endl;
-    //std::cout << " regionWplusJetsSideband = " << regionWplusJetsSideband_ << std::endl;
-    //std::cout << " tauId = " << tauId_ << std::endl;
-    //std::cout << " fitVariable = " << fitVariable_ << std::endl;
-    //std::cout << " sysUncertainty = " << sysUncertainty_ << std::endl;
-    
-    double numEventsWplusJetsSideband_data = 
-      getIntegral(histograms_data[regionWplusJetsSideband_]["EventCounter"][key_central_value], true, true);
-    double numEventsWplusJetsSideband_expBgr = 
-      (numEvents_mc["ZplusJets"][regionWplusJetsSideband_][sysUncertainty_]
-       + numEvents_mc["QCD"][regionWplusJetsSideband_][sysUncertainty_]
-       + numEvents_mc["TTplusJets"][regionWplusJetsSideband_][sysUncertainty_]);
-    double numEventsWplusJetsSideband_obsWplusJets = numEventsWplusJetsSideband_data - numEventsWplusJetsSideband_expBgr;
-    double numEventsWplusJetsSideband_expWplusJets = 
-      numEvents_mc["WplusJets"][regionWplusJetsSideband_][sysUncertainty_];    
-    //std::cout << "WplusJets sideband: observed = " << numEventsWplusJetsSideband_data << ","
-    //	        << " expected background = " << numEventsWplusJetsSideband_expBgr 
-    //	        << " --> observed WplusJets contribution = " << numEventsWplusJetsSideband_obsWplusJets << ","
-    //	        << " expected = " << numEventsWplusJetsSideband_expWplusJets << std::endl;
-    
-    double scaleFactorWplusJets = numEventsWplusJetsSideband_obsWplusJets/numEventsWplusJetsSideband_expWplusJets;
-    
-    TH1* distributionDataQCDsideband = histograms_data[regionTakeQCDtemplateFromData_][fitVariable_][key_central_value];
-    TH1* templateZtautauQCDsideband = histograms_mc["ZplusJets"][regionTakeQCDtemplateFromData_][fitVariable_][sysUncertainty_];
-    TH1* templateWplusJetsQCDsideband = histograms_mc["WplusJets"][regionTakeQCDtemplateFromData_][fitVariable_][sysUncertainty_];
-    TH1* templateTTplusJetsQCDsideband = histograms_mc["TTplusJets"][regionTakeQCDtemplateFromData_][fitVariable_][sysUncertainty_];
-    
-    TString templateQCDsidebandName = distributionDataQCDsideband->GetName();    
-    templateQCDsidebandName.ReplaceAll(regionTakeQCDtemplateFromData_, regionStoreQCDtemplate_);
-    if ( sysUncertainty_ != key_central_value ) templateQCDsidebandName.Append("_").Append(sysUncertainty_);
-    std::cout << "creating histogram = " << templateQCDsidebandName << std::endl;
-    TH1* templateQCDsideband_obsQCD = 0;
-    TAxis* xAxis = distributionDataQCDsideband->GetXaxis(); 
-    if ( xAxis->GetXbins() && xAxis->GetXbins()->GetSize() >= 2 ) {
-      const TArrayD* binning = xAxis->GetXbins();      
-      templateQCDsideband_obsQCD = 
-	dir.make<TH1D>(templateQCDsidebandName, 
-		       distributionDataQCDsideband->GetTitle(), binning->GetSize() - 1, binning->GetArray());
-    } else {
-      templateQCDsideband_obsQCD = 
-	dir.make<TH1D>(templateQCDsidebandName, 
-		       distributionDataQCDsideband->GetTitle(), xAxis->GetNbins(), xAxis->GetXmin(), xAxis->GetXmax());
-    }
-    templateQCDsideband_obsQCD->Add(distributionDataQCDsideband, +1.);
-    templateQCDsideband_obsQCD->Add(templateZtautauQCDsideband, -1.);
-    templateQCDsideband_obsQCD->Add(templateWplusJetsQCDsideband, -1.*scaleFactorWplusJets);
-    templateQCDsideband_obsQCD->Add(templateTTplusJetsQCDsideband, -1.);
-  }
-
-  std::string regionTakeQCDtemplateFromData_;
-  std::string regionWplusJetsSideband_;
-  std::string regionStoreQCDtemplate_;
-
-  std::string tauId_;
-  std::string fitVariable_;
-  
-  std::string sysUncertainty_;
-};
-
-
-/////////////////Start smooth function///////////////////////////////////
-
 
 void FitHisto(TH1* htest){
   
-  //the Append() works with string 
-  //will keep the genuine name of the histo
   std::string histoNameInput = htest->GetName();
-  //will then have append !!
-  std::string histoName     = htest->GetName();
-  std::string histoNamePDF  = htest->GetName();
-  std::string histoNameEPS  = htest->GetName();
-  std::string histoNamePNG  = htest->GetName();
-  
-  cout <<"hitoName" << histoNameInput << endl;
+  std::string histoName      = htest->GetName();
   
   double binPDF = htest->GetXaxis()->GetNbins();
   
   //General Variable      
-  RooRealVar x("x","mvis",0,200);
-  //RooRealVar x("x","mT",0,200);
-  
-  
+  RooRealVar x("x","x",0,200);
 
   //////////////Landau convoluted with Gauss function//////////////
   //LG1
@@ -213,21 +116,20 @@ void FitHisto(TH1* htest){
   //Make hist as a abspdf to be fit
   RooDataHist data("","",x,htest, 1.0); 
   
-  //Choose Fit depending on the histo name
-  
   RooPlot* frame = x.frame(Title("Fit"));
   
   const char *histoToFitName;
   histoToFitName = histoNameInput.c_str();
-  // convert CHAR to STR
-  string histoToFitNameSTR (histoToFitName);
-  
+
+  string histoToFitNameSTR = std::string(histoName).data(); 
+
   const char *histoToSmooth1 = "WplusJets_C1f_diTauVisMass_tauDiscrHPScombLooseDBcorr_failed_JetToTauFake"; 
   const char *histoToSmooth2 = "WplusJets_D_diTauMt_tauDiscrHPScombLooseDBcorrAndMuonVeto_all_JetToTauFake";  
   const char *histoToSmooth3 = "WplusJets_A_diTauMt_tauDiscrHPScombLooseDBcorr_all_JetToTauFake";
   const char *histoToSmooth4 = "WplusJets_B_diTauMt_tauDiscrHPScombLooseDBcorr_all_JetToTauFake";
   const char *histoToSmooth5 = "QCD_A_diTauMt_tauDiscrHPScombLooseDBcorr_all";
   const char *histoToSmooth6 = "QCD_B_diTauMt_tauDiscrHPScombLooseDBcorr_all";
+
   // convert CHAR to STR to compare
   string histoToSmooth1STR (histoToSmooth1);
   string histoToSmooth2STR (histoToSmooth2);
@@ -235,7 +137,7 @@ void FitHisto(TH1* htest){
   string histoToSmooth4STR (histoToSmooth4);
   string histoToSmooth5STR (histoToSmooth5);
   string histoToSmooth6STR (histoToSmooth6);
-  
+
   //histo for smooth function
   TH1* hist;  
 
@@ -243,16 +145,14 @@ void FitHisto(TH1* htest){
     LandauConvGauss.fitTo(data);
     data.plotOn(frame);
     LandauConvGauss.plotOn(frame,LineColor(kRed)); 
- 
-    hist = LandauConvGauss.createHistogram("SmoothHisto",x,Binning(binPDF)); //Bin, min, max
-  }
+    hist = LandauConvGauss.createHistogram(std::string(histoName).append("_smoothed").data(), x,Binning(binPDF) );  
+ }
   
   else if ( histoToFitNameSTR == histoToSmooth2STR){
     CristalBall1.fitTo(data);
     data.plotOn(frame);
     CristalBall1.plotOn(frame,LineColor(kRed)); 
-
-    hist = CristalBall1.createHistogram("SmoothHisto",x,Binning(binPDF)); //Bin, min, max
+    hist = CristalBall1.createHistogram(std::string(histoName).append("_smoothed").data(),x,Binning(binPDF)); //Bin, min, max
   }
   
   else if (( histoToFitNameSTR == histoToSmooth3STR) ||
@@ -260,8 +160,7 @@ void FitHisto(TH1* htest){
     CristalBall2.fitTo(data); 
     data.plotOn(frame);
     CristalBall2.plotOn(frame,LineColor(kRed)); 
- 
-    hist = CristalBall2.createHistogram("SmoothHisto",x,Binning(binPDF)); //Bin, min, max
+    hist = CristalBall2.createHistogram(std::string(histoName).append("_smoothed").data(),x,Binning(binPDF)); //Bin, min, max
   }
   
   else if (( histoToFitNameSTR == histoToSmooth5STR) ||
@@ -269,8 +168,7 @@ void FitHisto(TH1* htest){
     CristalBall3.fitTo(data);
     data.plotOn(frame);
     CristalBall3.plotOn(frame,LineColor(kRed)); 
-    
-    hist = CristalBall3.createHistogram("SmoothHisto",x,Binning(binPDF)); //Bin, min, max
+    hist = CristalBall3.createHistogram(std::string(histoName).append("_smoothed").data(),x,Binning(binPDF)); //Bin, min, max
   }
   
   
@@ -280,35 +178,24 @@ void FitHisto(TH1* htest){
   frame->GetYaxis()->SetTitleOffset(1.4) ;
   frame->Draw();
   
-  //now the histoName variable has the string histo...+smooth!!
-  std::string histoNameSTR = histoName.append("_smoothed.root");
-  const char *histoNameCHAR;
-  histoNameCHAR=histoNameSTR.c_str();
-  
-  
   //save canvas in pdf eps and png    
-  TString fileNamePDF = histoNamePDF.append(".pdf");
-  TString fileNameEPS = histoNameEPS.append(".eps"); 
-  TString fileNamePNG = histoNamePNG.append(".png");
+  TString fileNamePDF = std::string(histoName).append("_smoothed.pdf").data();
+  TString fileNameEPS = std::string(histoName).append("_smoothed.eps").data();
+  TString fileNamePNG = std::string(histoName).append("_smoothed.png").data();
   c->Print(fileNamePDF);
   c->Print(fileNameEPS);
   c->Print(fileNamePNG);
   
   //Get the Pdf of the fit, fill it in a histogram and save
-  TFile f(histoNameCHAR,"RECREATE"); //TFile works with char
-  
+  TFile f(std::string(histoName).append("_smoothed.root").data(),"RECREATE"); 
+
   //set Bin histoPDF to be the same then the template histogram  
   // x.setBins( htest->Integral());
 
   hist->Write();
-  
   f.Write();
   f.Close();
-  cout <<"END Smoothing "<< histoName << endl; 
-  
 }
-
-/////////////////End smooth function///////////////////////////////////
 
 
 
@@ -347,40 +234,7 @@ int main(int argc, const char* argv[])
 
   //function to use for the smoothing
   vstring vFitFunctions = cfgMakeTauIdEffQCDtemplate.getParameter<vstring>("FitFunctions"); 
-
-  //name of the output smooth histogram
-  vstring vHistoFitted = cfgMakeTauIdEffQCDtemplate.getParameter<vstring>("HistoFitted"); 
-
-  //name of the control Fit plot 
-  vstring vControlFitPlot = cfgMakeTauIdEffQCDtemplate.getParameter<vstring>("ControlPlots"); 
-
-  vstring tauIds = cfgMakeTauIdEffQCDtemplate.getParameter<vstring>("tauId"); 
-  vstring tauIdValues;
-  tauIdValues.push_back("passed");
-  tauIdValues.push_back("failed");
-  tauIdValues.push_back("D");
-
-
-  vstring fitVariables = cfgMakeTauIdEffQCDtemplate.getParameter<vstring>("fitVariable");
-  add_string_uniquely(fitVariables, "EventCounter"); // CV: for normalization purposes, always add 'EventCounter'
-  add_string_uniquely(fitVariables, "diTauMt");      // CV: add 'diTauMt' in order to take QCD template for region 'D' from data
-
-
-
-  vstring sysUncertainties = cfgMakeTauIdEffQCDtemplate.getParameter<vstring>("sysUncertainties");
-  vstring sysUncertainties_expanded;
-  sysUncertainties_expanded.push_back(key_central_value);
-  for ( vstring::const_iterator sysUncertainty = sysUncertainties.begin();
-	sysUncertainty != sysUncertainties.end(); ++sysUncertainty ) {
-    sysUncertainties_expanded.push_back(std::string(*sysUncertainty).append("Up"));
-    sysUncertainties_expanded.push_back(std::string(*sysUncertainty).append("Down"));
-  }
-  
-  vstring sysUncertainties_data;
-  sysUncertainties_data.push_back(key_central_value);
-
-
-
+ 
    fwlite::InputSource inputFiles(cfg); 
   if ( inputFiles.files().size() != 1 ) 
     throw cms::Exception("makeTauIdEffQCDtemplate") 
@@ -401,13 +255,8 @@ int main(int argc, const char* argv[])
   TFileDirectory histogramOutputDirectory = ( directory != "" ) ?
     fs.mkdir(directory.data()) : fs;
 
-  vstring processes;
-  processes.push_back(std::string("ZplusJets"));
-  processes.push_back(std::string("QCD"));
-  processes.push_back(std::string("WplusJets"));
-  processes.push_back(std::string("TTplusJets"));
 
-
+////////check histo and fit name for fit///////
 
   map< string, TH1* > htest;
 
@@ -416,113 +265,28 @@ int main(int argc, const char* argv[])
 
        //Get the Hitsto to be fit 
        htest[histogramName->data()] = (TH1F*)histogramInputFile->Get(histogramName->data());
-
-   //int pos = vHistoToFit.at(*histogramName);
-
-     //htest[] = (TH1*)histogramInputFile->Get(histogramName->data());
-
-
-
-       //Fit the histo with the Good function
-       //TH1F* htest = (TH1F*)histogramInputFile->Get(histogramName->data());
-
-
-      FitHisto(htest[histogramName->data()] );
-
+ 
+       FitHisto(htest[histogramName->data()] );
    } 
 
 
+/*
+  for ( vstring::const_iterator histogramName = vHistoToFit.begin();
+       histogramName != vHistoToFit.end(); ++histogramName ) {
 
-  for ( vstring::const_iterator tauId = tauIds.begin(); // for tauDiscrHPScombLooseDBcorr
-	tauId != tauIds.end(); ++tauId ) {
+    for ( vstring::const_iterator FitToUse = vFitFunctions.begin();
+         FitToUse != vFitFunctions.end(); ++histogramName ) {
 
-    vstring regions;
-    std::vector<regionEntryType*> regionEntries;
+      if ( ){
 
-    for ( vstring::const_iterator tauIdValue = tauIdValues.begin(); // for passed, failed, D 
-	  tauIdValue != tauIdValues.end(); ++tauIdValue ) {
-
-      std::string regionTakeQCDtemplateFromData = 
-	cfgMakeTauIdEffQCDtemplate.getParameter<std::string>(std::string("regionTakeQCDtemplateFromData_").append(*tauIdValue));
-      std::string regionWplusJetsSideband = 
-	cfgMakeTauIdEffQCDtemplate.getParameter<std::string>(std::string("regionWplusJetsSideband_").append(*tauIdValue));      
-      std::string regionStoreQCDtemplate = 
-	cfgMakeTauIdEffQCDtemplate.getParameter<std::string>(std::string("regionStoreQCDtemplate_").append(*tauIdValue));
-      
-      if ( regionTakeQCDtemplateFromData == "" || regionWplusJetsSideband == "" || regionStoreQCDtemplate == "" ) continue;
-      
-      add_string_uniquely(regions, regionTakeQCDtemplateFromData);
-      //add_string_uniquely(regions, std::string(regionTakeQCDtemplateFromData).append("+"));
-      //add_string_uniquely(regions, std::string(regionTakeQCDtemplateFromData).append("-"));	
-      add_string_uniquely(regions, regionWplusJetsSideband);
-      //add_string_uniquely(regions, std::string(regionWplusJetsSideband).append("+"));
-      //add_string_uniquely(regions, std::string(regionWplusJetsSideband).append("-"));
-
-      for ( vstring::const_iterator fitVariable = fitVariables.begin();
-	    fitVariable != fitVariables.end(); ++fitVariable ) {
-	for ( vstring::const_iterator sysUncertainty = sysUncertainties_expanded.begin();
-	      sysUncertainty != sysUncertainties_expanded.end(); ++sysUncertainty ) {
-	  // all tau chargee
-	  regionEntryType* regionEntry = 
-	    new regionEntryType(regionTakeQCDtemplateFromData, 
-				regionWplusJetsSideband, 
-				regionStoreQCDtemplate, 
-				*tauId, *fitVariable, *sysUncertainty);
-	  regionEntries.push_back(regionEntry);
-
-	  // tau+ candidates only
-	  //regionEntryType* regionEntry_plus = 
-	  //  new regionEntryType(std::string(regionTakeQCDtemplateFromData).append("+"), 
-	  //			  std::string(regionWplusJetsSideband).append("+"), 
-	  //			  std::string(regionStoreQCDtemplate).append("+"), 
-	  //			  *tauId, *fitVariable, *sysUncertainty);
-	  //regionEntries.push_back(regionEntry_plus);
-	  //
-	  // tau- candidates only
-	  //regionEntryType* regionEntry_minus = 
-	  //  new regionEntryType(std::string(regionTakeQCDtemplateFromData).append("-"), 
-	  //			  std::string(regionWplusJetsSideband).append("-"), 
-	  //			  std::string(regionStoreQCDtemplate).append("-"), 
-	  //			  *tauId, *fitVariable, *sysUncertainty);
-	  //regionEntries.push_back(regionEntry_minus);
-	}
-      }
-    }
-
-    histogramMap4 histograms_mc; // key = (process, region, observable, central value/systematic uncertainty)
-    valueMap3 numEvents_mc; // key = (process, region, central value/systematic uncertainty)
-    for ( vstring::const_iterator process = processes.begin();
-	  process != processes.end(); ++process ) {
-      loadHistograms(histograms_mc[*process], histogramInputDirectory, 
-		     *process, regions, *tauId, fitVariables, sysUncertainties_expanded);
-      
-      for ( vstring::const_iterator region = regions.begin();
-	    region != regions.end(); ++region ) {
-	for ( vstring::const_iterator sysUncertainty = sysUncertainties_expanded.begin();
-	      sysUncertainty != sysUncertainties_expanded.end(); ++sysUncertainty ) {
-	  numEvents_mc[*process][*region][*sysUncertainty] = 
-	    getIntegral(histograms_mc[*process][*region]["EventCounter"][*sysUncertainty], true, true);
-	}
-      }
-    }
-    
-    histogramMap3 histograms_data; // key = (region, observable, key_central_value)
-    loadHistograms(histograms_data, histogramInputDirectory, 
-		   "Data", regions, *tauId, fitVariables, sysUncertainties_data);
-
-    for ( std::vector<regionEntryType*>::iterator regionEntry = regionEntries.begin();
-	  regionEntry != regionEntries.end(); ++regionEntry ) {
-      (*regionEntry)->makeQCDtemplate(histogramOutputDirectory, histograms_data, histograms_mc, numEvents_mc);
-    }
-  }
-
-  delete histogramInputFile;
-
-//--print time that it took macro to run
-  std::cout << "finished executing makeTauIdEffQCDtemplate macro:" << std::endl;
-  std::cout << " #tauIdDiscr.  = " << tauIds.size() << std::endl;
-  std::cout << " #fitVariables = " << fitVariables.size() << std::endl;
-  clock.Show("makeTauIdEffQCDtemplate");
+        //Get the Hitsto to be fit 
+        htest[histogramName->data()] = (TH1F*)histogramInputFile->Get(histogramName->data());
+ 
+       FitHisto(htest[histogramName->data()] );
+       }
+     }
+   } 
+*/
 
   return 0;
 }
