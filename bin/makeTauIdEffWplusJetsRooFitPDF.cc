@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.8 $
+ * \version $Revision: 1.2 $
  *
- * $Id: makeTauIdEffQCDtemplate.cc,v 1.8 2012/05/25 08:17:27 veelken Exp $
+ * $Id: makeTauIdEffWplusJetsRooFitPDF.cc,v 1.2 2012/06/15 08:07:06 calpas Exp $
  *
  */
 
@@ -139,7 +139,7 @@ struct regionEntryType
 };
 
 
-/////////////////
+/////////////////Start smooth function///////////////////////////////////
 
 
 void FitHisto(TH1* htest){
@@ -161,53 +161,53 @@ void FitHisto(TH1* htest){
   RooRealVar x("x","mvis",0,200);
   //RooRealVar x("x","mT",0,200);
   
-  ////////////////////////
+  
 
-  //Landau convoluted with Gauss function
+  //////////////Landau convoluted with Gauss function//////////////
   //LG1
   //Landau
   RooRealVar meanl("meanl","mean of Landau",80.,60,90);
-  RooRealVar sigmal("sigmal","sigma of Landau",30,20,50);  //the level of the pick
+  RooRealVar sigmal("sigmal","sigma of Landau",30,20,50);  
   RooLandau landau("landau","landau",x,meanl,sigmal);
   //Gauss
-  RooRealVar meang("meang","mean of Gaussian",1); //minimum of the tail of the pic?!
+  RooRealVar meang("meang","mean of Gaussian",1); 
   RooRealVar sigmag("sigmag","sigma of Gaussian",1,0.1,10);
   RooGaussian gauss("gauss","gauss",x,meang,sigmag);
   //Landau convoluted Gauss
   RooFFTConvPdf LandauConvGauss("LandauConvGauss","LandauConvGauss",x,landau,gauss);
   
 
-  ////////////////////////
+  //////////////Cristal Ball fucntion/////////////////////////////
   
   //CB1
   RooRealVar cbmean1("cbmean1", "cbmean1" , 90.0, 20, 180.0);
-  RooRealVar cbsigma1("cbsigma1", "cbsigma1" , 1, 1.0, 40.0); //pick wide
+  RooRealVar cbsigma1("cbsigma1", "cbsigma1" , 1, 1.0, 40.0); 
   RooRealVar cbsig1("cbsig1", "cbsignal", 800, 20, 80);
-  RooRealVar n1("n1","", 0.2); // increase the level of the back tail
+  RooRealVar n1("n1","", 0.2); 
   RooRealVar alpha1("alpha1","", 1.3);
   RooCBShape CristalBall1("CristalBall1","CristalBall1",x,cbmean1,cbsigma1,alpha1,n1);
 
   //////////////////////// 
   
-  //CB2 OK Value change without obvious raison!!
+  //CB2 
   RooRealVar cbmean2("cbmean2", "cbmean2" , 70, 20, 180.0);
-  RooRealVar cbsigma2("cbsigma2", "cbsigma2" , 10, 1.0, 200.0); //pick wide
+  RooRealVar cbsigma2("cbsigma2", "cbsigma2" , 10, 1.0, 200.0); 
   RooRealVar cbsig2("cbsig2", "cbsignal2", 1, 20, 80);
-  RooRealVar n2("n2","", 1); // increase the level of the back tail
-  RooRealVar alpha2("alpha2","", 1); //addjust the signal shape 
+  RooRealVar n2("n2","", 1); 
+  RooRealVar alpha2("alpha2","", 1); 
   RooCBShape CristalBall2("CristalBall2","CristalBall2",x,cbmean2,cbsigma2,alpha2,n2);
   
   ////////////////////////
   
-  //CB3 OK Value change without obvious raison!!
+  //CB3 
   RooRealVar cbmean3("cbmean3", "cbmean3" , 1, 20, 180.0);
-  RooRealVar cbsigma3("cbsigma3", "cbsigma3" , 10, 1.0, 200.0); //pick wide
+  RooRealVar cbsigma3("cbsigma3", "cbsigma3" , 10, 1.0, 200.0); 
   RooRealVar cbsig3("cbsig3", "cbsignal3", 1, 20, 80);
-  RooRealVar n3("n3","", 1); // increase the level of the back tail
+  RooRealVar n3("n3","", 1); 
   RooRealVar alpha3("alpha3","", 1);
   RooCBShape CristalBall3("CristalBall3","CristalBall3",x,cbmean3,cbsigma3,alpha3,n3);
   
-  ////////////////////////
+  /////////////////////////////////////////////////////////////////
   
   
   //Make hist as a abspdf to be fit
@@ -236,17 +236,23 @@ void FitHisto(TH1* htest){
   string histoToSmooth5STR (histoToSmooth5);
   string histoToSmooth6STR (histoToSmooth6);
   
-  
+  //histo for smooth function
+  TH1* hist;  
+
   if( histoToFitNameSTR == histoToSmooth1STR ){
     LandauConvGauss.fitTo(data);
     data.plotOn(frame);
     LandauConvGauss.plotOn(frame,LineColor(kRed)); 
+ 
+    hist = LandauConvGauss.createHistogram("SmoothHisto",x,Binning(binPDF)); //Bin, min, max
   }
   
   else if ( histoToFitNameSTR == histoToSmooth2STR){
     CristalBall1.fitTo(data);
     data.plotOn(frame);
     CristalBall1.plotOn(frame,LineColor(kRed)); 
+
+    hist = CristalBall1.createHistogram("SmoothHisto",x,Binning(binPDF)); //Bin, min, max
   }
   
   else if (( histoToFitNameSTR == histoToSmooth3STR) ||
@@ -254,6 +260,8 @@ void FitHisto(TH1* htest){
     CristalBall2.fitTo(data); 
     data.plotOn(frame);
     CristalBall2.plotOn(frame,LineColor(kRed)); 
+ 
+    hist = CristalBall2.createHistogram("SmoothHisto",x,Binning(binPDF)); //Bin, min, max
   }
   
   else if (( histoToFitNameSTR == histoToSmooth5STR) ||
@@ -262,6 +270,7 @@ void FitHisto(TH1* htest){
     data.plotOn(frame);
     CristalBall3.plotOn(frame,LineColor(kRed)); 
     
+    hist = CristalBall3.createHistogram("SmoothHisto",x,Binning(binPDF)); //Bin, min, max
   }
   
   
@@ -290,7 +299,6 @@ void FitHisto(TH1* htest){
   
   //set Bin histoPDF to be the same then the template histogram  
   // x.setBins( htest->Integral());
-  TH1* hist = LandauConvGauss.createHistogram("SmoothHisto",x,Binning(binPDF)); //Bin, min, max
 
   hist->Write();
   
@@ -299,6 +307,8 @@ void FitHisto(TH1* htest){
   cout <<"END Smoothing "<< histoName << endl; 
   
 }
+
+/////////////////End smooth function///////////////////////////////////
 
 
 
@@ -398,15 +408,18 @@ int main(int argc, const char* argv[])
   processes.push_back(std::string("TTplusJets"));
 
 
-  TH1F* htest[vHistoToFit.size()];
+  //TH1F* htest[vHistoToFit.size()];
 
    for ( vstring::const_iterator histogramName = vHistoToFit.begin();
        histogramName != vHistoToFit.end(); ++histogramName ) {
 
        //Get the Hitsto to be fit 
-       TH1F* htest[histogramName->data()] = (TH1F*)histogramInputFile->Get(histogramName->data());
+       //TH1F* htest[histogramName->data()] = (TH1F*)histogramInputFile->Get(histogramName->data());
        //Fit the histo with the Good function
-       FitHisto(htest[histogramName->data()]);
+    TH1F* htest = (TH1F*)histogramInputFile->Get(histogramName->data());
+
+
+      FitHisto(htest);
 
    } 
 
