@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.34 $
+ * \version $Revision: 1.35 $
  *
- * $Id: fitTauIdEff.cc,v 1.34 2012/02/02 09:03:32 veelken Exp $
+ * $Id: fitTauIdEff.cc,v 1.35 2012/05/25 08:17:27 veelken Exp $
  *
  */
 
@@ -800,16 +800,20 @@ void fitUsingRooFit(processEntryType& data, double intLumiData,
     if ( processEntry->first == "Ztautau"    ||
 	 processEntry->first == "WplusJets"  ||
 	 processEntry->first == "EWKjetFake" ||
-	 processEntry->first == "TTplusJets" ||
-	 processEntry->first == "QCD"        )
+	 processEntry->first == "TTplusJets" )
       fitConstraintsC1.Add(makeFitConstraint(processEntry->second->norm_.fittedValue_, 
 					     processEntry->second->norm_.expectedValue_, TMath::Max(1.e+1, 0.5*processEntry->second->norm_.expectedValue_)));
-    else if ( processEntry->first == "Zmumu"    || 
-	      processEntry->first == "EWKmuFake" ) // CV: add no/very loose constraint on mu --> tau fake-rate 
-	                                           //     in order to account for inefficiency of muon system in 2011 Run B data
-                                                   //     (not modeled by Monte Carlo simulation)
+    else if ( processEntry->first == "QCD" ) {
+      //fitConstraintsC1.Add(makeFitConstraint(processEntry->second->norm_.fittedValue_, 
+      //                                       processEntry->second->norm_.expectedValue_, TMath::Max(1.e+1, 0.5*processEntry->second->norm_.expectedValue_)));
+      //fitConstraintsC1.Add(makeFitConstraint(processEntry->second->norm_.fittedValue_, 
+      //                                       2.*processEntry->second->norm_.expectedValue_, 1.e-1*processEntry->second->norm_.expectedValue_));
+      processEntry->second->norm_.fittedValue_->setVal(0.67*processEntry->second->norm_.fittedValue_->getVal());
+      processEntry->second->norm_.fittedValue_->setConstant(true);
+    } else if ( processEntry->first == "Zmumu"     || 
+	        processEntry->first == "EWKmuFake" )
       fitConstraintsC1.Add(makeFitConstraint(processEntry->second->norm_.fittedValue_, 
-					     processEntry->second->norm_.expectedValue_, TMath::Max(1.e+1, 1.0*processEntry->second->norm_.expectedValue_)));
+					     processEntry->second->norm_.expectedValue_, 1.0*processEntry->second->norm_.expectedValue_));
     processEntry->second->norm_.fittedValue_->setMin(1.);
     if ( processEntry->first == "EWKmuFake" ) processEntry->second->norm_.fittedValue_->setMax(5.*processEntry->second->norm_.expectedValue_);
     
@@ -823,14 +827,15 @@ void fitUsingRooFit(processEntryType& data, double intLumiData,
     for ( std::map<std::string, fitParameterType>::const_iterator fitParameter = processEntry->second->fitParameters_.begin();
 	  fitParameter != processEntry->second->fitParameters_.end(); ++fitParameter ) {           
       if ( fitParameter->first == "pDiTauCharge_OS_SS" ) {
-	if ( isLowStatistics["A"] && 
-	     isLowStatistics["B"] && 
-	     isLowStatistics["D"] ) {
-	  fitParameter->second.fittedValue_->setConstant(true);
-	} else {
+	//if ( isLowStatistics["A"] && 
+	//     isLowStatistics["B"] && 
+	//     isLowStatistics["D"] ) {
+	//  fitParameter->second.fittedValue_->setConstant(true);
+	//} else {
 	  if ( processEntry->first == "Ztautau" )
-	    fitConstraintsABC2D.Add(makeFitConstraint(fitParameter->second.fittedValue_, 
-						      fitParameter->second.expectedValue_, 0.025));
+	    fitParameter->second.fittedValue_->setConstant(true);
+	    //fitConstraintsABC2D.Add(makeFitConstraint(fitParameter->second.fittedValue_, 
+	    //					        fitParameter->second.expectedValue_, 0.025));
 	  else if ( processEntry->first == "Zmumu"      ||
 		    processEntry->first == "WplusJets"  ||
 		    processEntry->first == "EWKjetFake" )
@@ -839,18 +844,20 @@ void fitUsingRooFit(processEntryType& data, double intLumiData,
 	  else 
 	    fitConstraintsABC2D.Add(makeFitConstraint(fitParameter->second.fittedValue_, 
 						      fitParameter->second.expectedValue_, 0.05));
-	}
+	//}
       } else if ( fitParameter->first == "pMuonIso_tight_loose" ) {
-	if ( isLowStatistics["A"] && 
-	     isLowStatistics["B"] && 
-	     isLowStatistics["D"] ) {
-	  fitParameter->second.fittedValue_->setConstant(true);
-	} else {
-	  if ( processEntry->first == "Ztautau"    ||
-	       processEntry->first == "Zmumu"      ||
-	       processEntry->first == "WplusJets"  ||
-	       processEntry->first == "EWKmuFake"  ||
-	       processEntry->first == "EWKjetFake" )
+	//if ( isLowStatistics["A"] && 
+	//     isLowStatistics["B"] && 
+	//     isLowStatistics["D"] ) {
+	//  fitParameter->second.fittedValue_->setConstant(true);
+	//} else {
+	  if ( processEntry->first == "Ztautau" )
+	    fitParameter->second.fittedValue_->setConstant(true);
+   	  else if ( processEntry->first == "Ztautau"    ||
+		    processEntry->first == "Zmumu"      ||
+		    processEntry->first == "WplusJets"  ||
+		    processEntry->first == "EWKmuFake"  ||
+		    processEntry->first == "EWKjetFake" )
 	    fitConstraintsABC2D.Add(makeFitConstraint(fitParameter->second.fittedValue_, 
 						      fitParameter->second.expectedValue_, 0.01));
 	  else if ( processEntry->first == "TTplusJets" )
@@ -860,7 +867,7 @@ void fitUsingRooFit(processEntryType& data, double intLumiData,
           else
 	    fitConstraintsABC2D.Add(makeFitConstraint(fitParameter->second.fittedValue_, 
 						      fitParameter->second.expectedValue_, TMath::Max(0.05, 0.5*fitParameter->second.expectedValue_)));
-	}
+	//}
       } else if ( fitParameter->first == "pDiTauKine_Sig_Bgr" ) {
 	if ( isLowStatistics["C1p"] && 
 	     isLowStatistics["C1f"] && 
@@ -1162,6 +1169,7 @@ void drawHistograms(const std::string& region, const std::string& observable,
   size_t idx = outputFileName.find_last_of('.');
   std::string outputFileName_plot = std::string(outputFileName, 0, idx);
   if ( idx != std::string::npos ) canvas->Print(std::string(outputFileName_plot).append(std::string(outputFileName, idx)).data());
+  canvas->Print(std::string(outputFileName_plot).append(".eps").data());
   canvas->Print(std::string(outputFileName_plot).append(".png").data());
   canvas->Print(std::string(outputFileName_plot).append(".pdf").data());
 
@@ -1427,7 +1435,7 @@ int main(int argc, const char* argv[])
 	  process != processes.end(); ++process ) {
       histogramMap3 histograms_process;
       loadHistograms(histograms_process, histogramInputDirectory, 
-		     *process, regionsToLoad, tauId, observables, sysUncertainties_expanded);
+		     *process, regionsToLoad, tauId, observables, sysUncertainties_expanded, true, true);
       processEntries[*process] = 
 	new processEntryType(*process, histograms_process, fitVariables, regionsToFit, region_passed, region_failed, 
 			     sysUncertainties, templateMorphingMode, legendEntries[*process], fillColors[*process]);
@@ -1443,9 +1451,9 @@ int main(int argc, const char* argv[])
 
     histogramMap3 histograms_Ztautau_genTau;
     //loadHistograms(histograms_Ztautau_genTau, histogramInputDirectory, 
-    //	             "Ztautau", regionsToLoad, tauId, observables, sysUncertainties_expanded, "GenTau");
+    //	             "Ztautau", regionsToLoad, tauId, observables, sysUncertainties_expanded, true, true, "GenTau");
     loadHistograms(histograms_Ztautau_genTau, histogramInputDirectory, 
-		   "ZplusJets", regionsToLoad, tauId, observables, sysUncertainties_expanded, "GenTau");
+		   "ZplusJets", regionsToLoad, tauId, observables, sysUncertainties_expanded, true, true, "GenTau");
     processEntries["Ztautau"] =
       new processEntryType("Ztautau", histograms_Ztautau_genTau, fitVariables, regionsToFit, region_passed, region_failed, 
 			   sysUncertainties, templateMorphingMode, legendEntries["Ztautau"], fillColors["Ztautau"]);
@@ -1461,9 +1469,9 @@ int main(int argc, const char* argv[])
     for ( vstring::const_iterator process = processes_EWK.begin();
 	  process != processes_EWK.end(); ++process ) {
       loadHistograms(histograms_EWK_muFake[*process], histogramInputDirectory, 
-		     *process, regionsToLoad, tauId, observables, sysUncertainties_expanded, "MuToTauFake");
+		     *process, regionsToLoad, tauId, observables, sysUncertainties_expanded, true, true, "MuToTauFake");
       loadHistograms(histograms_EWK_jetFake[*process], histogramInputDirectory, 
-		     *process, regionsToLoad, tauId, observables, sysUncertainties_expanded, "JetToTauFake");
+		     *process, regionsToLoad, tauId, observables, sysUncertainties_expanded, true, true, "JetToTauFake");
     }
 
     histogramMap3 histograms_EWKsum_muFake = sumHistograms(histograms_EWK_muFake, processes_EWK, "EWKmuFake");
@@ -1480,7 +1488,7 @@ int main(int argc, const char* argv[])
 
     histogramMap3 histograms_QCD;
     loadHistograms(histograms_QCD, histogramInputDirectory, 
-		   "QCD", regionsToLoad, tauId, observables, sysUncertainties_expanded);
+		   "QCD", regionsToLoad, tauId, observables, sysUncertainties_expanded, true, true);
     processEntries["QCD"] = 
       new processEntryType("QCD", histograms_QCD, fitVariables, regionsToFit, region_passed, region_failed, 
 			   sysUncertainties, templateMorphingMode, legendEntries["QCD"], fillColors["QCD"]);
@@ -1488,7 +1496,7 @@ int main(int argc, const char* argv[])
     
     histogramMap3 histograms_TTplusJets;
     loadHistograms(histograms_TTplusJets, histogramInputDirectory, 
-		   "TTplusJets", regionsToLoad, tauId, observables, sysUncertainties_expanded);
+		   "TTplusJets", regionsToLoad, tauId, observables, sysUncertainties_expanded, true, true);
     processEntries["TTplusJets"] = 
       new processEntryType("TTplusJets", histograms_TTplusJets, fitVariables, regionsToFit, region_passed, region_failed, 
 			   sysUncertainties, templateMorphingMode, legendEntries["TTplusJets"], fillColors["TTplusJets"]);
@@ -1526,9 +1534,9 @@ int main(int argc, const char* argv[])
     }
   } else {
     loadHistograms(histograms_data, histogramInputDirectory, 
-		   "Data", regionsToLoad, tauId, observables, sysUncertainties_data);
+		   "Data", regionsToLoad, tauId, observables, sysUncertainties_data, true, false);
     loadHistograms(histograms_data, histogramInputDirectory, 
-		   "Data", regionsQCDtemplate, tauId, observables, sysUncertainties_expanded);  
+		   "Data", regionsQCDtemplate, tauId, observables, sysUncertainties_expanded, true, false);  
   }
   processEntryType* data = 
     new processEntryType("Data", histograms_data, fitVariables, regionsToFit, region_passed, region_failed, 

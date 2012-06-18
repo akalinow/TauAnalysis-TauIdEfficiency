@@ -57,7 +57,7 @@ def buildConfigFile_FWLiteTauIdEffAnalyzer(sampleToAnalyze, jobId, inputFilePath
                                            recoSampleDefinitions, regions, intLumiData, hltPaths, srcWeights,
                                            tauChargeMode, disableTauCandPreselCuts,
                                            muonPtMin, tauLeadTrackPtMin, tauAbsIsoMax, caloMEtPtMin, pfMEtPtMin,
-                                           plot_hltPaths, requireUniqueMuTauPair = False):
+                                           plot_hltPaths, fillControlPlots, requireUniqueMuTauPair = False):
 
     """Build cfg.py file to run FWLiteTauIdEffAnalyzer macro to run on PAT-tuples,
        apply event selections and fill histograms for A/B/C/D regions"""
@@ -163,6 +163,11 @@ def buildConfigFile_FWLiteTauIdEffAnalyzer(sampleToAnalyze, jobId, inputFilePath
             srcMuTauPairs = composeModuleName([ srcMuTauPairs, sysUncertainty, "cumulative" ])            
         else:
             srcMuTauPairs = composeModuleName([ srcMuTauPairs, "cumulative" ])
+        srcJets = None
+        if not processType == 'Data':
+            srcJets = 'patJetsSmearedAK5PF'
+        else:
+            srcJets = 'patJetsCalibratedAK5PF'
 
         allEvents_DBS = -1
         xSection = 0.0
@@ -177,12 +182,12 @@ import FWCore.ParameterSet.Config as cms
 process = cms.PSet()
 
 process.fwliteInput = cms.PSet(
-    fileNames   = cms.vstring(),
+    fileNames = cms.vstring(),
 
-    firstRun    = cms.int32(%i),
-    lastRun     = cms.int32(%i),
+    firstRun = cms.int32(%i),
+    lastRun = cms.int32(%i),
     
-    maxEvents   = cms.int32(-1),
+    maxEvents = cms.int32(-1),
     
     outputEvery = cms.uint32(1000)
 )
@@ -190,7 +195,7 @@ process.fwliteInput = cms.PSet(
 %s
     
 process.fwliteOutput = cms.PSet(
-    fileName  = cms.string('%s')
+    fileName = cms.string('%s')
 )
 
 process.tauIdEffAnalyzer = cms.PSet(
@@ -220,8 +225,9 @@ process.tauIdEffAnalyzer = cms.PSet(
     srcMuTauPairs = cms.InputTag('%s'),
     requireUniqueMuTauPair = cms.bool(%s),
     srcCaloMEt = cms.InputTag('patCaloMetNoHF'),
-    srcJets = cms.InputTag('patJetsSmearedAK5PF'),
-    svFitMassHypothesis = cms.string('psKine_MEt_logM_fit'),
+    srcJets = cms.InputTag('%s'),
+    #svFitMassHypothesis = cms.string('psKine_MEt_logM_fit'),
+    svFitMassHypothesis = cms.string('psKine_MEt_int'),
     tauChargeMode = cms.string('%s'),
     disableTauCandPreselCuts = cms.bool(%s),
     eventSelCuts = cms.PSet(
@@ -241,6 +247,10 @@ process.tauIdEffAnalyzer = cms.PSet(
     plot_hltPaths = cms.vstring(%s),
 
     weights = cms.VInputTag(%s),
+    # CV: restrict event weights to avoid problem with too low Monte Carlo event statistics
+    #     and large pile-up reweighting factors in Spring'12 MC production
+    minWeight = cms.double(0.),
+    maxWeight = cms.double(3.),
 
     muonIsoProbExtractor = cms.PSet(
         inputFileName = cms.FileInPath('TauAnalysis/TauIdEfficiency/data_nocrab/train_kNNmuonIsolation_kNN.weights.xml'),
@@ -263,6 +273,10 @@ process.tauIdEffAnalyzer = cms.PSet(
     #applyMuonIsoWeights = cms.bool(False),
     applyMuonIsoWeights = cms.bool(True),
 
+    # CV: only book histograms needed to run tau id. efficiency fit;
+    #     drop all control plots
+    fillControlPlots = cms.bool(%s),
+
     # CV: 'srcEventCounter' is defined in TauAnalysis/Skimming/test/skimTauIdEffSample_cfg.py
     srcEventCounter = cms.InputTag('processedEventsSkimming'),
     allEvents_DBS = cms.int32(%i),
@@ -276,10 +290,10 @@ process.tauIdEffAnalyzer = cms.PSet(
 """ % (fwliteInput_firstRun, fwliteInput_lastRun, fwliteInput_fileNames, outputFileName_full,
        process_matched, processType,
        regions_string, tauIds_string, binning_string, sysUncertainty, hltPaths_string,
-       srcMuTauPairs, getStringRep_bool(requireUniqueMuTauPair), tauChargeMode, disableTauCandPreselCuts_string,
+       srcMuTauPairs, getStringRep_bool(requireUniqueMuTauPair), srcJets, tauChargeMode, disableTauCandPreselCuts_string,
        muonPtMin, tauLeadTrackPtMin, tauAbsIsoMax, caloMEtPtMin, pfMEtPtMin,
        srcGenParticles, getStringRep_bool(fillGenMatchHistograms), plot_hltPaths_string,
-       weights_string, allEvents_DBS, xSection, intLumiData)
+       weights_string, getStringRep_bool(fillControlPlots), allEvents_DBS, xSection, intLumiData)
 
         outputFileNames.append(outputFileName_full)
 
@@ -302,6 +316,134 @@ process.tauIdEffAnalyzer = cms.PSet(
     retVal['configFileNames'] = configFileNames
     retVal['outputFileNames'] = outputFileNames
     retVal['logFileNames']    = logFileNames
+
+    return retVal
+
+
+def buildConfigFile_smoothTauIdEffTemplates(jobId, directory, inputFileName, tauIds, fitVariables, sysUncertainties, outputFilePath,
+                                            regions, fitIndividualProcesses, makeControlPlots, outputFilePath_plots):
+
+    """Build config file for smoothing W+jets and QCD by analytic fits"""
+
+    # CV: for normalization purposes, always add 'EventCounter';
+    #     add 'diTauMt' in order to take QCD template for region 'D' from data
+    fitVariables_extended = [ 'EventCounter', 'diTauMt' ]
+    fitVariables_extended.extend(fitVariables)
+
+    sysUncertainties_extended = [ 'CENTRAL_VALUE' ]
+    for sysUncertainty in sysUncertainties:
+        sysUncertainties_extended.append("%sUp" % sysUncertainty)
+        sysUncertainties_extended.append("%sDown" % sysUncertainty)
+
+    if directory != "":
+        outputFileName = 'smoothTauIdEffTemplates_%s_%s.root' % (jobId, directory)
+    else:
+        outputFileName = 'smoothTauIdEffTemplates_%s.root' % jobId
+    outputFileName = outputFileName.replace('__', '_')
+    outputFileName_full = os.path.join(outputFilePath, outputFileName)
+
+    histogramsToSmooth_string = ""
+    for process_and_region in [ [ 'WplusJets', 'A'     ],
+                                [ 'WplusJets', 'A1'    ],
+                                [ 'WplusJets', 'A_mW'  ],
+                                [ 'WplusJets', 'A1_mW' ],
+                                [ 'WplusJets', 'B'     ],
+                                [ 'WplusJets', 'C1f'   ],
+                                [ 'WplusJets', 'C1p'   ],
+                                [ 'WplusJets', 'D'     ],
+                                [ 'QCD',       'A'     ],
+                                [ 'QCD',       'A1'    ],
+                                [ 'QCD',       'A_mW'  ],
+                                [ 'QCD',       'A1_mW' ],
+                                [ 'QCD',       'B'     ] ]:
+        process = process_and_region[0]
+        region  = process_and_region[1]
+        if not region in regions:
+            continue
+        for tauId in tauIds:
+            for fitVariable in fitVariables_extended:
+                for sysUncertainty in sysUncertainties_extended:
+                    for genMatch_option in [ None, "JetToTauFake" ]:
+                    
+                        histogramName = "%s_%s_%s_%s" % (process, region, fitVariable, tauId)
+                        if region.find("p") != -1:
+                            histogramName += "_passed"
+                        elif region.find("f") != -1:
+                            histogramName += "_failed"
+                        else:
+                            histogramName += "_all"
+                        if sysUncertainty != 'CENTRAL_VALUE':
+                            histogramName += "_%s" % sysUncertainty
+                        if genMatch_option is not None:
+                            if process == 'WplusJets':
+                                histogramName += "_%s" % genMatch_option
+                            else:
+                                continue
+
+                        fitFunctionType = None                    
+                        if fitVariables == "diTauVisMass":
+                            fitFunctionType = "LG1"
+                        elif fitVariables == "diTauMt":
+                            if region in [ 'D' ]:
+                                fitFunctionType = "CB1"
+                            elif process == 'WplusJets' and region in [ 'A', 'A_mW', 'A1_mW', 'B' ]:
+                                fitFunctionType = "CB2"
+                            elif process == 'QCD' and region in [ 'A', 'A_mW', 'A1_mW', 'B' ]:
+                                fitFunctionType = "CB3"
+                            else:
+                                raise ValueError("Undefined combination of region = %s and process = %s !!" % (region, process))
+                        else:
+                            continue
+ 
+                        histogramsToSmooth_string += "process.smoothTauIdEffTemplates.histogramsToSmooth.append(\n"
+                        histogramsToSmooth_string += "    cms.PSet(\n"
+                        histogramsToSmooth_string += "        histogramName = cms.string('%s'),\n" % histogramName
+                        histogramsToSmooth_string += "        fitFunctionType = cms.string('%s')\n" % fitFunctionType
+                        histogramsToSmooth_string += "    )\n"
+                        histogramsToSmooth_string += ")\n"
+
+    config = \
+"""
+import FWCore.ParameterSet.Config as cms
+
+process = cms.PSet()
+
+process.fwliteInput = cms.PSet(
+    fileNames = cms.vstring('%s')
+)
+
+process.fwliteOutput = cms.PSet(
+    fileName = cms.string('%s')
+)
+
+process.smoothTauIdEffTemplates = cms.PSet(
+    directory = cms.string('%s'),
+    
+    histogramsToSmooth = cms.VPSet(),
+
+    makeControlPlots = cms.bool(%s),
+    controlPlotFilePath = cms.string('%s')
+)
+
+%s
+""" % (inputFileName, outputFileName_full,
+       directory,       
+       getStringRep_bool(makeControlPlots), outputFilePath_plots,
+       histogramsToSmooth_string)
+    
+    configFileName = outputFileName.replace('.root', '_cfg.py')
+    configFileName_full = os.path.join(outputFilePath, configFileName)    
+    configFile = open(configFileName_full, "w")
+    configFile.write(config)
+    configFile.close()
+
+    logFileName = configFileName.replace('_cfg.py', '.log')
+    logFileName_full = os.path.join(outputFilePath, logFileName)  
+
+    retVal = {}
+    retVal['configFileName'] = configFileName_full
+    retVal['outputFileName'] = outputFileName_full
+    retVal['logFileName']    = logFileName_full
 
     return retVal
 
@@ -339,11 +481,11 @@ import FWCore.ParameterSet.Config as cms
 process = cms.PSet()
 
 process.fwliteInput = cms.PSet(
-    fileNames   = cms.vstring('%s')
+    fileNames = cms.vstring('%s')
 )
     
 process.fwliteOutput = cms.PSet(
-    fileName  = cms.string('%s')
+    fileName = cms.string('%s')
 )
 
 process.makeTauIdEffQCDtemplate = cms.PSet(
@@ -435,11 +577,11 @@ import FWCore.ParameterSet.Config as cms
 process = cms.PSet()
 
 process.fwliteInput = cms.PSet(
-    fileNames   = cms.vstring('%s')
+    fileNames = cms.vstring('%s')
 )
     
 process.fwliteOutput = cms.PSet(
-    fileName  = cms.string('%s')
+    fileName = cms.string('%s')
 )
 
 process.%s = cms.PSet(
@@ -548,9 +690,9 @@ import FWCore.ParameterSet.Config as cms
 process = cms.PSet()
 
 process.fwliteInput = cms.PSet(
-    fileNames   = cms.vstring(),
+    fileNames = cms.vstring(),
         
-    maxEvents   = cms.int32(-1),
+    maxEvents = cms.int32(-1),
     
     outputEvery = cms.uint32(1000)
 )
@@ -558,7 +700,7 @@ process.fwliteInput = cms.PSet(
 %s
     
 process.fwliteOutput = cms.PSet(
-    fileName  = cms.string('%s')
+    fileName = cms.string('%s')
 )
 
 process.%s = cms.PSet(
@@ -588,6 +730,7 @@ process.%s = cms.PSet(
     
     srcMuTauPairs = cms.InputTag('selectedMuPFTauHPSpairsDzForTauIdEffCumulative'),
     srcCaloMEt = cms.InputTag('patCaloMetNoHF'),
+    srcJets = cms.InputTag('patJetsSmearedAK5PF'),
     
     srcGenParticles = cms.InputTag('genParticles'),
 
@@ -740,7 +883,7 @@ import FWCore.ParameterSet.Config as cms
 process = cms.PSet()
 
 process.fwliteInput = cms.PSet(
-    fileNames   = cms.vstring('%s')
+    fileNames = cms.vstring('%s')
 )
 
 process.makeTauIdEffFinalPlots = cms.PSet(
@@ -749,7 +892,7 @@ process.makeTauIdEffFinalPlots = cms.PSet(
 %s
     ),
 
-    expEff_label  = cms.string('%s'),
+    expEff_label = cms.string('%s'),
     measEff_label = cms.string('%s'),
 
     intLumiData = cms.double(%f),

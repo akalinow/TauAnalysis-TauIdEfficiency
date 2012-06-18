@@ -13,6 +13,8 @@ isEmbedded = False # use for everything except for Ztautau samples produced via 
 HLTprocessName = "HLT" # use for Summer'11 MC
 pfCandidateCollection = "particleFlow" # pile-up removal disabled
 ##pfCandidateCollection = "pfNoPileUp" # pile-up removal enabled
+##runSVfit = True
+runSVfit = False
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
@@ -27,7 +29,7 @@ pfCandidateCollection = "particleFlow" # pile-up removal disabled
 #--------------------------------------------------------------------------------
 
 from TauAnalysis.TauIdEfficiency.produceTauIdEffMeasPATTupleSpecific import produceTauIdEffMeasPATTuple
-produceTauIdEffMeasPATTuple(process, isMC, isEmbedded, HLTprocessName, pfCandidateCollection)
+produceTauIdEffMeasPATTuple(process, isMC, isEmbedded, HLTprocessName, pfCandidateCollection, runSVfit)
 
 for processAttrName in dir(process):
     processAttr = getattr(process, processAttrName)

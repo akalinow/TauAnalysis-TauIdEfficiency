@@ -78,20 +78,15 @@ commonSkimSequence = cms.Sequence(
    * diMuPairZmumuHypothesisVeto
 )
 
-DQMStore = cms.Service("DQMStore")
+selectedEventsSkimmingPFTauFixedCone = cms.EDProducer("EventCountProducer")
+selectedEventsSkimmingPFTauShrinkingCone = cms.EDProducer("EventCountProducer")
+selectedEventsSkimmingPFTauHPS = cms.EDProducer("EventCountProducer")
+selectedEventsSkimmingPFTauHPSpTaNC = cms.EDProducer("EventCountProducer")
 
-countEventsProcessed = cms.EDAnalyzer("DQMEventCounter",
-    meName = cms.string('numEventsProcessed')                                         
-)
-
-countEventsPassed = cms.EDAnalyzer("DQMEventCounter",
-    meName = cms.string('numEventsPassed')                                         
-)
-
-muonPFTauFixedConeSkimPath = cms.Path(countEventsProcessed + commonSkimSequence + muonPFTauFixedConeFilter + countEventsPassed)
-muonPFTauShrinkingConeSkimPath = cms.Path(countEventsProcessed + commonSkimSequence + muonPFTauShrinkingConeFilter + countEventsPassed)
-muonPFTauHPSskimPath = cms.Path(countEventsProcessed + commonSkimSequence + muonPFTauHPSfilter + countEventsPassed)
-muonPFTauHPSpTaNCskimPath = cms.Path(countEventsProcessed + commonSkimSequence + muonPFTauHPSpTaNCfilter + countEventsPassed)
+muonPFTauFixedConeSkimPath = cms.Path(commonSkimSequence + muonPFTauFixedConeFilter + selectedEventsSkimmingPFTauFixedCone)
+muonPFTauShrinkingConeSkimPath = cms.Path(commonSkimSequence + muonPFTauShrinkingConeFilter + selectedEventsSkimmingPFTauShrinkingCone)
+muonPFTauHPSskimPath = cms.Path(commonSkimSequence + muonPFTauHPSfilter + selectedEventsSkimmingPFTauHPS)
+muonPFTauHPSpTaNCskimPath = cms.Path(commonSkimSequence + muonPFTauHPSpTaNCfilter + selectedEventsSkimmingPFTauHPSpTaNC)
 
 tauIdEffSampleEventSelection = cms.untracked.PSet(
     SelectEvents = cms.untracked.PSet(

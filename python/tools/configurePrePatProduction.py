@@ -3,9 +3,8 @@ import FWCore.ParameterSet.Config as cms
 import PhysicsTools.PatAlgos.tools.helpers as patutils
 import RecoMET.METProducers.METSigParams_cfi as jetResolutions
 
-def configurePrePatProduction(process, pfCandidateCollection = "particleFlow",
-                              isMC = False):
-    
+def configurePrePatProduction(process, pfCandidateCollection = "particleFlow", isMC = False):
+
     process.prePatProductionSequence = cms.Sequence()
     
     #--------------------------------------------------------------------------------
@@ -19,19 +18,35 @@ def configurePrePatProduction(process, pfCandidateCollection = "particleFlow",
     # add reweighting factors to be applied to Monte Carlo simulated events
     # in order to match vertex multiplicity distribution in Data
     process.load("TauAnalysis.RecoTools.vertexMultiplicityReweight_cfi")
-    process.vertexMultiplicityReweight3d2012RunAplusB = process.vertexMultiplicityReweight.clone(
+    process.vertexMultiplicityReweight3d2012runs190456to194076 = process.vertexMultiplicityReweight.clone(
         inputFileName = cms.FileInPath("TauAnalysis/RecoTools/data/expPUpoissonMean_runs190456to194076_Mu17_Mu8_v16.root"),
         type = cms.string("gen3d"),
         mcPeriod = cms.string("Summer12")
     )
-    process.vertexMultiplicityReweight1d2012RunAplusB = process.vertexMultiplicityReweight.clone(
+    process.vertexMultiplicityReweight3d2012runs190456to195016 = process.vertexMultiplicityReweight3d2012runs190456to194076.clone(
+        inputFileName = cms.FileInPath("TauAnalysis/RecoTools/data/expPUpoissonMean_runs190456to195016_Mu17_Mu8.root")
+    )
+    process.vertexMultiplicityReweight3d2012runs190456to195947 = process.vertexMultiplicityReweight3d2012runs190456to194076.clone(
+        inputFileName = cms.FileInPath("TauAnalysis/RecoTools/data/expPUpoissonMean_runs190456to195947_Mu17_Mu8.root")
+    )
+    process.vertexMultiplicityReweight1d2012runs190456to194076 = process.vertexMultiplicityReweight.clone(
         inputFileName = cms.FileInPath("TauAnalysis/RecoTools/data/expPUpoissonDist_runs190456to194076_Mu17_Mu8_v16.root"),
         type = cms.string("gen"),
         mcPeriod = cms.string("Summer12")
     )
+    process.vertexMultiplicityReweight1d2012runs190456to195016 = process.vertexMultiplicityReweight1d2012runs190456to194076.clone(
+        inputFileName = cms.FileInPath("TauAnalysis/RecoTools/data/expPUpoissonDist_runs190456to195016_Mu17_Mu8.root")
+    )
+    process.vertexMultiplicityReweight1d2012runs190456to195947 = process.vertexMultiplicityReweight1d2012runs190456to194076.clone(
+        inputFileName = cms.FileInPath("TauAnalysis/RecoTools/data/expPUpoissonDist_runs190456to195947_Mu17_Mu8.root")
+    )
     if isMC:
-        process.prePatProductionSequence += process.vertexMultiplicityReweight3d2012RunAplusB
-        process.prePatProductionSequence += process.vertexMultiplicityReweight1d2012RunAplusB
+        process.prePatProductionSequence += process.vertexMultiplicityReweight3d2012runs190456to194076
+        process.prePatProductionSequence += process.vertexMultiplicityReweight3d2012runs190456to195016
+        process.prePatProductionSequence += process.vertexMultiplicityReweight3d2012runs190456to195947
+        process.prePatProductionSequence += process.vertexMultiplicityReweight1d2012runs190456to194076
+        process.prePatProductionSequence += process.vertexMultiplicityReweight1d2012runs190456to195016
+        process.prePatProductionSequence += process.vertexMultiplicityReweight1d2012runs190456to195947
     #--------------------------------------------------------------------------------
 
     #--------------------------------------------------------------------------------
@@ -60,7 +75,7 @@ def configurePrePatProduction(process, pfCandidateCollection = "particleFlow",
     #     since the tau-jet response is taken from the Monte Carlo simulation
     #
     process.load("JetMETCorrections/Configuration/JetCorrectionServices_cff")
-    pfMEtCorrector = None
+    pfJetCorrector = None
     if isMC:
         pfJetCorrector = "ak5PFL1FastL2L3"
     else:
@@ -117,8 +132,10 @@ def configurePrePatProduction(process, pfCandidateCollection = "particleFlow",
     # switch input to PFTau reconstruction to collection of smearedAK5PFJets,
     # in order to account for Data/MC different in PFJet resolution
     if isMC:
+        print("isMC: replacing 'ak5PFJets' --> 'smearedAK5PFJets'")
         patutils.massSearchReplaceAnyInputTag(process.PFTau, cms.InputTag('ak5PFJets'), cms.InputTag('smearedAK5PFJets'))
     else:
+        print("isData: replacing 'ak5PFJets' --> 'calibratedAK5PFJets'")
         patutils.massSearchReplaceAnyInputTag(process.PFTau, cms.InputTag('ak5PFJets'), cms.InputTag('calibratedAK5PFJets'))
     
     # CV: discriminator against calo. muons currently disabled per default;

@@ -42,17 +42,29 @@ def configurePatTupleProductionTauIdEffMeasSpecific(process, patSequenceBuilder 
     patTupleConfig = configurePatTupleProduction(process, patSequenceBuilder,
                                                  patPFTauCleanerPrototype, patCaloTauCleanerPrototype, True, hltProcess, isMC, False)
 
-    addJetCollection(process, cms.InputTag('smearedAK5PFJets'),
-                     'SmearedAK5', 'PF',
-                     doJTA            = False,
-                     doBTagging       = True,
-                     jetCorrLabel     = None, # CV: jet corrections already applied on reco::PFJet input
-                     doType1MET       = False,
-                     genJetCollection = cms.InputTag("ak5GenJets"),
-                     doJetID          = True,
-                     jetIdLabel       = "ak5",
-                     outputModules    = []
-    )
+    if isMC:
+       addJetCollection(process, cms.InputTag('smearedAK5PFJets'),
+                        'SmearedAK5', 'PF',
+                        doJTA            = False,
+                        doBTagging       = True,
+                        jetCorrLabel     = None, # CV: jet corrections already applied on reco::PFJet input
+                        doType1MET       = False,
+                        genJetCollection = cms.InputTag("ak5GenJets"),
+                        doJetID          = True,
+                        jetIdLabel       = "ak5",
+                        outputModules    = []
+        )
+    else:
+        addJetCollection(process, cms.InputTag('calibratedAK5PFJets'),
+                        'CalibratedAK5', 'PF',
+                        doJTA            = False,
+                        doBTagging       = True,
+                        jetCorrLabel     = None, # CV: jet corrections already applied on reco::PFJet input
+                        doType1MET       = False,
+                        doJetID          = True,
+                        jetIdLabel       = "ak5",
+                        outputModules    = []
+        )
 
     # add "raw" (uncorrected) CaloMET,
     # needed to parametrize efficiency turn-on of HLT_IsoMu15_L1ETM20 cross-trigger

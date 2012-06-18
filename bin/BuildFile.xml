@@ -104,6 +104,17 @@
   <use   name="roofit"/>
   <use   name="root"/>
 </bin>
+<bin   file="smoothTauIdEffTemplates.cc" name="smoothTauIdEffTemplates">
+  <use   name="DataFormats/FWLite"/>
+  <use   name="FWCore/FWLite"/>
+  <use   name="FWCore/ParameterSet"/>
+  <use   name="FWCore/PythonParameterSet"/>
+  <use   name="PhysicsTools/FWLite"/>
+  <use   name="TauAnalysis/CandidateTools"/>
+  <use   name="TauAnalysis/DQMTools"/>
+  <use   name="roofit"/>
+  <use   name="root"/>
+</bin>
 <bin   file="fitTauIdEff.cc" name="fitTauIdEff">
   <use   name="DataFormats/FWLite"/>
   <use   name="FWCore/FWLite"/>

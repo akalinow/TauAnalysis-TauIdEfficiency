@@ -8,9 +8,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.7 $
+ * \version $Revision: 1.8 $
  *
- * $Id: TauIdEffEventSelector.h,v 1.7 2011/10/25 16:17:42 veelken Exp $
+ * $Id: TauIdEffEventSelector.h,v 1.8 2011/11/06 13:25:26 veelken Exp $
  *
  */
 
@@ -33,7 +33,7 @@ class TauIdEffEventSelector : public EventSelector
 
   /// here is where the selection occurs
   bool operator()(const edm::EventBase&, pat::strbitset&) { return true; }
-  bool operator()(const PATMuTauPair&, const pat::MET&, pat::strbitset&);
+  bool operator()(const PATMuTauPair&, const pat::MET&, size_t, pat::strbitset&);
 
   friend class regionEntryType; // allow regionEntryType to overwrite cut values
 
@@ -56,6 +56,8 @@ class TauIdEffEventSelector : public EventSelector
   bool disableTauCandPreselCuts_;
 
   /// cuts applied in specified region
+  size_t numJets_bTaggedMin_;
+  size_t numJets_bTaggedMax_;
   double muonPtMin_;
   double muonPtMax_;  
   double muonEtaMin_;

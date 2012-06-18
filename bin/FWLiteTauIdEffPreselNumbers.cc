@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.17 $
+ * \version $Revision: 1.18 $
  *
- * $Id: FWLiteTauIdEffPreselNumbers.cc,v 1.17 2012/05/08 10:29:13 veelken Exp $
+ * $Id: FWLiteTauIdEffPreselNumbers.cc,v 1.18 2012/05/25 08:17:27 veelken Exp $
  *
  */
 
@@ -28,6 +28,7 @@
 
 #include "DataFormats/PatCandidates/interface/Tau.h"
 #include "DataFormats/PatCandidates/interface/Muon.h"
+#include "DataFormats/PatCandidates/interface/Jet.h"
 #include "DataFormats/PatCandidates/interface/MET.h"
 #include "DataFormats/Common/interface/TriggerResults.h"
 #include "FWCore/Common/interface/TriggerNames.h"
@@ -36,6 +37,8 @@
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
 #include "DataFormats/HepMCCandidate/interface/GenParticleFwd.h"
 #include "DataFormats/Common/interface/Handle.h"
+
+#include "PhysicsTools/SelectorUtils/interface/PFJetIDSelectionFunctor.h"
 
 #include "TauAnalysis/TauIdEfficiency/interface/TauIdEffEventSelector.h"
 #include "TauAnalysis/TauIdEfficiency/interface/TauIdEffCutFlowTable.h"
@@ -267,11 +270,12 @@ struct regionEntryType
   void analyze(const PATMuTauPair& muTauPair, 
 	       int genMatchType, double genTauCharge, double recTauCharge,
 	       const pat::MET& caloMEt, 
+	       size_t numJets_bTagged,
 	       size_t numVertices, 
 	       double evtWeight)
   {
     pat::strbitset evtSelFlags;
-    if ( selector_->operator()(muTauPair, caloMEt, evtSelFlags) ) {
+    if ( selector_->operator()(muTauPair, caloMEt, numJets_bTagged, evtSelFlags) ) {
 
 //--- set flags indicating whether tau-jet candidate passes 
 //    "leading" track finding, leading track Pt and loose (PF)isolation requirements 
@@ -395,6 +399,11 @@ int main(int argc, char* argv[])
   vstring hltPaths = cfgTauIdEffPreselNumbers.getParameter<vstring>("hltPaths");
   edm::InputTag srcCaloMEt = cfgTauIdEffPreselNumbers.getParameter<edm::InputTag>("srcCaloMEt");
   edm::InputTag srcGoodMuons = cfgTauIdEffPreselNumbers.getParameter<edm::InputTag>("srcGoodMuons");
+  edm::InputTag srcJets = cfgTauIdEffPreselNumbers.getParameter<edm::InputTag>("srcJets");
+  edm::ParameterSet cfgJetId;
+  cfgJetId.addParameter<std::string>("version", "FIRSTDATA");
+  cfgJetId.addParameter<std::string>("quality", "LOOSE");
+  PFJetIDSelectionFunctor jetId(cfgJetId);
   edm::InputTag srcVertices = cfgTauIdEffPreselNumbers.getParameter<edm::InputTag>("srcVertices");
   typedef std::vector<edm::InputTag> vInputTag;
   vInputTag srcWeights = cfgTauIdEffPreselNumbers.getParameter<vInputTag>("weights");
@@ -532,16 +541,19 @@ int main(int argc, char* argv[])
 	throw cms::Exception("FWLiteTauIdEffPreselNumbers")
 	  << "Failed to find unique CaloMEt object !!\n";
 
-      unsigned numMuTauPairsABCD = 0;
+      unsigned numMuTauPairsABCD = 0; // Note: no b-jet veto applied
       for ( PATMuTauPairCollection::const_iterator muTauPair = muTauPairs->begin();
 	    muTauPair != muTauPairs->end(); ++muTauPair ) {
 	pat::strbitset evtSelFlags;
-	if ( selectorABCD->operator()(*muTauPair, caloMEt->front(), evtSelFlags) ) ++numMuTauPairsABCD;
+	if ( selectorABCD->operator()(*muTauPair, caloMEt->front(), 0, evtSelFlags) ) ++numMuTauPairsABCD;
       }
       
       if ( !(numMuTauPairsABCD <= 1) ) continue;
       ++numEvents_passedDiMuTauPairVeto;
       numEventsWeighted_passedDiMuTauPairVeto += evtWeight;
+
+      edm::Handle<pat::JetCollection> jets;
+      evt.getByLabel(srcJets, jets);      
 
 //--- determine number of vertices reconstructed in the event
 //   (needed to parametrize dependency of tau id. efficiency on number of pile-up interactions)
@@ -559,29 +571,24 @@ int main(int argc, char* argv[])
       int muTauPairIdx = 0;
       for ( PATMuTauPairCollection::const_iterator muTauPair = muTauPairs->begin();
 	    muTauPair != muTauPairs->end(); ++muTauPair, ++muTauPairIdx ) {
+
+//--- require event to contain to b-jets
+//   (not overlapping with muon or tau-jet candidate)
+	size_t numJets_bTagged = 0;
+	for ( pat::JetCollection::const_iterator jet = jets->begin();
+	      jet != jets->end(); ++jet ) {
+	  if ( jet->pt() > 30. && TMath::Abs(jet->eta()) < 2.4 && jetId(*jet) &&
+	       jet->bDiscriminator("combinedSecondaryVertexBJetTags") > 0.679 ) ++numJets_bTagged; // "medium" WP
+	}
+
 	double genTauCharge, recTauCharge;
 	int genMatchType = getGenMatchType(*muTauPair, *genParticles, &genTauCharge, &recTauCharge);
 	for ( std::vector<regionEntryType*>::iterator regionEntry = regionEntries.begin();
 	      regionEntry != regionEntries.end(); ++regionEntry ) {   
-/*
-          if ( (*regionEntry)->region_ == "C1" ) {
-            pat::strbitset evtSelFlags;
-	    if ( genMatchType == kGenTauHadMatched || (*regionEntry)->selector_->operator()(*muTauPair, evtSelFlags) ) {
-	      std::cout << "muTauPair #" << muTauPairIdx << std::endl;
-	      std::cout << " leg1: Pt = " << muTauPair->leg1()->pt() << "," 
-	    	        << " eta = " << muTauPair->leg1()->eta() << ", phi = " << muTauPair->leg1()->phi() << std::endl;
-	      std::cout << " leg2: Pt = " << muTauPair->leg2()->pt() << "," 
-	      	        << " eta = " << muTauPair->leg2()->eta() << ", phi = " << muTauPair->leg2()->phi();
-	      if      ( genMatchType == kTauHadMatched  ) std::cout << " ('true' hadronic tau decay)";
-	      else if ( genMatchType == kFakeTauMatched ) std::cout << " (tau fake)"; 
-	      else                                        std::cout << " (no gen. match)"; 
-	      std::cout << std::endl;
-	    }
-          }
- */
 	  (*regionEntry)->analyze(*muTauPair, 
 				  genMatchType, genTauCharge, recTauCharge, 
-				  caloMEt->front(),
+				  caloMEt->front(), 
+				  numJets_bTagged,
 				  numVertices, 
 				  evtWeight);
 	}

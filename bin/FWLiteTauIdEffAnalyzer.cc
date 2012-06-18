@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.29 $
+ * \version $Revision: 1.30 $
  *
- * $Id: FWLiteTauIdEffAnalyzer.cc,v 1.29 2012/05/08 10:29:12 veelken Exp $
+ * $Id: FWLiteTauIdEffAnalyzer.cc,v 1.30 2012/05/25 08:17:27 veelken Exp $
  *
  */
 
@@ -158,7 +158,7 @@ struct regionEntryType
 		  const vstring& tauIdDiscriminators, const std::string& tauIdName, const std::string& sysShift,
 		  const edm::ParameterSet& cfgBinning, const std::string& svFitMassHypothesis, 
 		  const std::string& tauChargeMode, bool disableTauCandPreselCuts, const edm::ParameterSet& cfgEventSelCuts, 
-		  bool fillGenMatchHistograms, const vstring& plot_triggerBits,
+		  bool fillGenMatchHistograms, bool fillControlPlots, const vstring& plot_triggerBits,
 		  const std::string& selEventsFileName)
     : process_(process),
       region_(region),
@@ -189,6 +189,7 @@ struct regionEntryType
     if ( sysShift_ != "CENTRAL_VALUE" ) label_.append("_").append(sysShift_);
     cfgHistManager.addParameter<std::string>("label", label_);
     cfgHistManager.addParameter<std::string>("svFitMassHypothesis", svFitMassHypothesis);
+    cfgHistManager.addParameter<bool>("fillControlPlots", fillControlPlots);
     cfgHistManager.addParameter<vstring>("triggerBits", plot_triggerBits);
 
     histogramsUnbinned_ = new histManagerEntryType(cfgHistManager, fillGenMatchHistograms);
@@ -243,7 +244,7 @@ struct regionEntryType
 	       size_t numVertices, const std::map<std::string, bool>& plot_triggerBits_passed, int genMatchType, double evtWeight)
   {
     pat::strbitset evtSelFlags;
-    if ( selector_->operator()(muTauPair, caloMEt, evtSelFlags) ) {
+    if ( selector_->operator()(muTauPair, caloMEt, numJets_bTagged, evtSelFlags) ) {
 //--- fill histograms for "inclusive" tau id. efficiency measurement
       histogramsUnbinned_->fillHistograms(0., muTauPair, caloMEt, 
 					  numJets, numJets_bTagged,
@@ -454,6 +455,7 @@ int main(int argc, char* argv[])
   edm::InputTag srcVertices = cfgTauIdEffAnalyzer.getParameter<edm::InputTag>("srcVertices");
   edm::InputTag srcGenParticles = cfgTauIdEffAnalyzer.getParameter<edm::InputTag>("srcGenParticles");
   bool fillGenMatchHistograms = cfgTauIdEffAnalyzer.getParameter<bool>("fillGenMatchHistograms");
+  bool fillControlPlots = cfgTauIdEffAnalyzer.getParameter<bool>("fillControlPlots");
   typedef std::vector<int> vint;
   vint skipPdgIdsGenParticleMatch = cfgTauIdEffAnalyzer.getParameter<vint>("skipPdgIdsGenParticleMatch");  
   vstring plot_hltPaths = cfgTauIdEffAnalyzer.getParameter<vstring>("plot_hltPaths");
@@ -464,6 +466,8 @@ int main(int argc, char* argv[])
   }
   typedef std::vector<edm::InputTag> vInputTag;
   vInputTag srcWeights = cfgTauIdEffAnalyzer.getParameter<vInputTag>("weights");
+  double minWeight = cfgTauIdEffAnalyzer.getParameter<double>("minWeight");
+  double maxWeight = cfgTauIdEffAnalyzer.getParameter<double>("maxWeight");
   std::string sysShift = cfgTauIdEffAnalyzer.exists("sysShift") ?
     cfgTauIdEffAnalyzer.getParameter<std::string>("sysShift") : "CENTRAL_VALUE";
   edm::InputTag srcEventCounter = cfgTauIdEffAnalyzer.getParameter<edm::InputTag>("srcEventCounter");
@@ -523,7 +527,7 @@ int main(int argc, char* argv[])
 	new regionEntryType(fs, process, *region, tauIdDiscriminators, tauIdName, 
 			    sysShift, cfgBinning, svFitMassHypothesis, 
 			    tauChargeMode, disableTauCandPreselCuts, cfgEventSelCuts, 
-			    fillGenMatchHistograms, plot_triggerBits, selEventsFileName);
+			    fillGenMatchHistograms, fillControlPlots, plot_triggerBits, selEventsFileName);
       regionEntries.push_back(regionEntry);
 
       // tau+ candidates only
@@ -531,7 +535,7 @@ int main(int argc, char* argv[])
       //  new regionEntryType(fs, process, std::string(*region).append("+"), tauIdDiscriminators, tauIdName, 
       //		      sysShift, cfgBinning, svFitMassHypothesis, 
       //		      tauChargeMode, disableTauCandPreselCuts, cfgEventSelCuts, 
-      //		      fillGenMatchHistograms, plot_triggerBits, selEventsFileName);
+      //		      fillGenMatchHistograms, fillControlPlots, plot_triggerBits, selEventsFileName);
       //regionEntries.push_back(regionEntry_plus);
       //
       // tau- candidates only
@@ -539,7 +543,7 @@ int main(int argc, char* argv[])
       //  new regionEntryType(fs, process, std::string(*region).append("-"), tauIdDiscriminators, tauIdName, 
       //		      sysShift, cfgBinning, svFitMassHypothesis, 
       //		      tauChargeMode, disableTauCandPreselCuts, cfgEventSelCuts, 
-      //		      fillGenMatchHistograms, plot_triggerBits, selEventsFileName);
+      //		      fillGenMatchHistograms, fillControlPlots, plot_triggerBits, selEventsFileName);
       //regionEntries.push_back(regionEntry_minus);
     }
   }
@@ -610,7 +614,9 @@ int main(int argc, char* argv[])
 	evt.getByLabel(*srcWeight, weight);
 	evtWeight *= (*weight);
       }
-
+      if ( evtWeight < minWeight ) evtWeight = minWeight;
+      if ( evtWeight > maxWeight ) evtWeight = maxWeight;
+      
 //--- apply trigger efficiency correction (to MC only)
       typedef std::vector<pat::MET> PATMETCollection;
       edm::Handle<PATMETCollection> caloMEt;
@@ -688,11 +694,11 @@ int main(int argc, char* argv[])
       edm::Handle<PATMuTauPairCollection> muTauPairs;
       evt.getByLabel(srcMuTauPairs, muTauPairs);           
 
-      unsigned numMuTauPairsABCD = 0;
+      unsigned numMuTauPairsABCD = 0; // Note: no b-jet veto applied
       for ( PATMuTauPairCollection::const_iterator muTauPair = muTauPairs->begin();
 	    muTauPair != muTauPairs->end(); ++muTauPair ) {
 	pat::strbitset evtSelFlags;
-	if ( selectorABCD->operator()(*muTauPair, caloMEt->front(), evtSelFlags) ) ++numMuTauPairsABCD;
+	if ( selectorABCD->operator()(*muTauPair, caloMEt->front(), 0, evtSelFlags) ) ++numMuTauPairsABCD;
       }
       
       if ( !(numMuTauPairsABCD <= 1) ) continue;
@@ -728,17 +734,10 @@ int main(int argc, char* argv[])
 	for ( pat::JetCollection::const_iterator jet = jets->begin();
 	      jet != jets->end(); ++jet ) {
 	  if ( jet->pt() > 30. && TMath::Abs(jet->eta()) < 2.4 && jetId(*jet) ) {
-	    //std::cout << "jet: Pt = " << jet->pt() << ", eta = " << jet->eta() << ", phi = " << jet->phi() << std::endl;
-	    //std::vector<std::pair<std::string, float> > bTagDiscriminators = jet->getPairDiscri();
-	    //for ( std::vector<std::pair<std::string, float> >::const_iterator bTagDiscriminator = bTagDiscriminators.begin();
-	    //	bTagDiscriminator != bTagDiscriminators.end(); ++bTagDiscriminator ) {
-	    //  std::cout << " " << bTagDiscriminator->first << ": " << bTagDiscriminator->second << std::endl;
-	    //}
 	    ++numJets;
 	    if ( jet->bDiscriminator("combinedSecondaryVertexBJetTags") > 0.679 ) ++numJets_bTagged; // "medium" WP
 	  }
 	}
-	//std::cout << "numJets = " << numJets << " (b-Tagged = " << numJets_bTagged << ")" << std::endl;
 
 //--- determine type of particle matching reconstructed tau-jet candidate
 //    on generator level (used in case of Ztautau or Zmumu Monte Carlo samples only,
@@ -758,12 +757,6 @@ int main(int argc, char* argv[])
 	  (*regionEntry)->analyze(evt, *muTauPair, caloMEt->front(), 
 				  numJets, numJets_bTagged,
 				  numVertices, plot_triggerBits_passed, genMatchType, evtWeight_region);
-
-	  //pat::strbitset evtSelFlags;
-	  //if ( (*regionEntry)->region_ == "D1p" && (*regionEntry)->selector_->operator()(*muTauPair, evtSelFlags) ) {
-	  //  std::cout << evt.id().run() << ":" << evt.luminosityBlock() << ":" << evt.id().event() 
-	  //	        << " (weight = " << evtWeight << ")" << std::endl;
-	  //}
 	}
       }
     }
@@ -786,8 +779,8 @@ int main(int argc, char* argv[])
 //    due to aborted skimming/crab or PAT-tuple production/lxbatch jobs
     std::cout << " allEvents_processed = " << histogramEventCounter->GetBinContent(2) << std::endl;
     double lostStatCorrFactor = 1.;
-    if ( histogramEventCounter->GetBinContent(1) > histogramEventCounter->GetBinContent(2) && 
-	 histogramEventCounter->GetBinContent(2) > 0.                                      ) {
+    if ( histogramEventCounter->GetBinContent(1) != histogramEventCounter->GetBinContent(2) && 
+	 histogramEventCounter->GetBinContent(2) > 0.                                       ) {
       lostStatCorrFactor = histogramEventCounter->GetBinContent(1)/histogramEventCounter->GetBinContent(2);
       std::cout << "--> scaling histograms by additional factor = " << lostStatCorrFactor
 		<< " to account for events lost," << std::endl; 

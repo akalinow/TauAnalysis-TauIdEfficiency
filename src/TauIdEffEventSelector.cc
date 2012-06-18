@@ -27,6 +27,8 @@ TauIdEffEventSelector::TauIdEffEventSelector(const edm::ParameterSet& cfg)
   disableTauCandPreselCuts_ = cfg.getParameter<bool>("disableTauCandPreselCuts");
 
 //--- define default cuts for ABCD regions
+  numJets_bTaggedMin_       =   0;
+  numJets_bTaggedMax_       =   0;
   muonPtMin_                =  17.0; 
   muonPtMax_                =  +1.e+3; 
   muonEtaMin_               =  -2.1;
@@ -134,7 +136,8 @@ void printCutValue(const std::string& variable, double value, double min, double
   std::cout << std::endl;
 }
 
-bool TauIdEffEventSelector::operator()(const PATMuTauPair& muTauPair, const pat::MET& caloMEt, pat::strbitset& result)
+bool TauIdEffEventSelector::operator()(const PATMuTauPair& muTauPair, const pat::MET& caloMEt, 
+				       size_t numJets_bTagged, pat::strbitset& result)
 {
   //std::cout << "<TauIdEffEventSelector::operator()>:" << std::endl;
 
@@ -174,7 +177,8 @@ bool TauIdEffEventSelector::operator()(const PATMuTauPair& muTauPair, const pat:
   //std::cout << "MtAndPzetaDiffCut = " << getCutStatus_string(MtAndPzetaDiffCut_) << std::endl;
   //std::cout << "tauIdDiscriminatorCut = " << getCutStatus_string(tauIdDiscriminatorCut_) << std::endl;
 
-  if ( muonPt              >  muonPtMin_              && muonPt                  <  muonPtMax_              &&
+  if ( numJets_bTagged     >= numJets_bTaggedMin_     && numJets_bTagged         <= numJets_bTaggedMax_     &&
+       muonPt              >  muonPtMin_              && muonPt                  <  muonPtMax_              &&
        muonEta             >  muonEtaMin_             && muonEta                 <  muonEtaMax_             &&
        muonIso             > (muonRelIsoMin_*muonPt)  && muonIso                 < (muonRelIsoMax_*muonPt)  && 
        tauPt               >  tauPtMin_               && tauPt                   <  tauPtMax_               &&

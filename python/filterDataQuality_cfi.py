@@ -49,14 +49,47 @@ primaryVertexFilter = cms.EDFilter("GoodVertexFilter",
     maxd0 = cms.double(2)
 )
 
+#--------------------------------------------------------------------------------
+# add MET cleaning filters
+# (cf. https://twiki.cern.ch/twiki/bin/view/CMS/MissingETOptionalFilters)
+#--------------------------------------------------------------------------------
+
+# veto events with halo muons
+##from RecoMET.METAnalyzers.CSCHaloFilter_cfi import CSCTightHaloFilter
+
 # veto events with significant RBX/HPD noise activity
 # ( see https://twiki.cern.ch/twiki/bin/view/CMS/HcalDPGAnomalousSignals )
-from CommonTools.RecoAlgos.HBHENoiseFilter_cfi import *
+from CommonTools.RecoAlgos.HBHENoiseFilter_cfi import HBHENoiseFilter
+
+# veto events in which HCAL laser calibration fired
+##from RecoMET.METFilters.hcalLaserEventFilter_cfi import hcalLaserEventFilter
+##hcalLaserEventFilter.vetoByRunEventNumber=cms.untracked.bool(False)
+##hcalLaserEventFilter.vetoByHBHEOccupancy=cms.untracked.bool(True)
+
+# veto events with significant energy deposits close to dead/masked ECAL cells
+##from RecoMET.METFilters.EcalDeadCellTriggerPrimitiveFilter_cfi import EcalDeadCellTriggerPrimitiveFilter
+##EcalDeadCellTriggerPrimitiveFilter.tpDigiCollection = cms.InputTag("ecalTPSkimNA")
+
+# veto events with (suspected) tracking failures
+##goodVerticesForTrackingFailureFilter = cms.EDFilter("VertexSelector",
+##  filter = cms.bool(False),
+##  src = cms.InputTag("offlinePrimaryVertices"),
+##  cut = cms.string("!isFake && ndof > 4 && abs(z) <= 24 && position.rho < 2")
+##)
+##from RecoMET.METFilters.trackingFailureFilter_cfi import trackingFailureFilter
+##trackingFailureFilter.VertexSource = cms.InputTag('goodVerticesForTrackingFailureFilter')
+
+# veto events with anomalous supercrystals in ECAL endcap
+##from RecoMET.METFilters.eeBadScFilter_cfi import eeBadScFilter
 
 dataQualityFilters = cms.Sequence(
     hltPhysicsDeclared
    * dcsstatus
    * scrapingBeamsFilter
    * primaryVertexFilter
+   ##* CSCTightHaloFilter
    * HBHENoiseFilter
+   ##* hcalLaserEventFilter
+   ##* goodVerticesForTrackingFailureFilter * trackingFailureFilter
+   ##* eeBadScFilter
 )    

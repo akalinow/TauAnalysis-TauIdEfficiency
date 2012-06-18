@@ -10,8 +10,8 @@ channel = 'ZtoMuTau_tauIdEff'
 #jobId = getJobId(channel)
 jobId = '2012May12'
 
-version = 'v1_2'
-label = 'fitEWKbgSum_v7'
+version = 'v1_4'
+label = 'fitEWKbgSum_v3_wSmoothing'
 
 inputFilePath = '/data1/veelken/CMSSW_5_2_x/PATtuples/TauIdEffMeas/%s/%s/' % (jobId, version) \
                + 'user/v/veelken/CMSSW_5_2_x/PATtuples/TauIdEffMeas/%s/%s/' % (jobId, version)
@@ -34,7 +34,7 @@ samplesToAnalyze = [
 # used to compute preselection efficiencies and purities in C1p and C1f/D1p regions
 sampleZtautau = 'Ztautau_pythia'
 
-runPeriod = '2012RunA'
+runPeriod = '2012RunAplusB'
 
 runClosureTest = False
 #runClosureTest = True
@@ -44,14 +44,15 @@ firstRunData = -1
 lastRunData = -1
 hltPaths = None
 srcWeights = None
-if runPeriod == '2012RunA':
+if runPeriod == '2012RunAplusB':
     samplesToAnalyze.extend([
-        ##'data_TauPlusX_Run2012A_PromptReco_v1_runs190456to193557'
         'data_TauPlusX_Run2012A_PromptReco_v1_runs190456to193621',
-        'data_TauPlusX_Run2012B_PromptReco_v1_runs193752to194076'
+        'data_TauPlusX_Run2012B_PromptReco_v1_runs193752to194076v2',
+        'data_TauPlusX_Run2012B_PromptReco_v1_runs194108to194479',
+        ##'data_TauPlusX_Run2012B_PromptReco_v1_runs194790to195016'
     ])
-    ##intLumiData = 560.7 # runs 190456-193557
-    intLumiData = 560.7 # runs 190456-194076
+    intLumiData = 1567 # runs 190456-194479
+    ##intLumiData = 2412 # runs 190456-195016
     hltPaths = {
         'Data' : [
             'HLT_IsoMu15_eta2p1_L1ETM20_v3',
@@ -60,13 +61,13 @@ if runPeriod == '2012RunA':
         ],
         'smMC' : [
             'HLT_IsoMu15_eta2p1_L1ETM20_v1',
-            'HLT_IsoMu15_eta2p1_L1ETM20_v3',
-            'HLT_IsoMu15_L1ETM20_v5' # CV: PPmuXptGt20Mu15 sample generated with old trigger table
+            'HLT_IsoMu15_eta2p1_L1ETM20_v3'
         ]
     }
     srcWeights = {
         'Data' : [],
         'smMC' : [ 'vertexMultiplicityReweight1d2012RunAplusB' ]
+        ##'smMC' : [ 'vertexMultiplicityReweight1d2012runs190456to195016' ]
     }
 else:
     raise ValueError("Invalid runPeriod = %s !!" % runPeriod)
@@ -80,7 +81,8 @@ cut_pfMEtPtMin        = 20.0
 plot_hltPaths = []
 
 fitVariables = [
-    'diTauVisMass'
+    'diTauVisMass',
+    ##'diTauSVfitMass'
 ]    
 
 mode = 'tauIdEfficiency'
@@ -99,6 +101,10 @@ templateMorphingMode = "vertical"
 
 #fitIndividualProcesses = True
 fitIndividualProcesses = False
+
+# CV: only book histograms needed to run tau id. efficiency fit;
+#     drop all control plots
+fillControlPlots = False
 
 tauIds = {
     # HPS combined isolation discriminators
@@ -180,18 +186,18 @@ tauIds = {
         'markerStyleSim' : 24,
         'color' : 418
     },
-    ##'tauDiscrHPSlooseMVAandElectronVetoMVA'  : {
-    ##    'discriminators' : [
-    ##        'decayModeFinding',
-    ##        'byLooseIsolationMVA',
-    ##        'againstElectronMVA'
-    ##        
-    ##    ],
-    ##    'legendEntry' : "HPS Loose MVA & e-Veto MVA",
-    ##    'markerStyleData' : 20,
-    ##    'markerStyleSim' : 24,
-    ##    'color' : 418
-    ##},
+    'tauDiscrHPSlooseMVAandElectronVetoMVA'  : {
+        'discriminators' : [
+            'decayModeFinding',
+            'byLooseIsolationMVA',
+            'againstElectronMVA'
+            
+        ],
+        'legendEntry' : "HPS Loose MVA & e-Veto MVA",
+        'markerStyleData' : 20,
+        'markerStyleSim' : 24,
+        'color' : 418
+    },
     ##'tauDiscrHPSlooseMVAandElectronVetoMVA2'  : {
     ##    'discriminators' : [
     ##        'decayModeFinding',
@@ -204,17 +210,17 @@ tauIds = {
     ##    'markerStyleSim' : 24,
     ##    'color' : 418
     ##},
-    ##'tauDiscrHPSlooseMVAandMuonVeto'  : {
-    ##    'discriminators' : [
-    ##        'decayModeFinding',
-    ##        'byLooseIsolationMVA',
-    ##        'againstMuonTight'
-    ##    ],
-    ##    'legendEntry' : "HPS Loose MVA & #mu-Veto",
-    ##    'markerStyleData' : 20,
-    ##    'markerStyleSim' : 24,
-    ##    'color' : 418
-    ##},
+    'tauDiscrHPSlooseMVAandMuonVeto'  : {
+        'discriminators' : [
+            'decayModeFinding',
+            'byLooseIsolationMVA',
+            'againstMuonTight'
+        ],
+        'legendEntry' : "HPS Loose MVA & #mu-Veto",
+        'markerStyleData' : 20,
+        'markerStyleSim' : 24,
+        'color' : 418
+    },
     ##'tauDiscrHPSmediumMVA' : {
     ##    'discriminators' : [
     ##        'decayModeFinding',
@@ -382,11 +388,12 @@ if mode == 'tauIdEfficiency':
         'DWj_mW'
     ]
     regionsToFit                         = [ 'A', 'B', 'C1p', 'C1f', 'C2', 'D' ]
+    ##regionsToFit                         = [ 'C1p', 'C1f' ]
     passed_region                        = 'C1p'
     failed_region                        = 'C1f'
-    regionQCDtemplateFromData_passed     = 'A1_mW'
-    regionQCDtemplateFromData_failed     = 'A1_mW'
-    regionQCDtemplateFromData_D          = 'A_mW'
+    regionQCDtemplateFromData_passed     = 'A1'
+    regionQCDtemplateFromData_failed     = 'A1'
+    regionQCDtemplateFromData_D          = 'A'
     #regionWplusJetsSideband_passed       = 'CWj'
     #regionWplusJetsSideband_failed       = 'CWj'
     regionWplusJetsSideband_passed       = 'AWj'
@@ -447,8 +454,9 @@ else:
     raise ValueError("Invalid mode = %s !!" % mode)
 
 executable_FWLiteTauIdEffAnalyzer = execDir + 'FWLiteTauIdEffAnalyzer'
-executable_hadd = 'hadd -f'
+executable_hadd = 'hadd'
 executable_makeTauIdEffQCDtemplate = execDir + 'makeTauIdEffQCDtemplate'
+executable_smoothTauIdEffTemplates = execDir + 'smoothTauIdEffTemplates'
 executable_fitTauIdEff = execDir + fitMethod
 executable_makeTauIdEffFinalPlots = execDir + 'makeTauIdEffFinalPlots'
 executable_shell = '/bin/csh'
@@ -494,7 +502,8 @@ for sampleToAnalyze in samplesToAnalyze:
                                              regions, intLumiData, hltPaths, srcWeights,
                                              tauChargeMode, disableTauCandPreselCuts,
                                              cut_muonPtMin, cut_tauLeadTrackPtMin, cut_tauAbsIsoMax, cut_caloMEtPtMin, cut_pfMEtPtMin,
-                                             plot_hltPaths)
+                                             plot_hltPaths,
+                                             fillControlPlots)
 
     if retVal_FWLiteTauIdEffAnalyzer is None:
         continue
@@ -519,13 +528,55 @@ haddLogFileName_stage1 = retVal_hadd_stage1['logFileName']
 
 #--------------------------------------------------------------------------------
 #
+# build config files for running smoothTauIdEffTemplates macro
+#
+configFileNames_smoothTauIdEffTemplates = []
+outputFileNames_smoothTauIdEffTemplates = []
+logFileNames_smoothTauIdEffTemplates   = []
+retVal_smoothTauIdEffTemplates = \
+  buildConfigFile_smoothTauIdEffTemplates("".join([ jobId, version ]), '', haddOutputFileName_stage1, tauIds.keys(),
+                                          fitVariables, sysUncertainties, outputFilePath,
+                                          regions, fitIndividualProcesses, True, outputFilePath_plots)
+configFileNames_smoothTauIdEffTemplates.append(retVal_smoothTauIdEffTemplates['configFileName'])
+outputFileNames_smoothTauIdEffTemplates.append(retVal_smoothTauIdEffTemplates['outputFileName'])
+logFileNames_smoothTauIdEffTemplates.append(retVal_smoothTauIdEffTemplates['logFileName'])
+for binVariable in binning.keys():
+    for binName, binOptions in binning[binVariable].items():
+        if isinstance(binOptions, dict) and binOptions.get('min') is not None and binOptions.get('max') is not None:
+            retVal_smoothTauIdEffTemplates = \
+              buildConfigFile_smoothTauIdEffTemplates("".join([ jobId, version ]), binName, haddOutputFileName_stage1, tauIds.keys(),
+                                                      fitVariables, sysUncertainties, outputFilePath,
+                                                      regions, fitIndividualProcesses, True, outputFilePath_plots)
+            configFileNames_smoothTauIdEffTemplates.append(retVal_smoothTauIdEffTemplates['configFileName'])
+            outputFileNames_smoothTauIdEffTemplates.append(retVal_smoothTauIdEffTemplates['outputFileName'])
+            logFileNames_smoothTauIdEffTemplates.append(retVal_smoothTauIdEffTemplates['logFileName'])
+#--------------------------------------------------------------------------------
+
+#--------------------------------------------------------------------------------
+#
+# build shell script for running 'hadd' in order to merge smoothed shape templates
+# produced by smoothTauIdEffTemplates macro with output of FWLiteTauIdEffAnalyzer macro 
+#
+haddShellFileName_stage2 = os.path.join(outputFilePath, 'harvestTauIdEffHistograms_stage2_%s.csh' % "".join([ jobId, version ]))
+haddInputFileNames_stage2 = []
+haddInputFileNames_stage2.append(haddOutputFileName_stage1)
+haddInputFileNames_stage2.extend(outputFileNames_smoothTauIdEffTemplates)
+haddOutputFileName_stage2 = \
+  os.path.join(outputFilePath, 'analyzeTauIdEffHistograms_all_smoothedTemplates_%s.root' % "".join([ jobId, version ]))
+retVal_hadd_stage2 = \
+  buildConfigFile_hadd(executable_hadd, haddShellFileName_stage2, haddInputFileNames_stage2, haddOutputFileName_stage2)
+haddLogFileName_stage2 = retVal_hadd_stage2['logFileName']
+#--------------------------------------------------------------------------------
+
+#--------------------------------------------------------------------------------
+#
 # build config files for running makeTauIdEffQCDtemplate macro
 #
 configFileNames_makeTauIdEffQCDtemplate = []
 outputFileNames_makeTauIdEffQCDtemplate = []
 logFileNames_makeTauIdEffQCDtemplate    = []
 retVal_makeTauIdEffQCDtemplate = \
-  buildConfigFile_makeTauIdEffQCDtemplate("".join([ jobId, version ]), '', haddOutputFileName_stage1, tauIds.keys(),
+  buildConfigFile_makeTauIdEffQCDtemplate("".join([ jobId, version ]), '', haddOutputFileName_stage2, tauIds.keys(),
                                           fitVariables, sysUncertainties, outputFilePath,
                                           regionQCDtemplateFromData_passed, regionQCDtemplateFromData_failed, regionQCDtemplateFromData_D,
                                           regionWplusJetsSideband_passed, regionWplusJetsSideband_failed, regionWplusJetsSideband_D, 
@@ -537,7 +588,7 @@ for binVariable in binning.keys():
     for binName, binOptions in binning[binVariable].items():
         if isinstance(binOptions, dict) and binOptions.get('min') is not None and binOptions.get('max') is not None:
             retVal_makeTauIdEffQCDtemplate = \
-              buildConfigFile_makeTauIdEffQCDtemplate("".join([ jobId, version ]), binName, haddOutputFileName_stage1, tauIds.keys(),
+              buildConfigFile_makeTauIdEffQCDtemplate("".join([ jobId, version ]), binName, haddOutputFileName_stage2, tauIds.keys(),
                                                       fitVariables, sysUncertainties, outputFilePath,
                                                       regionQCDtemplateFromData_passed, regionQCDtemplateFromData_failed, regionQCDtemplateFromData_D,
                                                       regionWplusJetsSideband_passed, regionWplusJetsSideband_failed, regionWplusJetsSideband_D, 
@@ -552,15 +603,15 @@ for binVariable in binning.keys():
 # build shell script for running 'hadd' in order to merge QCD background templates
 # produced by makeTauIdEffQCDtemplate macro with output of FWLiteTauIdEffAnalyzer macro 
 #
-haddShellFileName_stage2 = os.path.join(outputFilePath, 'harvestTauIdEffHistograms_stage2_%s.csh' % "".join([ jobId, version ]))
-haddInputFileNames_stage2 = []
-haddInputFileNames_stage2.append(haddOutputFileName_stage1)
-haddInputFileNames_stage2.extend(outputFileNames_makeTauIdEffQCDtemplate)
-haddOutputFileName_stage2 = \
+haddShellFileName_stage3 = os.path.join(outputFilePath, 'harvestTauIdEffHistograms_stage3_%s.csh' % "".join([ jobId, version ]))
+haddInputFileNames_stage3 = []
+haddInputFileNames_stage3.append(haddOutputFileName_stage2)
+haddInputFileNames_stage3.extend(outputFileNames_makeTauIdEffQCDtemplate)
+haddOutputFileName_stage3 = \
   os.path.join(outputFilePath, 'analyzeTauIdEffHistograms_all_corrQCDtemplates_%s.root' % "".join([ jobId, version ]))
-retVal_hadd_stage2 = \
-  buildConfigFile_hadd(executable_hadd, haddShellFileName_stage2, haddInputFileNames_stage2, haddOutputFileName_stage2)
-haddLogFileName_stage2 = retVal_hadd_stage2['logFileName']
+retVal_hadd_stage3 = \
+  buildConfigFile_hadd(executable_hadd, haddShellFileName_stage3, haddInputFileNames_stage3, haddOutputFileName_stage3)
+haddLogFileName_stage3 = retVal_hadd_stage3['logFileName']
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
@@ -573,7 +624,7 @@ logFileNames_fitTauIdEff    = []
 for tauId in tauIds.keys():
     for fitVariable in fitVariables:
         retVal_fitTauIdEff = \
-          buildConfigFile_fitTauIdEff(fitMethod, "".join([ jobId, version ]), '', haddOutputFileName_stage2, tauId,
+          buildConfigFile_fitTauIdEff(fitMethod, "".join([ jobId, version ]), '', haddOutputFileName_stage3, tauId,
                                       fitVariable, templateMorphingMode, sysUncertainties, outputFilePath,
                                       regionsToFit, passed_region, failed_region,                              
                                       histQCDtemplateFromData_passed, histQCDtemplateFromData_failed, histQCDtemplateFromData_D,
@@ -585,7 +636,7 @@ for tauId in tauIds.keys():
             for binName, binOptions in binning[binVariable].items():
                 if isinstance(binOptions, dict) and binOptions.get('min') is not None and binOptions.get('max') is not None:
                     retVal_fitTauIdEff = \
-                      buildConfigFile_fitTauIdEff(fitMethod, "".join([ jobId, version ]), binName, haddOutputFileName_stage2, tauId,
+                      buildConfigFile_fitTauIdEff(fitMethod, "".join([ jobId, version ]), binName, haddOutputFileName_stage3, tauId,
                                                   fitVariable, templateMorphingMode, sysUncertainties, outputFilePath,
                                                   regionsToFit, passed_region, failed_region,
                                                   histQCDtemplateFromData_passed, histQCDtemplateFromData_failed, histQCDtemplateFromData_D,
@@ -613,14 +664,14 @@ logFileName_FWLiteTauIdEffPreselNumbers = retVal_FWLiteTauIdEffPreselNumbers['lo
 # build shell script for running 'hadd' in order to "harvest" fit results
 # with preselection efficiencies and purities in regions C1p/C1f
 #
-haddShellFileName_stage3 = os.path.join(outputFilePath, 'harvestTauIdEffHistograms_stage3_%s.csh' % "".join([ jobId, version ]))
-haddInputFileNames_stage3 = []
-haddInputFileNames_stage3.extend(outputFileNames_fitTauIdEff)
-haddInputFileNames_stage3.append(outputFileName_FWLiteTauIdEffPreselNumbers)
-haddOutputFileName_stage3 = os.path.join(outputFilePath, 'compTauIdEffFinalNumbers_input_%s.root' % "".join([ jobId, version ]))
-retVal_hadd_stage3 = \
-  buildConfigFile_hadd(executable_hadd, haddShellFileName_stage3, haddInputFileNames_stage3, haddOutputFileName_stage3)
-haddLogFileName_stage3 = retVal_hadd_stage3['logFileName']
+haddShellFileName_stage4 = os.path.join(outputFilePath, 'harvestTauIdEffHistograms_stage4_%s.csh' % "".join([ jobId, version ]))
+haddInputFileNames_stage4 = []
+haddInputFileNames_stage4.extend(outputFileNames_fitTauIdEff)
+haddInputFileNames_stage4.append(outputFileName_FWLiteTauIdEffPreselNumbers)
+haddOutputFileName_stage4 = os.path.join(outputFilePath, 'compTauIdEffFinalNumbers_input_%s.root' % "".join([ jobId, version ]))
+retVal_hadd_stage4 = \
+  buildConfigFile_hadd(executable_hadd, haddShellFileName_stage4, haddInputFileNames_stage4, haddOutputFileName_stage4)
+haddLogFileName_stage4 = retVal_hadd_stage4['logFileName']
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
@@ -631,7 +682,7 @@ configFileNames_compTauIdEffFinalNumbers = []
 outputFileNames_compTauIdEffFinalNumbers = []
 logFileNames_compTauIdEffFinalNumbers = []
 retVal_compTauIdEffFinalNumbers = \
-  buildConfigFile_compTauIdEffFinalNumbers(haddOutputFileName_stage3, '', "".join([ jobId, version ]), tauIds,
+  buildConfigFile_compTauIdEffFinalNumbers(haddOutputFileName_stage4, '', "".join([ jobId, version ]), tauIds,
                                            fitVariables, outputFilePath,
                                            keyword_compTauIdEffFinalNumbers, passed_region, failed_region,
                                            fitIndividualProcesses)
@@ -642,7 +693,7 @@ for binVariable in binning.keys():
     for binName, binOptions in binning[binVariable].items():
         if isinstance(binOptions, dict) and binOptions.get('min') is not None and binOptions.get('max') is not None:
             retVal_compTauIdEffFinalNumbers = \
-              buildConfigFile_compTauIdEffFinalNumbers(haddOutputFileName_stage3, binName, "".join([ jobId, version ]), tauIds,
+              buildConfigFile_compTauIdEffFinalNumbers(haddOutputFileName_stage4, binName, "".join([ jobId, version ]), tauIds,
                                                        fitVariables, outputFilePath,
                                                        keyword_compTauIdEffFinalNumbers, passed_region, failed_region,
                                                        fitIndividualProcesses)
@@ -656,12 +707,12 @@ for binVariable in binning.keys():
 # build shell script for running 'hadd' in order to "harvest" final tau id. efficiency numbers
 # for different tauPt, tauEta,... bins
 #
-haddShellFileName_stage4 = os.path.join(outputFilePath, 'harvestTauIdEffHistograms_stage4_%s.csh' % "".join([ jobId, version ]))
-haddInputFileNames_stage4 = outputFileNames_compTauIdEffFinalNumbers
-haddOutputFileName_stage4 = os.path.join(outputFilePath, 'compTauIdEffFinalNumbers_all_%s.root' % "".join([ jobId, version ]))
-retVal_hadd_stage4 = \
-  buildConfigFile_hadd(executable_hadd, haddShellFileName_stage4, haddInputFileNames_stage4, haddOutputFileName_stage4)
-haddLogFileName_stage4 = retVal_hadd_stage4['logFileName']
+haddShellFileName_stage5 = os.path.join(outputFilePath, 'harvestTauIdEffHistograms_stage5_%s.csh' % "".join([ jobId, version ]))
+haddInputFileNames_stage5 = outputFileNames_compTauIdEffFinalNumbers
+haddOutputFileName_stage5 = os.path.join(outputFilePath, 'compTauIdEffFinalNumbers_all_%s.root' % "".join([ jobId, version ]))
+retVal_hadd_stage5 = \
+  buildConfigFile_hadd(executable_hadd, haddShellFileName_stage5, haddInputFileNames_stage5, haddOutputFileName_stage5)
+haddLogFileName_stage5 = retVal_hadd_stage5['logFileName']
 #--------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------
@@ -681,7 +732,7 @@ for binVariable in binning.keys():
     ]
     outputFileName_HPScombined = 'makeTauIdEffFinalPlots_HPScombined_%s.eps' % binVariable
     retVal_makeTauIdEffFinalPlots = \
-      buildConfigFile_makeTauIdEffFinalPlots(haddOutputFileName_stage4, tauIds, discriminators_HPScombined,
+      buildConfigFile_makeTauIdEffFinalPlots(haddOutputFileName_stage5, tauIds, discriminators_HPScombined,
                                              binning[binVariable], fitVariables, outputFilePath, outputFileName_HPScombined,
                                              expEff_label, measEff_label, intLumiData)
     configFileNames_makeTauIdEffFinalPlots.append(retVal_makeTauIdEffFinalPlots['configFileName'])
@@ -696,7 +747,7 @@ for binVariable in binning.keys():
     ]
     outputFileName_HPSmva = 'makeTauIdEffFinalPlots_HPSmva_%s.eps' % binVariable
     retVal_makeTauIdEffFinalPlots = \
-      buildConfigFile_makeTauIdEffFinalPlots(haddOutputFileName_stage4, tauIds, discriminators_HPSmva,
+      buildConfigFile_makeTauIdEffFinalPlots(haddOutputFileName_stage5, tauIds, discriminators_HPSmva,
                                              binning[binVariable], fitVariables, outputFilePath, outputFileName_HPSmva,
                                              expEff_label, measEff_label, intLumiData)
     configFileNames_makeTauIdEffFinalPlots.append(retVal_makeTauIdEffFinalPlots['configFileName'])
@@ -741,15 +792,15 @@ makeFile.write("\t%s%s %s &> %s\n" %
    haddShellFileName_stage1,
    haddLogFileName_stage1))
 makeFile.write("\n")
-for i, outputFileName in enumerate(outputFileNames_makeTauIdEffQCDtemplate):
+for i, outputFileName in enumerate(outputFileNames_smoothTauIdEffTemplates):
     makeFile.write("%s: %s %s\n" %
       (outputFileName,
-       executable_makeTauIdEffQCDtemplate,
+       executable_smoothTauIdEffTemplates,
        haddOutputFileName_stage1))
     makeFile.write("\t%s%s %s &> %s\n" %
-      (nice, executable_makeTauIdEffQCDtemplate,
-       configFileNames_makeTauIdEffQCDtemplate[i],
-       logFileNames_makeTauIdEffQCDtemplate[i]))
+      (nice, executable_smoothTauIdEffTemplates,
+       configFileNames_smoothTauIdEffTemplates[i],
+       logFileNames_smoothTauIdEffTemplates[i]))
 makeFile.write("\n")
 makeFile.write("%s: %s\n" %
   (haddOutputFileName_stage2,
@@ -759,12 +810,30 @@ makeFile.write("\t%s%s %s &> %s\n" %
    haddShellFileName_stage2,
    haddLogFileName_stage2))
 makeFile.write("\n")
+for i, outputFileName in enumerate(outputFileNames_makeTauIdEffQCDtemplate):
+    makeFile.write("%s: %s %s\n" %
+      (outputFileName,
+       executable_makeTauIdEffQCDtemplate,
+       haddOutputFileName_stage2))
+    makeFile.write("\t%s%s %s &> %s\n" %
+      (nice, executable_makeTauIdEffQCDtemplate,
+       configFileNames_makeTauIdEffQCDtemplate[i],
+       logFileNames_makeTauIdEffQCDtemplate[i]))
+makeFile.write("\n")
+makeFile.write("%s: %s\n" %
+  (haddOutputFileName_stage3,
+   make_MakeFile_vstring(haddInputFileNames_stage3)))
+makeFile.write("\t%s%s %s &> %s\n" %
+  (nice, executable_shell,
+   haddShellFileName_stage3,
+   haddLogFileName_stage3))
+makeFile.write("\n")
 for i, outputFileName in enumerate(outputFileNames_fitTauIdEff):
     makeFile.write("%s: %s %s %s\n" %
       (outputFileName,
        executable_fitTauIdEff,
        configFileNames_fitTauIdEff[i],
-       haddOutputFileName_stage2))
+       haddOutputFileName_stage3))
     makeFile.write("\t%s%s %s &> %s\n" %
       (nice, executable_fitTauIdEff,
        configFileNames_fitTauIdEff[i],
@@ -780,25 +849,6 @@ makeFile.write("\t%s%s %s &> %s\n" %
    logFileName_FWLiteTauIdEffPreselNumbers))
 makeFile.write("\n")
 makeFile.write("%s: %s\n" %
-  (haddOutputFileName_stage3,
-   make_MakeFile_vstring(haddInputFileNames_stage3)))
-makeFile.write("\t%s%s %s &> %s\n" %
-  (nice, executable_shell,
-   haddShellFileName_stage3,
-   haddLogFileName_stage3))
-makeFile.write("\n")
-for i, outputFileName in enumerate(outputFileNames_compTauIdEffFinalNumbers):
-    makeFile.write("%s: %s %s %s\n" %
-      (outputFileName,
-       executable_compTauIdEffFinalNumbers,
-       configFileNames_compTauIdEffFinalNumbers[i],
-       haddOutputFileName_stage3))
-    makeFile.write("\t%s%s %s &> %s\n" %
-      (nice, executable_compTauIdEffFinalNumbers,
-       configFileNames_compTauIdEffFinalNumbers[i],
-       logFileNames_compTauIdEffFinalNumbers[i]))
-makeFile.write("\n")
-makeFile.write("%s: %s\n" %
   (haddOutputFileName_stage4,
    make_MakeFile_vstring(haddInputFileNames_stage4)))
 makeFile.write("\t%s%s %s &> %s\n" %
@@ -806,11 +856,30 @@ makeFile.write("\t%s%s %s &> %s\n" %
    haddShellFileName_stage4,
    haddLogFileName_stage4))
 makeFile.write("\n")
+for i, outputFileName in enumerate(outputFileNames_compTauIdEffFinalNumbers):
+    makeFile.write("%s: %s %s %s\n" %
+      (outputFileName,
+       executable_compTauIdEffFinalNumbers,
+       configFileNames_compTauIdEffFinalNumbers[i],
+       haddOutputFileName_stage4))
+    makeFile.write("\t%s%s %s &> %s\n" %
+      (nice, executable_compTauIdEffFinalNumbers,
+       configFileNames_compTauIdEffFinalNumbers[i],
+       logFileNames_compTauIdEffFinalNumbers[i]))
+makeFile.write("\n")
+makeFile.write("%s: %s\n" %
+  (haddOutputFileName_stage5,
+   make_MakeFile_vstring(haddInputFileNames_stage5)))
+makeFile.write("\t%s%s %s &> %s\n" %
+  (nice, executable_shell,
+   haddShellFileName_stage5,
+   haddLogFileName_stage5))
+makeFile.write("\n")
 for i, outputFileName in enumerate(outputFileNames_makeTauIdEffFinalPlots):
     makeFile.write("%s: %s %s\n" %
       (outputFileName,
        executable_makeTauIdEffFinalPlots,
-       haddOutputFileName_stage4))
+       haddOutputFileName_stage5))
     makeFile.write("\t%s%s %s &> %s\n" %
       (nice, executable_makeTauIdEffFinalPlots,
        configFileNames_makeTauIdEffFinalPlots[i],
@@ -822,18 +891,23 @@ makeFile.write("\trm -f %s\n" % make_MakeFile_vstring(outputFileNames_FWLiteTauI
 makeFile.write("\trm -f %s\n" % make_MakeFile_vstring(haddInputFileNames_stage1))
 makeFile.write("\trm -f %s\n" % haddShellFileName_stage1)
 makeFile.write("\trm -f %s\n" % haddOutputFileName_stage1)
+makeFile.write("\trm -f %s\n" % make_MakeFile_vstring(outputFileNames_smoothTauIdEffTemplates))
 makeFile.write("\trm -f %s\n" % make_MakeFile_vstring(haddInputFileNames_stage2))
 makeFile.write("\trm -f %s\n" % haddShellFileName_stage2)
 makeFile.write("\trm -f %s\n" % haddOutputFileName_stage2)
-makeFile.write("\trm -f %s\n" % make_MakeFile_vstring(outputFileNames_fitTauIdEff))
-makeFile.write("\trm -f %s\n" % outputFileName_FWLiteTauIdEffPreselNumbers)
+makeFile.write("\trm -f %s\n" % make_MakeFile_vstring(outputFileNames_makeTauIdEffQCDtemplate))
 makeFile.write("\trm -f %s\n" % make_MakeFile_vstring(haddInputFileNames_stage3))
 makeFile.write("\trm -f %s\n" % haddShellFileName_stage3)
 makeFile.write("\trm -f %s\n" % haddOutputFileName_stage3)
-makeFile.write("\trm -f %s\n" % make_MakeFile_vstring(outputFileNames_compTauIdEffFinalNumbers))
+makeFile.write("\trm -f %s\n" % make_MakeFile_vstring(outputFileNames_fitTauIdEff))
+makeFile.write("\trm -f %s\n" % outputFileName_FWLiteTauIdEffPreselNumbers)
 makeFile.write("\trm -f %s\n" % make_MakeFile_vstring(haddInputFileNames_stage4))
 makeFile.write("\trm -f %s\n" % haddShellFileName_stage4)
 makeFile.write("\trm -f %s\n" % haddOutputFileName_stage4)
+makeFile.write("\trm -f %s\n" % make_MakeFile_vstring(outputFileNames_compTauIdEffFinalNumbers))
+makeFile.write("\trm -f %s\n" % make_MakeFile_vstring(haddInputFileNames_stage5))
+makeFile.write("\trm -f %s\n" % haddShellFileName_stage5)
+makeFile.write("\trm -f %s\n" % haddOutputFileName_stage5)
 makeFile.write("\trm -f %s\n" % make_MakeFile_vstring(outputFileNames_makeTauIdEffFinalPlots))
 makeFile.write("\techo 'Finished deleting old files.'\n")
 makeFile.write("\n")

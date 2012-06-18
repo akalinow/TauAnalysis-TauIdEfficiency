@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.7 $
+ * \version $Revision: 1.8 $
  *
- * $Id: makeTauIdEffQCDtemplate.cc,v 1.7 2012/02/02 09:03:32 veelken Exp $
+ * $Id: makeTauIdEffQCDtemplate.cc,v 1.8 2012/05/25 08:17:27 veelken Exp $
  *
  */
 
@@ -258,7 +258,7 @@ int main(int argc, const char* argv[])
     for ( vstring::const_iterator process = processes.begin();
 	  process != processes.end(); ++process ) {
       loadHistograms(histograms_mc[*process], histogramInputDirectory, 
-		     *process, regions, *tauId, fitVariables, sysUncertainties_expanded);
+		     *process, regions, *tauId, fitVariables, sysUncertainties_expanded, false, true);
       
       for ( vstring::const_iterator region = regions.begin();
 	    region != regions.end(); ++region ) {
@@ -272,7 +272,7 @@ int main(int argc, const char* argv[])
     
     histogramMap3 histograms_data; // key = (region, observable, key_central_value)
     loadHistograms(histograms_data, histogramInputDirectory, 
-		   "Data", regions, *tauId, fitVariables, sysUncertainties_data);
+		   "Data", regions, *tauId, fitVariables, sysUncertainties_data, false, false);
 
     for ( std::vector<regionEntryType*>::iterator regionEntry = regionEntries.begin();
 	  regionEntry != regionEntries.end(); ++regionEntry ) {

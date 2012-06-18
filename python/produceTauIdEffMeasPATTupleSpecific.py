@@ -4,10 +4,10 @@ from TauAnalysis.CandidateTools.tools.composeModuleName import composeModuleName
 from TauAnalysis.TauIdEfficiency.produceTauIdEffMeasPATTuple_base import produceTauIdEffMeasPATTuple_base
 from PhysicsTools.PatAlgos.patEventContent_cff import patTriggerEventContent
 
-def produceTauIdEffMeasPATTuple(process, isMC, isEmbedded, HLTprocessName, pfCandidateCollection):
+def produceTauIdEffMeasPATTuple(process, isMC, isEmbedded, HLTprocessName, pfCandidateCollection, runSVfit):
 
     # produce PAT objects common between PAT-tuple and Ntuple production
-    produceTauIdEffMeasPATTuple_base(process, isMC, isEmbedded, HLTprocessName, pfCandidateCollection)
+    produceTauIdEffMeasPATTuple_base(process, isMC, isEmbedded, HLTprocessName, pfCandidateCollection, runSVfit)
 
     #--------------------------------------------------------------------------------
     #
@@ -118,6 +118,7 @@ def produceTauIdEffMeasPATTuple(process, isMC, isEmbedded, HLTprocessName, pfCan
                 'keep *_selectedPatMuonsForTauIdEffZmumuHypotheses_*_*',
                 'keep *_selectedDiMuPairForTauIdEffZmumuHypotheses_*_*',
                 'keep *_patJetsSmearedAK5PF_*_*',
+                'keep *_patJetsCalibratedAK5PF_*_*',                                            
                 #'keep *_selectedPatPFTausFixedConeForTauIdEff*_*_*',
                 #'keep *_selectedPatPFTausShrinkingConeForTauIdEff*_*_*',
                 'keep *_selectedPatPFTausHPSforTauIdEff*_*_*',
@@ -132,8 +133,8 @@ def produceTauIdEffMeasPATTuple(process, isMC, isEmbedded, HLTprocessName, pfCan
                 # keep CaloMEt objects                                                            
                 'keep *_patCaloMet*_*_*',                                  
                 # keep PFMEt objects                                               
-                'keep *_patPFMet_*_*',
-                'keep *_patType1CorrectedPFMet_*_*',
+                'keep *_patPFMet*_*_*',
+                'keep *_patType1CorrectedPFMet*_*_*',
                 # CV: additional collections needed to run nSVfit algorithm                                                        
                 #'keep recoTracks_generalTracks_*_*',                                             
                 #'keep *_ak5PFJets_*_*',
@@ -151,8 +152,8 @@ def produceTauIdEffMeasPATTuple(process, isMC, isEmbedded, HLTprocessName, pfCan
           cms.untracked.vstring(
                 'keep *_smearedPatJetsAK5PF*_*_*',
                 'keep *_muonTriggerEfficiencyCorrection_*_*',
-                'keep *_vertexMultiplicityReweight3d2012RunAplusB_*_*',
-                'keep *_vertexMultiplicityReweight1d2012RunAplusB_*_*',
+                'keep *_vertexMultiplicityReweight*_*_*',
+                'keep *_vertexMultiplicityReweight*_*_*',
                 'keep *_vertexMultiplicityVsRhoPFNeutralReweight_*_*',
                 'keep *_addPileupInfo_*_*',
                 'keep *_genParticles_*_*',

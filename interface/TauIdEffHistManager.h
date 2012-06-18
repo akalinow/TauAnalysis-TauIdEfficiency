@@ -7,9 +7,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.11 $
+ * \version $Revision: 1.12 $
  *
- * $Id: TauIdEffHistManager.h,v 1.11 2012/05/21 20:36:55 veelken Exp $
+ * $Id: TauIdEffHistManager.h,v 1.12 2012/05/25 08:17:27 veelken Exp $
  *
  */
 
@@ -59,7 +59,11 @@ class TauIdEffHistManager
   /// specify name of SVfit mass hypothesis to be used
   /// as template variable
   std::string svFitMassHypothesis_;
- 
+  
+  /// CV: only book histograms needed to run tau id. efficiency fit;
+  ///     drop all control plots
+  bool fillControlPlots_;
+
   typedef std::vector<std::string> vstring;
   vstring triggerBits_;
   

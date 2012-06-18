@@ -10,13 +10,13 @@ import shlex
 #jobId = getJobId(channel)
 jobId = '2012May12'
 
-version = 'v1_2'
+version = 'v1_6'
 
 # Get all the skim files from the castor directory
 sourceFilePath = "/castor/cern.ch/user/v/veelken/CMSSW_5_2_x/PATtuples/TauIdEffMeas/%s/%s" % (jobId, version)
 source_files = [ file_info['path'] for file_info in castor.nslsl(sourceFilePath) ]
-print "source_files:"
-print source_files
+#print "source_files:"
+#print source_files
 
 targetFilePath = "/data1/veelken/CMSSW_5_2_x/PATtuples/TauIdEffMeas/%s/%s/" % (jobId, version)
 
@@ -35,7 +35,10 @@ createFilePath_recursively(targetFilePath)
 
 samplesToCopy = [
     # modify in case you want to copy some of the samples only...
-    'data_TauPlusX_Run2012A_PromptReco_v1_runs190456to193557',
+    'data_TauPlusX_Run2012A_PromptReco_v1_runs190456to193621',
+    'data_TauPlusX_Run2012B_PromptReco_v1_runs193752to194076v2',
+    'data_TauPlusX_Run2012B_PromptReco_v1_runs194108to194479',
+    'data_TauPlusX_Run2012B_PromptReco_v1_runs194790to195016',
     'ZplusJets_madgraph2',
     'Ztautau_pythia',
     'WplusJets_madgraph',
@@ -61,7 +64,7 @@ for source_file in source_files:
 
     target_file = source_file.replace(sourceFilePath, targetFilePath)
     
-    print("copying %s --> %s" % (source_file, target_file))
+    #print("mirroring %s --> %s" % (source_file, target_file))
     files_to_copy.append(source_file)
 
-castor_mirror.mirror_files(castor_mirror.needs_local_copy(files_to_copy, [ targetFilePath ]), [ targetFilePath ], 10)
+castor_mirror.mirror_files(castor_mirror.needs_local_copy(files_to_copy, [ targetFilePath ]), [ targetFilePath ], 1)

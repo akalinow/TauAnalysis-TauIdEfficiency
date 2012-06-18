@@ -178,7 +178,7 @@ void loadHistograms(histogramMap3& histogramMap,
 		    TDirectory* inputDirectory, const std::string& process, const vstring& regions,
 		    const std::string& tauId, 
 		    const vstring& fitVariables, 
-		    const vstring& sysUncertainties, const std::string& genMatch = "")
+		    const vstring& sysUncertainties, bool allowRebinning, bool applySmoothing, const std::string& genMatch = "")
 {
 //--------------------------------------------------------------------------------
 // Load template histograms/distributions observed in data from ROOT file
@@ -209,6 +209,21 @@ void loadHistograms(histogramMap3& histogramMap,
 	if ( (*sysUncertainty) != key_central_value ) histogramName.append("_").append(*sysUncertainty);
 	if (   genMatch        != ""                ) histogramName.append("_").append(genMatch);
 	
+	// CV: switch to smoothed histograms if requested
+	//    (for now the combinations of processes + regions for which template smoothing is applied
+	//     is hardcoded here... this is to be changed later)
+	if ( (process == "WplusJets" && (genMatch == "" || genMatch == "JetToTauFake") && 
+	      ((*region) == "A" || (*region) == "A_mW" || (*region) == "A_mW" || 
+	       (*region) == "B" ||
+	       (*region) == "C1p" || (*region) == "C1f" ||
+	       (*region) == "D")) ||
+	     (process == "QCD" && 
+	      ((*region) == "A" || (*region) == "A_mW" || (*region) == "A_mW" || 
+	       (*region) == "B")) ) {
+	  histogramName.append("_smoothed");
+	  histogramName.append("__x"); // CV: this suffix is added by RooFit when running smoothTauIdEffTemplates macro
+	}
+
 	if ( histogramMap[*region][*observable].find(*sysUncertainty) != histogramMap[*region][*observable].end() ) {
 	  std::cout << "Warning in <loadHistograms>:" 
 		    << " histogram = " << histogramName << " already exists --> skipping !!" << std::endl;
@@ -216,15 +231,35 @@ void loadHistograms(histogramMap3& histogramMap,
 	}
 	
 	TH1* histogram = dynamic_cast<TH1*>(inputDirectory->Get(histogramName.data()));
-	if ( !histogram ) 
+	if ( !histogram ) {
+	  std::cout << "available histograms:" << std::endl;
+	  inputDirectory->ls();
 	  throw cms::Exception("loadHistograms")  
 	    << "Failed to load histogram = " << histogramName << " from file/directory = " << inputDirectory->GetName() << " !!\n";
+	}
 	
+	// CV: rebin histograms to avoid problem with too low Monte Carlo event statistics
+	//     and large pile-up reweighting factors in Spring'12 MC production
+	//if ( allowRebinning ) {
+	//  int numBins = histogram->GetNbinsX();
+	//  if      ( (numBins % 2) == 0 ) histogram->Rebin(2);
+	//  else if ( (numBins % 3) == 0 ) histogram->Rebin(3);
+	//}
 	
-	//int numBins = histogram->GetNbinsX();
-        //if      ( (numBins % 2) == 0                  ) histogram->Rebin(2);
-	//else if ( (numBins % 3) == 0                  ) histogram->Rebin(3);
-
+	// CV: check that contents of all bins are positive,
+	//     print warning if not
+	int numBins = histogram->GetNbinsX();
+	for ( int iBin = 0; iBin <= (numBins + 1); ++iBin ) {
+	  double binContent = histogram->GetBinContent(iBin);
+	  if ( binContent < 0. ) {
+	    double x = histogram->GetBinCenter(iBin);
+	    std::cout << "Warning in <loadHistograms>:" 
+		      << " histogram = " << histogramName << ":" 
+		      << " bin(x = " << x << ") = " << binContent << " --> setting it to 0." << std::endl;
+	    histogram->SetBinContent(iBin, 0.);
+	  }
+	}
+	
 	if ( histogram != 0 ) {
 	  histogramMap[*region][*observable][*sysUncertainty] = histogram;
 	  std::cout << "histogramMap[region = " << (*region) << "][observable = " << (*observable) << "]" 

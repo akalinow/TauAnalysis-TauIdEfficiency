@@ -8,8 +8,10 @@ hltPaths = [
     #'HLT_IsoMu24_v*',
     #'HLT_Mu13_Mu8_v*',
     #'HLT_DoubleMu11_Acoplanarity03_v3',
-    #'HLT_Mu17_Mu8_v*',
-    #'HLT_Mu17_v3',
+    'HLT_Mu17_Mu8_v*',
+    #'HLT_Mu15_eta2p1_v*',
+    #'HLT_Mu24_eta2p1_v*',
+    #'HLT_Mu30_eta2p1_v*',
     #'HLT_Jet30_v*',   # for QCD multi-jet
     #'HLT_Jet60_v*',
     #'HLT_Jet80_v*',
@@ -19,12 +21,17 @@ hltPaths = [
     #'HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_v*',
     #'HLT_Mu17_Ele8_CaloIdL_v*',
     #'HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_v*'
-    #'HLT_IsoMu24_eta2p1_v*'
+    #'HLT_IsoMu24_eta2p1_v*',
     #'HLT_IsoMu15_L1ETM20_v*', # for Tau id. efficiency in 2011 RunB (NOTE: events are in MET dataset)
     #'HLT_Mu15_L1ETM20_v*'     #   -""-
-    'HLT_IsoMu15_eta2p1_L1ETM20_v*', # for Tau id. efficiency in 2012 RunA (NOTE: events are in Tau+X dataset)
+    #'HLT_IsoMu15_eta2p1_L1ETM20_v*', # for Tau id. efficiency in 2012 RunA (NOTE: events are in Tau+X dataset)
     #'HLT_IsoMu15_LooseIsoPFTau15_v*',
     #'HLT_IsoMu15_eta2p1_LooseIsoPFTau20_v*'
+    #'HLT_IsoMu18_eta2p1_LooseIsoPFTau20_v*',
+    #'HLT_IsoMu17_eta2p1_LooseIsoPFTau20_v*',
+    #'HLT_Ele20_CaloIdVT_CaloIsoRhoT_TrkIdT_TrkIsoT_LooseIsoPFTau20_v*',
+    #'HLT_Ele22_CaloIdVT_CaloIsoRhoT_TrkIdT_TrkIsoT_LooseIsoPFTau20_v*',
+    #'HLT_Mu18_eta2p1_LooseIsoPFTau20',
     #'HLT_Ele25_CaloIdL_CaloIsoVL_TrkIdVL_TrkIsoVL_v*',
     #'HLT_Ele32_CaloIdVL_CaloIsoVL_TrkIdVL_TrkIsoVL_v*',
     #'HLT_Ele32_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_v*'
@@ -59,8 +66,10 @@ jsonFiles = {
     #                      + 'Cert_190456-193336_8TeV_PromptReco_Collisions12_JSON.txt'
     #'2012RunA'          : '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Prompt/' \
     #                       + 'Cert_190456-193557_8TeV_PromptReco_Collisions12_JSON.txt'
-    '2012RunAplusB'      : '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Prompt/' \
-                            + 'Cert_190456-194076_8TeV_PromptReco_Collisions12_JSON.txt'
+    #'2012RunAplusBv1'      : '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Prompt/' \
+    #                      + 'Cert_190456-194479_8TeV_PromptReco_Collisions12_JSON.txt',
+    '2012RunAplusBv2'      : '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Prompt/' \
+                          + 'Cert_190456-195947_8TeV_PromptReco_Collisions12_JSON.txt'
     #'2012RunAplusB'      : '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/DCSOnly/json_DCSONLY.txt'
 }
 
