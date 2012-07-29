@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.35 $
+ * \version $Revision: 1.36 $
  *
- * $Id: fitTauIdEff.cc,v 1.35 2012/05/25 08:17:27 veelken Exp $
+ * $Id: fitTauIdEff.cc,v 1.36 2012/06/18 19:15:34 veelken Exp $
  *
  */
 
@@ -18,6 +18,7 @@
 #include "FWCore/PythonParameterSet/interface/MakeParameterSets.h"
 
 #include "FWCore/Utilities/interface/Exception.h"
+#include "FWCore/MessageLogger/interface/MessageLogger.h"
 
 #include "PhysicsTools/FWLite/interface/TFileService.h"
 #include "DataFormats/FWLite/interface/InputSource.h"
@@ -148,7 +149,7 @@ void addToFormula(std::string& formula, const std::string& expression, TObjArray
 
 RooFormulaVar* makeRooFormulaVar_6regions(const std::string& process, 
 					  const std::string& region, const std::string& region_passed, const std::string& region_failed, 
-					  RooAbsReal* norm, double fittedFractionValue, unsigned numCategories,
+					  RooAbsReal* norm, RooAbsReal* fittedFraction, unsigned numCategories,
 					  std::map<std::string, fitParameterType>& fitParameters)
 {
 //-------------------------------------------------------------------------------
@@ -217,12 +218,13 @@ RooFormulaVar* makeRooFormulaVar_6regions(const std::string& process,
   if      ( region.find("p") != std::string::npos ) exprTauId     = "regular";
   else if ( region.find("f") != std::string::npos ) exprTauId     = "inverted";
 
-  std::string fittedFractionName = std::string(norm->GetName()).append("_").append(region).append("_fittedFraction");
-  //RooConstVar* fittedFraction = new RooConstVar(fittedFractionName.data(), fittedFractionName.data(), fittedFractionValue);
   // CV: fitted yields for all processes come-out factor N too high in closure test
   //    --> compensate by multiplying fittedFraction by fudge-factor N,
   //        N = number of categories used in simultaneous fit
-  RooConstVar* fittedFraction = new RooConstVar(fittedFractionName.data(), fittedFractionName.data(), numCategories*fittedFractionValue);
+  std::string nameFittedFraction_scaled = std::string(norm->GetName()).append("_").append(region).append("_fittedFraction_scaled");
+  RooFormulaVar* fittedFraction_scaled = 
+    new RooFormulaVar(nameFittedFraction_scaled.data(), 
+		      nameFittedFraction_scaled.data(), Form("%u*@0", numCategories), RooArgList(*fittedFraction));
 
   std::string formula = "";
   TObjArray arguments; 
@@ -231,7 +233,7 @@ RooFormulaVar* makeRooFormulaVar_6regions(const std::string& process,
   addToFormula(formula, exprMuonIso,     arguments, fitParameters["pMuonIso_tight_loose"].fittedValue_);
   addToFormula(formula, exprTauId,       arguments, fitParameters["pTauId_passed_failed"].fittedValue_);
   addToFormula(formula, "regular",       arguments, norm);
-  addToFormula(formula, "regular",       arguments, fittedFraction);
+  addToFormula(formula, "regular",       arguments, fittedFraction_scaled);
 
   std::string name = std::string("norm").append(process).append("_").append(region);
   retVal = new RooFormulaVar(name.data(), name.data(), formula.data(), RooArgSet(arguments));
@@ -241,7 +243,7 @@ RooFormulaVar* makeRooFormulaVar_6regions(const std::string& process,
 
 RooFormulaVar* makeRooFormulaVar_2regions(const std::string& process, 
 					  const std::string& region, const std::string& region_passed, const std::string& region_failed, 
-					  RooAbsReal* norm, double fittedFractionValue, unsigned numCategories,
+					  RooAbsReal* norm, RooAbsReal* fittedFraction, unsigned numCategories,
 					  std::map<std::string, fitParameterType>& fitParameters)
 {
   std::cout << "<makeRooFormulaVar_2regions>:" << std::endl;
@@ -257,17 +259,18 @@ RooFormulaVar* makeRooFormulaVar_2regions(const std::string& process,
   else throw cms::Exception("makeRooFormulaVar_2regions") 
     << "Region = " << region << " matches neither 'passed' nor 'failed' region !!\n";
   
-  std::string fittedFractionName = std::string(norm->GetName()).append("_").append(region).append("_fittedFraction");
-  //RooConstVar* fittedFraction = new RooConstVar(fittedFractionName.data(), fittedFractionName.data(), fittedFractionValue);
   // CV: fitted yields for all processes come-out factor 2 too high in closure test
   //    --> compensate by multiplying fittedFraction by fudge-factor 2
-  RooConstVar* fittedFraction = new RooConstVar(fittedFractionName.data(), fittedFractionName.data(), 2.*fittedFractionValue);
+  std::string nameFittedFraction_scaled = std::string(norm->GetName()).append("_").append(region).append("_fittedFraction_scaled");
+  RooFormulaVar* fittedFraction_scaled = 
+    new RooFormulaVar(nameFittedFraction_scaled.data(), 
+		      nameFittedFraction_scaled.data(), Form("%u*@0", numCategories), RooArgList(*fittedFraction));
 
   std::string formula = "";
   TObjArray arguments; 
   addToFormula(formula, exprTauId, arguments, fitParameters["pTauId_passed_failed"].fittedValue_);
   addToFormula(formula, "regular", arguments, norm);
-  addToFormula(formula, "regular", arguments, fittedFraction);
+  addToFormula(formula, "regular", arguments, fittedFraction_scaled);
 
   std::cout << " formula = " << formula << std::endl;
   std::cout << " arguments:" << std::endl;
@@ -320,9 +323,7 @@ RooAbsPdf* makePdfHorizontalMorphing(histogramMap3& histograms,
   TH1* templateHistDown = histograms[region][fitVariable.name_][std::string(sysUncertainty).append("Down")];
   RooHistPdf* pdfDown = makeRooHistPdf(templateHistDown, fitVariable.xAxis_);
   
-  std::string alphaName = std::string(templateHistName).append("_alpha");
-  RooRealVar* alpha = new RooRealVar(alphaName.data(), alphaName.data(), 0.5, 0., 1.);
-  alphaParameters[sysUncertainty] = alphaParameterType(alpha, false);
+  RooRealVar* alpha = alphaParameters[sysUncertainty].alpha_;
 
   std::string pdfName = std::string(templateHistName).append("_pdf");
   RooIntegralMorph* pdf = new RooIntegralMorph(pdfName.data(), pdfName.data(), *pdfUp, *pdfDown, *fitVariable.xAxis_, *alpha);
@@ -363,14 +364,7 @@ RooAbsPdf* makePdfVerticalMorphing(histogramMap3& histograms,
     RooHistPdf* pdf_down = makeRooHistPdf(templateHist_down, fitVariable.xAxis_);
     pdfs.Add(pdf_down);
 
-    RooRealVar* alpha = 0;
-    if ( alphaParameters.find(*sysUncertainty) == alphaParameters.end() ) {
-      std::string alphaName = std::string(templateHistName).append("_alpha_").append(*sysUncertainty);
-      alpha = new RooRealVar(alphaName.data(), alphaName.data(), 0., -1., +1.);
-      alphaParameters[*sysUncertainty] = alphaParameterType(alpha, true);
-    } else {
-      alpha = alphaParameters[*sysUncertainty].alpha_;
-    }
+    RooRealVar* alpha = alphaParameters[*sysUncertainty].alpha_;
     alphas.Add(alpha);
   }
 
@@ -457,26 +451,113 @@ struct processEntryType
 	<< "Incompatible binning for 'passed' and 'failed' regions !!\n";
     }
     
-    double numEventsABCD = 0.;
+    vstring sysUncertainties_expanded;
+    sysUncertainties_expanded.push_back(key_central_value);
+    for ( vstring::const_iterator sysUncertainty = sysUncertainties_.begin();
+	  sysUncertainty != sysUncertainties_.end(); ++sysUncertainty ) {
+      if ( (*sysUncertainty) != key_central_value ) {
+	sysUncertainties_expanded.push_back(std::string(*sysUncertainty).append("Up"));
+	sysUncertainties_expanded.push_back(std::string(*sysUncertainty).append("Down"));
+      }
+    }
+    
+    for ( vstring::const_iterator sysUncertainty = sysUncertainties_expanded.begin();
+	  sysUncertainty != sysUncertainties_expanded.end(); ++sysUncertainty ) {
+      double numEventsABCD = 0.;
+      for ( histogramMap3::const_iterator region = histograms_.begin();
+	    region != histograms_.end(); ++region ) {
+	if ( histograms[region->first]["EventCounter"].find(*sysUncertainty) != histograms[region->first]["EventCounter"].end() ) {
+	  double numEvents_region = getIntegral(histograms[region->first]["EventCounter"][*sysUncertainty]);
+	  numEvents_[region->first][*sysUncertainty] = numEvents_region;
+	  std::cout << "numEvents[" << region->first << "][" << (*sysUncertainty) << "] = " << numEvents_[region->first][*sysUncertainty] << std::endl;
+	  if ( contains_string(regionsToFit_, region->first) ) numEventsABCD += numEvents_region;
+	} else {
+	  edm::LogWarning ("processEntryType") 
+	    << "Failed to compute numEvents for process = " << name_ << "," 
+	    << " region = " << region->first << ", central_or_shift = " << (*sysUncertainty) << " !!";
+	}
+      }
+      numEvents_["ABCD"][*sysUncertainty] = numEventsABCD;
+      std::cout << "numEvents[ABCD][" << (*sysUncertainty) << "] = " << numEvents_["ABCD"][*sysUncertainty] << std::endl;
+    }
+    
+    norm_.name_ = std::string(name).append("_norm");
+    norm_.expectedValue_ = numEvents_["ABCD"][key_central_value];
+    norm_.fittedValue_ = new RooRealVar(norm_.name_.data(), norm_.name_.data(), norm_.expectedValue_, 0., 1.e+6);
+    
+    for ( vstring::const_iterator sysUncertainty = sysUncertainties_.begin();
+	  sysUncertainty != sysUncertainties_.end(); ++sysUncertainty ) {
+      std::string alphaName = std::string(name).append("_alpha_").append(*sysUncertainty);
+      if ( templateMorphingMode == kHorizontalTemplateMorphing ) {
+	RooRealVar* alpha = new RooRealVar(alphaName.data(), alphaName.data(), 0.5, 0., 1.);
+	alphaParameters_[*sysUncertainty] = alphaParameterType(alpha, false);
+      } else if ( templateMorphingMode == kVerticalTemplateMorphing ) {
+	RooRealVar* alpha = new RooRealVar(alphaName.data(), alphaName.data(), 0., -1., +1.);
+	alphaParameters_[*sysUncertainty] = alphaParameterType(alpha, true);
+      }
+    }
+    
     for ( histogramMap3::const_iterator region = histograms_.begin();
 	  region != histograms_.end(); ++region ) {
-      numEvents_[region->first] = getIntegral(histograms[region->first]["EventCounter"][key_central_value]);
-      if ( contains_string(regionsToFit_, region->first) ) numEventsABCD += numEvents_[region->first];
       for ( histogramMap2::const_iterator observable = region->second.begin();
 	    observable != region->second.end(); ++observable ) {
-	fittedFractions_[region->first][observable->first] = ( numEvents_[region->first] > 0. ) ?
-	  getIntegral(histograms[region->first][observable->first][key_central_value], true, true)/numEvents_[region->first] : 1.;
+	TObjArray fittedFraction_parameters;
+	for ( histogramMap1::const_iterator sysUncertainty = observable->second.begin();
+	      sysUncertainty != observable->second.end(); ++sysUncertainty ) {
+	  double fittedFraction_value = 1.;
+	  if ( numEvents_[region->first].find(sysUncertainty->first) != numEvents_[region->first].end() &&
+	       histograms_[region->first][observable->first].find(sysUncertainty->first) != histograms_[region->first][observable->first].end() ) {
+	    TH1* histogram = histograms_[region->first][observable->first][sysUncertainty->first];
+	    assert(histogram);
+	    double numEvents_region = numEvents_[region->first][sysUncertainty->first];
+	    double integral = getIntegral(histograms_[region->first][observable->first][sysUncertainty->first], false, false);
+	    if ( numEvents_region > 0. ) fittedFraction_value = integral/numEvents_region;
+	  } else {
+	    edm::LogWarning ("processEntryType") 
+	      << "Failed to compute fittedFraction for process = " << name_ << "," 
+	      << " region = " << region->first << ", central_or_shift = " << sysUncertainty->first << " !!";
+	  }
+	  std::string nameFittedFraction = Form("%s_%s_%s_%s_fittedFraction", name.data(), region->first.data(), observable->first.data(), sysUncertainty->first.data());
+	  RooConstVar* fittedFraction = 
+  	    new RooConstVar(nameFittedFraction.data(), 
+			    nameFittedFraction.data(), fittedFraction_value);
+	  fittedFractionParameters_[region->first][observable->first][sysUncertainty->first] = fittedFraction;
+	  std::cout << "fittedFractionParameters_[" << region->first << "][" << observable->first << "][" << sysUncertainty->first << "] = " << fittedFraction 
+		    << " (name = " << fittedFraction->GetName() << ", value = " << fittedFraction->getVal() << ")" << std::endl;
+	  fittedFraction_parameters.Add(fittedFraction);
+	}	
+	std::string nameFittedFraction_central_value = fittedFractionParameters_[region->first][observable->first][key_central_value]->GetName();
+	std::string fittedFraction_formula = nameFittedFraction_central_value;
+	for ( vstring::const_iterator sysUncertainty = sysUncertainties_.begin();
+	      sysUncertainty != sysUncertainties_.end(); ++sysUncertainty ) {
+	  RooAbsReal* alpha = alphaParameters_[*sysUncertainty].alpha_;
+	  if ( alpha ) {
+	    fittedFraction_parameters.Add(alpha);
+	    RooAbsReal* fittedFraction_up = fittedFractionParameters_[region->first][observable->first][std::string(*sysUncertainty).append("Up")];
+	    if ( fittedFraction_up ) {
+    	      fittedFraction_formula.append(
+	        Form(" + TMath::Max(0., %s)*(%s - %s)", alpha->GetName(), fittedFraction_up->GetName(), nameFittedFraction_central_value.data()));
+	      fittedFraction_parameters.Add(fittedFraction_up);
+	    }
+	    RooAbsReal* fittedFraction_down = fittedFractionParameters_[region->first][observable->first][std::string(*sysUncertainty).append("Down")];
+	    if ( fittedFraction_down ) {
+  	      fittedFraction_formula.append(
+                Form(" + TMath::Min(0., %s)*(%s - %s)", alpha->GetName(), nameFittedFraction_central_value.data(), fittedFraction_down->GetName()));
+	      fittedFraction_parameters.Add(fittedFraction_down);
+	    }  
+	  }
+	}
+	std::string nameFittedFraction = Form("%s_%s_%s_fittedFraction", name.data(), region->first.data(), observable->first.data());
+	RooFormulaVar* fittedFraction = 
+  	    new RooFormulaVar(nameFittedFraction.data(), 
+			      nameFittedFraction.data(), fittedFraction_formula.data(), RooArgList(fittedFraction_parameters));
+	fittedFractions_[region->first][observable->first] = fittedFraction;
       }
     } 
-    numEvents_["ABCD"] = numEventsABCD;
-
-    norm_.name_ = std::string(name).append("_norm");
-    norm_.expectedValue_ = numEvents_["ABCD"];
-    norm_.fittedValue_ = new RooRealVar(norm_.name_.data(), norm_.name_.data(), norm_.expectedValue_, 0., 1.e+6);
 
     RooFormulaVar* (*makeRooFormulaVar)(const std::string&, 
 					const std::string&, const std::string&, const std::string&, 
-					RooAbsReal*, double, unsigned, 
+					RooAbsReal*, RooAbsReal*, unsigned, 
 					std::map<std::string, fitParameterType>&) = 0;
 
     if ( regionsToFit.size() == 6 &&
@@ -487,28 +568,32 @@ struct processEntryType
 	 contains_string(regionsToFit, "C2")  &&
 	 contains_string(regionsToFit, "D")   ) {
       std::string nameDiTauCharge_OS_SS = std::string(name).append("_").append("pDiTauCharge_OS_SS");
-      double pDiTauCharge_OS_SS_value = (numEvents_["A"] + numEvents_["C"])/numEvents_["ABCD"];
+      double pDiTauCharge_OS_SS_value = 
+	(numEvents_["A"][key_central_value] + numEvents_["C"][key_central_value])/numEvents_["ABCD"][key_central_value];
       RooRealVar* pDiTauCharge_OS_SS = 
 	new RooRealVar(nameDiTauCharge_OS_SS.data(), 
 		       nameDiTauCharge_OS_SS.data(), pDiTauCharge_OS_SS_value, 0., 1.);
       fitParameters_["pDiTauCharge_OS_SS"] = fitParameterType(pDiTauCharge_OS_SS, pDiTauCharge_OS_SS_value);
 
       std::string nameMuonIso_tight_loose = std::string(name).append("_").append("pMuonIso_tight_loose");
-      double pMuonIso_tight_loose_value = (numEvents_["C"] + numEvents_["D"])/numEvents_["ABCD"];
+      double pMuonIso_tight_loose_value = 
+	(numEvents_["C"][key_central_value] + numEvents_["D"][key_central_value])/numEvents_["ABCD"][key_central_value];
       RooRealVar* pMuonIso_tight_loose =
 	new RooRealVar(nameMuonIso_tight_loose.data(), 
 		       nameMuonIso_tight_loose.data(), pMuonIso_tight_loose_value, 0., 1.);
       fitParameters_["pMuonIso_tight_loose"] = fitParameterType(pMuonIso_tight_loose, pMuonIso_tight_loose_value);
       
       std::string nameDiTauKine_Sig_Bgr = std::string(name).append("_").append("pDiTauKine_Sig_Bgr");
-      double pDiTauKine_Sig_Bgr_value = numEvents_["C1"]/numEvents_["C"];
+      double pDiTauKine_Sig_Bgr_value = 
+	numEvents_["C1"][key_central_value]/numEvents_["C"][key_central_value];
       RooRealVar* pDiTauKine_Sig_Bgr =
 	new RooRealVar(nameDiTauKine_Sig_Bgr.data(), 
 		       nameDiTauKine_Sig_Bgr.data(), pDiTauKine_Sig_Bgr_value, 0., 1.);
       fitParameters_["pDiTauKine_Sig_Bgr"] = fitParameterType(pDiTauKine_Sig_Bgr, pDiTauKine_Sig_Bgr_value);
       
       std::string nameTauId_passed_failed = std::string(name).append("_").append("pTauId_passed_failed");
-      double pTauId_passed_failed_value = numEvents_[region_passed]/(numEvents_[region_passed] + numEvents_[region_failed]);
+      double pTauId_passed_failed_value = 
+	numEvents_[region_passed][key_central_value]/(numEvents_[region_passed][key_central_value] + numEvents_[region_failed][key_central_value]);
       RooRealVar* pTauId_passed_failed =
 	new RooRealVar(nameTauId_passed_failed.data(),
 		       nameTauId_passed_failed.data(), pTauId_passed_failed_value, 0., 1.);
@@ -519,7 +604,8 @@ struct processEntryType
 		contains_string(regionsToFit, region_passed) &&
 		contains_string(regionsToFit, region_failed) ) {
       std::string nameTauId_passed_failed = std::string(name).append("_").append("pTauId_passed_failed");
-      double pTauId_passed_failed_value = numEvents_[region_passed]/(numEvents_[region_passed] + numEvents_[region_failed]);
+      double pTauId_passed_failed_value = 
+	numEvents_[region_passed][key_central_value]/(numEvents_[region_passed][key_central_value] + numEvents_[region_failed][key_central_value]);
       RooRealVar* pTauId_passed_failed =
 	new RooRealVar(nameTauId_passed_failed.data(),
 		       nameTauId_passed_failed.data(), pTauId_passed_failed_value, 0., 1.);
@@ -540,9 +626,9 @@ struct processEntryType
       histogramMap1& histograms_passed = histograms_[region_passed][fitVariableName_passed];
       const std::string& fitVariableName_failed = fitVariables[region_failed].name_;
       histogramMap1& histograms_failed = histograms_[region_failed][fitVariableName_failed];
-      for ( histogramMap1::const_iterator sysUnceryainty = histograms_[region_passed][fitVariableName_passed].begin();
-	    sysUnceryainty != histograms_[region_passed][fitVariableName_passed].end(); ++sysUnceryainty ) {
-	histograms_failed[sysUnceryainty->first] = histograms_passed[sysUnceryainty->first];
+      for ( histogramMap1::const_iterator sysUncertainty = histograms_[region_passed][fitVariableName_passed].begin();
+	    sysUncertainty != histograms_[region_passed][fitVariableName_passed].end(); ++sysUncertainty ) {
+	histograms_failed[sysUncertainty->first] = histograms_passed[sysUncertainty->first];
 	fittedFractions_[region_failed][fitVariableName_failed] = fittedFractions_[region_passed][fitVariableName_passed];
       }    
     }
@@ -571,17 +657,17 @@ struct processEntryType
       else if ( templateMorphingMode == kHorizontalTemplateMorphing ) 
 	pdfs_[*region] = 
 	  makePdfHorizontalMorphing(histograms_, *region, fitVariables_[*region], 
-				    sysUncertainties, alphaParameters_);
+				    sysUncertainties_, alphaParameters_);
       else if ( templateMorphingMode == kVerticalTemplateMorphing ) 
 	pdfs_[*region] = 
 	  makePdfVerticalMorphing(histograms_, *region, fitVariables_[*region], 
-				  sysUncertainties, alphaParameters_);
+				  sysUncertainties_, alphaParameters_);
       else assert(0);
     }
   }
   std::string name_; 
   histogramMap3 histograms_;                              // key = (region, observable, central value/systematic uncertainty)  
-  valueMap1 numEvents_;                                   // key =  region
+  valueMap2 numEvents_;                                   // key = (region, central value/systematic uncertainty)
   std::map<std::string, fitVariableType> fitVariables_;   // key =  region
   static std::map<std::string, RooRealVar*> gFitVariableMap;       // key = fit variable name
   static std::map<std::string, std::string> gFitVariableRefRegion; // key = fit variable name
@@ -592,7 +678,8 @@ struct processEntryType
   int templateMorphingMode_;
   std::string legendEntry_;
   int fillColor_;
-  valueMap2 fittedFractions_;                             // key = (region, observable)
+  rooAbsRealMap3 fittedFractionParameters_;               // key = (region, observable, central value/systematic uncertainty)
+  rooAbsRealMap2 fittedFractions_;                        // key = (region, observable)
   std::map<std::string, unsigned> numCategories_;         // key = region
   fitParameterType norm_;
   std::map<std::string, RooFormulaVar*> normFactors_;     // key = region
@@ -616,7 +703,7 @@ std::map<std::string, std::string> processEntryType::gFitVariableRefRegion;
 
 double getTemplateNorm_fitted(processEntryType& processEntry, const std::string& region, const std::string& fitVariable)
 {
-  double retVal = processEntry.norm_.fittedValue_->getVal()*processEntry.fittedFractions_[region][fitVariable];
+  double retVal = processEntry.norm_.fittedValue_->getVal()*processEntry.fittedFractions_[region][fitVariable]->getVal();
   return retVal;
 }
 
@@ -1022,11 +1109,18 @@ void fitUsingRooFit(processEntryType& data, double intLumiData,
 	    region != data.regionsToFit_.end(); ++region ) {
 	std::cout << "  region " << (*region) << " = " 
 		  << processEntry->second->normFactors_[*region]->getVal()/
-	            (processEntry->second->fittedFractions_[*region][data.fitVariables_[*region].name_]
-                    *processEntry->second->numCategories_[*region])
-		  << " (MC exp. = " 
-		  << processEntry->second->numEvents_[*region] << ")" << std::endl;
+   	            (processEntry->second->fittedFractions_[*region][data.fitVariables_[*region].name_]->getVal()*processEntry->second->numCategories_[*region])
+		  << " (MC exp. = " << processEntry->second->numEvents_[*region][key_central_value] << ","
+		  << " fitted fraction = " << processEntry->second->fittedFractions_[*region][data.fitVariables_[*region].name_]->getVal() << ")" << std::endl;
       }
+    }
+    std::cout << " Data:" << std::endl;
+    std::cout << "  events = " << data.numEvents_["ABCD"][key_central_value] 
+	      << " +/- " << TMath::Sqrt(data.numEvents_["ABCD"][key_central_value]) << std::endl;
+    for ( vstring::const_iterator region = data.regionsToFit_.begin();
+	  region != data.regionsToFit_.end(); ++region ) {
+      std::cout << "  region " << (*region) << " = " << data.numEvents_[*region][key_central_value] 
+		<< " +/- " << TMath::Sqrt(data.numEvents_[*region][key_central_value]) << std::endl;
     }
   }
 }
@@ -1528,7 +1622,7 @@ int main(int argc, const char* argv[])
 	
 	std::cout << "histograms_data[region = " << (*region) << "][observable = " << (*observable) << "]" 
 		  << " = " << fluctHistogram << " (original = " << origHistogram << ")" << std::endl;
-	std::cout << " (name = " << fluctHistogram->GetName() << ", integral = " << fluctHistogram->Integral() << ")" << std::endl;
+	std::cout << " (name = " << fluctHistogram->GetName() << ", integral = " << getIntegral(fluctHistogram, false, false) << ")" << std::endl;
 	histograms_data[*region][*observable][key_central_value] = fluctHistogram;
       }
     }
@@ -1551,13 +1645,13 @@ int main(int argc, const char* argv[])
 //--- scale initial values for normalization factors of all processes
 //    by ratio to Data to MC event yields in region 'ABCD', 
 //    in order to speed-up convergence of fit
-  double scaleFactorMCtoData = data->numEvents_["ABCD"]/processEntries["mcSum"]->numEvents_["ABCD"];
-  std::cout << "number of events in region ABCD: data = " << data->numEvents_["ABCD"] << "," 
-	    << " sum(MC) = " << processEntries["mcSum"]->numEvents_["ABCD"] << std::endl;
+  double scaleFactorMCtoData = data->numEvents_["ABCD"][key_central_value]/processEntries["mcSum"]->numEvents_["ABCD"][key_central_value];
+  std::cout << "number of events in region ABCD: data = " << data->numEvents_["ABCD"][key_central_value] << "," 
+	    << " sum(MC) = " << processEntries["mcSum"]->numEvents_["ABCD"][key_central_value] << std::endl;
   std::cout << "--> MC-to-Data scale-factor = " << scaleFactorMCtoData << std::endl;
   for ( std::map<std::string, processEntryType*>::iterator processEntry = processEntries.begin();
 	processEntry != processEntries.end(); ++processEntry ) {
-    processEntry->second->norm_.expectedValue_ = scaleFactorMCtoData*processEntry->second->numEvents_["ABCD"];
+    processEntry->second->norm_.expectedValue_ = scaleFactorMCtoData*processEntry->second->numEvents_["ABCD"][key_central_value];
     processEntry->second->norm_.fittedValue_->setVal(processEntry->second->norm_.expectedValue_);
   }
 
@@ -1755,8 +1849,8 @@ int main(int argc, const char* argv[])
 		       "Expected %s Efficiency",
 		       fitVariable, tauId);
   saveValueAsHistogram(fitResultOutputDirectory, 
-		       processEntries[processName_signal]->numEvents_[region_passed] 
-		      + processEntries[processName_signal]->numEvents_[region_failed], 0.,
+		       processEntries[processName_signal]->numEvents_[region_passed][key_central_value] 
+		      + processEntries[processName_signal]->numEvents_[region_failed][key_central_value], 0.,
 		       "expNorm_%s_%s", 
 		       "Expected Number of Z #rightarrow #tau^{+} #tau^{-} Events in 'passed' + 'failed' regions",
 		       fitVariable, tauId);
