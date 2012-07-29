@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.30 $
+ * \version $Revision: 1.31 $
  *
- * $Id: FWLiteTauIdEffAnalyzer.cc,v 1.30 2012/05/25 08:17:27 veelken Exp $
+ * $Id: FWLiteTauIdEffAnalyzer.cc,v 1.31 2012/06/18 19:15:34 veelken Exp $
  *
  */
 
@@ -470,6 +470,12 @@ int main(int argc, char* argv[])
   double maxWeight = cfgTauIdEffAnalyzer.getParameter<double>("maxWeight");
   std::string sysShift = cfgTauIdEffAnalyzer.exists("sysShift") ?
     cfgTauIdEffAnalyzer.getParameter<std::string>("sysShift") : "CENTRAL_VALUE";
+  int shiftCaloMEtResponse = 0; //  0: no shift applied
+                                // +1: shift reconstructed CaloMEt by +15% and corresponding turn-on curve for L1_ETM20 trigger
+                                // -1: shift reconstructed CaloMEt by -15% and corresponding turn-on curve for L1_ETM20 trigger
+  if      ( sysShift == "CaloMEtResponseUp"   ) shiftCaloMEtResponse = +1;
+  else if ( sysShift == "CaloMEtResponseDown" ) shiftCaloMEtResponse = -1;
+  
   edm::InputTag srcEventCounter = cfgTauIdEffAnalyzer.getParameter<edm::InputTag>("srcEventCounter");
 
   PATMuonLUTvalueExtractorFromKNN* muonIsoProbExtractor = 0;
@@ -481,13 +487,30 @@ int main(int argc, char* argv[])
   }
 
   TF1* triggerEffCorrection = new TF1("triggerEffCorrection", &integralCrystalBall_data_div_mc, 0., 1.e+6, 10);
-  double triggerEffCorr_parameter[] = {
+  double triggerEffCorr_parameter_data[] = {
     // CV: HLT_IsoMu15_eta2p1_L1ETM20 efficiency correction parameters for 2012 run A
-    3.55718e+01, 9.05828e+00, 7.10953e+01, 3.85292e-01, 9.91771e-01, // Zmumu Data
-    3.46164e+0, 9.02199e+00, 2.88052e+01, 8.79657e-01, 9.92301e-01   // Zmumu Spring'12 MC (pile-up reweighted)
+    3.56934e+01, 8.95771e+00, 3.81006e+01, 3.29700e-02, 9.88290e-01, // Zmumu Data
   };
-  for ( int iPar = 0; iPar < triggerEffCorrection->GetNpar(); ++iPar ) {
-    triggerEffCorrection->SetParameter(iPar, triggerEffCorr_parameter[iPar]);
+  double triggerEffCorr_parameter_mc[] = {
+    3.51723e+01, 9.44549e+00, 2.13250e+01, 1.64246e+02, 1.00001e+00  // Zmumu Spring'12 MC (pile-up reweighted)
+  };
+  double triggerEffCorr_parameter_mc_shiftUp[] = {
+    2.99172e+01, 8.04091e+00, 4.13981e+01, 2.10489e+00, 9.99198e-01 // Zmumu Spring'12 MC (raw CaloMEt shifted by +15% wrt. corrected CaloMEt)
+  };
+  double triggerEffCorr_parameter_mc_shiftDown[] = {
+    4.04481e+01, 1.08623e+01, 2.45109e+01, 1.64435e+02, 1.00001e+00 // Zmumu Spring'12 MC (raw CaloMEt shifted by -15% wrt. corrected CaloMEt)
+  };
+  int numParameter_data_or_mc = (triggerEffCorrection->GetNpar() / 2);
+  assert(2*numParameter_data_or_mc == triggerEffCorrection->GetNpar());
+  for ( int iPar = 0; iPar < (2*numParameter_data_or_mc); ++iPar ) {
+    if ( iPar <= numParameter_data_or_mc ) { // data
+      triggerEffCorrection->SetParameter(iPar, triggerEffCorr_parameter_data[iPar]);
+    } else {                                 // mc (either central value or CaloMEt response shifted up/down)
+      if      ( shiftCaloMEtResponse ==  0 ) triggerEffCorrection->SetParameter(iPar, triggerEffCorr_parameter_mc[iPar - numParameter_data_or_mc]);
+      else if ( shiftCaloMEtResponse == +1 ) triggerEffCorrection->SetParameter(iPar, triggerEffCorr_parameter_mc_shiftUp[iPar - numParameter_data_or_mc]);
+      else if ( shiftCaloMEtResponse == -1 ) triggerEffCorrection->SetParameter(iPar, triggerEffCorr_parameter_mc_shiftDown[iPar - numParameter_data_or_mc]);
+      else assert(0);      
+    }
   }
 
   std::string selEventsFileName = ( cfgTauIdEffAnalyzer.exists("selEventsFileName") ) ? 
@@ -619,15 +642,23 @@ int main(int argc, char* argv[])
       
 //--- apply trigger efficiency correction (to MC only)
       typedef std::vector<pat::MET> PATMETCollection;
-      edm::Handle<PATMETCollection> caloMEt;
-      evt.getByLabel(srcCaloMEt, caloMEt);
-      if ( caloMEt->size() != 1 )
+      edm::Handle<PATMETCollection> caloMETs;
+      evt.getByLabel(srcCaloMEt, caloMETs);
+      if ( caloMETs->size() != 1 )
 	throw cms::Exception("FWLiteTauIdEffAnalyzer")
 	  << "Failed to find unique CaloMEt object !!\n";
-      //std::cout << " " << srcCaloMEt.label() << ": " << caloMEt->front().pt() << std::endl;
+      pat::MET caloMEt = caloMETs->front();
+      //std::cout << " " << srcCaloMEt.label() << ": " << caloMEt.pt() << std::endl;
+      if ( shiftCaloMEtResponse != 0 ) {
+        reco::Candidate::LorentzVector caloMEtP4 = caloMEt.p4();
+        if      ( shiftCaloMEtResponse == +1 ) caloMEtP4 *= 1.15;
+        else if ( shiftCaloMEtResponse == -1 ) caloMEtP4 *= 0.85;
+        else assert(0);
+        caloMEt.setP4(caloMEtP4);
+      }
 
       if ( !isData ) {
-	double triggerEffCorrection_value = triggerEffCorrection->Eval(caloMEt->front().pt());
+	double triggerEffCorrection_value = triggerEffCorrection->Eval(caloMEt.pt());
 	//std::cout << " triggerEffCorrection_value = " << triggerEffCorrection_value << std::endl;
 	evtWeight *= triggerEffCorrection_value;
       }
@@ -698,7 +729,7 @@ int main(int argc, char* argv[])
       for ( PATMuTauPairCollection::const_iterator muTauPair = muTauPairs->begin();
 	    muTauPair != muTauPairs->end(); ++muTauPair ) {
 	pat::strbitset evtSelFlags;
-	if ( selectorABCD->operator()(*muTauPair, caloMEt->front(), 0, evtSelFlags) ) ++numMuTauPairsABCD;
+	if ( selectorABCD->operator()(*muTauPair, caloMEt, 0, evtSelFlags) ) ++numMuTauPairsABCD;
       }
       
       if ( !(numMuTauPairsABCD <= 1) ) continue;
@@ -733,7 +764,9 @@ int main(int argc, char* argv[])
 	size_t numJets_bTagged = 0;
 	for ( pat::JetCollection::const_iterator jet = jets->begin();
 	      jet != jets->end(); ++jet ) {
-	  if ( jet->pt() > 30. && TMath::Abs(jet->eta()) < 2.4 && jetId(*jet) ) {
+	  if ( deltaR(jet->p4(), muTauPair->leg1()->p4()) > 0.5 &&
+	       deltaR(jet->p4(), muTauPair->leg2()->p4()) > 0.5 &&
+               jet->pt() > 30. && TMath::Abs(jet->eta()) < 2.4 && jetId(*jet) ) {
 	    ++numJets;
 	    if ( jet->bDiscriminator("combinedSecondaryVertexBJetTags") > 0.679 ) ++numJets_bTagged; // "medium" WP
 	  }
@@ -754,7 +787,7 @@ int main(int argc, char* argv[])
 	  double evtWeight_region = evtWeight;
 	  if ( muonIsoProbExtractor && applyMuonIsoWeights && (*regionEntry)->region_.find("_mW") != std::string::npos ) 
 	    evtWeight_region *= (*muonIsoProbExtractor)(*muTauPair->leg1());
-	  (*regionEntry)->analyze(evt, *muTauPair, caloMEt->front(), 
+	  (*regionEntry)->analyze(evt, *muTauPair, caloMEt, 
 				  numJets, numJets_bTagged,
 				  numVertices, plot_triggerBits_passed, genMatchType, evtWeight_region);
 	}
