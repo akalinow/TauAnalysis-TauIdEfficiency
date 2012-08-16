@@ -7,9 +7,9 @@
  * \author Betty Calpas, RWTH Aachen
  *         Christian Veelken, LLR
  *
- * \version $Revision: 1.1 $
+ * \version $Revision: 1.2 $
  *
- * $Id: smoothTauIdEffTemplates.cc,v 1.1 2012/06/16 17:21:40 veelken Exp $
+ * $Id: smoothTauIdEffTemplates.cc,v 1.2 2012/08/13 22:27:15 calpas Exp $
  *
  */
 
@@ -148,21 +148,21 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
   std::string histogramName_smoothed = std::string(histogram->GetName()).append("_smoothed");
   int histogramBinning = xAxis->GetNbins();
   TH1* histogram_smoothed = fitFunction->createHistogram(histogramName_smoothed.data(), x, Binning(histogramBinning));
-
-
-////////////////////////////////////////////////////////////////////////
-
- cout << endl<< "XXXXXXXXXXXXXXXXXXXX Syst study XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"<<endl << endl;
-
+  
+  
+  ////////////////////////////////////////////////////////////////////////
+  
+  cout << endl<< "XXXXXXXXXXXXXXXXXXXX Syst study XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"<<endl << endl;
+  
   //Get FitFuncton result (mean, sigma...)
   RooFitResult* r = fitFunction->fitTo(data,Save()) ; 
   //r->Print();
-
+  
   //Get the full covariance matrix
   const TMatrixDSym& cov = r->covarianceMatrix() ;
   //cov.Print() ;
   const TMatrixDSymEigen& eigencov = cov ;
-
+  
   //Find the Eigenvectors and Eigen value of the covariance matrix
   const TVectorD eigenval = eigencov.GetEigenValues();
   const TMatrixD eigenvec = eigencov.GetEigenVectors();
@@ -171,71 +171,192 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
   //cout << endl << "Matrix of eigenvectors"<< endl;
   //eigenvec.Print();
   
-   //Store function's parameter 
-   RooArgSet* params  = fitFunction->getParameters(x);
-   //Create iterator over the parameters
-   TIterator* it = params->createIterator() ;
+  //Store function's parameter 
+  RooArgSet* params  = fitFunction->getParameters(x);
+  //Create iterator over the parameters
+  TIterator* it = params->createIterator() ;
+  
+  //save parameter value to be retrive later
+  if( fitFunctionType == "LG1" ){
+    
+    params = fitFunction->getParameters(x);
+    RooRealVar* meanl = (RooRealVar*) params->find("meanl");
+    RooRealVar* meang = (RooRealVar*) params->find("meang");
+    RooRealVar* sigmal = (RooRealVar*) params->find("sigmal");
+    RooRealVar* sigmag = (RooRealVar*) params->find("sigmag");
+    double meanl_value = meanl->getVal(); 
+    double meang_value = meang->getVal();
+    double sigmal_value = sigmal->getVal(); 
+    double sigmag_value = sigmag->getVal();
+    
+    
+    //loop over eigenvector
+    //http://root.cern.ch/root/html400/TVectorD.html#TVectorD:kSizeMax
+    //cout << eigenval.GetNrows()  << endl; 
+    //cout << eigenvec.GetNrows() << endl;
+    
+    for( int i = 0; i < eigenvec.GetNrows(); ++i ){
+      //cout<< "i: "<< i << endl;
+      
+      //Get the Eigenvector[i]
+      const TVectorD Eigenvec = eigenvec[i]; 
+      //Get the Eigenvector[i] norm
+      double Norm = sqrt(Eigenvec * Eigenvec); 
+      //Get the Eigenvalue(i) associate to the eigenvector[i]
+      double Eigenval = eigenval[i];
+      //Get the error on Eigenval
+      double Sigma = sqrt(Eigenval);
+      //Get unit vector: projection of Eigenvector[i] over it's direction (i), divided by it's norm
+      const TVectorD Direction = (1./Norm) * Eigenvec;
 
-   //loop over eigenvector
-   //http://root.cern.ch/root/html400/TVectorD.html#TVectorD:kSizeMax
-   //cout << eigenval.GetNrows()  << endl; 
-   //cout << eigenvec.GetNrows() << endl;
-   for( int i = 0; i < eigenvec.GetNrows(); ++i ){
-    //Get the Eigenvector[i]
-    const TVectorD Eigenvec = eigenvec[i]; 
-    //Get the Eigenvector[i] norm
-    double Norm = sqrt(Eigenvec * Eigenvec); 
-    //Get the Eigenvalue(i) associate to the eigenvector[i]
-    double Eigenval = eigenval[i];
-    //Get the error on Eigenval
-    double Sigma = sqrt(Eigenval);
-    //Get unit vector: projection of Eigenvector[i] over it's direction (i), divided by it's norm
-    double Unit = Eigenvec(i)/Norm;
-
-    //loop over fitFunction parameter
-    //RooRealVar* var = NULL;
-    RooRealVar* par;
-    while(par = (RooRealVar*) it->Next()){
-
-     //save parameter value because of parameter pointeur dependencies
-     double par_value = par->getVal();
-     //cout << endl << "par_value: " << par_value << endl; 
-
-     //varie the fit parameter in direction of 1 Eigen Vector at a time 
-     par->setVal(par_value + Sigma*Unit );
-     //cout << endl << "par + err: " << par->getVal() << endl; 
-     //cout << endl << "+ err: " <<  Eigenval * sqrt(Eigenval) / Norm  << endl; 
-
-     //save Up syst. histogram
-     std::string parName = par->GetName();
-     std::string histogramName_smoothed_par_up = std::string(histogram->GetName()).append("_smoothed_").append(parName).append("_up");
-     TH1* histogram_smoothed_par_up = fitFunction->createHistogram(histogramName_smoothed_par_up.data(), x, Binning(histogramBinning));
-
-     //reset par value for down syst.
-     par->setVal(par_value);
-
-     //save Down syst. histogram
-     par->setVal(par_value - Sigma*Unit );
-     //cout << endl << "par - err: " << par->getVal() << endl; 
-     //cout << endl << "- err: " <<  Eigenval * sqrt(Eigenval) / Norm << endl; 
-
-     std::string histogramName_smoothed_par_down = std::string(histogram->GetName()).append("_smoothed_").append(parName).append("_down");
-     TH1* histogram_smoothed_par_down = fitFunction->createHistogram(histogramName_smoothed_par_down.data(), x, Binning(histogramBinning));
-
-     //retrive par value 
-     par->setVal(par_value);
-
-     }   
-   }
+      //cout << "Direction: " << Direction[i] << endl;
+      
+      //Varie all the fit parameters in on time in the direction of 1 Eigen Vector at a time 
+      //RooRealVar* var = NULL;
+      RooRealVar* par;
+      while(par = (RooRealVar*) it->Next()){
+	par->Print();
+        cout << endl << "par_value: " << par->getVal() << endl; 
+	par->setVal(par->getVal() + Sigma*Direction[i] );
+	cout << endl << "par_value +err: " << par->getVal() << endl; 
+	cout << endl << "+ err: " <<  Sigma*Direction[i] << endl << endl; 
+      }
 
 
+      std::ostringstream strs;
+      strs << i;
+      std::string Number = strs.str();
+
+      cout <<"Number" << Number << endl;
+
+
+      
+      //save Up syst. histogram
+      std::string histogramName_smoothed_Eigenvec_up = std::string(histogram->GetName()).append("_smoothed_").append("_EigenVec").append("_up");
+      TH1* histogram_smoothed_Eigenvec_up = fitFunction->createHistogram(histogramName_smoothed_Eigenvec_up.data(), x, Binning(histogramBinning));
+      
+      //Retrive parameter value for down syst error
+      params = fitFunction->getParameters(x);
+      RooRealVar* meanl = (RooRealVar*) params->find("meanl");
+      RooRealVar* meang = (RooRealVar*) params->find("meang");
+      RooRealVar* sigmal = (RooRealVar*) params->find("sigmal");
+      RooRealVar* sigmag = (RooRealVar*) params->find("sigmag");
+      meanl->setVal(meanl_value);
+      meang->setVal(meang_value);
+      sigmal->setVal(sigmal_value);
+      sigmag->setVal(sigmag_value);
+      
+      while(par = (RooRealVar*) it->Next()){
+	cout << endl << "par_value: " << par->getVal() << endl; 
+	par->setVal(par->getVal() - Sigma*Direction[i] );
+	cout << endl << "par_value -err: " << par->getVal() << endl; 
+	cout << endl << "- err: " <<  Sigma*Direction[i] << endl; 
+      }
+      
+      //save Down syst. histogram
+      std::string histogramName_smoothed_Eigenvec_down = std::string(histogram->GetName()).append("_smoothed_").append("_EigenVec").append<int>(i).append("_down");
+      TH1* histogram_smoothed_Eigenvec_down = fitFunction->createHistogram(histogramName_smoothed_Eigenvec_down.data(), x, Binning(histogramBinning));
+      
+    }
+    
+    //Retrive parameter value
+    params = fitFunction->getParameters(x);
+    meanl  = (RooRealVar*) params->find("meanl");
+    meang  = (RooRealVar*) params->find("meang");
+    sigmal = (RooRealVar*) params->find("sigmal");
+    sigmag = (RooRealVar*) params->find("sigmag");
+    meanl->setVal(meanl_value);
+    meang->setVal(meang_value);
+    sigmal->setVal(sigmal_value);
+    sigmag->setVal(sigmag_value);
+    
+ }
+  
+  
+  else if (  fitFunctionType == "CB1" ||
+	     fitFunctionType == "CB2" ||
+	     fitFunctionType == "CB3" ){
+    params = fitFunction->getParameters(x);
+    RooRealVar* cbmean = (RooRealVar*) params->find("cbmean");
+    RooRealVar* cbsigma = (RooRealVar*) params->find("cbsigma");
+    RooRealVar* n = (RooRealVar*) params->find("n");
+    RooRealVar* alpha = (RooRealVar*) params->find("alpha");
+    double cbmean_value = cbmean->getVal();
+    double cbsigma_value = cbsigma->getVal(); 
+    double n_value = n->getVal(); 
+    double alpha_value = alpha->getVal(); 
+    
+    for( int i = 0; i < eigenvec.GetNrows(); ++i ){
+      
+      //Get the Eigenvector[i]
+      const TVectorD Eigenvec = eigenvec[i]; 
+      //Get the Eigenvector[i] norm
+      double Norm = sqrt(Eigenvec * Eigenvec); 
+      //Get the Eigenvalue(i) associate to the eigenvector[i]
+      double Eigenval = eigenval[i];
+      //Get the error on Eigenval
+      double Sigma = sqrt(Eigenval);
+      //Get unit vector: projection of Eigenvector[i] over it's direction (i), divided by it's norm
+      const TVectorD Direction = (1./Norm) * Eigenvec;
+
+      //Varie all the fit parameters in on time in the direction of 1 Eigen Vector at a time 
+      //RooRealVar* var = NULL;
+      RooRealVar* par;
+      while(par = (RooRealVar*) it->Next()){
+	cout << endl << "par_value: " << par->getVal() << endl; 
+	par->setVal(par->getVal() + Sigma*Direction[i] );
+	cout << endl << "par + err: " << par->getVal() << endl; 
+	cout << endl << "+ err: " <<  Sigma*Direction[i]  << endl; 
+      }
+      
+      //save Up syst. histogram
+      std::string histogramName_smoothed_Eigenvec_up = std::string(histogram->GetName()).append("_smoothed_").append("_EigenVec").append("_up");
+      TH1* histogram_smoothed_Eigenvec_up = fitFunction->createHistogram(histogramName_smoothed_Eigenvec_up.data(), x, Binning(histogramBinning));
+      
+      //Retrive parameter value for down syst error
+      params = fitFunction->getParameters(x);
+      RooRealVar* cbmean = (RooRealVar*) params->find("cbmean");
+      RooRealVar* cbsigma = (RooRealVar*) params->find("cbsigma");
+      RooRealVar* n = (RooRealVar*) params->find("n");
+      RooRealVar* alpha = (RooRealVar*) params->find("alpha");
+      cbmean->setVal(cbmean_value);
+      cbsigma->setVal(cbsigma_value);
+      n->setVal(n_value);
+      alpha->setVal(alpha_value);
+      
+      while(par = (RooRealVar*) it->Next()){
+	cout << endl << "par_value: " << par->getVal() << endl; 
+	par->setVal(par->getVal() - Sigma*Direction[i] );
+	cout << endl << "par - err: " << par->getVal() << endl; 
+	cout << endl << "- err: " <<  Sigma*Direction[i] << endl; 
+      }
+      
+      std::string histogramName_smoothed_Eigenvec_down = std::string(histogram->GetName()).append("_smoothed_").append("_EigenVec").append("_down");
+      TH1* histogram_smoothed_Eigenvec_down = fitFunction->createHistogram(histogramName_smoothed_Eigenvec_down.data(), x, Binning(histogramBinning));
+      
+    }
+    
+    //Retrive parameter value
+    params  = fitFunction->getParameters(x);
+    cbmean  = (RooRealVar*) params->find("cbmean");
+    cbsigma = (RooRealVar*) params->find("cbsigma");
+    n       = (RooRealVar*) params->find("n");
+    alpha   = (RooRealVar*) params->find("alpha");
+    cbmean  ->setVal(cbmean_value);
+    cbsigma ->setVal(cbsigma_value);
+    n       ->setVal(n_value);
+    alpha   ->setVal(alpha_value);
+    
+  }
+  
+  
   cout << endl <<  "XXXXXXXXXXXXXXXXXXXX End syst study XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXxxXXXXXXX"<<endl;
-
-
-////////////////////////////////////////////////////////////////////////
-
-
-
+  
+  
+  ////////////////////////////////////////////////////////////////////////
+  
+  
+  
   // make control plot
   if ( makeControlPlots ) {
     TCanvas* canvas = new TCanvas("Fit", "Fit", 800, 600);
