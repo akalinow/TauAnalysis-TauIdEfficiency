@@ -8,9 +8,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.8 $
+ * \version $Revision: 1.9 $
  *
- * $Id: TauIdEffEventSelector.h,v 1.8 2011/11/06 13:25:26 veelken Exp $
+ * $Id: TauIdEffEventSelector.h,v 1.9 2012/06/18 19:15:35 veelken Exp $
  *
  */
 
@@ -94,6 +94,8 @@ class TauIdEffEventSelector : public EventSelector
   double visMassCutoffMax_;
   double MtCutoffMin_;
   double MtCutoffMax_;
+
+  int debugMode_;
 };
 
 #endif

@@ -10,8 +10,8 @@ channel = 'ZtoMuTau_tauIdEff'
 #jobId = getJobId(channel)
 jobId = '2012May12'
 
-version = 'v1_4'
-label = 'fitEWKbgSum_v3_wSmoothing'
+version = 'v1_8'
+label = 'fitEWKbgSum_v1'
 
 inputFilePath = '/data1/veelken/CMSSW_5_2_x/PATtuples/TauIdEffMeas/%s/%s/' % (jobId, version) \
                + 'user/v/veelken/CMSSW_5_2_x/PATtuples/TauIdEffMeas/%s/%s/' % (jobId, version)
@@ -49,10 +49,11 @@ if runPeriod == '2012RunAplusB':
         'data_TauPlusX_Run2012A_PromptReco_v1_runs190456to193621',
         'data_TauPlusX_Run2012B_PromptReco_v1_runs193752to194076v2',
         'data_TauPlusX_Run2012B_PromptReco_v1_runs194108to194479',
-        ##'data_TauPlusX_Run2012B_PromptReco_v1_runs194790to195016'
+        'data_TauPlusX_Run2012B_PromptReco_v1_runs194790to195016',
+        'data_TauPlusX_Run2012B_PromptReco_v1_runs195099to195947',
+        'data_TauPlusX_Run2012B_PromptReco_v1_runs195948to196509'
     ])
-    intLumiData = 1567 # runs 190456-194479
-    ##intLumiData = 2412 # runs 190456-195016
+    intLumiData = 5037 # runs 190456-196509
     hltPaths = {
         'Data' : [
             'HLT_IsoMu15_eta2p1_L1ETM20_v3',
@@ -66,8 +67,7 @@ if runPeriod == '2012RunAplusB':
     }
     srcWeights = {
         'Data' : [],
-        'smMC' : [ 'vertexMultiplicityReweight1d2012RunAplusB' ]
-        ##'smMC' : [ 'vertexMultiplicityReweight1d2012runs190456to195016' ]
+        'smMC' : [ 'vertexMultiplicityReweight1d2012runs190456to196509' ]
     }
 else:
     raise ValueError("Invalid runPeriod = %s !!" % runPeriod)
@@ -89,10 +89,11 @@ mode = 'tauIdEfficiency'
 #mode = 'tauChargeMisIdRate'
 
 sysUncertainties = [
-    "JetEn",        # needed for diTauMt/Pzeta
-    "TauJetEn",     # needed for diTauVisMass
-    "TauJetRes",    # needed for diTauVisMass
-    "UnclusteredEn" # needed for diTauMt/Pzeta 
+    "JetEn",          # needed for diTauMt/Pzeta
+    "TauJetEn",       # needed for diTauVisMass
+    "TauJetRes",      # needed for diTauVisMass
+    "UnclusteredEn",  # needed for diTauMt/Pzeta
+    "CaloMEtResponse" # needed for diTauMt/Pzeta and diTauVisMass
 ]
 
 #templateMorphingMode = "none"
@@ -104,7 +105,8 @@ fitIndividualProcesses = False
 
 # CV: only book histograms needed to run tau id. efficiency fit;
 #     drop all control plots
-fillControlPlots = False
+fillControlPlots = True
+#fillControlPlots = False
 
 tauIds = {
     # HPS combined isolation discriminators
@@ -154,26 +156,26 @@ tauIds = {
         'markerStyleSim' : 24,
         'color' : 418
     },
-    ##'tauDiscrHPScombMediumDBcorr' : {
-    ##    'discriminators' : [
-    ##        'decayModeFinding',
-    ##        'byMediumCombinedIsolationDeltaBetaCorr'
-    ##    ],
-    ##    'legendEntry' : "HPS comb. Medium",
-    ##    'markerStyleData' : 21,
-    ##    'markerStyleSim' : 25,
-    ##    'color' : 807
-    ##},
-    ##'tauDiscrHPScombTightDBcorr' : {
-    ##    'discriminators' : [
-    ##        'decayModeFinding',
-    ##        'byTightCombinedIsolationDeltaBetaCorr'
-    ##    ],
-    ##    'legendEntry' : "HPS comb. Tight",
-    ##    'markerStyleData' : 22,
-    ##    'markerStyleSim' : 26,
-    ##    'color' : 618
-    ##},
+    'tauDiscrHPScombMediumDBcorr' : {
+        'discriminators' : [
+            'decayModeFinding',
+            'byMediumCombinedIsolationDeltaBetaCorr'
+        ],
+        'legendEntry' : "HPS comb. Medium",
+        'markerStyleData' : 21,
+        'markerStyleSim' : 25,
+        'color' : 807
+    },
+    'tauDiscrHPScombTightDBcorr' : {
+        'discriminators' : [
+            'decayModeFinding',
+            'byTightCombinedIsolationDeltaBetaCorr'
+        ],
+        'legendEntry' : "HPS comb. Tight",
+        'markerStyleData' : 22,
+        'markerStyleSim' : 26,
+        'color' : 618
+    },
     # HPS ring isolation discriminators
     # (based on MVA)
     'tauDiscrHPSlooseMVA'  : {
@@ -221,26 +223,26 @@ tauIds = {
         'markerStyleSim' : 24,
         'color' : 418
     },
-    ##'tauDiscrHPSmediumMVA' : {
-    ##    'discriminators' : [
-    ##        'decayModeFinding',
-    ##        'byMediumIsolationMVA'
-    ##    ],
-    ##    'legendEntry' : "HPS Medium MVA",
-    ##    'markerStyleData' : 21,
-    ##    'markerStyleSim' : 25,
-    ##    'color' : 807
-    ##},
-    ##'tauDiscrHPStightMVA' : {
-    ##    'discriminators' : [
-    ##        'decayModeFinding',
-    ##        'byTightIsolationMVA'
-    ##    ],
-    ##    'legendEntry' : "HPS Tight MVA",
-    ##    'markerStyleData' : 22,
-    ##    'markerStyleSim' : 26,
-    ##    'color' : 618
-    ##}
+    'tauDiscrHPSmediumMVA' : {
+        'discriminators' : [
+            'decayModeFinding',
+            'byMediumIsolationMVA'
+        ],
+        'legendEntry' : "HPS Medium MVA",
+        'markerStyleData' : 21,
+        'markerStyleSim' : 25,
+        'color' : 807
+    },
+    'tauDiscrHPStightMVA' : {
+        'discriminators' : [
+            'decayModeFinding',
+            'byTightIsolationMVA'
+        ],
+        'legendEntry' : "HPS Tight MVA",
+        'markerStyleData' : 22,
+        'markerStyleSim' : 26,
+        'color' : 618
+    }
 }
 
 binning = {
@@ -375,6 +377,8 @@ if mode == 'tauIdEfficiency':
         'C1',
         'C1p',
         'C1f',
+        'C1f_DEBUG1',
+        'C1f_DEBUG2',
         'C2',
         'C2p',
         'C2f',
@@ -387,8 +391,8 @@ if mode == 'tauIdEfficiency':
         'DWj',
         'DWj_mW'
     ]
-    regionsToFit                         = [ 'A', 'B', 'C1p', 'C1f', 'C2', 'D' ]
-    ##regionsToFit                         = [ 'C1p', 'C1f' ]
+    ##regionsToFit                         = [ 'A', 'B', 'C1p', 'C1f', 'C2', 'D' ]
+    regionsToFit                         = [ 'C1p', 'C1f' ]
     passed_region                        = 'C1p'
     failed_region                        = 'C1f'
     regionQCDtemplateFromData_passed     = 'A1'
@@ -770,7 +774,7 @@ makeFileName = "Makefile_TauIdEffMeasAnalysis_%s_%s_%s" % (jobId, version, label
 makeFile = open(makeFileName, "w")
 makeFile.write("\n")
 makeFile.write("all: %s %s\n" %
-  (haddOutputFileName_stage4,
+  (haddOutputFileName_stage5,
    make_MakeFile_vstring(outputFileNames_makeTauIdEffFinalPlots)))
 makeFile.write("\techo 'Finished running TauIdEffMeasAnalysis.'\n")
 makeFile.write("\n")

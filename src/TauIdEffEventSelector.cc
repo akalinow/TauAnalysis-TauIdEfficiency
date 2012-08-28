@@ -12,6 +12,8 @@ enum { kNotApplied, kSignalLike, kBackgroundLike, kWplusJetBackgroundLike };
 // from "leading track" or from all "signal" charged hadrons
 enum { kLeadTrackCharge, kSignalChargedHadronSum };
 
+enum { kNoDEBUG, kDEBUG1, kDEBUG2 };
+
 TauIdEffEventSelector::TauIdEffEventSelector(const edm::ParameterSet& cfg)
 {
   //std::cout << "<TauIdEffEventSelector::TauIdEffEventSelector>:" << std::endl;
@@ -71,11 +73,13 @@ TauIdEffEventSelector::TauIdEffEventSelector(const edm::ParameterSet& cfg)
 //    of visible and transverse mass distributions
 //   (difference in event yields may cause problem with simultaneous fit of visMass and Mt distributions)
   visMassCutoffMin_         =  20.0;
-  visMassCutoffMax_         = 200.0;
+  visMassCutoffMax_         = 250.0;
   MtCutoffMin_              =  -1.e+3;
-  MtCutoffMax_              = 120.0;
+  MtCutoffMax_              = 150.0;
 
-  region_ = cfg.getParameter<std::string>("region");
+  std::string region_full = cfg.getParameter<std::string>("region");
+  int pos_separator = region_full.find("_");
+  region_ = std::string(region_full, 0, pos_separator);
   //std::cout << " region = " << region_ << std::endl;
 
   if        ( region_           == "ABCD"            ) {
@@ -88,25 +92,29 @@ TauIdEffEventSelector::TauIdEffEventSelector(const edm::ParameterSet& cfg)
     muonRelIsoMin_          =   0.20;
     muTauPairChargeProdMin_ =  +0.5;
   } else if ( region_.find("C") != std::string::npos ) {
-    muonRelIsoMax_          =   0.10;
+    muonRelIsoMax_          =   0.06;
     muTauPairChargeProdMax_ =  -0.5;
   } else if ( region_.find("D") != std::string::npos ) {
-    muonRelIsoMax_          =   0.10;
+    muonRelIsoMax_          =   0.06;
     muTauPairChargeProdMin_ =  +0.5;
   } else {
     throw cms::Exception("TauIdEffEventSelector") 
       << "Invalid region = " << region_ << " !!\n";
   }
 
-  if      ( region_.find("1")  != std::string::npos ) MtAndPzetaDiffCut_ = kSignalLike;
-  else if ( region_.find("2")  != std::string::npos ) MtAndPzetaDiffCut_ = kBackgroundLike;
-  else if ( region_.find("Wj") != std::string::npos ) MtAndPzetaDiffCut_ = kWplusJetBackgroundLike;
+  if      ( region_.find("1")           != std::string::npos ) MtAndPzetaDiffCut_ = kSignalLike;
+  else if ( region_.find("2")           != std::string::npos ) MtAndPzetaDiffCut_ = kBackgroundLike;
+  else if ( region_.find("Wj")          != std::string::npos ) MtAndPzetaDiffCut_ = kWplusJetBackgroundLike;
 
-  if      ( region_.find("p") != std::string::npos ) tauIdDiscriminatorCut_ = kSignalLike;
-  else if ( region_.find("f") != std::string::npos ) tauIdDiscriminatorCut_ = kBackgroundLike;
+  if      ( region_.find("p")           != std::string::npos ) tauIdDiscriminatorCut_ = kSignalLike;
+  else if ( region_.find("f")           != std::string::npos ) tauIdDiscriminatorCut_ = kBackgroundLike;
 
-  if      ( region_.find("+") != std::string::npos ) tauChargeMin_ = +0.5;
-  else if ( region_.find("-") != std::string::npos ) tauChargeMax_ = -0.5;
+  if      ( region_.find("+")           != std::string::npos ) tauChargeMin_ = +0.5;
+  else if ( region_.find("-")           != std::string::npos ) tauChargeMax_ = -0.5;
+
+  if      ( region_full.find("_DEBUG1") != std::string::npos ) debugMode_ = kDEBUG1;
+  else if ( region_full.find("_DEBUG2") != std::string::npos ) debugMode_ = kDEBUG2;
+  else                                                         debugMode_ = kNoDEBUG;
 }
 
 TauIdEffEventSelector::~TauIdEffEventSelector()
@@ -205,10 +213,13 @@ bool TauIdEffEventSelector::operator()(const PATMuTauPair& muTauPair, const pat:
 	     tauIdDiscriminator_value < tauIdDiscriminatorMax_) ) tauIdDiscriminators_passed = false;
     }
 
+    if ( debugMode_ == kDEBUG1 && ! (visMass > 120. && visMass < 140.)                                        ) return false;
+    if ( debugMode_ == kDEBUG2 && !((visMass > 105. && visMass < 115.) || (visMass > 145. && visMass < 155.)) ) return false;
+
     if ( ( MtAndPzetaDiffCut_ == kNotApplied                                           ||
 	  (MtAndPzetaDiffCut_ == kSignalLike             &&  MtAndPzetaDiffCut_passed) ||
 	  (MtAndPzetaDiffCut_ == kBackgroundLike         && !MtAndPzetaDiffCut_passed) ||
-	  (MtAndPzetaDiffCut_ == kWplusJetBackgroundLike &&  Mt > 60.                ) ) &&
+	  (MtAndPzetaDiffCut_ == kWplusJetBackgroundLike &&  Mt > 70. && Mt < 120.   ) ) &&
 	 ( tauIdDiscriminatorCut_ == kNotApplied                                       ||
 	  (tauIdDiscriminatorCut_ == kSignalLike     &&  tauIdDiscriminators_passed)   ||
 	  (tauIdDiscriminatorCut_ == kBackgroundLike && !tauIdDiscriminators_passed)   ) ) return true;

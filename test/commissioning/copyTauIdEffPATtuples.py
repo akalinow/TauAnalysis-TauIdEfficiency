@@ -10,7 +10,7 @@ import shlex
 #jobId = getJobId(channel)
 jobId = '2012May12'
 
-version = 'v1_6'
+version = 'v1_8'
 
 # Get all the skim files from the castor directory
 sourceFilePath = "/castor/cern.ch/user/v/veelken/CMSSW_5_2_x/PATtuples/TauIdEffMeas/%s/%s" % (jobId, version)
@@ -39,9 +39,12 @@ samplesToCopy = [
     'data_TauPlusX_Run2012B_PromptReco_v1_runs193752to194076v2',
     'data_TauPlusX_Run2012B_PromptReco_v1_runs194108to194479',
     'data_TauPlusX_Run2012B_PromptReco_v1_runs194790to195016',
+    'data_TauPlusX_Run2012B_PromptReco_v1_runs195099to195947',
+    'data_TauPlusX_Run2012B_PromptReco_v1_runs195948to196509',
     'ZplusJets_madgraph2',
     'Ztautau_pythia',
     'WplusJets_madgraph',
+    'WplusJets_madgraph_extension',
     'PPmuXptGt20Mu15',      
     'TTplusJets_madgraph2'
 ]

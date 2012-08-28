@@ -18,35 +18,19 @@ def configurePrePatProduction(process, pfCandidateCollection = "particleFlow", i
     # add reweighting factors to be applied to Monte Carlo simulated events
     # in order to match vertex multiplicity distribution in Data
     process.load("TauAnalysis.RecoTools.vertexMultiplicityReweight_cfi")
-    process.vertexMultiplicityReweight3d2012runs190456to194076 = process.vertexMultiplicityReweight.clone(
-        inputFileName = cms.FileInPath("TauAnalysis/RecoTools/data/expPUpoissonMean_runs190456to194076_Mu17_Mu8_v16.root"),
+    process.vertexMultiplicityReweight3d2012runs190456to196509 = process.vertexMultiplicityReweight.clone(
+        inputFileName = cms.FileInPath("TauAnalysis/RecoTools/data/expPUpoissonMean_runs190456to196509_Mu17_Mu8.root"),
         type = cms.string("gen3d"),
         mcPeriod = cms.string("Summer12")
     )
-    process.vertexMultiplicityReweight3d2012runs190456to195016 = process.vertexMultiplicityReweight3d2012runs190456to194076.clone(
-        inputFileName = cms.FileInPath("TauAnalysis/RecoTools/data/expPUpoissonMean_runs190456to195016_Mu17_Mu8.root")
-    )
-    process.vertexMultiplicityReweight3d2012runs190456to195947 = process.vertexMultiplicityReweight3d2012runs190456to194076.clone(
-        inputFileName = cms.FileInPath("TauAnalysis/RecoTools/data/expPUpoissonMean_runs190456to195947_Mu17_Mu8.root")
-    )
-    process.vertexMultiplicityReweight1d2012runs190456to194076 = process.vertexMultiplicityReweight.clone(
-        inputFileName = cms.FileInPath("TauAnalysis/RecoTools/data/expPUpoissonDist_runs190456to194076_Mu17_Mu8_v16.root"),
+    process.vertexMultiplicityReweight1d2012runs190456to196509 = process.vertexMultiplicityReweight3d2012runs190456to196509.clone(
+        inputFileName = cms.FileInPath("TauAnalysis/RecoTools/data/expPUpoissonDist_runs190456to196509_Mu17_Mu8.root"),
         type = cms.string("gen"),
         mcPeriod = cms.string("Summer12")
     )
-    process.vertexMultiplicityReweight1d2012runs190456to195016 = process.vertexMultiplicityReweight1d2012runs190456to194076.clone(
-        inputFileName = cms.FileInPath("TauAnalysis/RecoTools/data/expPUpoissonDist_runs190456to195016_Mu17_Mu8.root")
-    )
-    process.vertexMultiplicityReweight1d2012runs190456to195947 = process.vertexMultiplicityReweight1d2012runs190456to194076.clone(
-        inputFileName = cms.FileInPath("TauAnalysis/RecoTools/data/expPUpoissonDist_runs190456to195947_Mu17_Mu8.root")
-    )
     if isMC:
-        process.prePatProductionSequence += process.vertexMultiplicityReweight3d2012runs190456to194076
-        process.prePatProductionSequence += process.vertexMultiplicityReweight3d2012runs190456to195016
-        process.prePatProductionSequence += process.vertexMultiplicityReweight3d2012runs190456to195947
-        process.prePatProductionSequence += process.vertexMultiplicityReweight1d2012runs190456to194076
-        process.prePatProductionSequence += process.vertexMultiplicityReweight1d2012runs190456to195016
-        process.prePatProductionSequence += process.vertexMultiplicityReweight1d2012runs190456to195947
+        process.prePatProductionSequence += process.vertexMultiplicityReweight3d2012runs190456to196509
+        process.prePatProductionSequence += process.vertexMultiplicityReweight1d2012runs190456to196509
     #--------------------------------------------------------------------------------
 
     #--------------------------------------------------------------------------------
@@ -96,7 +80,8 @@ def configurePrePatProduction(process, pfCandidateCollection = "particleFlow", i
         
         process.smearedAK5PFJets = cms.EDProducer("SmearedPFJetProducer",
             src = cms.InputTag('calibratedAK5PFJets'),
-            dRmaxGenJetMatch = cms.string('TMath::Min(0.5, 0.1 + 0.3*TMath::Exp(-0.05*genJetPt - 10.))'),
+            dRmaxGenJetMatch = cms.string('TMath::Min(0.5, 0.1 + 0.3*TMath::Exp(-0.05*(genJetPt - 10.)))'),
+            sigmaMaxGenJetMatch = cms.double(5.),
             inputFileName = cms.FileInPath('PhysicsTools/PatUtils/data/pfJetResolutionMCtoDataCorrLUT.root'),
             lutName = cms.string('pfJetResolutionMCtoDataCorrLUT'),
             jetResolutions = jetResolutions.METSignificance_params,

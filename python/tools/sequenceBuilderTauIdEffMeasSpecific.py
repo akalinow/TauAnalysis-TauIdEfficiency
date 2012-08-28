@@ -173,7 +173,8 @@ def buildSequenceTauIdEffMeasSpecific(process,
             lutName = cms.string('pfJetResolutionMCtoDataCorrLUT'),
             jetResolutions = process.METSignificance_params,
             srcGenJets = cms.InputTag('ak5GenJetsNoNu'),
-            dRmaxGenJetMatch = cms.string('TMath::Min(0.5, 0.1 + 0.3*TMath::Exp(-0.05*genJetPt - 10.))'), 
+            dRmaxGenJetMatch = cms.string('TMath::Min(0.5, 0.1 + 0.3*TMath::Exp(-0.05*(genJetPt - 10.)))'),
+            sigmaMaxGenJetMatch = cms.double(5.),
             smearBy = cms.double(0.),                                     
             shiftBy = cms.double(+3.)                          
         )

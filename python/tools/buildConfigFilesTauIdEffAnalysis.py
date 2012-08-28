@@ -159,7 +159,7 @@ def buildConfigFile_FWLiteTauIdEffAnalyzer(sampleToAnalyze, jobId, inputFilePath
         outputFileName_full = os.path.join(outputFilePath, outputFileName)
 
         srcMuTauPairs = 'selectedMuPFTauHPSpairsDzForTauIdEff'
-        if sysUncertainty != "CENTRAL_VALUE":  
+        if sysUncertainty not in [ "CENTRAL_VALUE", "CaloMEtResponseUp", "CaloMEtResponseDown" ]:  
             srcMuTauPairs = composeModuleName([ srcMuTauPairs, sysUncertainty, "cumulative" ])            
         else:
             srcMuTauPairs = composeModuleName([ srcMuTauPairs, "cumulative" ])
@@ -360,7 +360,7 @@ def buildConfigFile_smoothTauIdEffTemplates(jobId, directory, inputFileName, tau
         region  = process_and_region[1]
         if not region in regions:
             continue
-        for tauId in tauIds:
+        for tauId in tauIds:            
             for fitVariable in fitVariables_extended:
                 for sysUncertainty in sysUncertainties_extended:
                     for genMatch_option in [ None, "JetToTauFake" ]:
@@ -381,14 +381,14 @@ def buildConfigFile_smoothTauIdEffTemplates(jobId, directory, inputFileName, tau
                                 continue
 
                         fitFunctionType = None                    
-                        if fitVariables == "diTauVisMass":
+                        if fitVariable == "diTauVisMass":
                             fitFunctionType = "LG1"
-                        elif fitVariables == "diTauMt":
+                        elif fitVariable == "diTauMt":
                             if region in [ 'D' ]:
                                 fitFunctionType = "CB1"
-                            elif process == 'WplusJets' and region in [ 'A', 'A_mW', 'A1_mW', 'B' ]:
+                            elif process == 'WplusJets' and region in [ 'A', 'A1', 'A_mW', 'A1_mW', 'B', 'C1f', 'C1p' ]:
                                 fitFunctionType = "CB2"
-                            elif process == 'QCD' and region in [ 'A', 'A_mW', 'A1_mW', 'B' ]:
+                            elif process == 'QCD' and region in [ 'A', 'A1', 'A_mW', 'A1_mW', 'B' ]:
                                 fitFunctionType = "CB3"
                             else:
                                 raise ValueError("Undefined combination of region = %s and process = %s !!" % (region, process))

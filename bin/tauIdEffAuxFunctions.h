@@ -6,6 +6,8 @@
 
 #include "FWCore/Utilities/interface/Exception.h"
 
+#include "RooAbsReal.h"
+
 #include <TDirectory.h>
 #include <TH1.h>
 #include <TMath.h>
@@ -26,6 +28,10 @@ typedef std::map<std::string, histogramMap3> histogramMap4;
 typedef std::map<std::string, double> valueMap1;
 typedef std::map<std::string, valueMap1> valueMap2;
 typedef std::map<std::string, valueMap2> valueMap3;
+
+typedef std::map<std::string, RooAbsReal*> rooAbsRealMap1;
+typedef std::map<std::string, rooAbsRealMap1> rooAbsRealMap2;
+typedef std::map<std::string, rooAbsRealMap2> rooAbsRealMap3;
 
 typedef std::vector<std::string> vstring;
 
@@ -213,11 +219,13 @@ void loadHistograms(histogramMap3& histogramMap,
 	//    (for now the combinations of processes + regions for which template smoothing is applied
 	//     is hardcoded here... this is to be changed later)
 	if ( (process == "WplusJets" && (genMatch == "" || genMatch == "JetToTauFake") && 
+	      ((*observable) == "diTauVisMass" || (*observable) == "diTauMt") &&
 	      ((*region) == "A" || (*region) == "A_mW" || (*region) == "A_mW" || 
 	       (*region) == "B" ||
 	       (*region) == "C1p" || (*region) == "C1f" ||
 	       (*region) == "D")) ||
 	     (process == "QCD" && 
+	      ((*observable) == "diTauVisMass" || (*observable) == "diTauMt") &&
 	      ((*region) == "A" || (*region) == "A_mW" || (*region) == "A_mW" || 
 	       (*region) == "B")) ) {
 	  histogramName.append("_smoothed");

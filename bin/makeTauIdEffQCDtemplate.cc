@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.8 $
+ * \version $Revision: 1.9 $
  *
- * $Id: makeTauIdEffQCDtemplate.cc,v 1.8 2012/05/25 08:17:27 veelken Exp $
+ * $Id: makeTauIdEffQCDtemplate.cc,v 1.9 2012/06/18 19:15:34 veelken Exp $
  *
  */
 
@@ -88,7 +88,7 @@ struct regionEntryType
     TH1* templateTTplusJetsQCDsideband = histograms_mc["TTplusJets"][regionTakeQCDtemplateFromData_][fitVariable_][sysUncertainty_];
 
     TString templateQCDsidebandName = distributionDataQCDsideband->GetName();    
-    templateQCDsidebandName.ReplaceAll(regionTakeQCDtemplateFromData_, regionStoreQCDtemplate_);
+    templateQCDsidebandName.ReplaceAll(Form("_%s_", regionTakeQCDtemplateFromData_.data()), Form("_%s_", regionStoreQCDtemplate_.data()));
     if ( sysUncertainty_ != key_central_value ) templateQCDsidebandName.Append("_").Append(sysUncertainty_);
     std::cout << "creating histogram = " << templateQCDsidebandName << std::endl;
     TH1* templateQCDsideband_obsQCD = 0;

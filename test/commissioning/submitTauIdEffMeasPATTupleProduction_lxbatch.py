@@ -15,9 +15,9 @@ channel = 'ZtoMuTau_tauIdEff'
 #jobId = getJobId(channel)
 jobId = '2012May12'
 
-version = 'v1_6'
+version = 'v1_8'
 
-lxbatch_queue = '1nd'
+lxbatch_queue = '1nw'
 
 pfCandidateCollection = "particleFlow" # pile-up removal disabled
 #pfCandidateCollection = "pfNoPileUp"   # pile-up removal enabled
@@ -27,9 +27,12 @@ samplesToAnalyze = [
     'data_TauPlusX_Run2012B_PromptReco_v1_runs193752to194076v2',
     'data_TauPlusX_Run2012B_PromptReco_v1_runs194108to194479',
     'data_TauPlusX_Run2012B_PromptReco_v1_runs194790to195016',
+    'data_TauPlusX_Run2012B_PromptReco_v1_runs195099to195947',
+    'data_TauPlusX_Run2012B_PromptReco_v1_runs195948to196509',
     'ZplusJets_madgraph2',
     'Ztautau_pythia',
     'WplusJets_madgraph',
+    'WplusJets_madgraph_extension',
     'PPmuXptGt20Mu15v2',      
     'TTplusJets_madgraph2'
 ]
@@ -43,9 +46,12 @@ numInputFilesPerJob = {
     'data_TauPlusX_Run2012B_PromptReco_v1_runs193752to194076v2' : 2,
     'data_TauPlusX_Run2012B_PromptReco_v1_runs194108to194479'   : 2,
     'data_TauPlusX_Run2012B_PromptReco_v1_runs194790to195016'   : 2,
+    'data_TauPlusX_Run2012B_PromptReco_v1_runs195099to195947'   : 2,
+    'data_TauPlusX_Run2012B_PromptReco_v1_runs195948to196509'   : 2,
     'ZplusJets_madgraph2'                                       : 1,
     'Ztautau_pythia'                                            : 5,
     'WplusJets_madgraph'                                        : 5,
+    'WplusJets_madgraph_extension'                              : 3,
     'PPmuXptGt20Mu15v2'                                         : 5,
     'TTplusJets_madgraph2'                                      : 1
 }    

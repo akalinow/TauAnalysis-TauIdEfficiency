@@ -7,9 +7,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.12 $
+ * \version $Revision: 1.13 $
  *
- * $Id: TauIdEffHistManager.h,v 1.12 2012/05/25 08:17:27 veelken Exp $
+ * $Id: TauIdEffHistManager.h,v 1.13 2012/06/18 19:15:35 veelken Exp $
  *
  */
 
@@ -81,6 +81,7 @@ class TauIdEffHistManager
   TH1* histogramSVfitMass_;
   TH1* histogramMt_;
   TH1* histogramPzetaDiff_;
+  TH1* histogramDPhi_;
 
   TH1* histogramNumJets_;
   TH1* histogramNumJetsBtagged_;

@@ -22,13 +22,13 @@ TauIdEffHistManager::~TauIdEffHistManager()
 void TauIdEffHistManager::bookHistograms(TFileDirectory& dir)
 {
   // book histograms for fit variables
-  histogramTauNumTracks_    = book1D(dir, "tauJetNumTracks",    "Num. Tracks #tau-Jet",                  25,         -0.5,         24.5);
+  histogramTauNumTracks_    = book1D(dir, "tauJetNumTracks",    "Num. Tracks #tau-Jet",                  15,         -0.5,         14.5);
   histogramTauNumSelTracks_ = book1D(dir, "tauJetNumSelTracks", "Num. selected Tracks #tau-Jet",         25,         -0.5,         24.5);
 
-  histogramVisMass_         = book1D(dir, "diTauVisMass",       "M_{vis}(#mu + #tau_{had})",             36,         20.0,        200.0);
+  histogramVisMass_         = book1D(dir, "diTauVisMass",       "M_{vis}(#mu + #tau_{had})",             46,         20.0,        250.0);
   if ( svFitMassHypothesis_ != "" )
-    histogramSVfitMass_     = book1D(dir, "diTauSVfitMass",     "SVfit Mass",                            42,         40.0,        250.0);
-  histogramMt_              = book1D(dir, "diTauMt",            "M_{T}(#mu + MET)",                      24,          0.0,        120.0);
+    histogramSVfitMass_     = book1D(dir, "diTauSVfitMass",     "SVfit Mass",                            52,         40.0,        300.0);
+  histogramMt_              = book1D(dir, "diTauMt",            "M_{T}(#mu + MET)",                      30,          0.0,        150.0);
 
   // book histogram needed to keep track of number of processed events
   histogramEventCounter_    = book1D(dir, "EventCounter",       "Event Counter",                          1,         -0.5,         +0.5);
@@ -43,15 +43,16 @@ void TauIdEffHistManager::bookHistograms(TFileDirectory& dir)
     histogramTauEta_          = book1D(dir, "tauJetEta",          "#eta_{#tau}",                           50,         -2.5,         +2.5);
     histogramTauPhi_          = book1D(dir, "tauJetPhi",          "#phi_{#tau}",                           36, -TMath::Pi(), +TMath::Pi());
         
-    histogramPzetaDiff_       = book1D(dir, "diTauPzetaDiff",     "P_{#zeta} - 1.5 #cdot P_{#zeta}^{vis}", 24,        -80.0,        +40.0);
+    histogramPzetaDiff_       = book1D(dir, "diTauPzetaDiff",     "P_{#zeta} - 1.5 #cdot P_{#zeta}^{vis}", 28,        -80.0,        +60.0);
+    histogramDPhi_            = book1D(dir, "diTauDPhi",          "#Delta#phi(#mu-#tau)",                  36,        -0.01,        +3.15);
 
     histogramNumJets_         = book1D(dir, "NumJets",            "Num. Jets",                             10,         -0.5,          9.5);
     histogramNumJetsBtagged_  = book1D(dir, "NumJetsBtagged",     "Num. Jets b-tagged",                    10,         -0.5,          9.5);
 
     histogramPFMEt_           = book1D(dir, "pfMEt",              "pf-E_{T}^{miss}",                       20,          0.0,        100.0);
-    histogramPFSumEt_         = book1D(dir, "pfSumEt",            "#Sigma E_{T}^{PF}",                     50,          0.,         500.0);
+    histogramPFSumEt_         = book1D(dir, "pfSumEt",            "#Sigma E_{T}^{PF}",                     40,          0.,        2000.0);
     histogramCaloMEt_         = book1D(dir, "caloMEt",            "calo-E_{T}^{miss}",                     20,          0.0,        100.0);
-    histogramCaloSumEt_       = book1D(dir, "caloSumEt",          "#Sigma E_{T}^{calo}",                   50,          0.,         500.0);
+    histogramCaloSumEt_       = book1D(dir, "caloSumEt",          "#Sigma E_{T}^{calo}",                   40,          0.,        2000.0);
 
     histogramNumVertices_     = book1D(dir, "numVertices",        "Num. Vertices",                         35,         -0.5,         34.5);
 
@@ -102,6 +103,7 @@ void TauIdEffHistManager::fillHistograms(const PATMuTauPair& muTauPair, const pa
     histogramTauPhi_->Fill(muTauPair.leg2()->phi(), weight);
   
     histogramPzetaDiff_->Fill(muTauPair.pZeta() - 1.5*muTauPair.pZetaVis(), weight);
+    histogramDPhi_->Fill(TMath::ACos(TMath::Cos(muTauPair.leg1()->phi() - muTauPair.leg2()->phi())), weight);
 
     histogramNumJets_->Fill(numJets, weight);
     histogramNumJetsBtagged_->Fill(numJets_bTagged, weight);

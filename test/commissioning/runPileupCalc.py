@@ -66,7 +66,7 @@ commandLine_pileupReCalc_HLTpath = \
 runCommand(commandLine_pileupReCalc_HLTpath)
 
 commandLine_pileupCalc3d = \
-  "pileupCalc.py -i %s --inputLumiJSON %s --calcMode true --minBiasXsec 69400 --maxPileupBin 50 --numPileupBins 500 %s" % \
+  "pileupCalc.py -i %s --inputLumiJSON %s --calcMode true --minBiasXsec 69400 --maxPileupBin 60 --numPileupBins 600 %s" % \
     (inputFileName_JSON, outputFileName_JSONforHLTpath, outputFileName_histogram3d)
 runCommand(commandLine_pileupCalc3d)
 

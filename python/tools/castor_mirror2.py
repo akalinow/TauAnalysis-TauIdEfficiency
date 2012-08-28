@@ -123,7 +123,8 @@ class CopyWorker(threading.Thread):
             ],
             'veelken' : [
                 ##'root',
-                ##'xemacs'
+                ##'xemacs',
+                'rfcp'
             ]
         }
         waitFor = 300 # time to wait in seconds
@@ -198,7 +199,18 @@ def needs_local_copy(castor_files, local_directory = LOCAL_DIRECTORY, verbose=Fa
     ''' Yield files from castor files that aren't current on local disk'''
     for file in castor_files:
         if not local_version_current(file, local_directory):
+            commandLine = 'stager_get -M %s -U myfiles' % file
+            sys.stdout.write("%s\n" % commandLine)
+            args = shlex.split(commandLine)
+            retVal = subprocess.Popen(args, stdout = subprocess.PIPE)
+            retVal.wait()
+            # CV: wait one second after each 'stager_get' command in order to avoid
+            #     generating too many castor request in too short a time
+            #    (limitation = 3000 requests per 15 minutes)
+            time.sleep(1)
             yield file
+        ##else:
+        ##    print "file %s already exists locally --> skipping !!" % file
 
 def expand_file_list(fileEntries):
      for fileEntry in fileEntries:

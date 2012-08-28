@@ -14,11 +14,13 @@ SAMPLES_TO_ANALYZE = [
     'data_TauPlusX_Run2012B_PromptReco_v1_runs194108to194479',
     'data_TauPlusX_Run2012B_PromptReco_v1_runs194790to195016',
     'data_TauPlusX_Run2012B_PromptReco_v1_runs195099to195947',
+    'data_TauPlusX_Run2012B_PromptReco_v1_runs195948to196509',
     'Ztautau_pythia',
     'Zmumu_pythia',
     'DYmumuM10to20_pythia',
     'ZplusJets_madgraph2',
     'WplusJets_madgraph',
+    'WplusJets_madgraph_extension',
     'PPmuXptGt20Mu15',
     'PPmuXptGt20Mu15v2',
     'WW',
@@ -50,7 +52,7 @@ TauIdEfficiencySpecific_RECO_SAMPLES = {
         'lumi_mask' : "/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Prompt/Cert_190456-194076_8TeV_PromptReco_Collisions12_JSON.txt",
         'runselection' : "190456-193621",
         'number_of_jobs' : 500,
-        'conditions' : 'GR_R_52_V9::All',
+        'conditions' : 'GR_R_52_V7C::All',
         'events_processed' : -1,
         'skim_eff' : 1.0,
         'type' : 'Data',
@@ -69,7 +71,7 @@ TauIdEfficiencySpecific_RECO_SAMPLES = {
         'lumi_mask' : "/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Prompt/Cert_190456-194076_8TeV_PromptReco_Collisions12_JSON.txt",
         'runselection' : "193752-194076",
         'number_of_jobs' : 1500,
-        'conditions' : 'GR_R_52_V9::All',
+        'conditions' : 'GR_R_52_V7C::All',
         'events_processed' : -1,
         'skim_eff' : 1.0,
         'type' : 'Data',
@@ -87,7 +89,7 @@ TauIdEfficiencySpecific_RECO_SAMPLES = {
         'lumi_mask' : "/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Prompt/Cert_190456-194479_8TeV_PromptReco_Collisions12_JSON.txt",
         'runselection' : "194108-194479",
         'number_of_jobs' : 1500,
-        'conditions' : 'GR_R_52_V9::All',
+        'conditions' : 'GR_R_52_V7C::All',
         'events_processed' : -1,
         'skim_eff' : 1.0,
         'type' : 'Data',
@@ -105,7 +107,7 @@ TauIdEfficiencySpecific_RECO_SAMPLES = {
         'lumi_mask' : "/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Prompt/Cert_190456-195016_8TeV_PromptReco_Collisions12_JSON.txt",
         'runselection' : "194790-195016",
         'number_of_jobs' : 1500,
-        'conditions' : 'GR_R_52_V9::All',
+        'conditions' : 'GR_R_52_V7C::All',
         'events_processed' : -1,
         'skim_eff' : 1.0,
         'type' : 'Data',
@@ -123,13 +125,31 @@ TauIdEfficiencySpecific_RECO_SAMPLES = {
         'lumi_mask' : "/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Prompt/Cert_190456-195947_8TeV_PromptReco_Collisions12_JSON.txt",
         'runselection' : "195099-195947",
         'number_of_jobs' : 1500,
-        'conditions' : 'GR_R_52_V9::All',
+        'conditions' : 'GR_R_52_V7C::All',
         'events_processed' : -1,
         'skim_eff' : 1.0,
         'type' : 'Data',
         'drawOption' : styles.drawOption_Data,
         'hlt_paths' : {
             'HLT_IsoMu15_eta2p1_L1ETM20_v5' : '195099:MIN-:MAX195947'
+        },
+        'enableSysUncertainties' : False,
+        'enableFakeRates' : True,
+        'hlt' : cms.InputTag("TriggerResults", "", "HLT")
+    },
+    'data_TauPlusX_Run2012B_PromptReco_v1_runs195948to196509' : {
+        'datasetpath' : "/TauPlusX/Run2012B-PromptReco-v1/AOD",
+        'dbs_url' :  "http://cmsdbsprod.cern.ch/cms_dbs_prod_global/servlet/DBSServlet",
+        'lumi_mask' : "/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Prompt/Cert_190456-196509_8TeV_PromptReco_Collisions12_JSON.txt",
+        'runselection' : "195948-196509",
+        'number_of_jobs' : 1500,
+        'conditions' : 'GR_R_52_V7C::All',
+        'events_processed' : -1,
+        'skim_eff' : 1.0,
+        'type' : 'Data',
+        'drawOption' : styles.drawOption_Data,
+        'hlt_paths' : {
+            'HLT_IsoMu15_eta2p1_L1ETM20_v5' : '195948:MIN-:MAX196509'
         },
         'enableSysUncertainties' : False,
         'enableFakeRates' : True,
@@ -155,7 +175,8 @@ MERGE_SAMPLES = {
             'data_TauPlusX_Run2012B_PromptReco_v1_runs193752to194076v2',
             'data_TauPlusX_Run2012B_PromptReco_v1_runs194108to194479',
             'data_TauPlusX_Run2012B_PromptReco_v1_runs194790to195016',
-            'data_TauPlusX_Run2012B_PromptReco_v1_runs195099to195947'
+            'data_TauPlusX_Run2012B_PromptReco_v1_runs195099to195947',
+            'data_TauPlusX_Run2012B_PromptReco_v1_runs195948to196509'
         ],
         'type' : 'Data'
     },    
@@ -186,7 +207,8 @@ MERGE_SAMPLES = {
     },
     'WplusJets' : {
         'samples' : [
-            'WplusJets_madgraph'
+            'WplusJets_madgraph',
+            'WplusJets_madgraph_extension'
         ],
         'type' : plotter.process_WplusJets.config_dqmHistPlotter.type.value()
     },

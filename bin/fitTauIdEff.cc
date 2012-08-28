@@ -6,9 +6,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.36 $
+ * \version $Revision: 1.37 $
  *
- * $Id: fitTauIdEff.cc,v 1.36 2012/06/18 19:15:34 veelken Exp $
+ * $Id: fitTauIdEff.cc,v 1.37 2012/07/29 15:50:37 veelken Exp $
  *
  */
 
@@ -893,14 +893,12 @@ void fitUsingRooFit(processEntryType& data, double intLumiData,
     else if ( processEntry->first == "QCD" ) {
       //fitConstraintsC1.Add(makeFitConstraint(processEntry->second->norm_.fittedValue_, 
       //                                       processEntry->second->norm_.expectedValue_, TMath::Max(1.e+1, 0.5*processEntry->second->norm_.expectedValue_)));
-      //fitConstraintsC1.Add(makeFitConstraint(processEntry->second->norm_.fittedValue_, 
-      //                                       2.*processEntry->second->norm_.expectedValue_, 1.e-1*processEntry->second->norm_.expectedValue_));
-      processEntry->second->norm_.fittedValue_->setVal(0.67*processEntry->second->norm_.fittedValue_->getVal());
+      processEntry->second->norm_.fittedValue_->setVal(0.33*processEntry->second->norm_.fittedValue_->getVal());
       processEntry->second->norm_.fittedValue_->setConstant(true);
     } else if ( processEntry->first == "Zmumu"     || 
 	        processEntry->first == "EWKmuFake" )
       fitConstraintsC1.Add(makeFitConstraint(processEntry->second->norm_.fittedValue_, 
-					     processEntry->second->norm_.expectedValue_, 1.0*processEntry->second->norm_.expectedValue_));
+					     processEntry->second->norm_.expectedValue_, TMath::Max(1.e+1, 1.0*processEntry->second->norm_.expectedValue_)));
     processEntry->second->norm_.fittedValue_->setMin(1.);
     if ( processEntry->first == "EWKmuFake" ) processEntry->second->norm_.fittedValue_->setMax(5.*processEntry->second->norm_.expectedValue_);
     
@@ -920,9 +918,9 @@ void fitUsingRooFit(processEntryType& data, double intLumiData,
 	//  fitParameter->second.fittedValue_->setConstant(true);
 	//} else {
 	  if ( processEntry->first == "Ztautau" )
-	    fitParameter->second.fittedValue_->setConstant(true);
-	    //fitConstraintsABC2D.Add(makeFitConstraint(fitParameter->second.fittedValue_, 
-	    //					        fitParameter->second.expectedValue_, 0.025));
+	    //fitParameter->second.fittedValue_->setConstant(true);
+	    fitConstraintsABC2D.Add(makeFitConstraint(fitParameter->second.fittedValue_, 
+						      fitParameter->second.expectedValue_, 0.025));
 	  else if ( processEntry->first == "Zmumu"      ||
 		    processEntry->first == "WplusJets"  ||
 		    processEntry->first == "EWKjetFake" )
@@ -933,18 +931,19 @@ void fitUsingRooFit(processEntryType& data, double intLumiData,
 						      fitParameter->second.expectedValue_, 0.05));
 	//}
       } else if ( fitParameter->first == "pMuonIso_tight_loose" ) {
-	//if ( isLowStatistics["A"] && 
-	//     isLowStatistics["B"] && 
-	//     isLowStatistics["D"] ) {
-	//  fitParameter->second.fittedValue_->setConstant(true);
-	//} else {
-	  if ( processEntry->first == "Ztautau" )
-	    fitParameter->second.fittedValue_->setConstant(true);
-   	  else if ( processEntry->first == "Ztautau"    ||
-		    processEntry->first == "Zmumu"      ||
-		    processEntry->first == "WplusJets"  ||
-		    processEntry->first == "EWKmuFake"  ||
-		    processEntry->first == "EWKjetFake" )
+	if ( isLowStatistics["A"] && 
+	     isLowStatistics["B"] && 
+	     isLowStatistics["D"] ) {
+	  fitParameter->second.fittedValue_->setConstant(true);
+	} else {
+	  //if ( processEntry->first == "Ztautau" )
+	  //  fitParameter->second.fittedValue_->setConstant(true);
+	  //else if ( processEntry->first == "Zmumu"      ||
+   	  if ( processEntry->first == "Ztautau"    ||
+	       processEntry->first == "Zmumu"      ||
+	       processEntry->first == "WplusJets"  ||
+	       processEntry->first == "EWKmuFake"  ||
+	       processEntry->first == "EWKjetFake" )
 	    fitConstraintsABC2D.Add(makeFitConstraint(fitParameter->second.fittedValue_, 
 						      fitParameter->second.expectedValue_, 0.01));
 	  else if ( processEntry->first == "TTplusJets" )
@@ -954,7 +953,7 @@ void fitUsingRooFit(processEntryType& data, double intLumiData,
           else
 	    fitConstraintsABC2D.Add(makeFitConstraint(fitParameter->second.fittedValue_, 
 						      fitParameter->second.expectedValue_, TMath::Max(0.05, 0.5*fitParameter->second.expectedValue_)));
-	//}
+	}
       } else if ( fitParameter->first == "pDiTauKine_Sig_Bgr" ) {
 	if ( isLowStatistics["C1p"] && 
 	     isLowStatistics["C1f"] && 

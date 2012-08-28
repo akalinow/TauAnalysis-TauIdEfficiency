@@ -3,6 +3,9 @@
 import os
 
 hltPaths = [
+    #'HLT_Mu8_v*',
+    #'HLT_L1ETM30_v*',
+    #'HLT_L1SingleEG12_*',
     #'HLT_Mu15_v*',    # for QCD muon enriched 
     #'HLT_IsoMu17_v*', # for W --> mu nu, Z --> mu+ mu- and Tau id. efficiency
     #'HLT_IsoMu24_v*',
@@ -64,13 +67,17 @@ jsonFiles = {
     #                     + 'Cert_190456-191859_8TeV_PromptReco_Collisions12_JSON.txt'
     #'2012RunA'          : '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Prompt/' \
     #                      + 'Cert_190456-193336_8TeV_PromptReco_Collisions12_JSON.txt'
-    #'2012RunA'          : '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Prompt/' \
-    #                       + 'Cert_190456-193557_8TeV_PromptReco_Collisions12_JSON.txt'
+    '2012RunA'          : '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Prompt/' \
+                           + 'Cert_190456-194076_8TeV_PromptReco_Collisions12_JSON.txt',
     #'2012RunAplusBv1'      : '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Prompt/' \
     #                      + 'Cert_190456-194479_8TeV_PromptReco_Collisions12_JSON.txt',
     '2012RunAplusBv2'      : '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Prompt/' \
-                          + 'Cert_190456-195947_8TeV_PromptReco_Collisions12_JSON.txt'
+                           + 'Cert_190456-195947_8TeV_PromptReco_Collisions12_JSON.txt',
+    #'2012RunAplusBv3'      : '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Prompt/' \
+    #                      + 'Cert_190456-196509_8TeV_PromptReco_Collisions12_JSON.txt'
     #'2012RunAplusB'      : '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/DCSOnly/json_DCSONLY.txt'
+    #'2012RunAplusB'      : '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Prompt/' \
+    #                      + 'Cert_190456-200601_8TeV_PromptReco_Collisions12_JSON_v2.txt'
 }
 
 executable_lumiCalc = '/afs/cern.ch/user/v/veelken/scratch0/CMSSW_5_2_3_patch3/src/RecoLuminosity/LumiDB/scripts/lumiCalc2.py'
