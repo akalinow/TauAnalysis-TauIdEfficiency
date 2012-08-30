@@ -7,9 +7,9 @@
  * \author Betty Calpas, RWTH Aachen
  *         Christian Veelken, LLR
  *
- * \version $Revision: 1.2 $
+ * \version $Revision: 1.3 $
  *
- * $Id: smoothTauIdEffTemplates.cc,v 1.2 2012/08/13 22:27:15 calpas Exp $
+ * $Id: smoothTauIdEffTemplates.cc,v 1.3 2012/08/16 10:23:00 calpas Exp $
  *
  */
 
@@ -60,8 +60,11 @@
 #include "TMatrixDSym.h"
 #include "TMatrixDSymEigen.h"
 #include <TVectorD.h>
+#include <TVector.h>
 #include "TIterator.h"
 #include <math.h>
+
+#include <map>
 
 using namespace RooFit;
 using namespace std;
@@ -73,10 +76,10 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
   TAxis* xAxis = histogram->GetXaxis();
   double xMin = xAxis->GetXmin();
   double xMax = xAxis->GetXmax();
-
+  
   // general fit variable
   RooRealVar x("x", "x", xMin, xMax);
-
+  
   RooAbsPdf* fitFunction = 0;
   std::vector<TObject*> objectsToDelete;
   if ( fitFunctionType == "LG1" ) {
@@ -85,7 +88,7 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
     RooRealVar* sigmal = new RooRealVar("sigmal", "sigma of Landau", 30., 20., 50.);  
     RooLandau* landau = new RooLandau("landau", "landau", x, *meanl, *sigmal);
     // create Gaussian
-    RooRealVar* meang = new RooRealVar("meang", "mean of Gaussian", 1.); 
+    RooRealVar* meang = new RooRealVar("meang", "mean of Gaussian", 1.,0.,15.); 
     RooRealVar* sigmag = new RooRealVar("sigmag","sigma of Gaussian", 1., 0.1, 10.);
     RooGaussian* gauss = new RooGaussian("gauss", "gauss", x, *meang, *sigmag);
     // create convolution of Landau with Gaussian
@@ -109,18 +112,18 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
     if        ( fitFunctionType == "CB1" ) {
       cbmean  = new RooRealVar("cbmean", "cbmean", 90., 20., 180.);
       cbsigma = new RooRealVar("cbsigma", "cbsigma", 1., 1., 40.); 
-      n       = new RooRealVar("n", "", 0.2); 
-      alpha   = new RooRealVar("alpha", "", 1.3);
+      n       = new RooRealVar("n", "n", 0.2, 0., 10.); 
+      alpha   = new RooRealVar("alpha", "alpha", 1.3, 0., 10.);
     } else if ( fitFunctionType == "CB2" ) {
       cbmean  = new RooRealVar("cbmean", "cbmean", 70., 20., 180.);
       cbsigma = new RooRealVar("cbsigma", "cbsigma", 10., 1., 200.); 
-      n       = new RooRealVar("n", "", 1.); 
-      alpha   = new RooRealVar("alpha", "", 1.); 
+      n       = new RooRealVar("n", "n", 1., 0., 10.); 
+      alpha   = new RooRealVar("alpha", "alpha", 1., 0., 10.); 
     } else if ( fitFunctionType == "CB3" ) {
       cbmean  = new RooRealVar("cbmean", "cbmean" , 1., 20., 180.);
       cbsigma = new RooRealVar("cbsigma", "cbsigma" , 10., 1., 200.); 
-      n       = new RooRealVar("n","", 1.); 
-      alpha   = new RooRealVar("alpha", "", 1.);      
+      n       = new RooRealVar("n","n", 1., 0., 10.); 
+      alpha   = new RooRealVar("alpha", "", 1., 0., 10.);      
     }     
     fitFunction = new RooCBShape("CristalBall", "CristalBall", x, *cbmean, *cbsigma, *alpha, *n);
     objectsToDelete.push_back(cbmean);
@@ -150,251 +153,247 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
   TH1* histogram_smoothed = fitFunction->createHistogram(histogramName_smoothed.data(), x, Binning(histogramBinning));
   
   
-  ////////////////////////////////////////////////////////////////////////
   
   cout << endl<< "XXXXXXXXXXXXXXXXXXXX Syst study XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"<<endl << endl;
   
-  //Get FitFuncton result (mean, sigma...)
+
+  //Get FitFunction result (mean, sigma...)
   RooFitResult* r = fitFunction->fitTo(data,Save()) ; 
-  //r->Print();
+  cout<< "Fit results: " << endl;
+  r->Print();
   
   //Get the full covariance matrix
   const TMatrixDSym& cov = r->covarianceMatrix() ;
-  //cov.Print() ;
-  const TMatrixDSymEigen& eigencov = cov ;
-  
+  cout << endl << "Cov Matrix: "<< endl;
+  cov.Print();
   //Find the Eigenvectors and Eigen value of the covariance matrix
+  //Get the matrix of Eigen vector
+
+  const TMatrixDSymEigen& eigencov = cov ;
+  //const TMatrixDSymEigen eigencov(cov) ;
+  //eigencov.Print(); //no possible to print yet!!
+
   const TVectorD eigenval = eigencov.GetEigenValues();
+  cout << endl << "Vector of Eigen value"<< endl;
+  eigenval.Print();
   const TMatrixD eigenvec = eigencov.GetEigenVectors();
-  //cout << endl << "Eigen value associate to each eigenvector"<< endl;
-  //eigenval.Print();
-  //cout << endl << "Matrix of eigenvectors"<< endl;
-  //eigenvec.Print();
+  cout << endl << "Matrix of eigenvectors"<< endl;
+  eigenvec.Print();
+
+  //The eigenvectors correspond to the row of the eigenvec Matrix  !!OK!! 
+  cout << "Eigenvec Matrix row check: each eigenvector should match a eigenvec Matrix row "<< endl; 
+  const TVectorD EV0 = eigenvec[0]; cout << " egenvec row 0: " ; EV0.Print(); cout << endl;
+  const TVectorD EV1 = eigenvec[1]; cout << " egenvec row 1: " ; EV1.Print(); cout << endl;
+  const TVectorD EV2 = eigenvec[2]; cout << " egenvec row 2: " ; EV2.Print(); cout << endl;
+  const TVectorD EV3 = eigenvec[3]; cout << " egenvec row 3: " ; EV3.Print(); cout << endl;
+
+  //check n1: M( invert eigenvec * eigenvec ) = M(Identity) !!OK!!
+  TMatrixD inveigenvec(TMatrixD::kInverted,eigenvec);  
+  const TMatrixD ID = inveigenvec * eigenvec;
+  cout<< endl << "Matrice identite "<< endl;
+  ID.Print(); // should print Identity Matrix 
+
+  //Check n2: inveigenvec * cov * eigenvec = diag. of eigenval !!OK!!
+  // http://root.cern.ch/phpBB3/viewtopic.php?f=15&t=8663 
+  //TMatrixD Minv(TMatrixD::kInverted,eigenvec);  
+  const TMatrixD MDiag = inveigenvec * cov * eigenvec; 
+  cout << endl << " inveigenvec * cov * eigenvec =? diag. of eigenval" << endl;
+  MDiag.Print();  //should print a Matrix with the eigenvalue on the diagonal 
+ 
+  //Check n3: an eigenvector of a square matrix is a non-zero vector that, !!failed!!
+  //when multiplied by the matrix, yields a vector that is parallel to the original: eigenvec[i] * cov = x * eigenvec[i]
+  //const TMatrixD Check = Mult(eigenvec,eigenvec);  
+  TVector Check = EV0;
+  //EV0 *= cov;
+  Check *= cov;
+  cout << endl << "eigenvec * cov =? x * Matrix of eigenvec " << endl;
+  Check.Print();
   
+
   //Store function's parameter 
   RooArgSet* params  = fitFunction->getParameters(x);
-  //Create iterator over the parameters
-  TIterator* it = params->createIterator() ;
+  //Create iterator
+  TIterator* it_test = params->createIterator() ;
+  RooRealVar* par_test;
+    
+  vector<std::string> vfitFunction_parName;
   
-  //save parameter value to be retrive later
-  if( fitFunctionType == "LG1" ){
-    
-    params = fitFunction->getParameters(x);
-    RooRealVar* meanl = (RooRealVar*) params->find("meanl");
-    RooRealVar* meang = (RooRealVar*) params->find("meang");
-    RooRealVar* sigmal = (RooRealVar*) params->find("sigmal");
-    RooRealVar* sigmag = (RooRealVar*) params->find("sigmag");
-    double meanl_value = meanl->getVal(); 
-    double meang_value = meang->getVal();
-    double sigmal_value = sigmal->getVal(); 
-    double sigmag_value = sigmag->getVal();
-    
-    
-    //loop over eigenvector
-    //http://root.cern.ch/root/html400/TVectorD.html#TVectorD:kSizeMax
-    //cout << eigenval.GetNrows()  << endl; 
-    //cout << eigenvec.GetNrows() << endl;
-    
-    for( int i = 0; i < eigenvec.GetNrows(); ++i ){
-      //cout<< "i: "<< i << endl;
-      
-      //Get the Eigenvector[i]
-      const TVectorD Eigenvec = eigenvec[i]; 
-      //Get the Eigenvector[i] norm
-      double Norm = sqrt(Eigenvec * Eigenvec); 
-      //Get the Eigenvalue(i) associate to the eigenvector[i]
-      double Eigenval = eigenval[i];
-      //Get the error on Eigenval
-      double Sigma = sqrt(Eigenval);
-      //Get unit vector: projection of Eigenvector[i] over it's direction (i), divided by it's norm
-      const TVectorD Direction = (1./Norm) * Eigenvec;
-
-      //cout << "Direction: " << Direction[i] << endl;
-      
-      //Varie all the fit parameters in on time in the direction of 1 Eigen Vector at a time 
-      //RooRealVar* var = NULL;
-      RooRealVar* par;
-      while(par = (RooRealVar*) it->Next()){
-	par->Print();
-        cout << endl << "par_value: " << par->getVal() << endl; 
-	par->setVal(par->getVal() + Sigma*Direction[i] );
-	cout << endl << "par_value +err: " << par->getVal() << endl; 
-	cout << endl << "+ err: " <<  Sigma*Direction[i] << endl << endl; 
-      }
-
-
-      std::ostringstream strs;
-      strs << i;
-      std::string Number = strs.str();
-
-      cout <<"Number" << Number << endl;
-
-
-      
-      //save Up syst. histogram
-      std::string histogramName_smoothed_Eigenvec_up = std::string(histogram->GetName()).append("_smoothed_").append("_EigenVec").append("_up");
-      TH1* histogram_smoothed_Eigenvec_up = fitFunction->createHistogram(histogramName_smoothed_Eigenvec_up.data(), x, Binning(histogramBinning));
-      
-      //Retrive parameter value for down syst error
-      params = fitFunction->getParameters(x);
-      RooRealVar* meanl = (RooRealVar*) params->find("meanl");
-      RooRealVar* meang = (RooRealVar*) params->find("meang");
-      RooRealVar* sigmal = (RooRealVar*) params->find("sigmal");
-      RooRealVar* sigmag = (RooRealVar*) params->find("sigmag");
-      meanl->setVal(meanl_value);
-      meang->setVal(meang_value);
-      sigmal->setVal(sigmal_value);
-      sigmag->setVal(sigmag_value);
-      
-      while(par = (RooRealVar*) it->Next()){
-	cout << endl << "par_value: " << par->getVal() << endl; 
-	par->setVal(par->getVal() - Sigma*Direction[i] );
-	cout << endl << "par_value -err: " << par->getVal() << endl; 
-	cout << endl << "- err: " <<  Sigma*Direction[i] << endl; 
-      }
-      
-      //save Down syst. histogram
-      std::string histogramName_smoothed_Eigenvec_down = std::string(histogram->GetName()).append("_smoothed_").append("_EigenVec").append<int>(i).append("_down");
-      TH1* histogram_smoothed_Eigenvec_down = fitFunction->createHistogram(histogramName_smoothed_Eigenvec_down.data(), x, Binning(histogramBinning));
-      
-    }
-    
-    //Retrive parameter value
-    params = fitFunction->getParameters(x);
-    meanl  = (RooRealVar*) params->find("meanl");
-    meang  = (RooRealVar*) params->find("meang");
-    sigmal = (RooRealVar*) params->find("sigmal");
-    sigmag = (RooRealVar*) params->find("sigmag");
-    meanl->setVal(meanl_value);
-    meang->setVal(meang_value);
-    sigmal->setVal(sigmal_value);
-    sigmag->setVal(sigmag_value);
-    
- }
-  
-  
-  else if (  fitFunctionType == "CB1" ||
-	     fitFunctionType == "CB2" ||
-	     fitFunctionType == "CB3" ){
-    params = fitFunction->getParameters(x);
-    RooRealVar* cbmean = (RooRealVar*) params->find("cbmean");
-    RooRealVar* cbsigma = (RooRealVar*) params->find("cbsigma");
-    RooRealVar* n = (RooRealVar*) params->find("n");
-    RooRealVar* alpha = (RooRealVar*) params->find("alpha");
-    double cbmean_value = cbmean->getVal();
-    double cbsigma_value = cbsigma->getVal(); 
-    double n_value = n->getVal(); 
-    double alpha_value = alpha->getVal(); 
-    
-    for( int i = 0; i < eigenvec.GetNrows(); ++i ){
-      
-      //Get the Eigenvector[i]
-      const TVectorD Eigenvec = eigenvec[i]; 
-      //Get the Eigenvector[i] norm
-      double Norm = sqrt(Eigenvec * Eigenvec); 
-      //Get the Eigenvalue(i) associate to the eigenvector[i]
-      double Eigenval = eigenval[i];
-      //Get the error on Eigenval
-      double Sigma = sqrt(Eigenval);
-      //Get unit vector: projection of Eigenvector[i] over it's direction (i), divided by it's norm
-      const TVectorD Direction = (1./Norm) * Eigenvec;
-
-      //Varie all the fit parameters in on time in the direction of 1 Eigen Vector at a time 
-      //RooRealVar* var = NULL;
-      RooRealVar* par;
-      while(par = (RooRealVar*) it->Next()){
-	cout << endl << "par_value: " << par->getVal() << endl; 
-	par->setVal(par->getVal() + Sigma*Direction[i] );
-	cout << endl << "par + err: " << par->getVal() << endl; 
-	cout << endl << "+ err: " <<  Sigma*Direction[i]  << endl; 
-      }
-      
-      //save Up syst. histogram
-      std::string histogramName_smoothed_Eigenvec_up = std::string(histogram->GetName()).append("_smoothed_").append("_EigenVec").append("_up");
-      TH1* histogram_smoothed_Eigenvec_up = fitFunction->createHistogram(histogramName_smoothed_Eigenvec_up.data(), x, Binning(histogramBinning));
-      
-      //Retrive parameter value for down syst error
-      params = fitFunction->getParameters(x);
-      RooRealVar* cbmean = (RooRealVar*) params->find("cbmean");
-      RooRealVar* cbsigma = (RooRealVar*) params->find("cbsigma");
-      RooRealVar* n = (RooRealVar*) params->find("n");
-      RooRealVar* alpha = (RooRealVar*) params->find("alpha");
-      cbmean->setVal(cbmean_value);
-      cbsigma->setVal(cbsigma_value);
-      n->setVal(n_value);
-      alpha->setVal(alpha_value);
-      
-      while(par = (RooRealVar*) it->Next()){
-	cout << endl << "par_value: " << par->getVal() << endl; 
-	par->setVal(par->getVal() - Sigma*Direction[i] );
-	cout << endl << "par - err: " << par->getVal() << endl; 
-	cout << endl << "- err: " <<  Sigma*Direction[i] << endl; 
-      }
-      
-      std::string histogramName_smoothed_Eigenvec_down = std::string(histogram->GetName()).append("_smoothed_").append("_EigenVec").append("_down");
-      TH1* histogram_smoothed_Eigenvec_down = fitFunction->createHistogram(histogramName_smoothed_Eigenvec_down.data(), x, Binning(histogramBinning));
-      
-    }
-    
-    //Retrive parameter value
-    params  = fitFunction->getParameters(x);
-    cbmean  = (RooRealVar*) params->find("cbmean");
-    cbsigma = (RooRealVar*) params->find("cbsigma");
-    n       = (RooRealVar*) params->find("n");
-    alpha   = (RooRealVar*) params->find("alpha");
-    cbmean  ->setVal(cbmean_value);
-    cbsigma ->setVal(cbsigma_value);
-    n       ->setVal(n_value);
-    alpha   ->setVal(alpha_value);
-    
+  while(par_test = (RooRealVar*) it_test->Next()){
+    vfitFunction_parName.push_back(par_test->GetName());
   }
   
-  
-  cout << endl <<  "XXXXXXXXXXXXXXXXXXXX End syst study XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXxxXXXXXXX"<<endl;
-  
-  
-  ////////////////////////////////////////////////////////////////////////
-  
-  
-  
-  // make control plot
-  if ( makeControlPlots ) {
-    TCanvas* canvas = new TCanvas("Fit", "Fit", 800, 600);
-    gPad->SetLeftMargin(0.15); 
-    frame->GetYaxis()->SetTitleOffset(1.4);
-    frame->Draw();
-    
-    std::string outputFileName_plot = controlPlotFilePath;
-    if ( outputFileName_plot.find_last_of("/") != (outputFileName_plot.length() - 1) ) outputFileName_plot.append("/");
-    outputFileName_plot.append(Form("smoothTauIdEffTemplate_%s", histogram->GetName()));    
-    canvas->Print(std::string(outputFileName_plot).append(".eps").data());
-    canvas->Print(std::string(outputFileName_plot).append(".png").data());
-    canvas->Print(std::string(outputFileName_plot).append(".pdf").data());
-  }
-  
-  // scale output histogram to match integral of input histogram
-  histogram_smoothed->Scale(histogram->Integral()/histogram_smoothed->Integral());
-
-  // register output histogram with TFileService
-  // (histogram will get saved in output file automatically;
-  //  code copied from CommonTools/Utils/interface/TFileDirectory.h, version 1.9)
-  TDirectory* dir = histogramOutputDirectory.getBareDirectory();
-  dir->cd();
-  ROOT::DirAutoAdd_t func = TH1::Class()->GetDirectoryAutoAdd();
-  if ( func ) { 
-    TH1AddDirectorySentry sentry; 
-    func(histogram_smoothed, dir); 
-  } else { 
-    dir->Append(histogram_smoothed); 
+  int size = vfitFunction_parName.size();
+  for (int i = 0; i < size ; ++i ){ 
+    //cout << "parName: "<< vfitFunction_parName[i] << endl;
   }
 
-  for ( std::vector<TObject*>::iterator it = objectsToDelete.begin();
-	it != objectsToDelete.end(); ++it ) {
-    delete (*it);
-  }
+   //define mapping of functionType to fitParameterNames
+   std::map<std::string, vstring> fitFunction_map;
+   map<std::string, vstring>::iterator map_it;
+
+   fitFunction_map.insert( pair< std::string, vstring > (fitFunctionType, vfitFunction_parName ));
+
+   //for ( map_it = fitFunction_map.begin() ; map_it != fitFunction_map.end(); map_it++ ){
+   //   cout << endl << (*map_it).first << " MAP " << endl; 
+   //   cout << (*map_it).second << endl;  // !!error message!! 
+   //}
+
+   
+   //save parameter value to be retrive later
+   //Converting a string to an array of characters with string.data(): http://msdn.microsoft.com/en-us/library/3372cxcy.aspx
+   RooRealVar* par0 = (RooRealVar*) params->find(vfitFunction_parName[0].data()); 
+   RooRealVar* par1 = (RooRealVar*) params->find(vfitFunction_parName[1].data());
+   RooRealVar* par2 = (RooRealVar*) params->find(vfitFunction_parName[2].data());
+   RooRealVar* par3 = (RooRealVar*) params->find(vfitFunction_parName[3].data());
+   double par0_value = par0->getVal(); 
+   double par1_value = par1->getVal(); 
+   double par2_value = par2->getVal(); 
+   double par3_value = par3->getVal(); 
+   //cout << "par0: " << par0_value << endl;
+   //cout << "par1: " << par1_value << endl;
+   //cout << "par2: " << par2_value << endl;
+   //cout << "par3: " << par3_value << endl;
+   
+   
+   //loop over eigenvector
+   //http://root.cern.ch/root/html400/TVectorD.html#TVectorD:kSizeMax
+   //cout << eigenval.GetNrows()  << endl; 
+   //cout << eigenvec.GetNrows() << endl;
+   for( int i = 0; i < eigenvec.GetNrows(); ++i ){
+     cout<< "Eigen Vector: "<< i << endl;
+     
+     //Get the Eigenvector[i]
+     const TVectorD Eigenvec = eigenvec[i]; 
+     //Get the Eigenvector[i] norm
+     double Norm = Eigenvec.Norm2Sqr();
+     //double Norm1 = sqrt(Eigenvec * Eigenvec); //produce the same result then above 
+     //cout << "Norm: "<< Norm << endl; 
+     //cout << "Norm1: "<< Norm1 << endl; 
+     
+     //Get the Eigenvalue(i) associate to the eigenvector[i]
+     double Eigenval = eigenval[i];
+     //Get the error on Eigenval
+     double Sigma = sqrt(Eigenval);
+     //Get unit vector: projection of Eigenvector[i] over it's direction (i), divided by it's norm
+     const TVectorD Direction = (1./Norm) * Eigenvec;
+     //cout << "Direction: " << Direction[i] << endl;
+     
+     
+     //save i eigenvec index for histo name
+     std::ostringstream strsi;
+     strsi << i;
+     std::string Iindex = strsi.str();
+     //cout << endl << "Eigenvect index: " << Iindex << endl;
+     
+     
+     for( int j = 0; j < eigenval.GetNrows() ; ++j ){
+       cout << "Eigen Value: " << j << endl << endl;	
+       
+       //Create iterator over the parameters
+       TIterator* itUp    = params->createIterator() ;  // !!do not work if only one!!??
+       TIterator* itDown  = params->createIterator() ;  
+       RooRealVar* par;
+
+      
+       cout <<  "##################### Up ##########################"<< endl;
+
+       //Varie all the fit parameters in on time in the direction of 1 Eigen Vector at a time 
+       while(par = (RooRealVar*) itUp->Next()){ // !! no good in for Loop !!??
+	 //Varie par Up
+	 //par->Print();
+	 cout << endl << "par_value Up: " << par->getVal() << endl; 
+	 par->setVal(par->getVal() + Sigma*Direction[j] );
+	 //cout << "+ err: " <<  Sigma*Direction[j] << endl; 
+	 cout << endl << "par_value Up + err: " << par->getVal() << endl; 
+	 //cout << "sigma: " << Sigma << endl;
+	 //cout << "direction: " << Direction[j] << endl << endl;
+       }
+       
+       
+       //save j direction index for histo name
+       std::ostringstream strsj;
+       strsj << j;
+       std::string Jindex = strsj.str();
+       //cout <<"Direction index: " << Jindex << endl;
+       
+       //save Up syst. histogram
+       std::string histogramName_smoothed_Eigenvec_up = std::string(histogram->GetName()).append("_smoothed_").append("_EigenVec").append(Iindex).append("_Direction").append(Jindex).append("_up");
+       TH1* histogram_smoothed_Eigenvec_up = fitFunction->createHistogram(histogramName_smoothed_Eigenvec_up.data(), x, Binning(histogramBinning));
+       
+       //Retrive parameter value for down syst
+       par0->setVal(par0_value);
+       par1->setVal(par1_value);
+       par2->setVal(par2_value);
+       par3->setVal(par3_value);
+
+       cout <<  "##################### Down ##########################" << endl;
 
 
-
+       //Varie par Down
+       while(par = (RooRealVar*) itDown->Next()){ 
+	 cout << endl << "par_value Down: " << par->getVal() << endl; 
+	 par->setVal(par->getVal() - Sigma*Direction[j] );
+	 //cout << "- err: " <<  Sigma*Direction[j] << endl; 
+	 cout << endl << "par_value Down - err: " << par->getVal() << endl; 
+	 //cout << "sigma: " << Sigma << endl;
+	 //cout << "Direction[j]: " << Direction[j] << endl;
+       }
+		
+       //save Down syst. histogram
+       std::string histogramName_smoothed_Eigenvec_down = std::string(histogram->GetName()).append("_smoothed_").append("_EigenVec").append(Iindex).append("_Direction").append(Jindex).append("_down");
+       TH1* histogram_smoothed_Eigenvec_down = fitFunction->createHistogram(histogramName_smoothed_Eigenvec_down.data(), x, Binning(histogramBinning));
+       
+       //Retrive parameter value
+       par0->setVal(par0_value);
+       par1->setVal(par1_value);
+       par2->setVal(par2_value);
+       par3->setVal(par3_value);
+  
+     }   
+   }
+   
+   
+   cout << endl <<  "XXXXXXXXXXXXXXXXXXXX End syst study XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXxxXXXXXXX"<<endl;
+   
+   
+   
+   
+   // make control plot
+   if ( makeControlPlots ) {
+     TCanvas* canvas = new TCanvas("Fit", "Fit", 800, 600);
+     gPad->SetLeftMargin(0.15); 
+     frame->GetYaxis()->SetTitleOffset(1.4);
+     frame->Draw();
+     
+     std::string outputFileName_plot = controlPlotFilePath;
+     if ( outputFileName_plot.find_last_of("/") != (outputFileName_plot.length() - 1) ) outputFileName_plot.append("/");
+     outputFileName_plot.append(Form("smoothTauIdEffTemplate_%s", histogram->GetName()));    
+     canvas->Print(std::string(outputFileName_plot).append(".eps").data());
+     canvas->Print(std::string(outputFileName_plot).append(".png").data());
+     canvas->Print(std::string(outputFileName_plot).append(".pdf").data());
+   }
+   
+   // scale output histogram to match integral of input histogram
+   histogram_smoothed->Scale(histogram->Integral()/histogram_smoothed->Integral());
+   
+   // register output histogram with TFileService
+   // (histogram will get saved in output file automatically;
+   //  code copied from CommonTools/Utils/interface/TFileDirectory.h, version 1.9)
+   TDirectory* dir = histogramOutputDirectory.getBareDirectory();
+   dir->cd();
+   ROOT::DirAutoAdd_t func = TH1::Class()->GetDirectoryAutoAdd();
+   if ( func ) { 
+     TH1AddDirectorySentry sentry; 
+     func(histogram_smoothed, dir); 
+   } else { 
+     dir->Append(histogram_smoothed); 
+   }
+   
+   for ( std::vector<TObject*>::iterator it = objectsToDelete.begin();
+	 it != objectsToDelete.end(); ++it ) {
+     delete (*it);
+   }  
+   
 }
 
 
@@ -411,9 +410,9 @@ int main(int argc, const char* argv[])
     std::cout << "Usage: " << argv[0] << " [parameters.py]" << std::endl;
     return 0;
   }
-
+  
   std::cout << "<smoothTauIdEffTemplates>:" << std::endl;
-
+  
 //--- disable pop-up windows showing graphics output
   gROOT->SetBatch(true);
 
@@ -487,272 +486,6 @@ int main(int argc, const char* argv[])
 }
 
 
-/*
-
-///////////////////////////////////////////////
-
-  // clone fit up/down for each parameters for systematics
-  RooAbsPdf* fitFunction_meanl_up     = (RooAbsPdf*) fitFunction->Clone("fitFunction_meanl_up");
-  RooAbsPdf* fitFunction_meanl_down   = (RooAbsPdf*) fitFunction->Clone("fitFunction_meanl_down");
-  RooAbsPdf* fitFunction_meang_up     = (RooAbsPdf*) fitFunction->Clone("fitFunction_meang_up");
-  RooAbsPdf* fitFunction_meang_down   = (RooAbsPdf*) fitFunction->Clone("fitFunction_meang_down");
-  RooAbsPdf* fitFunction_sigmal_up    = (RooAbsPdf*) fitFunction->Clone("fitFunction_sigmal_up");
-  RooAbsPdf* fitFunction_sigmal_down  = (RooAbsPdf*) fitFunction->Clone("fitFunction_sigmal_down");
-  RooAbsPdf* fitFunction_sigmag_up    = (RooAbsPdf*) fitFunction->Clone("fitFunction_sigmag_up");
-  RooAbsPdf* fitFunction_sigmag_down  = (RooAbsPdf*) fitFunction->Clone("fitFunction_sigmag_down");
-  //
-  RooAbsPdf* fitFunction_cbmean_up    = (RooAbsPdf*) fitFunction->Clone("fitFunction_cbmean_up");
-  RooAbsPdf* fitFunction_cbmean_down  = (RooAbsPdf*) fitFunction->Clone("fitFunction_cbmean_down");
-  RooAbsPdf* fitFunction_cbsigma_up   = (RooAbsPdf*) fitFunction->Clone("fitFunction_cbsigma_up");
-  RooAbsPdf* fitFunction_cbsigma_down = (RooAbsPdf*) fitFunction->Clone("fitFunction_cbsigma_down");
-  RooAbsPdf* fitFunction_n_up         = (RooAbsPdf*) fitFunction->Clone("fitFunction_n_up");
-  RooAbsPdf* fitFunction_n_down       = (RooAbsPdf*) fitFunction->Clone("fitFunction_n_down");
-  RooAbsPdf* fitFunction_alpha_up     = (RooAbsPdf*) fitFunction->Clone("fitFunction_alpha_up");
-  RooAbsPdf* fitFunction_alpha_down   = (RooAbsPdf*) fitFunction->Clone("fitFunction_alpha_down");
 
 
-  // set new up/down parameters for systematics
-  // Get all parameters of your model depending on the observable
-  if ( fitFunctionType == "LG1" ) {
-
-
-   cout<<"ooooooooooooooooooooooooooooooooooooottttttttttttttttttttttttttttttt2" << endl;
-
-   RooArgSet* params = fitFunction->getParameters(x);
-
-   RooRealVar* meanl = (RooRealVar*) params->find("meanl");
-   RooRealVar* meang = (RooRealVar*) params->find("meang");
-   RooRealVar* sigmal = (RooRealVar*) params->find("sigmal");
-   RooRealVar* sigmag = (RooRealVar*) params->find("sigmag");
-
-   double meanl_value = meanl->getVal();
-   double meang_value = meang->getVal();
-   double sigmal_value = sigmal->getVal();
-   double sigmag_value = sigmag->getVal();
-   //meanl->Print();  
-   //cout << "meanl_value: " << meanl_value << endl;
-
-
-   cout<<"ooooooooooooooooooooooooooooooooooooottttttttttttttttttttttttttttttt3" << endl;
-
-   //inf. value??
-    params = fitFunction_meang_up->getParameters(x);
-   RooRealVar* meangUp = (RooRealVar*) params->find("meang");
-   meangUp->setVal(meangUp->getVal() + meangUp->getError());   
-   meangUp->setVal(meang_value);
-   //
-    params = fitFunction_meang_down->getParameters(x);
-   RooRealVar* meangDown = (RooRealVar*) params->find("meang");
-   meangDown->setVal(meangDown->getVal() - meangDown->getError());
-   meangDown->setVal(meang_value);
-
-   cout<<"ooooooooooooooooooooooooooooooooooooottttttttttttttttttttttttttttttt3" << endl;
-
-    params = fitFunction_meanl_up->getParameters(x);
-   RooRealVar* meanlUp = (RooRealVar*) params->find("meanl");
-   meanlUp->Print();  
-   meanlUp->setVal(meanlUp->getVal() + meanlUp->getError());
-   meanlUp->Print();
-   meanlUp->setVal(meanl_value);
-
-   cout<<"ooooooooooooooooooooooooooooooooooooottttttttttttttttttttttttttttttt3" << endl;
-
-    params = fitFunction_meanl_down->getParameters(x);
-   RooRealVar* meanlDown = (RooRealVar*) params->find("meanl");
-   meanlDown->Print();  
-   meanlDown->setVal(meanlDown->getVal() - meanlDown->getError());
-   meanlDown->Print();
-   meanlDown->setVal(meanl_value);
-
-   cout<<"ooooooooooooooooooooooooooooooooooooottttttttttttttttttttttttttttttt2" << endl;
-
-    params = fitFunction_sigmag_up->getParameters(x);
-   RooRealVar* sigmagUp = (RooRealVar*) params->find("sigmag");
-   sigmagUp->Print();
-   sigmagUp->setVal(sigmagUp->getVal() + sigmagUp->getError());
-   sigmagUp->Print();
-   sigmagUp->setVal(sigmag_value);
-
-   cout<<"ooooooooooooooooooooooooooooooooooooottttttttttttttttttttttttttttttt4" << endl;
-
-    params = fitFunction_sigmag_down->getParameters(x);
-   RooRealVar* sigmagDown = (RooRealVar*) params->find("sigmag");
-   sigmagDown->Print();
-   sigmagDown->setVal(sigmagDown->getVal() - sigmagDown->getError());
-   sigmagDown->Print();
-   sigmagDown->setVal(sigmag_value);
-
-   cout<<"ooooooooooooooooooooooooooooooooooooottttttttttttttttttttttttttttttt5" << endl;
-
-    params = fitFunction_sigmal_up->getParameters(x);
-   RooRealVar* sigmalUp = (RooRealVar*) params->find("sigmal");
-   sigmalUp->Print();
-   sigmalUp->setVal(sigmalUp->getVal() + sigmalUp->getError());
-   sigmalUp->Print();
-   sigmalUp->setVal(sigmal_value);
-
-   cout<<"ooooooooooooooooooooooooooooooooooooottttttttttttttttttttttttttttttt5" << endl;
-
-    params = fitFunction_sigmal_down->getParameters(x);
-   RooRealVar* sigmalDown = (RooRealVar*) params->find("sigmal");
-   sigmalDown->Print();
-   sigmalDown->setVal(sigmalDown->getVal() - sigmalDown->getError());
-   sigmalDown->Print();
-   sigmalDown->setVal(sigmal_value);
-
-   }
-
-   else if (  fitFunctionType == "CB1" ||
-	      fitFunctionType == "CB2" ||
-	      fitFunctionType == "CB3" ) {
- 
-
-   RooArgSet* params = fitFunction->getParameters(x);
-
-   RooRealVar* cbmean = (RooRealVar*) params->find("cbmean");
-   RooRealVar* cbsigma = (RooRealVar*) params->find("cbsigma");
-   RooRealVar* n = (RooRealVar*) params->find("n");
-   RooRealVar* alpha = (RooRealVar*) params->find("alpha");
-
-   double cbmean_value = cbmean->getVal();
-   double cbsigma_value = cbsigma->getVal();
-   double n_value = n->getVal();
-   double alpha_value = alpha->getVal();
- 
-   params = fitFunction_cbmean_up->getParameters(x);
-   RooRealVar* cbmeanUp = (RooRealVar*) params->find("cbmean");
-   cbmeanUp->setVal(cbmeanUp->getVal() + cbmeanUp->getError());
-   cbmeanUp->setVal(cbmean_value);
-
-
-   params = fitFunction_cbmean_down->getParameters(x);
-   RooRealVar* cbmeanDown = (RooRealVar*) params->find("cbmean");
-   cbmeanDown->setVal(cbmeanDown->getVal() - cbmeanDown->getError());
-   cbmeanDown->setVal(cbmean_value);
-
-
-   params = fitFunction_cbsigma_up->getParameters(x);
-   RooRealVar* cbsigmaUp = (RooRealVar*) params->find("cbsigma");
-   cbsigmaUp->setVal(cbsigmaUp->getVal() - cbsigmaUp->getError());
-   cbsigmaUp->setVal(cbsigma_value);
-
-
-   params = fitFunction_cbsigma_down->getParameters(x);
-   RooRealVar* cbsigmaDown = (RooRealVar*) params->find("cbsigma");
-   cbsigmaDown->setVal(cbsigmaDown->getVal() - cbsigmaDown->getError());
-   cbsigmaDown->setVal(cbsigma_value);
-
-
-   params = fitFunction_n_up->getParameters(x);
-   RooRealVar* nUp = (RooRealVar*) params->find("n");
-   nUp->setVal(nUp->getVal() + nUp->getError());
-   nUp->setVal(n_value);
-
-   params = fitFunction_n_down->getParameters(x);
-   RooRealVar* nDown = (RooRealVar*) params->find("n");
-   nDown->setVal(nDown->getVal() - nDown->getError());
-   nDown->setVal(n_value);
-
-   params = fitFunction_alpha_up->getParameters(x);
-   RooRealVar* alphaUp = (RooRealVar*) params->find("n");
-   alphaUp->setVal(alphaUp->getVal() + alphaUp->getError());
-   alphaUp->setVal(alpha_value);  
- 
-   params = fitFunction_alpha_down->getParameters(x);
-   RooRealVar* alphaDown = (RooRealVar*) params->find("n");
-   alphaDown->setVal(alphaDown->getVal() - alphaDown->getError());
-   alphaDown->setVal(alpha_value);  
-
-  }
-
-
-  // create up/down histogram  
-  std::string histogramName_smoothed_meanl_up   = std::string(histogram->GetName()).append("_smoothed_meanl_up");
-  std::string histogramName_smoothed_meanl_down = std::string(histogram->GetName()).append("_smoothed_meanl_down");
-  std::string histogramName_smoothed_meang_up   = std::string(histogram->GetName()).append("_smoothed_meang_up");
-  std::string histogramName_smoothed_meang_down = std::string(histogram->GetName()).append("_smoothed_meang_down");
-  //
-  std::string histogramName_smoothed_sigmal_up   = std::string(histogram->GetName()).append("_smoothed_sigmal_up");
-  std::string histogramName_smoothed_sigmal_down = std::string(histogram->GetName()).append("_smoothed_sigmal_down");
-  std::string histogramName_smoothed_sigmag_up   = std::string(histogram->GetName()).append("_smoothed_sigmag_up");
-  std::string histogramName_smoothed_sigmag_down = std::string(histogram->GetName()).append("_smoothed_sigmag_down");
-  //
-  std::string histogramName_smoothed_n_up       = std::string(histogram->GetName()).append("_smoothed_n_up");
-  std::string histogramName_smoothed_n_down     = std::string(histogram->GetName()).append("_smoothed_n_down");
-  std::string histogramName_smoothed_alpha_up   = std::string(histogram->GetName()).append("_smoothed_alpha_up");
-  std::string histogramName_smoothed_alpha_down = std::string(histogram->GetName()).append("_smoothed_alpha_down");
-  //
-  TH1* histogram_smoothed_meanl_up = fitFunction_meanl_up->createHistogram(histogramName_smoothed_meanl_up.data(), x, Binning(histogramBinning)); 
-  TH1* histogram_smoothed_meanl_down = fitFunction_meanl_down->createHistogram(histogramName_smoothed_meanl_down.data(), x, Binning(histogramBinning)); 
-  TH1* histogram_smoothed_meang_up = fitFunction_meang_up->createHistogram(histogramName_smoothed_meang_up.data(), x, Binning(histogramBinning)); 
-  TH1* histogram_smoothed_meang_down = fitFunction_meang_down->createHistogram(histogramName_smoothed_meang_down.data(), x, Binning(histogramBinning)); 
-  //
-  TH1* histogram_smoothed_sigmal_up = fitFunction_sigmal_up->createHistogram(histogramName_smoothed_sigmal_up.data(), x, Binning(histogramBinning)); 
-  TH1* histogram_smoothed_sigmal_down = fitFunction_sigmal_down->createHistogram(histogramName_smoothed_sigmal_down.data(), x, Binning(histogramBinning)); 
-  TH1* histogram_smoothed_sigmag_up = fitFunction_sigmag_up->createHistogram(histogramName_smoothed_sigmag_up.data(), x, Binning(histogramBinning)); 
-  TH1* histogram_smoothed_sigmag_down = fitFunction_sigmag_down->createHistogram(histogramName_smoothed_sigmag_down.data(), x, Binning(histogramBinning)); 
-*/
-
-/*
-  // Loop over all bins 
-  for( int ibin = 0; ibin < histogramBinning; ++ibin){
-
-   double CentralValue = histogram_smoothed   ->GetBinContent(  xAxis->FindBin(ibin));
-
-   //cout <<"CentralValue"<<CentralValue << endl;
-
-  //3.1 you compute for each parameter of the analytic function the
-    //           intUp_i : = integral(functionUp_i) from binEdgeLow to binEdgeHigh
-    //           intDown_i = integral(functionDown_i) from binEdgeLow to binEdgeHigh
-    //        functionUp = analytic function, but i-th fit parameter is set to best fit value + 1*uncertainty (uncertainty returned by RooFit/MINUIT)
-    //        functionDown = analytic function, but i-th fit parameter is set to best fit value - 1*uncertainty (uncertainty returned by RooFit/MINUIT) 
-   double intUp_meanl    = histogram_smoothed_meanl_up    ->GetBinContent(  xAxis->FindBin(ibin));
-   double intDown_meanl  = histogram_smoothed_meanl_down  ->GetBinContent(  xAxis->FindBin(ibin));
-   double intUp_meang    = histogram_smoothed_meang_up    ->GetBinContent(  xAxis->FindBin(ibin));
-   double intDown_meang  = histogram_smoothed_meang_down  ->GetBinContent(  xAxis->FindBin(ibin));
-   //
-   double intUp_sigmal   = histogram_smoothed_sigmal_up   ->GetBinContent(  xAxis->FindBin(ibin));
-   double intDown_sigmal = histogram_smoothed_sigmal_down ->GetBinContent(  xAxis->FindBin(ibin));
-   double intUp_sigmag   = histogram_smoothed_sigmag_up   ->GetBinContent(  xAxis->FindBin(ibin));
-   double intDown_sigmag = histogram_smoothed_sigmag_down ->GetBinContent(  xAxis->FindBin(ibin));
-
-   //3.2 Then take maximum and miminum
-                //intMax_i = max(intUp_i, intDown_i)
-                //intMin_i = min(intUp_i, intDown_i) 
-   double intMax_meanl = max(intUp_meanl, intDown_meanl);
-   double intMin_meanl = min(intUp_meanl, intDown_meanl);
-   double intMax_meang = max(intUp_meang, intDown_meang);
-   double intMin_meang = min(intUp_meang, intDown_meang);
-   //  
-   double intMax_sigmal = max(intUp_sigmal, intDown_sigmal);
-   double intMin_sigmal = min(intUp_sigmal, intDown_sigmal);
-   double intMax_sigmag = max(intUp_sigmag, intDown_sigmag);
-   double intMin_sigmag = min(intUp_sigmag, intDown_sigmag);
-
-   //3.3 for each bin, you sum the differences of all max values to the central value in quadrature
-                // intMax2Sum = (intMax-int)^2
-                // and same for min
-                // intMin2Sum = (intMin-int)^2 
-   double intMax2Sum = (pow((intMax_meanl-CentralValue),2) +
-                        pow((intMax_meang-CentralValue),2) +
-                        pow((intMax_sigmal-CentralValue),2)+ 
-                        pow((intMax_sigmag-CentralValue),2) )  ;
-
-   double intMin2Sum = (pow((intMin_meanl-CentralValue),2) +
-                        pow((intMin_meang-CentralValue),2) +
-                        pow((intMin_sigmal-CentralValue),2)+ 
-                        pow((intMin_sigmag-CentralValue),2) )  ;
-
-
-    //3.4 the upper envelope of the smoother template is then computed bin-by-bin as
-               //smoothedTemplateUp = smoothedTemplate + sqrt(intMax2Sum)
-               //smoothedTemplateDown = smoothedTemplate - sqrt(intMin2Sum)
-   double smoothedTemplateUp = CentralValue + sqrt(intMax2Sum);
-   double smoothedTemplateDown = CentralValue - sqrt(intMin2Sum);
-
-  }
-
-*/
-
-/////////////////////////////////////////////
 
