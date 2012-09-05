@@ -7,9 +7,9 @@
  * \author Betty Calpas, RWTH Aachen
  *         Christian Veelken, LLR
  *
- * \version $Revision: 1.3 $
+ * \version $Revision: 1.4 $
  *
- * $Id: smoothTauIdEffTemplates.cc,v 1.3 2012/08/16 10:23:00 calpas Exp $
+ * $Id: smoothTauIdEffTemplates.cc,v 1.4 2012/08/30 11:27:38 calpas Exp $
  *
  */
 
@@ -57,13 +57,15 @@
 #include "RooSimWSTool.h"
 
 #include "RooFitResult.h"
+#include "TMatrix.h"
 #include "TMatrixDSym.h"
 #include "TMatrixDSymEigen.h"
 #include <TVectorD.h>
+#include <TVectorF.h>
 #include <TVector.h>
+#include <TVector3.h>
 #include "TIterator.h"
 #include <math.h>
-
 #include <map>
 
 using namespace RooFit;
@@ -166,26 +168,57 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
   const TMatrixDSym& cov = r->covarianceMatrix() ;
   cout << endl << "Cov Matrix: "<< endl;
   cov.Print();
+ 
   //Find the Eigenvectors and Eigen value of the covariance matrix
-  //Get the matrix of Eigen vector
-
-  const TMatrixDSymEigen& eigencov = cov ;
+  const TMatrixDSymEigen& eigencov = cov;  
   //const TMatrixDSymEigen eigencov(cov) ;
   //eigencov.Print(); //no possible to print yet!!
 
-  const TVectorD eigenval = eigencov.GetEigenValues();
-  cout << endl << "Vector of Eigen value"<< endl;
-  eigenval.Print();
+  //Get the matrix of Eigen vector
   const TMatrixD eigenvec = eigencov.GetEigenVectors();
   cout << endl << "Matrix of eigenvectors"<< endl;
   eigenvec.Print();
 
+  const TVectorD eigenval = eigencov.GetEigenValues();
+  cout << endl << "Vector of Eigen value"<< endl;
+  eigenval.Print();
+
   //The eigenvectors correspond to the row of the eigenvec Matrix  !!OK!! 
-  cout << "Eigenvec Matrix row check: each eigenvector should match a eigenvec Matrix row "<< endl; 
-  const TVectorD EV0 = eigenvec[0]; cout << " egenvec row 0: " ; EV0.Print(); cout << endl;
-  const TVectorD EV1 = eigenvec[1]; cout << " egenvec row 1: " ; EV1.Print(); cout << endl;
-  const TVectorD EV2 = eigenvec[2]; cout << " egenvec row 2: " ; EV2.Print(); cout << endl;
-  const TVectorD EV3 = eigenvec[3]; cout << " egenvec row 3: " ; EV3.Print(); cout << endl;
+  //cout << "Eigenvec Matrix row check: each eigenvector should match a eigenvec Matrix row "<< endl; // !!!!This is not true!!!! 
+  //TVectorD EV0(4); // need to specify the vector size!!
+  //EV0 = eigenvec[0]; cout << " egenvec row 0: " ; EV0.Print(); cout << endl;
+  //const TVectorD EV1 = eigenvec[1]; cout << " egenvec row 1: " ; EV1.Print(); cout << endl;
+  //const TVectorD EV2 = eigenvec[2]; cout << " egenvec row 2: " ; EV2.Print(); cout << endl;
+  //const TVectorD EV3 = eigenvec[3]; cout << " egenvec row 3: " ; EV3.Print(); cout << endl;
+  //const TVectorD EV3 = eigenvec[3]; cout << " egenvec row 3: " ; EV3.Print(); cout << endl;
+
+  //Another way to do that!!
+  //Get cov row work but do not get the right eigen vector !!!!!
+  //for(int i = 0 ; i < eigenvec.GetNrows(); ++i){
+  // EV0[i] = eigenvec(0,i);
+  // cout << "Row EVO: " << i << "  " << EV0[i] << endl;
+  //}
+  //cout << " EV0 0: " ; EV0[0].Print(); cout << endl;
+  //EV0[1] = eigenvec(0,1); 
+  //EV0[2] = eigenvec(0,2); 
+
+  //Get cov column ok to get the eigen vector !!!!!
+  cout << "Eigenvec Matrix column check: each eigenvector should match a eigenvec Matrix column!!!! "<< endl; 
+  TVectorD EV0(4); // need to specify the vector size!!
+  TVectorD EV1(4); 
+  TVectorD EV2(4); 
+  TVectorD EV3(4); 
+  for(int i = 0 ; i < eigenvec.GetNrows(); ++i){
+  EV0[i] = eigenvec(i,0);
+  EV1[i] = eigenvec(i,1);
+  EV2[i] = eigenvec(i,2);
+  EV3[i] = eigenvec(i,3);
+  cout << "Column EVO: " << i << "  " << EV0[i] << endl;
+  cout << "Column EV1: " << i << "  " << EV1[i] << endl;
+  cout << "Column EV2: " << i << "  " << EV2[i] << endl;
+  cout << "Column EV3: " << i << "  " << EV3[i] << endl;
+  }
+
 
   //check n1: M( invert eigenvec * eigenvec ) = M(Identity) !!OK!!
   TMatrixD inveigenvec(TMatrixD::kInverted,eigenvec);  
@@ -200,15 +233,43 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
   cout << endl << " inveigenvec * cov * eigenvec =? diag. of eigenval" << endl;
   MDiag.Print();  //should print a Matrix with the eigenvalue on the diagonal 
  
-  //Check n3: an eigenvector of a square matrix is a non-zero vector that, !!failed!!
+  //Check n3: an eigenvector of a square matrix is a non-zero vector that, !!OK!!
   //when multiplied by the matrix, yields a vector that is parallel to the original: eigenvec[i] * cov = x * eigenvec[i]
-  //const TMatrixD Check = Mult(eigenvec,eigenvec);  
-  TVector Check = EV0;
-  //EV0 *= cov;
-  Check *= cov;
-  cout << endl << "eigenvec * cov =? x * Matrix of eigenvec " << endl;
-  Check.Print();
-  
+
+  //These 3 next calculs give the same result
+
+  cout << endl << "Mult: EigenVect * covMatrix " << endl;
+  TVectorD Check0 = EV0;
+  TVectorD Check1 = EV1;
+  TVectorD Check2 = EV2;
+  TVectorD Check3 = EV3;
+  Check0 *= cov;
+  Check1 *= cov;
+  Check2 *= cov;
+  Check3 *= cov;
+  Check0.Print(); 
+  Check1.Print(); 
+  Check2.Print(); 
+  Check3.Print(); 
+
+  cout << endl << "Mult: covMatrix * EigenVect " << endl; //gave the same result then above, I didn´t found direct method to calculate Matrix*column vector!!
+  TVectorD CheckcovR(4);  
+  for(int i = 0 ; i < eigenvec.GetNrows(); ++i){
+    for(int j = 0 ; j < eigenvec.GetNrows(); ++j){
+      CheckcovR[i] += cov(i,j) * EV0[j];
+    }
+  }
+  CheckcovR.Print();
+
+  cout << endl << "Mult: EigenVect * covMatrix " << endl; //gave the same result then above, 
+  TVectorD CheckcovL(4);  
+  for(int i = 0 ; i < eigenvec.GetNrows(); ++i){
+    for(int j = 0 ; j < eigenvec.GetNrows(); ++j){
+      CheckcovL[i] += EV0[j] * cov(i,j);
+    }
+  }
+  CheckcovL.Print();
+
 
   //Store function's parameter 
   RooArgSet* params  = fitFunction->getParameters(x);
@@ -484,6 +545,7 @@ int main(int argc, const char* argv[])
   
   return 0;
 }
+
 
 
 
