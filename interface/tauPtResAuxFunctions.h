@@ -13,6 +13,8 @@
 #include "DataFormats/GsfTrackReco/interface/GsfTrack.h"
 #include "DataFormats/TrackReco/interface/Track.h"
 #include "DataFormats/VertexReco/interface/Vertex.h"
+#include "DataFormats/CaloTowers/interface/CaloTower.h"
+#include "DataFormats/CaloTowers/interface/CaloTowerFwd.h"
 
 #include <TMath.h>
 
@@ -26,5 +28,7 @@ double getTauPtManCorr(const pat::Tau&, const reco::Vertex&, const reco::tau::Re
 
 void printPatTau(const pat::Tau&);
 void printRecoPFJet(const reco::PFJet&, const reco::Vertex&);
+void printTrack(const reco::TrackRef&, const reco::Vertex&);
+void printCaloTowers(const CaloTowerCollection&, const reco::Candidate::LorentzVector&, double);
 
 #endif

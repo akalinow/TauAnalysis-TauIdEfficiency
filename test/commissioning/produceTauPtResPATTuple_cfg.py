@@ -15,12 +15,12 @@ process.MessageLogger.suppressWarning = cms.untracked.vstring("PATTriggerProduce
 process.load('Configuration/StandardSequences/GeometryIdeal_cff')
 process.load('Configuration/StandardSequences/MagneticField_cff')
 process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
-process.GlobalTag.globaltag = cms.string('START42_V13::All')
+process.GlobalTag.globaltag = cms.string('START52_V11C::All')
 
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
-        #'file:/data1/veelken/CMSSW_4_2_x/skims/skimGenZtoMuTauWithinAcc_Ztautau_2011Jun30v2_AOD.root'
-        'file:/data1/veelken/CMSSW_4_2_x/skims/skimZtautau_tauPtResLt0_5_AOD.root'
+        ##'file:/data1/veelken/CMSSW_5_2_x/skims/selEvents_debugPATTaus_forSimon_AOD.root'
+        'file:/data1/veelken/CMSSW_5_2_x/skims/selEvents_debugPATTaus_forSimon_discrAgainstMuonsFailed_AOD.root'                               
     ),
     #eventsToProcess = cms.untracked.VEventRange(
     #    '1:5:4262773',
@@ -46,12 +46,24 @@ process.load('RecoTauTag.Configuration.RecoPFTauTag_cff')
 ##     modStrips
 ## )
 
-process.load('RecoJets.Configuration.RecoPFJets_cff')
-process.kt6PFJets.rParam = cms.double(0.6)
-process.kt6PFJets.doRhoFastjet = cms.bool(True)
-process.kt6PFJets.Rho_EtaMax = cms.double(2.5)
-
 process.load('PhysicsTools.PatAlgos.patSequences_cff')
+
+# configure pat::Jet production
+# (enable L2L3Residual corrections in case running on Data)
+from PhysicsTools.PatAlgos.tools.jetTools import *
+switchJetCollection(
+    process,
+    cms.InputTag('ak5PFJets'),
+    doJTA = True,
+    doBTagging = True,
+    jetCorrLabel = ( 'AK5PF', cms.vstring('L1FastJet', 'L2Relative', 'L3Absolute') ),
+    doType1MET = False,
+    doJetID = True,
+    jetIdLabel = "ak5",
+    outputModules = []
+)
+
+# configure pat::Tau production
 from PhysicsTools.PatAlgos.tools.tauTools import *
 switchToPFTauHPS(process)
 process.patTaus.userIsolation = cms.PSet()
@@ -190,8 +202,7 @@ process.filterFirstEvent = cms.EDFilter("EventCountFilter",
 ##process.o = cms.Path(process.filterFirstEvent + process.printEventContent)
 
 process.p = cms.Path(
-    process.kt6PFJets
-   + process.PFTau
+    process.PFTau
    + process.patDefaultSequence
    ##+ process.allTauPtResSequences
 )
@@ -210,11 +221,11 @@ process.patTupleOutputModule = cms.OutputModule("PoolOutputModule",
             'keep *_ak5PFJets_*_*',
             'keep *_particleFlow_*_*',
             'keep *_generalTracks_*_*',
-            'keep *_electronGsfTracks_*_*'                                            
+            'keep *_electronGsfTracks_*_*',
+            'keep *_towerMaker_*_*'
         )               
     ),
-    #fileName = cms.untracked.string("testTauPtResPATtuple.root")
-    fileName = cms.untracked.string("/data1/veelken/CMSSW_4_2_x/skims/skimZtautau_tauPtResLt0_5_tauPtResPATtuple.root")
+    fileName = cms.untracked.string("/data1/veelken/CMSSW_5_2_x/skims/selEvents_debugPATTaus_forSimon_tauPtResPATtuple.root")
 )
 
 process.q = cms.EndPath(process.patTupleOutputModule)

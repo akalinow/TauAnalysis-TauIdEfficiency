@@ -187,11 +187,20 @@ void printPatTau(const pat::Tau& patTau)
     const reco::GenJet* genTauJet = patTau.genJet();
     std::cout << " pt = " << genTauJet->pt() << "," 
 	      << " eta = " << genTauJet->eta() << ", phi = " << genTauJet->phi() << std::endl;
+    
     std::vector<const reco::GenParticle*> genTauJetConstituents = genTauJet->getGenConstituents();
     for ( std::vector<const reco::GenParticle*>::const_iterator genTauJetConstituent = genTauJetConstituents.begin();
 	  genTauJetConstituent != genTauJetConstituents.end(); ++genTauJetConstituent ) {
       std::cout << "PDG id. = " << (*genTauJetConstituent)->pdgId() << ": pt = " << (*genTauJetConstituent)->pt() << "," 
 		<< " eta = " << (*genTauJetConstituent)->eta() << ", phi = " << (*genTauJetConstituent)->phi() << std::endl;
+    }
+
+    if ( patTau.genLepton() && genTauJetConstituents.size() >= 1 ) {
+      reco::Candidate::Point genTauProdVertex = patTau.genLepton()->vertex();
+      std::cout << "production vertex: x = " << genTauProdVertex.x() << ", y = " << genTauProdVertex.y() << " z = " << genTauProdVertex.z() << std::endl;
+      reco::Candidate::Point genTauDecayVertex = genTauJetConstituents.at(0)->vertex();
+      std::cout << "decay vertex: x = " << genTauDecayVertex.x() << ", y = " << genTauDecayVertex.y() << " z = " << genTauDecayVertex.z()  
+		<< " (d = " << TMath::Sqrt((genTauDecayVertex - genTauProdVertex).mag2()) << ")" << std::endl;
     }
   }
 
@@ -231,4 +240,34 @@ void printRecoPFJet(const reco::PFJet& recoPFJet, const reco::Vertex& vertex)
   }
 
   std::cout << std::endl;
+}
+
+void printTrack(const reco::TrackRef& track, const reco::Vertex& vertex)
+{
+  std::cout << "track #" << track.key() << ": pt = " << track->pt() << " +/- " << track->ptError() << "," 
+	    << " eta = " << track->eta() << ", phi = " << track->phi() << ","
+	    << " charge = " << track->charge() << std::endl;
+  std::cout << " chi2 = " << track->normalizedChi2() << std::endl;
+  std::cout << " dIP = " << TMath::Abs(track->dxy(vertex.position())) << " +/- " << track->dxyError() << std::endl;
+  std::cout << " dZ = " << TMath::Abs(track->dz(vertex.position())) << " +/- " << track->dzError() << std::endl;
+  std::cout << " vtxAssocWeight = " << vertex.trackWeight(track) << std::endl;
+  std::cout << " numPxlHits = " << track->hitPattern().numberOfValidPixelHits() << std::endl;
+  std::cout << " numTrkHits = " << track->hitPattern().numberOfValidHits() << std::endl;
+}
+
+void printCaloTowers(const CaloTowerCollection& caloTowers, const reco::Candidate::LorentzVector& patTauP4, double dRmatch)
+{
+  std::cout << "<printCaloTowers>:" << std::endl;
+  reco::Candidate::LorentzVector caloTowerSumP4;
+  int idx = 0;
+  for ( CaloTowerCollection::const_iterator caloTower = caloTowers.begin();
+	caloTower != caloTowers.end(); ++caloTower ) {
+    double dR = deltaR(caloTower->p4(), patTauP4);
+    if ( dR < dRmatch ) {
+      std::cout << "caloTower #" << idx << ": Pt = " << caloTower->pt() << ", eta = " << caloTower->eta() << ", phi = " << caloTower->phi() << std::endl;
+      caloTowerSumP4 += caloTower->p4();
+    }
+    ++idx;
+  }
+  std::cout << "sum(caloTowers): Pt = " << caloTowerSumP4.pt() << ", eta = " << caloTowerSumP4.eta() << ", phi = " << caloTowerSumP4.phi() << std::endl;
 }

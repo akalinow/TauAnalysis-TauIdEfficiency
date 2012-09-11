@@ -5,9 +5,9 @@
  *
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.5 $
+ * \version $Revision: 1.6 $
  *
- * $Id: FWLiteTauPtResAnalyzer.cc,v 1.5 2011/09/13 12:19:05 veelken Exp $
+ * $Id: FWLiteTauPtResAnalyzer.cc,v 1.6 2011/09/30 12:26:40 veelken Exp $
  *
  */
 
@@ -31,9 +31,15 @@
 #include "DataFormats/TauReco/interface/PFTauDecayMode.h"
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
 #include "DataFormats/HepMCCandidate/interface/GenParticleFwd.h"
+#include "DataFormats/TrackReco/interface/Track.h"
+#include "DataFormats/TrackReco/interface/TrackFwd.h"
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
+#include "DataFormats/CaloTowers/interface/CaloTower.h"
+#include "DataFormats/CaloTowers/interface/CaloTowerFwd.h"
 #include "DataFormats/Common/interface/Handle.h"
+#include "DataFormats/Math/interface/deltaR.h"
+#include "DataFormats/Common/interface/View.h"
 
 #include "RecoTauTag/RecoTau/interface/RecoTauQualityCuts.h"
 
@@ -80,23 +86,25 @@ int main(int argc, char* argv[])
 
 //--- read python configuration parameters
   if ( !edm::readPSetsFrom(argv[1])->existsAs<edm::ParameterSet>("process") ) 
-    throw cms::Exception("FWLiteTauFakeRateAnalyzer") 
+    throw cms::Exception("FWLiteTauPtResAnalyzer") 
       << "No ParameterSet 'process' found in configuration file = " << argv[1] << " !!\n";
 
   edm::ParameterSet cfg = edm::readPSetsFrom(argv[1])->getParameter<edm::ParameterSet>("process");
+ 
+  edm::ParameterSet cfgTauPtResAnalyzer = cfg.getParameter<edm::ParameterSet>("tauPtResAnalyzer");
 
-  edm::ParameterSet cfgTauFakeRateAnalyzer = cfg.getParameter<edm::ParameterSet>("tauPtResAnalyzer");
+  edm::InputTag srcTauJetCandidates = cfgTauPtResAnalyzer.getParameter<edm::InputTag>("srcTauJetCandidates");
+  edm::InputTag srcGenParticles = cfgTauPtResAnalyzer.getParameter<edm::InputTag>("srcGenParticles");
+  edm::InputTag srcTracks = cfgTauPtResAnalyzer.getParameter<edm::InputTag>("srcTracks");
+  edm::InputTag srcVertices = cfgTauPtResAnalyzer.getParameter<edm::InputTag>("srcVertices");
+  edm::InputTag srcCaloTowers = cfgTauPtResAnalyzer.getParameter<edm::InputTag>("srcCaloTowers");
 
-  edm::InputTag srcTauJetCandidates = cfgTauFakeRateAnalyzer.getParameter<edm::InputTag>("srcTauJetCandidates");
-  edm::InputTag srcGenParticles = cfgTauFakeRateAnalyzer.getParameter<edm::InputTag>("srcGenParticles");
-  edm::InputTag srcVertices = cfgTauFakeRateAnalyzer.getParameter<edm::InputTag>("srcVertices");
-
-  edm::ParameterSet cfgQualityCuts = cfgTauFakeRateAnalyzer.getParameter<edm::ParameterSet>("qualityCuts");
+  edm::ParameterSet cfgQualityCuts = cfgTauPtResAnalyzer.getParameter<edm::ParameterSet>("qualityCuts");
   reco::tau::RecoTauQualityCuts qualityCuts(cfgQualityCuts);
 
-  std::string directory = cfgTauFakeRateAnalyzer.getParameter<std::string>("directory");
+  std::string directory = cfgTauPtResAnalyzer.getParameter<std::string>("directory");
   
-  std::string selEventsFileName = cfgTauFakeRateAnalyzer.getParameter<std::string>("selEventsFileName");
+  std::string selEventsFileName = cfgTauPtResAnalyzer.getParameter<std::string>("selEventsFileName");
 
   fwlite::InputSource inputFiles(cfg); 
   int maxEvents = inputFiles.maxEvents();
@@ -107,12 +115,11 @@ int main(int argc, char* argv[])
 //--- book histograms
   edm::ParameterSet cfgTauPtResHistManager;
   TFileDirectory dir = ( directory != "" ) ? fs.mkdir(directory) : fs;
-  TauPtResHistManager* histManager                     = addHistManager(cfgTauPtResHistManager, dir, "");
-  TauPtResHistManager* histManagerVtxMultiplicityLe2   = addHistManager(cfgTauPtResHistManager, dir, "vtxMultiplicityLe2");
-  TauPtResHistManager* histManagerVtxMultiplicity3to5  = addHistManager(cfgTauPtResHistManager, dir, "vtxMultiplicity3to5");
-  TauPtResHistManager* histManagerVtxMultiplicity6to8  = addHistManager(cfgTauPtResHistManager, dir, "vtxMultiplicity6to8");
-  TauPtResHistManager* histManagerVtxMultiplicity9to11 = addHistManager(cfgTauPtResHistManager, dir, "vtxMultiplicity9to11");
-  TauPtResHistManager* histManagerVtxMultiplicityGe12  = addHistManager(cfgTauPtResHistManager, dir, "vtxMultiplicityGe12");
+  TauPtResHistManager* histManager                      = addHistManager(cfgTauPtResHistManager, dir, "");
+  TauPtResHistManager* histManagerVtxMultiplicityLe4    = addHistManager(cfgTauPtResHistManager, dir, "vtxMultiplicityLe4");
+  TauPtResHistManager* histManagerVtxMultiplicity5to12  = addHistManager(cfgTauPtResHistManager, dir, "vtxMultiplicity5to12");
+  TauPtResHistManager* histManagerVtxMultiplicity13to20 = addHistManager(cfgTauPtResHistManager, dir, "vtxMultiplicity13to20");
+  TauPtResHistManager* histManagerVtxMultiplicityGe21   = addHistManager(cfgTauPtResHistManager, dir, "vtxMultiplicityGe21");
   
   std::ofstream* selEventsFile = new std::ofstream(selEventsFileName.data(), std::ios::out);
 
@@ -137,8 +144,8 @@ int main(int argc, char* argv[])
     fwlite::Event evt(inputFile);
     for ( evt.toBegin(); !(evt.atEnd() || maxEvents_processed); ++evt ) {
 
-      //std::cout << "processing run = " << evt.id().run() << ":" 
-      //	  << " ls = " << evt.luminosityBlock() << ", event = " << evt.id().event() << std::endl;
+      std::cout << "processing run = " << evt.id().run() << ":" 
+		<< " ls = " << evt.luminosityBlock() << ", event = " << evt.id().event() << std::endl;
 
       double evtWeight = 1.0; // vertex multiplicity reweighting not yet implemented...
 
@@ -158,6 +165,12 @@ int main(int argc, char* argv[])
       edm::Handle<pat::TauCollection> tauJetCandidates;
       evt.getByLabel(srcTauJetCandidates, tauJetCandidates);
 
+      edm::Handle<reco::TrackCollection> tracks;
+      evt.getByLabel(srcTracks, tracks);
+
+      edm::Handle<CaloTowerCollection> caloTowers;
+      evt.getByLabel(srcCaloTowers, caloTowers);
+
       edm::Handle<reco::GenParticleCollection> genParticles;
       evt.getByLabel(srcGenParticles, genParticles);
 
@@ -167,45 +180,52 @@ int main(int argc, char* argv[])
       for ( pat::TauCollection::const_iterator tauJetCand = tauJetCandidates->begin();
 	    tauJetCand != tauJetCandidates->end(); ++tauJetCand ) {
 	if ( tauJetCand->genJet() &&
-	     tauJetCand->genJet()->pt() > 20. && tauJetCand->genJet()->pt() < 40. &&
 	     TMath::Abs(tauJetCand->genJet()->eta()) < 2.3 &&
-	     tauJetCand->tauID("decayModeFinding")     > 0.5 &&
-	     tauJetCand->tauID("byLooseIsolation")     > 0.5 &&
+	     tauJetCand->tauID("decayModeFinding") > 0.5 &&
+	     tauJetCand->tauID("byLooseCombinedIsolationDeltaBetaCorr") > 0.5 &&
 	     tauJetCand->tauID("againstElectronLoose") > 0.5 &&
-	     tauJetCand->tauID("againstMuonTight")     > 0.5 ) {	  
-/*
+	     tauJetCand->tauID("againstMuonMedium") > 0.5 ) {	  
 	  std::string genTauDecayMode = getGenTauDecayMode(*tauJetCand, *genParticles);
-	  if (  genTauDecayMode == "oneProng0Pi0" && 
-		//(genTauDecayMode == "oneProng1Pi0" ||
-		// genTauDecayMode == "oneProng2Pi0") &&
-	       tauJetCand->genJet() && 
-	       tauJetCand->genJet()->pt() > 20. && tauJetCand->genJet()->pt() < 40. ) {
-	    double tauPtManCorr = (tauJetCand->pt() + getTauPtManCorr(*tauJetCand, theEventVertex, qualityCuts, 9));
-	    if ( tauPtManCorr < (0.5*tauJetCand->genJet()->pt()) ) {
+	  if (  (genTauDecayMode == "oneProng0Pi0" ||
+		 genTauDecayMode == "oneProng1Pi0" ||
+		 genTauDecayMode == "oneProng2Pi0" ||
+		 genTauDecayMode == "threeProng0Pi0") &&
+		tauJetCand->genJet()  ) {
+	    if ( tauJetCand->pt() < (0.5*tauJetCand->genJet()->pt()) ) {
 	      std::cout << "run = " << evt.id().run() << "," 
 			<< " ls = " << evt.luminosityBlock() << ", event = " << evt.id().event() << ":" << std::endl;
 	      printPatTau(*tauJetCand);
-	      std::cout << "tauPtManCorr = " << tauPtManCorr << std::endl;
+	      std::cout << "tauPt = " << tauJetCand->pt() << std::endl;
 	      std::cout << std::endl;
 	      printRecoPFJet(*tauJetCand->pfJetRef(), theEventVertex);
 	      std::cout << std::endl;
+
+	      std::cout << "<printTracks>:" << std::endl;
+	      size_t numTracks = tracks->size();
+	      for ( size_t iTrack = 0; iTrack < numTracks; ++iTrack ) {
+		reco::TrackRef track(tracks, iTrack);
+		double dR = deltaR(track->eta(), track->phi(), tauJetCand->eta(), tauJetCand->phi());
+		if ( dR < 0.5 && track->pt() > 2. ) printTrack(track, theEventVertex);
+	      }
+	      std::cout << std::endl;
 	      
+	      printCaloTowers(*caloTowers, tauJetCand->p4(), 0.5);
+	      std::cout << std::endl;
+
 	      (*selEventsFile) << evt.id().run() << ":" << evt.luminosityBlock() << ":" << evt.id().event() << std::endl;
 	    }
 	  }
- */ 
+
 	  histManager->fillHistograms(*tauJetCand, *genParticles, theEventVertex, qualityCuts, evtWeight);
 
-	  if      ( vtxMultiplicity <=  2 ) 
-	    histManagerVtxMultiplicityLe2->fillHistograms(*tauJetCand, *genParticles, theEventVertex, qualityCuts, evtWeight);
-	  else if ( vtxMultiplicity <=  5 ) 
-	    histManagerVtxMultiplicity3to5->fillHistograms(*tauJetCand, *genParticles, theEventVertex, qualityCuts, evtWeight);
-	  else if ( vtxMultiplicity <=  8 ) 
-	    histManagerVtxMultiplicity6to8->fillHistograms(*tauJetCand, *genParticles, theEventVertex, qualityCuts, evtWeight);
-	  else if ( vtxMultiplicity <= 11 ) 
-	    histManagerVtxMultiplicity9to11->fillHistograms(*tauJetCand, *genParticles, theEventVertex, qualityCuts, evtWeight);
+	  if      ( vtxMultiplicity <=  4 ) 
+	    histManagerVtxMultiplicityLe4->fillHistograms(*tauJetCand, *genParticles, theEventVertex, qualityCuts, evtWeight);
+	  else if ( vtxMultiplicity <= 12 ) 
+	    histManagerVtxMultiplicity5to12->fillHistograms(*tauJetCand, *genParticles, theEventVertex, qualityCuts, evtWeight);
+	  else if ( vtxMultiplicity <= 20 ) 
+	    histManagerVtxMultiplicity13to20->fillHistograms(*tauJetCand, *genParticles, theEventVertex, qualityCuts, evtWeight);
 	  else 
-	    histManagerVtxMultiplicityGe12->fillHistograms(*tauJetCand, *genParticles, theEventVertex, qualityCuts, evtWeight);	  
+	    histManagerVtxMultiplicityGe21->fillHistograms(*tauJetCand, *genParticles, theEventVertex, qualityCuts, evtWeight);	  
 	}
       }
     }
@@ -215,11 +235,10 @@ int main(int argc, char* argv[])
   }
 
   delete histManager;
-  delete histManagerVtxMultiplicityLe2;
-  delete histManagerVtxMultiplicity3to5;
-  delete histManagerVtxMultiplicity6to8;
-  delete histManagerVtxMultiplicity9to11;
-  delete histManagerVtxMultiplicityGe12;
+  delete histManagerVtxMultiplicityLe4;
+  delete histManagerVtxMultiplicity5to12;
+  delete histManagerVtxMultiplicity13to20;
+  delete histManagerVtxMultiplicityGe21;
 
 //--- close ASCII file containing 
 //     run:lumi-section:event 
