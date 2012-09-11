@@ -11,7 +11,7 @@ hltPaths = [
     #'HLT_IsoMu24_v*',
     #'HLT_Mu13_Mu8_v*',
     #'HLT_DoubleMu11_Acoplanarity03_v3',
-    #'HLT_Mu17_Mu8_v*',
+    'HLT_Mu17_Mu8_v*',
     #'HLT_Mu15_eta2p1_v*',
     #'HLT_Mu24_eta2p1_v*',
     #'HLT_Mu30_eta2p1_v*',
@@ -30,11 +30,11 @@ hltPaths = [
     #'HLT_IsoMu15_eta2p1_L1ETM20_v*', # for Tau id. efficiency in 2012 RunA (NOTE: events are in Tau+X dataset)
     #'HLT_IsoMu15_LooseIsoPFTau15_v*',
     #'HLT_IsoMu15_eta2p1_LooseIsoPFTau20_v*'
-    'HLT_IsoMu18_eta2p1_LooseIsoPFTau20_v*',
-    'HLT_IsoMu17_eta2p1_LooseIsoPFTau20_v*',
-    'HLT_Mu18_eta2p1_LooseIsoPFTau20_v*',
-    'HLT_Mu17_eta2p1_LooseIsoPFTau20_v*',
-    'HLT_Mu17_v*',
+    #'HLT_IsoMu18_eta2p1_LooseIsoPFTau20_v*',
+    #'HLT_IsoMu17_eta2p1_LooseIsoPFTau20_v*',
+    #'HLT_Mu18_eta2p1_LooseIsoPFTau20_v*',
+    #'HLT_Mu17_eta2p1_LooseIsoPFTau20_v*',
+    #'HLT_Mu17_v*',
     #'HLT_Ele20_CaloIdVT_CaloIsoRhoT_TrkIdT_TrkIsoT_LooseIsoPFTau20_v*',
     #'HLT_Ele22_CaloIdVT_CaloIsoRhoT_TrkIdT_TrkIsoT_LooseIsoPFTau20_v*',
     #'HLT_Mu18_eta2p1_LooseIsoPFTau20',
@@ -51,39 +51,11 @@ hltPaths = [
 ]
 
 jsonFiles = {
-    #'2011RunA'          : '/afs/cern.ch/user/v/veelken/scratch0/CMSSW_4_2_4_patch1/src/TauAnalysis/TauIdEfficiency/test/commissioning/' \
-    #                     + 'Cert_2011RunA_7TeV_PromptReco_Collisions11_JSON.txt',
-    #'2011RunB'          : '/afs/cern.ch/user/v/veelken/scratch0/CMSSW_4_2_4_patch1/src/TauAnalysis/TauIdEfficiency/test/commissioning/' \
-    #                     + 'Cert_2011RunB_7TeV_PromptReco_Collisions11_JSON.txt',
-    #'runs160404-180252' : '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions11/7TeV/Prompt/' \
-    #                     + 'Cert_160404-180252_7TeV_PromptReco_Collisions11_JSON.txt',
-    #'May10ReReco-v1'     : '/afs/cern.ch/user/v/veelken/scratch0/CMSSW_4_2_4_patch1/src/TauAnalysis/TauIdEfficiency/test/commissioning/' \
-    #                      + 'Cert_May10ReReco-v1_JSON.txt',
-    #'PromptReco-v4'      : '/afs/cern.ch/user/v/veelken/scratch0/CMSSW_4_2_4_patch1/src/TauAnalysis/TauIdEfficiency/test/commissioning/' \
-    #                      + 'Cert_PromptReco-v4_JSON.txt',
-    #'05Aug2011-v1'       : '/afs/cern.ch/user/v/veelken/scratch0/CMSSW_4_2_4_patch1/src/TauAnalysis/TauIdEfficiency/test/commissioning/' \
-    #                      + 'Cert_05Aug2011-v1_JSON.txt',
-    #'PromptReco-v6'      : '/afs/cern.ch/user/v/veelken/scratch0/CMSSW_4_2_4_patch1/src/TauAnalysis/TauIdEfficiency/test/commissioning/' \
-    #                      + 'Cert_PromptReco-v6_JSON.txt'
-    #'2012RunA'          : '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/DCSOnly/json_DCSONLY.txt' 
-    #'2012RunA'          : '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Prompt/' \
-    #                     + 'Cert_190456-191859_8TeV_PromptReco_Collisions12_JSON.txt'
-    #'2012RunA'          : '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Prompt/' \
-    #                      + 'Cert_190456-193336_8TeV_PromptReco_Collisions12_JSON.txt'
-    #'2012RunA'          : '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Prompt/' \
-    #                       + 'Cert_190456-194076_8TeV_PromptReco_Collisions12_JSON.txt',
-    #'2012RunAplusBv1'      : '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Prompt/' \
-    #                      + 'Cert_190456-194479_8TeV_PromptReco_Collisions12_JSON.txt',
-    #'2012RunAplusBv2'      : '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Prompt/' \
-    #                       + 'Cert_190456-195947_8TeV_PromptReco_Collisions12_JSON.txt',
-    #'2012RunAplusBv3'      : '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Prompt/' \
-    #                      + 'Cert_190456-196509_8TeV_PromptReco_Collisions12_JSON.txt'
-    #'2012RunAplusB'      : '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/DCSOnly/json_DCSONLY.txt'
-    '2012RunAplusB'      : '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Prompt/' \
-                          + 'Cert_190456-200601_8TeV_PromptReco_Collisions12_JSON_v2.txt'
+    '2012RunABC' : '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV//Prompt/Cert_190456-202016_8TeV_PromptReco_Collisions12_JSON.txt'
 }
 
-executable_lumiCalc = '/afs/cern.ch/user/v/veelken/scratch0/CMSSW_5_2_3_patch3/src/RecoLuminosity/LumiDB/scripts/lumiCalc2.py'
+#executable_lumiCalc = '/afs/cern.ch/user/v/veelken/scratch0/CMSSW_5_3_3_patch2/src/RecoLuminosity/LumiDB/scripts/lumiCalc2.py'
+executable_lumiCalc = '/afs/cern.ch/cms/slc5_amd64_gcc462/cms/cmssw/CMSSW_5_3_3/bin/slc5_amd64_gcc462/lumiCalc2.py'
 executable_analyzeLumiCalcOutput = './analyzeLumiCalcOutput.py'
 
 MakeFile_dict = {}
