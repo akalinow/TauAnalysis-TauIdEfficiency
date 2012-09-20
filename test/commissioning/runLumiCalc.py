@@ -51,7 +51,9 @@ hltPaths = [
 ]
 
 jsonFiles = {
-    '2012RunABC' : '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV//Prompt/Cert_190456-202016_8TeV_PromptReco_Collisions12_JSON.txt'
+    #'2012RunABC' : '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV//Prompt/Cert_190456-202016_8TeV_PromptReco_Collisions12_JSON.txt'
+    '2012RunCv1' : '/afs/cern.ch/user/v/veelken/scratch0/CMSSW_5_2_3_patch3/src/TauAnalysis/TauIdEfficiency/test/commissioning/Cert_190456-202016_8TeV_PromptReco_Collisions12_runCv1_JSON.txt',
+    '2012RunCv2' : '/afs/cern.ch/user/v/veelken/scratch0/CMSSW_5_2_3_patch3/src/TauAnalysis/TauIdEfficiency/test/commissioning/Cert_190456-202016_8TeV_PromptReco_Collisions12_runCv2_JSON.txt'
 }
 
 #executable_lumiCalc = '/afs/cern.ch/user/v/veelken/scratch0/CMSSW_5_3_3_patch2/src/RecoLuminosity/LumiDB/scripts/lumiCalc2.py'
