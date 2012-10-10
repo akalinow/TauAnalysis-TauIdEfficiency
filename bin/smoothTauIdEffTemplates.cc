@@ -7,9 +7,9 @@
  * \author Betty Calpas, RWTH Aachen
  *         Christian Veelken, LLR
  *
- * \version $Revision: 1.4 $
+ * \version $Revision: 1.5 $
  *
- * $Id: smoothTauIdEffTemplates.cc,v 1.4 2012/08/30 11:27:38 calpas Exp $
+ * $Id: smoothTauIdEffTemplates.cc,v 1.5 2012/09/05 06:33:44 calpas Exp $
  *
  */
 
@@ -46,6 +46,7 @@
 #include "RooDataSet.h"
 #include "RooGaussian.h"
 #include "RooLandau.h"
+#include "RooExponential.h"
 #include "RooFFTConvPdf.h"
 #include "RooCBShape.h"
 #include "RooDataHist.h"
@@ -84,15 +85,16 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
   
   RooAbsPdf* fitFunction = 0;
   std::vector<TObject*> objectsToDelete;
+
   if ( fitFunctionType == "LG1" ) {
     // create Landau function
-    RooRealVar* meanl = new RooRealVar("meanl", "mean of Landau", 80., 60., 90.);
-    RooRealVar* sigmal = new RooRealVar("sigmal", "sigma of Landau", 30., 20., 50.);  
-    RooLandau* landau = new RooLandau("landau", "landau", x, *meanl, *sigmal);
+    RooRealVar*  meanl  = new RooRealVar ("meanl",  "mean of Landau",  80.,  60.   , 90.    );
+    RooRealVar*  sigmal = new RooRealVar ("sigmal", "sigma of Landau", 30.,  20.   , 50.    );  
+    RooLandau*   landau = new RooLandau  ("landau", "landau",            x,  *meanl, *sigmal);
     // create Gaussian
-    RooRealVar* meang = new RooRealVar("meang", "mean of Gaussian", 1.,0.,15.); 
-    RooRealVar* sigmag = new RooRealVar("sigmag","sigma of Gaussian", 1., 0.1, 10.);
-    RooGaussian* gauss = new RooGaussian("gauss", "gauss", x, *meang, *sigmag);
+    RooRealVar*  meang  = new RooRealVar ("meang",  "mean of Gaussian",  1., 0.    , 15.    ); 
+    RooRealVar*  sigmag = new RooRealVar ("sigmag", "sigma of Gaussian", 1., 0.1   , 10.    );
+    RooGaussian* gauss  = new RooGaussian("gauss",  "gauss",             x,  *meang, *sigmag);
     // create convolution of Landau with Gaussian
     fitFunction = new RooFFTConvPdf("LandauConvGauss", "LandauConvGauss", x, *landau, *gauss);
 
@@ -103,36 +105,41 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
     objectsToDelete.push_back(sigmag);
     objectsToDelete.push_back(gauss);
 
-  } else if ( fitFunctionType == "CB1" ||
-	      fitFunctionType == "CB2" ||
-	      fitFunctionType == "CB3" ) {
+  } 
+
+
+ else if (fitFunctionType == "EXP1" ){
+    // create Expo
+    RooRealVar*  lambda = new RooRealVar ("lambda", "slope", -1., -2. , 10.);  
+    fitFunction = new RooExponential("expo", "exponential PDF", x, *lambda);
+    objectsToDelete.push_back(lambda);
+  } 
+
+
+else if ( fitFunctionType == "CB1" ||
+	  fitFunctionType == "CB2"   ){
     // create Crystal-ball function
     RooRealVar* cbmean  = 0;
     RooRealVar* cbsigma = 0;
     RooRealVar* n       = 0;
     RooRealVar* alpha   = 0;
     if        ( fitFunctionType == "CB1" ) {
-      cbmean  = new RooRealVar("cbmean", "cbmean", 90., 20., 180.);
-      cbsigma = new RooRealVar("cbsigma", "cbsigma", 1., 1., 40.); 
-      n       = new RooRealVar("n", "n", 0.2, 0., 10.); 
-      alpha   = new RooRealVar("alpha", "alpha", 1.3, 0., 10.);
+      cbmean  = new RooRealVar("cbmean",  "cbmean",  90., 20., 180.);
+      cbsigma = new RooRealVar("cbsigma", "cbsigma", 1.,  1.,  40. ); 
+      n       = new RooRealVar("n",       "n",       0.2, 0.,  10. ); 
+      alpha   = new RooRealVar("alpha",   "alpha",   1.3, 0.,  10. );
     } else if ( fitFunctionType == "CB2" ) {
-      cbmean  = new RooRealVar("cbmean", "cbmean", 70., 20., 180.);
-      cbsigma = new RooRealVar("cbsigma", "cbsigma", 10., 1., 200.); 
-      n       = new RooRealVar("n", "n", 1., 0., 10.); 
-      alpha   = new RooRealVar("alpha", "alpha", 1., 0., 10.); 
-    } else if ( fitFunctionType == "CB3" ) {
-      cbmean  = new RooRealVar("cbmean", "cbmean" , 1., 20., 180.);
-      cbsigma = new RooRealVar("cbsigma", "cbsigma" , 10., 1., 200.); 
-      n       = new RooRealVar("n","n", 1., 0., 10.); 
-      alpha   = new RooRealVar("alpha", "", 1., 0., 10.);      
-    }     
+      cbmean  = new RooRealVar("cbmean",  "cbmean",  50., 20., 180.);
+      cbsigma = new RooRealVar("cbsigma", "cbsigma", 5., 1.,  200.); 
+      n       = new RooRealVar("n",       "n",       1.,  0.,  10. ); 
+      alpha   = new RooRealVar("alpha",   "alpha",   1.,  -10.,  10. ); 
+    }
     fitFunction = new RooCBShape("CristalBall", "CristalBall", x, *cbmean, *cbsigma, *alpha, *n);
     objectsToDelete.push_back(cbmean);
     objectsToDelete.push_back(cbsigma);
     objectsToDelete.push_back(n);
     objectsToDelete.push_back(alpha);
-  }
+   }
 
   if ( !fitFunction ) 
     throw cms::Exception("smoothTauIdEffTemplates") 
@@ -155,9 +162,7 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
   TH1* histogram_smoothed = fitFunction->createHistogram(histogramName_smoothed.data(), x, Binning(histogramBinning));
   
   
-  
   cout << endl<< "XXXXXXXXXXXXXXXXXXXX Syst study XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"<<endl << endl;
-  
 
   //Get FitFunction result (mean, sigma...)
   RooFitResult* r = fitFunction->fitTo(data,Save()) ; 
@@ -171,8 +176,6 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
  
   //Find the Eigenvectors and Eigen value of the covariance matrix
   const TMatrixDSymEigen& eigencov = cov;  
-  //const TMatrixDSymEigen eigencov(cov) ;
-  //eigencov.Print(); //no possible to print yet!!
 
   //Get the matrix of Eigen vector
   const TMatrixD eigenvec = eigencov.GetEigenVectors();
@@ -183,42 +186,30 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
   cout << endl << "Vector of Eigen value"<< endl;
   eigenval.Print();
 
-  //The eigenvectors correspond to the row of the eigenvec Matrix  !!OK!! 
-  //cout << "Eigenvec Matrix row check: each eigenvector should match a eigenvec Matrix row "<< endl; // !!!!This is not true!!!! 
-  //TVectorD EV0(4); // need to specify the vector size!!
-  //EV0 = eigenvec[0]; cout << " egenvec row 0: " ; EV0.Print(); cout << endl;
-  //const TVectorD EV1 = eigenvec[1]; cout << " egenvec row 1: " ; EV1.Print(); cout << endl;
-  //const TVectorD EV2 = eigenvec[2]; cout << " egenvec row 2: " ; EV2.Print(); cout << endl;
-  //const TVectorD EV3 = eigenvec[3]; cout << " egenvec row 3: " ; EV3.Print(); cout << endl;
-  //const TVectorD EV3 = eigenvec[3]; cout << " egenvec row 3: " ; EV3.Print(); cout << endl;
-
-  //Another way to do that!!
-  //Get cov row work but do not get the right eigen vector !!!!!
-  //for(int i = 0 ; i < eigenvec.GetNrows(); ++i){
-  // EV0[i] = eigenvec(0,i);
-  // cout << "Row EVO: " << i << "  " << EV0[i] << endl;
-  //}
-  //cout << " EV0 0: " ; EV0[0].Print(); cout << endl;
-  //EV0[1] = eigenvec(0,1); 
-  //EV0[2] = eigenvec(0,2); 
-
-  //Get cov column ok to get the eigen vector !!!!!
+  //The eigenvectors correspond to the column of the eigenvec Matrix  !!OK!! 
   cout << "Eigenvec Matrix column check: each eigenvector should match a eigenvec Matrix column!!!! "<< endl; 
   TVectorD EV0(4); // need to specify the vector size!!
   TVectorD EV1(4); 
   TVectorD EV2(4); 
   TVectorD EV3(4); 
-  for(int i = 0 ; i < eigenvec.GetNrows(); ++i){
-  EV0[i] = eigenvec(i,0);
-  EV1[i] = eigenvec(i,1);
-  EV2[i] = eigenvec(i,2);
-  EV3[i] = eigenvec(i,3);
-  cout << "Column EVO: " << i << "  " << EV0[i] << endl;
-  cout << "Column EV1: " << i << "  " << EV1[i] << endl;
-  cout << "Column EV2: " << i << "  " << EV2[i] << endl;
-  cout << "Column EV3: " << i << "  " << EV3[i] << endl;
-  }
 
+  if(eigenvec.GetNrows() < 2){
+    for(int i = 0 ; i < eigenvec.GetNrows(); ++i){
+     EV0[i] = eigenvec(i,0);
+     cout << "Column EVO: " << i << "  " << EV0[i] << endl;
+    }
+  }else if(eigenvec.GetNrows() < 5){
+    for(int i = 0 ; i < eigenvec.GetNrows(); ++i){
+     EV0[i] = eigenvec(i,0);
+     EV1[i] = eigenvec(i,1);
+     EV2[i] = eigenvec(i,2);
+     EV3[i] = eigenvec(i,3);
+     cout << "Column EVO: " << i << "  " << EV0[i] << endl;
+     cout << "Column EV1: " << i << "  " << EV1[i] << endl;
+     cout << "Column EV2: " << i << "  " << EV2[i] << endl;
+     cout << "Column EV3: " << i << "  " << EV3[i] << endl;
+    }
+  }
 
   //check n1: M( invert eigenvec * eigenvec ) = M(Identity) !!OK!!
   TMatrixD inveigenvec(TMatrixD::kInverted,eigenvec);  
@@ -232,43 +223,6 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
   const TMatrixD MDiag = inveigenvec * cov * eigenvec; 
   cout << endl << " inveigenvec * cov * eigenvec =? diag. of eigenval" << endl;
   MDiag.Print();  //should print a Matrix with the eigenvalue on the diagonal 
- 
-  //Check n3: an eigenvector of a square matrix is a non-zero vector that, !!OK!!
-  //when multiplied by the matrix, yields a vector that is parallel to the original: eigenvec[i] * cov = x * eigenvec[i]
-
-  //These 3 next calculs give the same result
-
-  cout << endl << "Mult: EigenVect * covMatrix " << endl;
-  TVectorD Check0 = EV0;
-  TVectorD Check1 = EV1;
-  TVectorD Check2 = EV2;
-  TVectorD Check3 = EV3;
-  Check0 *= cov;
-  Check1 *= cov;
-  Check2 *= cov;
-  Check3 *= cov;
-  Check0.Print(); 
-  Check1.Print(); 
-  Check2.Print(); 
-  Check3.Print(); 
-
-  cout << endl << "Mult: covMatrix * EigenVect " << endl; //gave the same result then above, I didn´t found direct method to calculate Matrix*column vector!!
-  TVectorD CheckcovR(4);  
-  for(int i = 0 ; i < eigenvec.GetNrows(); ++i){
-    for(int j = 0 ; j < eigenvec.GetNrows(); ++j){
-      CheckcovR[i] += cov(i,j) * EV0[j];
-    }
-  }
-  CheckcovR.Print();
-
-  cout << endl << "Mult: EigenVect * covMatrix " << endl; //gave the same result then above, 
-  TVectorD CheckcovL(4);  
-  for(int i = 0 ; i < eigenvec.GetNrows(); ++i){
-    for(int j = 0 ; j < eigenvec.GetNrows(); ++j){
-      CheckcovL[i] += EV0[j] * cov(i,j);
-    }
-  }
-  CheckcovL.Print();
 
 
   //Store function's parameter 
@@ -284,9 +238,9 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
   }
   
   int size = vfitFunction_parName.size();
-  for (int i = 0; i < size ; ++i ){ 
-    //cout << "parName: "<< vfitFunction_parName[i] << endl;
-  }
+  //for (int i = 0; i < size ; ++i ){ 
+  // cout << "parName: "<< vfitFunction_parName[i] << endl;
+  //}
 
    //define mapping of functionType to fitParameterNames
    std::map<std::string, vstring> fitFunction_map;
@@ -302,24 +256,41 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
    
    //save parameter value to be retrive later
    //Converting a string to an array of characters with string.data(): http://msdn.microsoft.com/en-us/library/3372cxcy.aspx
-   RooRealVar* par0 = (RooRealVar*) params->find(vfitFunction_parName[0].data()); 
-   RooRealVar* par1 = (RooRealVar*) params->find(vfitFunction_parName[1].data());
-   RooRealVar* par2 = (RooRealVar*) params->find(vfitFunction_parName[2].data());
-   RooRealVar* par3 = (RooRealVar*) params->find(vfitFunction_parName[3].data());
-   double par0_value = par0->getVal(); 
-   double par1_value = par1->getVal(); 
-   double par2_value = par2->getVal(); 
-   double par3_value = par3->getVal(); 
+
+   double par0_value = 0;
+   double par1_value = 0;
+   double par2_value = 0;
+   double par3_value = 0;
+   RooRealVar* par0 ;
+   RooRealVar* par1 ;
+   RooRealVar* par2 ;
+   RooRealVar* par3 ;
+
+   if(size < 2){ 
+   par0 = (RooRealVar*) params->find(vfitFunction_parName[0].data()); 
+   par0_value = par0->getVal(); 
    //cout << "par0: " << par0_value << endl;
+   }else if(size > 0 && size < 5){
+   par0 = (RooRealVar*) params->find(vfitFunction_parName[0].data()); 
+   par0_value = par0->getVal(); 
+   //cout << "par0: " << par0_value << endl;
+   par1 = (RooRealVar*) params->find(vfitFunction_parName[1].data());
+   par1_value = par1->getVal(); 
    //cout << "par1: " << par1_value << endl;
+   par2 = (RooRealVar*) params->find(vfitFunction_parName[2].data());
+   par2_value = par2->getVal(); 
    //cout << "par2: " << par2_value << endl;
+   par3 = (RooRealVar*) params->find(vfitFunction_parName[3].data());
+   par3_value = par3->getVal(); 
    //cout << "par3: " << par3_value << endl;
+   }
    
-   
+
    //loop over eigenvector
    //http://root.cern.ch/root/html400/TVectorD.html#TVectorD:kSizeMax
    //cout << eigenval.GetNrows()  << endl; 
    //cout << eigenvec.GetNrows() << endl;
+
    for( int i = 0; i < eigenvec.GetNrows(); ++i ){
      cout<< "Eigen Vector: "<< i << endl;
      
@@ -345,8 +316,8 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
      strsi << i;
      std::string Iindex = strsi.str();
      //cout << endl << "Eigenvect index: " << Iindex << endl;
-     
-     
+  
+   
      for( int j = 0; j < eigenval.GetNrows() ; ++j ){
        cout << "Eigen Value: " << j << endl << endl;	
        
@@ -380,15 +351,20 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
        //save Up syst. histogram
        std::string histogramName_smoothed_Eigenvec_up = std::string(histogram->GetName()).append("_smoothed_").append("_EigenVec").append(Iindex).append("_Direction").append(Jindex).append("_up");
        TH1* histogram_smoothed_Eigenvec_up = fitFunction->createHistogram(histogramName_smoothed_Eigenvec_up.data(), x, Binning(histogramBinning));
-       
+  
+     
        //Retrive parameter value for down syst
+       if(size < 2){ 
+       par0->setVal(par0_value);
+       }
+       else if(size > 1 && size < 5){ 
        par0->setVal(par0_value);
        par1->setVal(par1_value);
        par2->setVal(par2_value);
        par3->setVal(par3_value);
+       }
 
        cout <<  "##################### Down ##########################" << endl;
-
 
        //Varie par Down
        while(par = (RooRealVar*) itDown->Next()){ 
@@ -405,17 +381,21 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
        TH1* histogram_smoothed_Eigenvec_down = fitFunction->createHistogram(histogramName_smoothed_Eigenvec_down.data(), x, Binning(histogramBinning));
        
        //Retrive parameter value
+
+       if(size < 2){ 
+       par0->setVal(par0_value);
+       }
+       else if(size > 1 && size < 5){ 
        par0->setVal(par0_value);
        par1->setVal(par1_value);
        par2->setVal(par2_value);
        par3->setVal(par3_value);
-  
-     }   
+       }
+
+     }  
    }
    
-   
-   cout << endl <<  "XXXXXXXXXXXXXXXXXXXX End syst study XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXxxXXXXXXX"<<endl;
-   
+   cout << endl <<  "XXXXXXXXXXXXXXXXXXXX End syst study XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXxxXXXXXXX"<<endl;  
    
    
    
