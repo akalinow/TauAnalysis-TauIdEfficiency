@@ -7,9 +7,9 @@
  * \author Betty Calpas, RWTH Aachen
  *         Christian Veelken, LLR
  *
- * \version $Revision: 1.8 $
+ * \version $Revision: 1.9 $
  *
- * $Id: smoothTauIdEffTemplates.cc,v 1.8 2012/10/12 09:24:34 kkaadze Exp $
+ * $Id: smoothTauIdEffTemplates.cc,v 1.9 2012/10/12 09:39:12 veelken Exp $
  *
  */
 
@@ -57,8 +57,9 @@
 #include "RooAddPdf.h"
 #include "RooWorkspace.h"
 #include "RooSimWSTool.h"
-
 #include "RooFitResult.h"
+#include "RooBinning.h"
+
 #include "TMatrix.h"
 #include "TMatrixDSym.h"
 #include "TMatrixDSymEigen.h"
@@ -76,12 +77,15 @@ using namespace std;
 void addBinsNotFitted(TH1* histogram_fitted, const TH1* histogram, double xMin_fit, double xMax_fit)
 {
   TAxis* xAxis = histogram->GetXaxis();
+  assert(xAxis->GetXmin() == histogram_fitted->GetXaxis()->GetXmin());
+  assert(xAxis->GetXmax() == histogram_fitted->GetXaxis()->GetXmax());
+  assert(xAxis->GetNbins() == histogram_fitted->GetXaxis()->GetNbins());
   int numBins = xAxis->GetNbins();
   for ( int iBin = 1; iBin <= numBins; ++iBin ) {
     double binCenter = xAxis->GetBinCenter(iBin);
-    if ( binCenter >= xMin_fit && binCenter < xMax_fit ) {
-      histogram_fitted->GetBinContent(iBin, histogram->GetBinContent(iBin));
-      histogram_fitted->GetBinError(iBin, histogram->GetBinError(iBin));
+    if ( !(binCenter >= xMin_fit && binCenter < xMax_fit) ) {
+      histogram_fitted->SetBinContent(iBin, histogram->GetBinContent(iBin));
+      histogram_fitted->SetBinError(iBin, histogram->GetBinError(iBin));
     }
   }
 }
@@ -140,43 +144,38 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
     RooRealVar*  lambda = new RooRealVar ("lambda", "slope", -1., -2. , 10.);  
     fitFunction = new RooExponential("expo", "exponential PDF", x, *lambda);
     objectsToDelete.push_back(lambda);
-  } 
-
- else if (fitFunctionType == "EXP2") {
-   //   RooAbsArg* par0= new RooRealVar ("par0","par0",0.5);
-   RooAbsArg* par1= new RooRealVar ("par1","par1",-0.00001,-0.1,-0.0000000001);
-   RooAbsArg* par2= new RooRealVar ("par2","par2",1,0.1,3);
-   x.setRange(200,1500);
-   fitFunction = new RooGenericPdf("g","TMath::Exp(par1*TMath::Power(x,par2))",RooArgList(x,*par1,*par2));
-   objectsToDelete.push_back(par1);
-   objectsToDelete.push_back(par2);
- }
-
-  
- else if ( fitFunctionType == "CB1" ||
-	   fitFunctionType == "CB2"   ){
-   // create Crystal-ball function
-   RooRealVar* cbmean  = 0;
-   RooRealVar* cbsigma = 0;
-   RooRealVar* n       = 0;
-   RooRealVar* alpha   = 0;
-   if        ( fitFunctionType == "CB1" ) {
+  } else if (fitFunctionType == "EXP2") {
+    //   RooAbsArg* par0= new RooRealVar ("par0","par0",0.5);
+    RooAbsArg* par1= new RooRealVar ("par1","par1",-0.00001,-0.1,-0.0000000001);
+    RooAbsArg* par2= new RooRealVar ("par2","par2",1,0.1,3);
+    x.setRange(200,1500);
+    fitFunction = new RooGenericPdf("g","TMath::Exp(par1*TMath::Power(x,par2))",RooArgList(x,*par1,*par2));
+    objectsToDelete.push_back(par1);
+    objectsToDelete.push_back(par2);
+  } else if ( fitFunctionType == "CB1" ||
+	      fitFunctionType == "CB2"   ){
+    // create Crystal-ball function
+    RooRealVar* cbmean  = 0;
+    RooRealVar* cbsigma = 0;
+    RooRealVar* n       = 0;
+    RooRealVar* alpha   = 0;
+    if        ( fitFunctionType == "CB1" ) {
       cbmean  = new RooRealVar("cbmean",  "cbmean",  90., 20., 180.);
       cbsigma = new RooRealVar("cbsigma", "cbsigma", 1.,  1.,  40. ); 
       n       = new RooRealVar("n",       "n",       0.2, 0.,  10. ); 
       alpha   = new RooRealVar("alpha",   "alpha",   1.3, 0.,  10. );
-   } else if ( fitFunctionType == "CB2" ) {
-     cbmean  = new RooRealVar("cbmean",  "cbmean",  50., 20., 180.);
-     cbsigma = new RooRealVar("cbsigma", "cbsigma", 5., 1.,  200.); 
-     n       = new RooRealVar("n",       "n",       1.,  0.,  10. ); 
-     alpha   = new RooRealVar("alpha",   "alpha",   1.,  -10.,  10. ); 
-   }
-   fitFunction = new RooCBShape("CristalBall", "CristalBall", x, *cbmean, *cbsigma, *alpha, *n);
-   objectsToDelete.push_back(cbmean);
-   objectsToDelete.push_back(cbsigma);
-   objectsToDelete.push_back(n);
-   objectsToDelete.push_back(alpha);
- }
+    } else if ( fitFunctionType == "CB2" ) {
+      cbmean  = new RooRealVar("cbmean",  "cbmean",  50., 20., 180.);
+      cbsigma = new RooRealVar("cbsigma", "cbsigma", 5., 1.,  200.); 
+      n       = new RooRealVar("n",       "n",       1.,  0.,  10. ); 
+      alpha   = new RooRealVar("alpha",   "alpha",   1.,  -10.,  10. ); 
+    }
+    fitFunction = new RooCBShape("CristalBall", "CristalBall", x, *cbmean, *cbsigma, *alpha, *n);
+    objectsToDelete.push_back(cbmean);
+    objectsToDelete.push_back(cbsigma);
+    objectsToDelete.push_back(n);
+    objectsToDelete.push_back(alpha);
+  }
   
   if ( !fitFunction ) 
     throw cms::Exception("smoothTauIdEffTemplates") 
@@ -185,25 +184,29 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
   
   // convert template histogram to RooDataHist object in order for it to be fitted
   RooDataHist data("", "", x, histogram, 1.0); 
-  
-  RooPlot* frame = x.frame(Title("Fit"));
-  
+    
   // fit shape template by analytic function
-  fitFunction->fitTo(data);
-  data.plotOn(frame);
-  fitFunction->plotOn(frame, LineColor(kRed)); 
+  RooFitResult* r = fitFunction->fitTo(data, Save()) ; 
+  cout << "Fit status = " << r->status() << endl;
+  cout << "Fit results: " << endl;
+  r->Print();
   
   // create smoothed output histogram
   std::string histogramName_smoothed = std::string(histogram->GetName()).append("_smoothed");
-  int histogramBinning = xAxis->GetNbins();
+  TArrayD histogramBinning_array(xAxis->GetNbins() + 1);
+  if ( xAxis->GetXbins() ) {
+    histogramBinning_array = (*xAxis->GetXbins());
+  } else {
+    int numBins = xAxis->GetNbins();
+    for ( int iBin = 1; iBin <= numBins; ++iBin ) {
+      histogramBinning_array[iBin - 1] = xAxis->GetBinLowEdge(iBin);
+      histogramBinning_array[iBin] = xAxis->GetBinUpEdge(iBin);
+    }
+  }
+  RooBinning histogramBinning(xAxis->GetNbins(), histogramBinning_array.GetArray());
   TH1* histogram_smoothed = fitFunction->createHistogram(histogramName_smoothed.data(), x, Binning(histogramBinning));
-  
-  //Get FitFunction result (mean, sigma...)
-  RooFitResult* r = fitFunction->fitTo(data,Save()) ; 
-  cout << "Fit status " << endl;
-  cout << r->status() << endl;
-  cout<< "Fit results: " << endl;
-  r->Print();
+  histogram_smoothed->Scale(integral(histogram, xMin, xMax)/integral(histogram_smoothed, xMin, xMax));
+  addBinsNotFitted(histogram_smoothed, histogram, xMin, xMax);
   
   //Get the full covariance matrix
   const TMatrixDSym& cov = r->covarianceMatrix() ;
@@ -321,8 +324,8 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
     //save Up syst. histogram
     std::string histogramName_smoothed_Eigenvec_up = std::string(histogram->GetName()).append("_smoothed_").append("_EigenVec").append(Iindex).append("_up");
     TH1* histogram_smoothed_Eigenvec_up = fitFunction->createHistogram(histogramName_smoothed_Eigenvec_up.data(), x, Binning(histogramBinning));
-    addBinsNotFitted(histogram_smoothed_Eigenvec_up, histogram, xMin, xMax);
-    
+    histogram_smoothed_Eigenvec_up->Scale(integral(histogram, xMin, xMax)/integral(histogram_smoothed_Eigenvec_up, xMin, xMax));
+        
     // Restore central values of fit parameters
     itUp = params->createIterator();  
     idxUp = 0;
@@ -342,8 +345,9 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
     }
     
     //save Down syst. histogram
-    std::string histogramName_smoothed_Eigenvec_down = std::string(histogram->GetName()).append("_smoothed_").append("_EigenVec").append(Iindex).append("_down");
+    std::string histogramName_smoothed_Eigenvec_down = std::string(histogram->GetName()).append("_smoothed_").append("_EigenVec").append(Iindex).append("_down");    
     TH1* histogram_smoothed_Eigenvec_down = fitFunction->createHistogram(histogramName_smoothed_Eigenvec_down.data(), x, Binning(histogramBinning));
+    histogram_smoothed_Eigenvec_down->Scale(integral(histogram, xMin, xMax)/integral(histogram_smoothed_Eigenvec_down, xMin, xMax));
     addBinsNotFitted(histogram_smoothed_Eigenvec_down, histogram, xMin, xMax);
     
     // Restore central values of fit parameters
@@ -359,6 +363,12 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
   if ( makeControlPlots ) {
     TCanvas* canvas = new TCanvas("Fit", "Fit", 800, 600);
     gPad->SetLeftMargin(0.15); 
+    
+    RooPlot* frame = x.frame(Title("Fit"), Range(xAxis->GetXmin(), xAxis->GetXmax()));
+    data.plotOn(frame);
+    RooDataHist data_smoothed("", "", x, histogram_smoothed, 1.0); 
+    data_smoothed.plotOn(frame, LineColor(kRed));
+    fitFunction->plotOn(frame, LineColor(kRed), Normalization(50./162.5)); // CV: empirical fudge-factor
     frame->GetYaxis()->SetTitleOffset(1.4);
     frame->Draw();
     
@@ -369,9 +379,6 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
     canvas->Print(std::string(outputFileName_plot).append(".png").data());
     canvas->Print(std::string(outputFileName_plot).append(".pdf").data());
   }
-  
-  // scale output histogram to match integral of input histogram
-  histogram_smoothed->Scale(integral(histogram, xMin, xMax)/integral(histogram_smoothed, xMin, xMax));
   
   // register output histogram with TFileService
   // (histogram will get saved in output file automatically;
