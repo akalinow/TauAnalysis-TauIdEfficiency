@@ -7,9 +7,9 @@
  * \author Betty Calpas, RWTH Aachen
  *         Christian Veelken, LLR
  *
- * \version $Revision: 1.6 $
+ * \version $Revision: 1.7 $
  *
- * $Id: smoothTauIdEffTemplates.cc,v 1.6 2012/10/10 14:45:07 calpas Exp $
+ * $Id: smoothTauIdEffTemplates.cc,v 1.7 2012/10/11 14:11:42 veelken Exp $
  *
  */
 
@@ -45,6 +45,7 @@
 #include "RooRealVar.h"
 #include "RooDataSet.h"
 #include "RooGaussian.h"
+#include "RooGenericPdf.h"
 #include "RooLandau.h"
 #include "RooExponential.h"
 #include "RooFFTConvPdf.h"
@@ -139,31 +140,44 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
     RooRealVar*  lambda = new RooRealVar ("lambda", "slope", -1., -2. , 10.);  
     fitFunction = new RooExponential("expo", "exponential PDF", x, *lambda);
     objectsToDelete.push_back(lambda);
-  } else if ( fitFunctionType == "CB1" ||
-	      fitFunctionType == "CB2"   ){
-    // create Crystal-ball function
-    RooRealVar* cbmean  = 0;
-    RooRealVar* cbsigma = 0;
-    RooRealVar* n       = 0;
-    RooRealVar* alpha   = 0;
-    if        ( fitFunctionType == "CB1" ) {
+  } 
+
+ else if (fitFunctionType == "EXP2") {
+   //   RooAbsArg* par0= new RooRealVar ("par0","par0",0.5);
+   RooAbsArg* par1= new RooRealVar ("par1","par1",-0.00001,-0.1,-0.0000000001);
+   RooAbsArg* par2= new RooRealVar ("par2","par2",1,0.1,3);
+   x.setRange(200,1500);
+   fitFunction = new RooGenericPdf("g","TMath::Exp(par1*TMath::Power(x,par2))",RooArgList(x,*par1,*par2));
+   objectsToDelete.push_back(par1);
+   objectsToDelete.push_back(par2);
+ }
+
+  
+ else if ( fitFunctionType == "CB1" ||
+	   fitFunctionType == "CB2"   ){
+   // create Crystal-ball function
+   RooRealVar* cbmean  = 0;
+   RooRealVar* cbsigma = 0;
+   RooRealVar* n       = 0;
+   RooRealVar* alpha   = 0;
+   if        ( fitFunctionType == "CB1" ) {
       cbmean  = new RooRealVar("cbmean",  "cbmean",  90., 20., 180.);
       cbsigma = new RooRealVar("cbsigma", "cbsigma", 1.,  1.,  40. ); 
       n       = new RooRealVar("n",       "n",       0.2, 0.,  10. ); 
       alpha   = new RooRealVar("alpha",   "alpha",   1.3, 0.,  10. );
-    } else if ( fitFunctionType == "CB2" ) {
-      cbmean  = new RooRealVar("cbmean",  "cbmean",  50., 20., 180.);
-      cbsigma = new RooRealVar("cbsigma", "cbsigma", 5., 1.,  200.); 
-      n       = new RooRealVar("n",       "n",       1.,  0.,  10. ); 
-      alpha   = new RooRealVar("alpha",   "alpha",   1.,  -10.,  10. ); 
-    }
-    fitFunction = new RooCBShape("CristalBall", "CristalBall", x, *cbmean, *cbsigma, *alpha, *n);
-    objectsToDelete.push_back(cbmean);
-    objectsToDelete.push_back(cbsigma);
-    objectsToDelete.push_back(n);
-    objectsToDelete.push_back(alpha);
+   } else if ( fitFunctionType == "CB2" ) {
+     cbmean  = new RooRealVar("cbmean",  "cbmean",  50., 20., 180.);
+     cbsigma = new RooRealVar("cbsigma", "cbsigma", 5., 1.,  200.); 
+     n       = new RooRealVar("n",       "n",       1.,  0.,  10. ); 
+     alpha   = new RooRealVar("alpha",   "alpha",   1.,  -10.,  10. ); 
    }
-
+   fitFunction = new RooCBShape("CristalBall", "CristalBall", x, *cbmean, *cbsigma, *alpha, *n);
+   objectsToDelete.push_back(cbmean);
+   objectsToDelete.push_back(cbsigma);
+   objectsToDelete.push_back(n);
+   objectsToDelete.push_back(alpha);
+ }
+  
   if ( !fitFunction ) 
     throw cms::Exception("smoothTauIdEffTemplates") 
       << "Undefined fit-function type = " << fitFunctionType << " !!\n";
@@ -178,7 +192,7 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
   fitFunction->fitTo(data);
   data.plotOn(frame);
   fitFunction->plotOn(frame, LineColor(kRed)); 
-
+  
   // create smoothed output histogram
   std::string histogramName_smoothed = std::string(histogram->GetName()).append("_smoothed");
   int histogramBinning = xAxis->GetNbins();
@@ -186,6 +200,8 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
   
   //Get FitFunction result (mean, sigma...)
   RooFitResult* r = fitFunction->fitTo(data,Save()) ; 
+  cout << "Fit status " << endl;
+  cout << r->status() << endl;
   cout<< "Fit results: " << endl;
   r->Print();
   
@@ -216,7 +232,7 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
     }
     eigenvectors.push_back(eigenvector);
   }
-
+  
   // check #1: M( invert eigenvec * eigenvec ) = M(Identity) !!OK!!
   TMatrixD eigenvectorInv_matrix(TMatrixD::kInverted, eigenvector_matrix);  
   const TMatrixD ID = eigenvectorInv_matrix*eigenvector_matrix;
@@ -360,14 +376,13 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
   } else { 
     dir->Append(histogram_smoothed); 
   }
-  
+
   for ( std::vector<TObject*>::iterator it = objectsToDelete.begin();
 	it != objectsToDelete.end(); ++it ) {
     delete (*it);
   }  
-  
+   
 }
-
 struct histogramEntryType
 {
   std::string histogramName_;
@@ -378,7 +393,7 @@ struct histogramEntryType
   double xMax_;
 };
 
-int main(int argc, const char* argv[])
+ int main(int argc, const char* argv[])
 {
 //--- parse command-line arguments
   if ( argc < 2 ) {
