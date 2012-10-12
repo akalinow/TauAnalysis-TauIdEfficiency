@@ -7,9 +7,9 @@
  * \author Betty Calpas, RWTH Aachen
  *         Christian Veelken, LLR
  *
- * \version $Revision: 1.7 $
+ * \version $Revision: 1.8 $
  *
- * $Id: smoothTauIdEffTemplates.cc,v 1.7 2012/10/11 14:11:42 veelken Exp $
+ * $Id: smoothTauIdEffTemplates.cc,v 1.8 2012/10/12 09:24:34 kkaadze Exp $
  *
  */
 
@@ -233,7 +233,7 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
     eigenvectors.push_back(eigenvector);
   }
   
-  // check #1: M( invert eigenvec * eigenvec ) = M(Identity) !!OK!!
+  // check #1: M( eigenvectorInv_matrix * eigenvector_matrix ) = M(Identity) 
   TMatrixD eigenvectorInv_matrix(TMatrixD::kInverted, eigenvector_matrix);  
   const TMatrixD ID = eigenvectorInv_matrix*eigenvector_matrix;
   for ( int i = 0; i < numFitParameter; ++i ) {
@@ -243,13 +243,22 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
     }
   }
 
-  // check #2: inveigenvec * cov * eigenvec = diag. of eigenval !!OK!!
+  // check #2: eigenvectorInv_matrix * cov * eigenvector_matrix = diagonal matrix of eigenvalues 
   // http://root.cern.ch/phpBB3/viewtopic.php?f=15&t=8663 
-  const TMatrixD MDiag = eigenvectorInv_matrix * cov * eigenvector_matrix; 
+  const TMatrixD MDiag = eigenvectorInv_matrix * (cov * eigenvector_matrix); 
   for ( int i = 0; i < numFitParameter; ++i ) {
     for ( int j = 0; j < numFitParameter; ++j ) {
-      if ( i == j ) assert(TMath::Abs(ID(i, j) - eigenvalues(i)) < 1.e-3);
+      if ( i == j ) assert(TMath::Abs(MDiag(i, j) - eigenvalues(i)) < (1.e-3*eigenvalues(i)));
       else assert(TMath::Abs(ID(i, j)) < 1.e-3);
+    }
+  }
+
+  // check #3: cov * eigenvector = eigenvalue * eigenvector 
+  for ( int i = 0; i < numFitParameter; ++i ) {
+    const TVectorD& eigenvector = (*eigenvectors[i]);
+    TVectorD cov_times_eigenvector = cov * eigenvector;
+    for ( int j = 0; j < numFitParameter; ++j ) {
+      assert(TMath::Abs(cov_times_eigenvector(j) - eigenvalues[i]*eigenvector(j)) < (1.e-3*eigenvalues[i]));
     }
   }
 
