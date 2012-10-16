@@ -7,9 +7,9 @@
  * \author Betty Calpas, RWTH Aachen
  *         Christian Veelken, LLR
  *
- * \version $Revision: 1.9 $
+ * \version $Revision: 1.10 $
  *
- * $Id: smoothTauIdEffTemplates.cc,v 1.9 2012/10/12 09:39:12 veelken Exp $
+ * $Id: smoothTauIdEffTemplates.cc,v 1.10 2012/10/12 11:53:49 veelken Exp $
  *
  */
 
@@ -109,11 +109,16 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
 		     bool limit_xMin_fit, double xMin_fit, 
 		     bool limit_xMax_fit, double xMax_fit)
 {  
+  std::cout << "<smoothHistogram>:" << std::endl;
+
   TAxis* xAxis = histogram->GetXaxis();
   double xMin = xAxis->GetXmin();
   if ( limit_xMin_fit ) xMin = TMath::Max(xMin, xMin_fit);
   double xMax = xAxis->GetXmax();
   if ( limit_xMax_fit ) xMax = TMath::Min(xMax, xMax_fit);
+
+  std::cout << "fitting histogram = " << histogram->GetName() << " in range = " << xMin << ".." << xMax << std::endl;
+  std::cout << "integral(fitted)/integral(fitted+unfitted) = " << integral(histogram, xMin, xMax)/integral(histogram, xAxis->GetXmin(), xAxis->GetXmax()) << std::endl;
   
   // general fit variable
   RooRealVar x("x", "x", xMin, xMax);
@@ -123,13 +128,13 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
 
   if ( fitFunctionType == "LG1" ) {
     // create Landau function
-    RooRealVar*  meanl  = new RooRealVar ("meanl",  "mean of Landau",  80.,  60.   , 90.    );
-    RooRealVar*  sigmal = new RooRealVar ("sigmal", "sigma of Landau", 30.,  20.   , 50.    );  
-    RooLandau*   landau = new RooLandau  ("landau", "landau",            x,  *meanl, *sigmal);
+    RooRealVar*  meanl  = new RooRealVar ("meanl",  "mean of Landau",   80.,  60.   , 90.    );
+    RooRealVar*  sigmal = new RooRealVar ("sigmal", "sigma of Landau",  30.,  20.   , 50.    );  
+    RooLandau*   landau = new RooLandau  ("landau", "landau",             x,  *meanl, *sigmal);
     // create Gaussian
-    RooRealVar*  meang  = new RooRealVar ("meang",  "mean of Gaussian",  1., 0.    , 15.    ); 
-    RooRealVar*  sigmag = new RooRealVar ("sigmag", "sigma of Gaussian", 1., 0.1   , 10.    );
-    RooGaussian* gauss  = new RooGaussian("gauss",  "gauss",             x,  *meang, *sigmag);
+    RooRealVar*  meang  = new RooRealVar ("meang",  "mean of Gaussian",   1., 0.    , 15.    ); 
+    RooRealVar*  sigmag = new RooRealVar ("sigmag", "sigma of Gaussian",  1., 0.1   , 10.    );
+    RooGaussian* gauss  = new RooGaussian("gauss",  "gauss",              x,  *meang, *sigmag);
     // create convolution of Landau with Gaussian
     fitFunction = new RooFFTConvPdf("LandauConvGauss", "LandauConvGauss", x, *landau, *gauss);
 
@@ -141,15 +146,13 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
     objectsToDelete.push_back(gauss);
   } else if (fitFunctionType == "EXP1" ){
     // create Expo
-    RooRealVar*  lambda = new RooRealVar ("lambda", "slope", -1., -2. , 10.);  
+    RooRealVar*  lambda = new RooRealVar ("lambda", "slope", -1., -2., 10.);  
     fitFunction = new RooExponential("expo", "exponential PDF", x, *lambda);
     objectsToDelete.push_back(lambda);
   } else if (fitFunctionType == "EXP2") {
-    //   RooAbsArg* par0= new RooRealVar ("par0","par0",0.5);
-    RooAbsArg* par1= new RooRealVar ("par1","par1",-0.00001,-0.1,-0.0000000001);
-    RooAbsArg* par2= new RooRealVar ("par2","par2",1,0.1,3);
-    x.setRange(200,1500);
-    fitFunction = new RooGenericPdf("g","TMath::Exp(par1*TMath::Power(x,par2))",RooArgList(x,*par1,*par2));
+    RooAbsArg* par1= new RooRealVar ("par1", "par1", -0.00001, -0.1, -0.0000000001);
+    RooAbsArg* par2= new RooRealVar ("par2", "par2", 1., 0.1, 3.);
+    fitFunction = new RooGenericPdf("g","TMath::Exp(par1*TMath::Power(x,par2))", RooArgList(x, *par1, *par2));
     objectsToDelete.push_back(par1);
     objectsToDelete.push_back(par2);
   } else if ( fitFunctionType == "CB1" ||
@@ -187,8 +190,8 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
     
   // fit shape template by analytic function
   RooFitResult* r = fitFunction->fitTo(data, Save()) ; 
-  cout << "Fit status = " << r->status() << endl;
-  cout << "Fit results: " << endl;
+  std::cout << "Fit status = " << r->status() << endl;
+  std::cout << "Fit results: " << endl;
   r->Print();
   
   // create smoothed output histogram
@@ -204,13 +207,17 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
     }
   }
   RooBinning histogramBinning(xAxis->GetNbins(), histogramBinning_array.GetArray());
-  TH1* histogram_smoothed = fitFunction->createHistogram(histogramName_smoothed.data(), x, Binning(histogramBinning));
-  histogram_smoothed->Scale(integral(histogram, xMin, xMax)/integral(histogram_smoothed, xMin, xMax));
+  x.setBinning(histogramBinning);
+
+  TH1* histogram_smoothed = fitFunction->createHistogram(histogramName_smoothed.data(), x);
+  double scaleFactor = integral(histogram, xMin, xMax)/integral(histogram_smoothed, xMin, xMax);
+  std::cout << "integral(histogram)/integral(histogram_smoothed) = " << scaleFactor << std::endl;
+  histogram_smoothed->Scale(scaleFactor);
   addBinsNotFitted(histogram_smoothed, histogram, xMin, xMax);
   
   //Get the full covariance matrix
   const TMatrixDSym& cov = r->covarianceMatrix() ;
-  cout << endl << "Cov Matrix: "<< endl;
+  std::cout << endl << "Cov Matrix: "<< endl;
   cov.Print();
 
   int numFitParameter = cov.GetNrows();
@@ -220,12 +227,7 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
 
   //Get the matrix of Eigen vector
   const TMatrixD eigenvector_matrix = eigencov.GetEigenVectors();
-  cout << endl << "Matrix of Eigenvectors"<< endl;
-  eigenvector_matrix.Print();
-
   const TVectorD eigenvalues = eigencov.GetEigenValues();
-  cout << endl << "Vector of Eigenvalues"<< endl;
-  eigenvalues.Print();
 
   std::vector<TVectorD*> eigenvectors;
   for ( int i = 0; i < eigenvector_matrix.GetNrows(); ++i ) {
@@ -234,6 +236,12 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
       (*eigenvector)(j) =  eigenvector_matrix(j, i);
     }
     eigenvectors.push_back(eigenvector);
+    std::cout << "EigenValue #" << i << ": EigenVector = { ";
+    for ( int j = 0; j < eigenvector_matrix.GetNrows(); ++j ) {
+      std::cout << (*eigenvector)(j);
+      if ( j < (eigenvector_matrix.GetNrows() - 1) ) std::cout << ",";
+    }
+    std::cout << " }" << std::endl;
   }
   
   // check #1: M( eigenvectorInv_matrix * eigenvector_matrix ) = M(Identity) 
@@ -288,23 +296,30 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
     param_values.push_back(param_value);
   }
   
+  std::cout << "Nominal parameters:" << std::endl;
+  TIterator* itCentral = params->createIterator();  
+  int idxCentral = 0;
+  while ( RooRealVar* param = (RooRealVar*)itCentral->Next() ) { 
+      std::cout << "parameter #" << idxCentral << " = " << param->getVal() << std::endl;
+      ++idxCentral;
+  }
+  
   for( int i = 0; i < numFitParameter; ++i ) {
     
     //Get the i-th Eigenvector
     const TVectorD& eigenvector = (*eigenvectors[i]);
-    cout<< "Eigenvector[" << i << "]:" << endl;
-    eigenvector.Print();
+
     //Compute norm of i-th Eigenvector
     double norm = eigenvector.Norm2Sqr();
     
     //Get the Eigenvalue associate to i-th Eigenvector
     double eigenvalue = eigenvalues[i];
-    cout<< "Eigenvalue[i] = " << eigenvalue << std::endl;
+
     //Compute uncertainty on fit parameter
     double sigma = sqrt(eigenvalue);
+
     //Compute unit vector in direction of i-th Eigenvector
-    const TVectorD direction = (1./norm)*eigenvector;
-    //cout << "direction: " << direction[i] << endl;
+    TVectorD eigenvector_unit = (1./norm)*eigenvector;
     
     //save i eigenvec index for histo name
     std::ostringstream strsI;
@@ -314,18 +329,19 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
     //Vary fit parameters in "Up" direction
     TIterator* itUp = params->createIterator();  
     int idxUp = 0;
+    std::cout << "Up-shifted parameters for Eigenvalue #" << i << ":" << std::endl;
     while ( RooRealVar* param = (RooRealVar*)itUp->Next() ) { 
-      cout << endl << "param_value Up: " << param->getVal() << endl; 
-      param->setVal(param->getVal() + sigma*direction[idxUp]);
-      cout << endl << "param_value Up + err: " << param->getVal() << endl; 
+      param->setVal(param->getVal() + sigma*eigenvector_unit[idxUp]);
+      std::cout << "parameter #" << idxUp << " = " << param->getVal() << std::endl;
       ++idxUp;
     }
     
     //save Up syst. histogram
     std::string histogramName_smoothed_Eigenvec_up = std::string(histogram->GetName()).append("_smoothed_").append("_EigenVec").append(Iindex).append("_up");
-    TH1* histogram_smoothed_Eigenvec_up = fitFunction->createHistogram(histogramName_smoothed_Eigenvec_up.data(), x, Binning(histogramBinning));
+    TH1* histogram_smoothed_Eigenvec_up = fitFunction->createHistogram(histogramName_smoothed_Eigenvec_up.data(), x);
     histogram_smoothed_Eigenvec_up->Scale(integral(histogram, xMin, xMax)/integral(histogram_smoothed_Eigenvec_up, xMin, xMax));
-        
+    addBinsNotFitted(histogram_smoothed_Eigenvec_up, histogram, xMin, xMax);
+
     // Restore central values of fit parameters
     itUp = params->createIterator();  
     idxUp = 0;
@@ -337,16 +353,16 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
     //Vary fit parameters in "Down" direction
     TIterator* itDown = params->createIterator();  
     int idxDown = 0;
+    std::cout << "Down-shifted parameters for Eigenvalue #" << i << ":" << std::endl;
     while ( RooRealVar* param = (RooRealVar*) itDown->Next() ) { 
-      cout << endl << "param_value Down: " << param->getVal() << endl; 
-      param->setVal(param->getVal() - sigma*direction[idxDown] );
-      cout << endl << "param_value Down - err: " << param->getVal() << endl; 
+      param->setVal(param->getVal() - sigma*eigenvector_unit[idxDown] );
+      std::cout << "parameter #" << idxUp << " = " << param->getVal() << std::endl;
       ++idxDown;
     }
     
     //save Down syst. histogram
     std::string histogramName_smoothed_Eigenvec_down = std::string(histogram->GetName()).append("_smoothed_").append("_EigenVec").append(Iindex).append("_down");    
-    TH1* histogram_smoothed_Eigenvec_down = fitFunction->createHistogram(histogramName_smoothed_Eigenvec_down.data(), x, Binning(histogramBinning));
+    TH1* histogram_smoothed_Eigenvec_down = fitFunction->createHistogram(histogramName_smoothed_Eigenvec_down.data(), x);
     histogram_smoothed_Eigenvec_down->Scale(integral(histogram, xMin, xMax)/integral(histogram_smoothed_Eigenvec_down, xMin, xMax));
     addBinsNotFitted(histogram_smoothed_Eigenvec_down, histogram, xMin, xMax);
     
@@ -362,14 +378,17 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
   // make control plot
   if ( makeControlPlots ) {
     TCanvas* canvas = new TCanvas("Fit", "Fit", 800, 600);
-    gPad->SetLeftMargin(0.15); 
+    canvas->SetLeftMargin(0.15); 
+    canvas->SetLogy(true);
     
     RooPlot* frame = x.frame(Title("Fit"), Range(xAxis->GetXmin(), xAxis->GetXmax()));
     data.plotOn(frame);
     RooDataHist data_smoothed("", "", x, histogram_smoothed, 1.0); 
     data_smoothed.plotOn(frame, LineColor(kRed));
-    fitFunction->plotOn(frame, LineColor(kRed), Normalization(50./162.5)); // CV: empirical fudge-factor
+    fitFunction->plotOn(frame, LineColor(kRed));
     frame->GetYaxis()->SetTitleOffset(1.4);
+    frame->SetMinimum(1.e-4);
+    frame->SetMaximum(1.e+2);
     frame->Draw();
     
     std::string outputFileName_plot = controlPlotFilePath;
@@ -378,6 +397,7 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
     canvas->Print(std::string(outputFileName_plot).append(".eps").data());
     canvas->Print(std::string(outputFileName_plot).append(".png").data());
     canvas->Print(std::string(outputFileName_plot).append(".pdf").data());
+    canvas->Print(std::string(outputFileName_plot).append(".root").data());
   }
   
   // register output histogram with TFileService
