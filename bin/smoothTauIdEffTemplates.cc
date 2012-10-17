@@ -7,9 +7,9 @@
  * \author Betty Calpas, RWTH Aachen
  *         Christian Veelken, LLR
  *
- * \version $Revision: 1.12 $
+ * \version $Revision: 1.13 $
  *
- * $Id: smoothTauIdEffTemplates.cc,v 1.12 2012/10/16 14:42:05 veelken Exp $
+ * $Id: smoothTauIdEffTemplates.cc,v 1.13 2012/10/17 11:09:47 veelken Exp $
  *
  */
 
@@ -74,6 +74,34 @@
 using namespace RooFit;
 using namespace std;
 
+double integral(const TH1* histogram, double xMin, double xMax)
+{
+  double integral = 0.;
+  TAxis* xAxis = histogram->GetXaxis();
+  int numBins = xAxis->GetNbins();
+  for ( int iBin = 1; iBin <= numBins; ++iBin ) {
+    double binCenter = xAxis->GetBinCenter(iBin);
+    double binContent = histogram->GetBinContent(iBin);
+    if ( binCenter >= xMin && binCenter < xMax ) integral += binContent;
+  }
+  return integral;
+}
+
+void applyVariableBinWidthFix(TH1* histogram, double xMin, double xMax)
+{
+  double histogramIntegral = integral(histogram, xMin, xMax);
+  TAxis* xAxis = histogram->GetXaxis();
+  int numBins = xAxis->GetNbins();
+  for ( int iBin = 1; iBin <= numBins; ++iBin ) {
+    double binCenter = xAxis->GetBinCenter(iBin);
+    double binContent = histogram->GetBinContent(iBin);
+    double binWith = histogram->GetBinWidth(iBin);
+    if ( binCenter >= xMin && binCenter < xMax ) histogram->SetBinContent(iBin, binContent*binWith);
+  }
+  double histogramIntegral_modified = integral(histogram, xMin, xMax);
+  if ( histogramIntegral_modified > 0. ) histogram->Scale(histogramIntegral/histogramIntegral_modified);
+}
+
 void addBinsNotFitted(TH1* histogram_fitted, const TH1* histogram, double xMin_fit, double xMax_fit)
 {
   TAxis* xAxis = histogram->GetXaxis();
@@ -88,19 +116,6 @@ void addBinsNotFitted(TH1* histogram_fitted, const TH1* histogram, double xMin_f
       histogram_fitted->SetBinError(iBin, histogram->GetBinError(iBin));
     }
   }
-}
-
-double integral(const TH1* histogram, double xMin, double xMax)
-{
-  double integral = 0.;
-  TAxis* xAxis = histogram->GetXaxis();
-  int numBins = xAxis->GetNbins();
-  for ( int iBin = 1; iBin <= numBins; ++iBin ) {
-    double binCenter = xAxis->GetBinCenter(iBin);
-    double binContent = histogram->GetBinContent(iBin);
-    if ( binCenter >= xMin && binCenter < xMax ) integral += binContent;
-  }
-  return integral;
 }
 
 void smoothHistogram(TH1* histogram, const std::string& fitFunctionType, 
@@ -199,7 +214,7 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
   objectsToDelete.push_back(fitFunction);
   
   // convert template histogram to RooDataHist object in order for it to be fitted
-  RooDataHist data("data", "data", x, histogram, 1.0); 
+  RooDataHist data("data", "data", x, Import(*histogram, false)); 
     
   // fit shape template by analytic function
   RooFitResult* r = fitFunction->fitTo(data, Save(), Range(xMin_fit, xMax_fit)) ; 
@@ -210,6 +225,7 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
   // create smoothed output histogram
   std::string histogramName_smoothed = std::string(histogram->GetName()).append("_smoothed");
   TH1* histogram_smoothed = fitFunction->createHistogram(histogramName_smoothed.data(), x, Range(xMin_fit, xMax_fit), Binning(histogramBinning));
+  applyVariableBinWidthFix(histogram_smoothed, xMin_fit, xMax_fit);
   double scaleFactor = integral(histogram, xMin_fit, xMax_fit)/integral(histogram_smoothed, xMin_fit, xMax_fit);
   std::cout << "integral(histogram)/integral(histogram_smoothed) = " << scaleFactor << std::endl;
   histogram_smoothed->Scale(scaleFactor);
@@ -236,7 +252,7 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
       (*eigenvector)(j) =  eigenvector_matrix(j, i);
     }
     eigenvectors.push_back(eigenvector);
-    std::cout << "EigenValue #" << i << ": EigenVector = { ";
+    std::cout << "EigenValue #" << i << " = " << eigenvalues(i) << ": EigenVector = { ";
     for ( int j = 0; j < eigenvector_matrix.GetNrows(); ++j ) {
       std::cout << (*eigenvector)(j);
       if ( j < (eigenvector_matrix.GetNrows() - 1) ) std::cout << ",";
@@ -339,6 +355,7 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
     //save Up syst. histogram
     std::string histogramName_smoothed_Eigenvec_up = std::string(histogram->GetName()).append("_smoothed_").append("_EigenVec").append(Iindex).append("_up");
     TH1* histogram_smoothed_Eigenvec_up = fitFunction->createHistogram(histogramName_smoothed_Eigenvec_up.data(), x, Range(xMin_fit, xMax_fit), Binning(histogramBinning));
+    applyVariableBinWidthFix(histogram_smoothed_Eigenvec_up, xMin_fit, xMax_fit);
     histogram_smoothed_Eigenvec_up->Scale(integral(histogram, xMin_fit, xMax_fit)/integral(histogram_smoothed_Eigenvec_up, xMin_fit, xMax_fit));
     addBinsNotFitted(histogram_smoothed_Eigenvec_up, histogram, xMin_fit, xMax_fit);
 
@@ -363,6 +380,7 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
     //save Down syst. histogram
     std::string histogramName_smoothed_Eigenvec_down = std::string(histogram->GetName()).append("_smoothed_").append("_EigenVec").append(Iindex).append("_down");    
     TH1* histogram_smoothed_Eigenvec_down = fitFunction->createHistogram(histogramName_smoothed_Eigenvec_down.data(), x, Range(xMin_fit, xMax_fit), Binning(histogramBinning));
+    applyVariableBinWidthFix(histogram_smoothed_Eigenvec_down, xMin_fit, xMax_fit);
     histogram_smoothed_Eigenvec_down->Scale(integral(histogram, xMin_fit, xMax_fit)/integral(histogram_smoothed_Eigenvec_down, xMin_fit, xMax_fit));
     addBinsNotFitted(histogram_smoothed_Eigenvec_down, histogram, xMin_fit, xMax_fit);
     
@@ -383,7 +401,7 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
     
     RooPlot* frame = x.frame(Title("Fit(density)"), Range(xMin_histogram, xMax_histogram));
     data.plotOn(frame);
-    RooDataHist data_smoothed("data_smoothed", "data_smoothed", x, histogram_smoothed, 1.0); 
+    RooDataHist data_smoothed("data_smoothed", "data_smoothed", x, Import(*histogram_smoothed, false)); 
     data_smoothed.plotOn(frame, LineColor(kRed));
     fitFunction->plotOn(frame, LineColor(kRed));
     frame->GetYaxis()->SetTitleOffset(1.4);
