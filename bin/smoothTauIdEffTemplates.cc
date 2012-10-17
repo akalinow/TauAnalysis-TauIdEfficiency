@@ -7,9 +7,9 @@
  * \author Betty Calpas, RWTH Aachen
  *         Christian Veelken, LLR
  *
- * \version $Revision: 1.10 $
+ * \version $Revision: 1.12 $
  *
- * $Id: smoothTauIdEffTemplates.cc,v 1.10 2012/10/12 11:53:49 veelken Exp $
+ * $Id: smoothTauIdEffTemplates.cc,v 1.12 2012/10/16 14:42:05 veelken Exp $
  *
  */
 
@@ -128,18 +128,14 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
   RooRealVar x("x", "x", xMin_histogram, xMax_histogram);
 
   // define binning 
-  TArrayD histogramBinning_array(xAxis->GetNbins() + 1);
-  if ( xAxis->GetXbins() ) {
-    histogramBinning_array = (*xAxis->GetXbins());
-  } else {
-    int numBins = xAxis->GetNbins();
-    for ( int iBin = 1; iBin <= numBins; ++iBin ) {
-      histogramBinning_array[iBin - 1] = xAxis->GetBinLowEdge(iBin);
-      histogramBinning_array[iBin] = xAxis->GetBinUpEdge(iBin);
-    }
+  int numBins = xAxis->GetNbins();
+  TArrayD histogramBinning_array(numBins + 1);
+  for ( int iBin = 1; iBin <= numBins; ++iBin ) {
+    histogramBinning_array[iBin - 1] = xAxis->GetBinLowEdge(iBin);
+    histogramBinning_array[iBin] = xAxis->GetBinUpEdge(iBin);
   }
-  RooBinning histogramBinning(xAxis->GetNbins(), histogramBinning_array.GetArray());
-  
+  RooBinning histogramBinning(numBins, histogramBinning_array.GetArray());
+
   RooAbsPdf* fitFunction = 0;
   std::vector<TObject*> objectsToDelete;
 
@@ -167,7 +163,7 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
     fitFunction = new RooExponential("expo", "exponential PDF", x, *lambda);
     objectsToDelete.push_back(lambda);
   } else if (fitFunctionType == "EXP2") {
-    RooAbsArg* par1= new RooRealVar("par1", "par1", -0.00001, -0.1, -0.0000000001);
+    RooAbsArg* par1= new RooRealVar("par1", "par1", -1.e-2, -2., -1.e-6);
     RooAbsArg* par2= new RooRealVar("par2", "par2", 1., 0.1, 3.);
     fitFunction = new RooGenericPdf("g", "TMath::Exp(par1*TMath::Power(x,par2))", RooArgList(x, *par1, *par2));
     objectsToDelete.push_back(par1);
@@ -213,7 +209,7 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
   
   // create smoothed output histogram
   std::string histogramName_smoothed = std::string(histogram->GetName()).append("_smoothed");
-  TH1* histogram_smoothed = fitFunction->createHistogram(histogramName_smoothed.data(), x);
+  TH1* histogram_smoothed = fitFunction->createHistogram(histogramName_smoothed.data(), x, Range(xMin_fit, xMax_fit), Binning(histogramBinning));
   double scaleFactor = integral(histogram, xMin_fit, xMax_fit)/integral(histogram_smoothed, xMin_fit, xMax_fit);
   std::cout << "integral(histogram)/integral(histogram_smoothed) = " << scaleFactor << std::endl;
   histogram_smoothed->Scale(scaleFactor);
@@ -342,7 +338,7 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
     
     //save Up syst. histogram
     std::string histogramName_smoothed_Eigenvec_up = std::string(histogram->GetName()).append("_smoothed_").append("_EigenVec").append(Iindex).append("_up");
-    TH1* histogram_smoothed_Eigenvec_up = fitFunction->createHistogram(histogramName_smoothed_Eigenvec_up.data(), x, Range(xMin_fit, xMax_fit));
+    TH1* histogram_smoothed_Eigenvec_up = fitFunction->createHistogram(histogramName_smoothed_Eigenvec_up.data(), x, Range(xMin_fit, xMax_fit), Binning(histogramBinning));
     histogram_smoothed_Eigenvec_up->Scale(integral(histogram, xMin_fit, xMax_fit)/integral(histogram_smoothed_Eigenvec_up, xMin_fit, xMax_fit));
     addBinsNotFitted(histogram_smoothed_Eigenvec_up, histogram, xMin_fit, xMax_fit);
 
@@ -366,7 +362,7 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
     
     //save Down syst. histogram
     std::string histogramName_smoothed_Eigenvec_down = std::string(histogram->GetName()).append("_smoothed_").append("_EigenVec").append(Iindex).append("_down");    
-    TH1* histogram_smoothed_Eigenvec_down = fitFunction->createHistogram(histogramName_smoothed_Eigenvec_down.data(), x, Range(xMin_fit, xMax_fit));
+    TH1* histogram_smoothed_Eigenvec_down = fitFunction->createHistogram(histogramName_smoothed_Eigenvec_down.data(), x, Range(xMin_fit, xMax_fit), Binning(histogramBinning));
     histogram_smoothed_Eigenvec_down->Scale(integral(histogram, xMin_fit, xMax_fit)/integral(histogram_smoothed_Eigenvec_down, xMin_fit, xMax_fit));
     addBinsNotFitted(histogram_smoothed_Eigenvec_down, histogram, xMin_fit, xMax_fit);
     
@@ -381,27 +377,52 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
   
   // make control plot
   if ( makeControlPlots ) {
-    TCanvas* canvas = new TCanvas("Fit", "Fit", 800, 600);
-    canvas->SetLeftMargin(0.15); 
-    canvas->SetLogy(true);
+    TCanvas* canvas_density = new TCanvas("Fit(density)", "Fit(density)", 800, 600);
+    canvas_density->SetLeftMargin(0.15); 
+    canvas_density->SetLogy(true);
     
-    RooPlot* frame = x.frame(Title("Fit"), Range(xMin_histogram, xMax_histogram));
+    RooPlot* frame = x.frame(Title("Fit(density)"), Range(xMin_histogram, xMax_histogram));
     data.plotOn(frame);
     RooDataHist data_smoothed("data_smoothed", "data_smoothed", x, histogram_smoothed, 1.0); 
     data_smoothed.plotOn(frame, LineColor(kRed));
     fitFunction->plotOn(frame, LineColor(kRed));
     frame->GetYaxis()->SetTitleOffset(1.4);
-    frame->SetMinimum(1.e-4);
-    frame->SetMaximum(1.e+2);
+    frame->SetMinimum(1.e-6*integral(histogram, xMin_histogram, xMax_histogram));
+    frame->SetMaximum(1.e+1*integral(histogram, xMin_histogram, xMax_histogram));
     frame->Draw();
     
-    std::string outputFileName_plot = controlPlotFilePath;
-    if ( outputFileName_plot.find_last_of("/") != (outputFileName_plot.length() - 1) ) outputFileName_plot.append("/");
-    outputFileName_plot.append(Form("smoothTauIdEffTemplate_%s", histogram->GetName()));    
-    canvas->Print(std::string(outputFileName_plot).append(".eps").data());
-    canvas->Print(std::string(outputFileName_plot).append(".png").data());
-    canvas->Print(std::string(outputFileName_plot).append(".pdf").data());
-    canvas->Print(std::string(outputFileName_plot).append(".root").data());
+    std::string outputFileName_density_plot = controlPlotFilePath;
+    if ( outputFileName_density_plot.find_last_of("/") != (outputFileName_density_plot.length() - 1) ) outputFileName_density_plot.append("/");
+    outputFileName_density_plot.append(Form("smoothTauIdEffTemplate_%s_density", histogram->GetName()));    
+    canvas_density->Print(std::string(outputFileName_density_plot).append(".eps").data());
+    canvas_density->Print(std::string(outputFileName_density_plot).append(".png").data());
+    canvas_density->Print(std::string(outputFileName_density_plot).append(".pdf").data());
+    canvas_density->Print(std::string(outputFileName_density_plot).append(".root").data());
+
+    delete canvas_density;
+
+    TCanvas* canvas_events = new TCanvas("Fit(events)", "Fit(events)", 800, 600);
+    canvas_events->SetLeftMargin(0.15); 
+    canvas_events->SetLogy(true);
+
+    double yMax = 5.*histogram->GetMaximum();
+    double yMin = 1.e-6*yMax;
+    histogram->SetMinimum(yMin);
+    histogram->SetMaximum(yMax);
+    histogram->Draw("e1p");
+    histogram_smoothed->SetLineColor(2);
+    histogram_smoothed->SetMarkerColor(2);
+    histogram_smoothed->Draw("e1psame");
+    
+    std::string outputFileName_events_plot = controlPlotFilePath;
+    if ( outputFileName_events_plot.find_last_of("/") != (outputFileName_events_plot.length() - 1) ) outputFileName_events_plot.append("/");
+    outputFileName_events_plot.append(Form("smoothTauIdEffTemplate_%s_events", histogram->GetName()));    
+    canvas_events->Print(std::string(outputFileName_events_plot).append(".eps").data());
+    canvas_events->Print(std::string(outputFileName_events_plot).append(".png").data());
+    canvas_events->Print(std::string(outputFileName_events_plot).append(".pdf").data());
+    canvas_events->Print(std::string(outputFileName_events_plot).append(".root").data());
+
+    delete canvas_events;
   }
   
   // register output histogram with TFileService
