@@ -7,9 +7,9 @@
  * \author Betty Calpas, RWTH Aachen
  *         Christian Veelken, LLR
  *
- * \version $Revision: 1.13 $
+ * \version $Revision: 1.14 $
  *
- * $Id: smoothTauIdEffTemplates.cc,v 1.13 2012/10/17 11:09:47 veelken Exp $
+ * $Id: smoothTauIdEffTemplates.cc,v 1.14 2012/10/17 15:36:20 veelken Exp $
  *
  */
 
@@ -401,8 +401,6 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
     
     RooPlot* frame = x.frame(Title("Fit(density)"), Range(xMin_histogram, xMax_histogram));
     data.plotOn(frame);
-    RooDataHist data_smoothed("data_smoothed", "data_smoothed", x, Import(*histogram_smoothed, false)); 
-    data_smoothed.plotOn(frame, LineColor(kRed));
     fitFunction->plotOn(frame, LineColor(kRed));
     frame->GetYaxis()->SetTitleOffset(1.4);
     frame->SetMinimum(1.e-6*integral(histogram, xMin_histogram, xMax_histogram));
