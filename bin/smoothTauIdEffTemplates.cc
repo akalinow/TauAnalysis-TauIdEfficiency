@@ -7,9 +7,9 @@
  * \author Betty Calpas, RWTH Aachen
  *         Christian Veelken, LLR
  *
- * \version $Revision: 1.14 $
+ * \version $Revision: 1.15 $
  *
- * $Id: smoothTauIdEffTemplates.cc,v 1.14 2012/10/17 15:36:20 veelken Exp $
+ * $Id: smoothTauIdEffTemplates.cc,v 1.15 2012/10/17 15:52:37 veelken Exp $
  *
  */
 
@@ -24,22 +24,6 @@
 
 #include "TauAnalysis/TauIdEfficiency/bin/tauIdEffAuxFunctions.h"
 #include "TauAnalysis/CandidateTools/interface/generalAuxFunctions.h"
-
-#include <TROOT.h>
-#include <TSystem.h>
-#include <TFile.h>
-#include <TH1.h>
-#include <TString.h>
-#include <TBenchmark.h>
-#include "TCanvas.h"
-#include "TAxis.h"
-#include "TDirectory.h"
-
-#include <fstream>
-#include <iostream>
-#include <iomanip>
-#include <string>
-#include <vector>
 
 #include "RooGlobalFunc.h"
 #include "RooRealVar.h"
@@ -60,6 +44,16 @@
 #include "RooFitResult.h"
 #include "RooBinning.h"
 
+#include <TROOT.h>
+#include <TSystem.h>
+#include <TFile.h>
+#include <TH1.h>
+#include <TString.h>
+#include <TBenchmark.h>
+#include "TCanvas.h"
+#include "TAxis.h"
+#include "TDirectory.h"
+#include "TLegend.h"
 #include "TMatrix.h"
 #include "TMatrixDSym.h"
 #include "TMatrixDSymEigen.h"
@@ -68,6 +62,12 @@
 #include <TVector.h>
 #include <TVector3.h>
 #include "TIterator.h"
+
+#include <fstream>
+#include <iostream>
+#include <iomanip>
+#include <string>
+#include <vector>
 #include <math.h>
 #include <map>
 
@@ -224,7 +224,7 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
   
   // create smoothed output histogram
   std::string histogramName_smoothed = std::string(histogram->GetName()).append("_smoothed");
-  TH1* histogram_smoothed = fitFunction->createHistogram(histogramName_smoothed.data(), x, Range(xMin_fit, xMax_fit), Binning(histogramBinning));
+  TH1* histogram_smoothed = fitFunction->createHistogram(histogramName_smoothed.data(), x, Binning(histogramBinning));
   applyVariableBinWidthFix(histogram_smoothed, xMin_fit, xMax_fit);
   double scaleFactor = integral(histogram, xMin_fit, xMax_fit)/integral(histogram_smoothed, xMin_fit, xMax_fit);
   std::cout << "integral(histogram)/integral(histogram_smoothed) = " << scaleFactor << std::endl;
@@ -354,7 +354,7 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
     
     //save Up syst. histogram
     std::string histogramName_smoothed_Eigenvec_up = std::string(histogram->GetName()).append("_smoothed_").append("_EigenVec").append(Iindex).append("_up");
-    TH1* histogram_smoothed_Eigenvec_up = fitFunction->createHistogram(histogramName_smoothed_Eigenvec_up.data(), x, Range(xMin_fit, xMax_fit), Binning(histogramBinning));
+    TH1* histogram_smoothed_Eigenvec_up = fitFunction->createHistogram(histogramName_smoothed_Eigenvec_up.data(), x, Binning(histogramBinning));
     applyVariableBinWidthFix(histogram_smoothed_Eigenvec_up, xMin_fit, xMax_fit);
     histogram_smoothed_Eigenvec_up->Scale(integral(histogram, xMin_fit, xMax_fit)/integral(histogram_smoothed_Eigenvec_up, xMin_fit, xMax_fit));
     addBinsNotFitted(histogram_smoothed_Eigenvec_up, histogram, xMin_fit, xMax_fit);
@@ -379,7 +379,7 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
     
     //save Down syst. histogram
     std::string histogramName_smoothed_Eigenvec_down = std::string(histogram->GetName()).append("_smoothed_").append("_EigenVec").append(Iindex).append("_down");    
-    TH1* histogram_smoothed_Eigenvec_down = fitFunction->createHistogram(histogramName_smoothed_Eigenvec_down.data(), x, Range(xMin_fit, xMax_fit), Binning(histogramBinning));
+    TH1* histogram_smoothed_Eigenvec_down = fitFunction->createHistogram(histogramName_smoothed_Eigenvec_down.data(), x, Binning(histogramBinning));
     applyVariableBinWidthFix(histogram_smoothed_Eigenvec_down, xMin_fit, xMax_fit);
     histogram_smoothed_Eigenvec_down->Scale(integral(histogram, xMin_fit, xMax_fit)/integral(histogram_smoothed_Eigenvec_down, xMin_fit, xMax_fit));
     addBinsNotFitted(histogram_smoothed_Eigenvec_down, histogram, xMin_fit, xMax_fit);
@@ -423,12 +423,24 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
 
     double yMax = 5.*histogram->GetMaximum();
     double yMin = 1.e-6*yMax;
+    histogram->SetStats(false);
+    histogram->SetLineColor(1);
+    histogram->SetMarkerColor(1);
+    histogram->SetMarkerStyle(20);
     histogram->SetMinimum(yMin);
     histogram->SetMaximum(yMax);
     histogram->Draw("e1p");
     histogram_smoothed->SetLineColor(2);
     histogram_smoothed->SetMarkerColor(2);
+    histogram_smoothed->SetMarkerStyle(24);
     histogram_smoothed->Draw("e1psame");
+
+    TLegend legend(0.175, 0.17, 0.425, 0.37, "", "brNDC"); 
+    legend.SetBorderSize(0);
+    legend.SetFillColor(0);    
+    legend.AddEntry(histogram, "Original", "p");
+    legend.AddEntry(histogram_smoothed, "Smoothed", "p");
+    legend.Draw();
     
     std::string outputFileName_events_plot = controlPlotFilePath;
     if ( outputFileName_events_plot.find_last_of("/") != (outputFileName_events_plot.length() - 1) ) outputFileName_events_plot.append("/");
