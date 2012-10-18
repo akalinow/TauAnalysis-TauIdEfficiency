@@ -7,9 +7,9 @@
  * \author Betty Calpas, RWTH Aachen
  *         Christian Veelken, LLR
  *
- * \version $Revision: 1.15 $
+ * \version $Revision: 1.16 $
  *
- * $Id: smoothTauIdEffTemplates.cc,v 1.15 2012/10/17 15:52:37 veelken Exp $
+ * $Id: smoothTauIdEffTemplates.cc,v 1.16 2012/10/18 09:35:17 veelken Exp $
  *
  */
 
@@ -172,13 +172,13 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
     objectsToDelete.push_back(meang);
     objectsToDelete.push_back(sigmag);
     objectsToDelete.push_back(gauss);
-  } else if (fitFunctionType == "EXP1" ){
+  } else if ( fitFunctionType == "EXP1" ) {
     // create Expo
     RooRealVar*  lambda = new RooRealVar("lambda", "slope", -1., -2., 10.);  
     fitFunction = new RooExponential("expo", "exponential PDF", x, *lambda);
     objectsToDelete.push_back(lambda);
-  } else if (fitFunctionType == "EXP2") {
-    RooAbsArg* par1= new RooRealVar("par1", "par1", -1.e-2, -2., -1.e-6);
+  } else if ( fitFunctionType == "EXP2" ) {
+    RooAbsArg* par1= new RooRealVar("par1", "par1", -1., -2., -1.e-6);
     RooAbsArg* par2= new RooRealVar("par2", "par2", 1., 0.1, 3.);
     fitFunction = new RooGenericPdf("g", "TMath::Exp(par1*TMath::Power(x,par2))", RooArgList(x, *par1, *par2));
     objectsToDelete.push_back(par1);
@@ -215,13 +215,13 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
   
   // convert template histogram to RooDataHist object in order for it to be fitted
   RooDataHist data("data", "data", x, Import(*histogram, false)); 
-    
+  
   // fit shape template by analytic function
-  RooFitResult* r = fitFunction->fitTo(data, Save(), Range(xMin_fit, xMax_fit)) ; 
+  RooFitResult* r = fitFunction->fitTo(data, Save(), Range(xMin_fit, xMax_fit)); 
   std::cout << "Fit status = " << r->status() << endl;
   std::cout << "Fit results: " << endl;
   r->Print();
-  
+
   // create smoothed output histogram
   std::string histogramName_smoothed = std::string(histogram->GetName()).append("_smoothed");
   TH1* histogram_smoothed = fitFunction->createHistogram(histogramName_smoothed.data(), x, Binning(histogramBinning));
@@ -403,8 +403,8 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
     data.plotOn(frame);
     fitFunction->plotOn(frame, LineColor(kRed));
     frame->GetYaxis()->SetTitleOffset(1.4);
-    frame->SetMinimum(1.e-6*integral(histogram, xMin_histogram, xMax_histogram));
-    frame->SetMaximum(1.e+1*integral(histogram, xMin_histogram, xMax_histogram));
+    frame->SetMinimum(1.e-8*integral(histogram, xMin_histogram, xMax_histogram));
+    frame->SetMaximum(5.*integral(histogram, xMin_histogram, xMax_histogram));
     frame->Draw();
     
     std::string outputFileName_density_plot = controlPlotFilePath;
@@ -422,7 +422,7 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
     canvas_events->SetLogy(true);
 
     double yMax = 5.*histogram->GetMaximum();
-    double yMin = 1.e-6*yMax;
+    double yMin = 1.e-8*yMax;
     histogram->SetStats(false);
     histogram->SetLineColor(1);
     histogram->SetMarkerColor(1);
