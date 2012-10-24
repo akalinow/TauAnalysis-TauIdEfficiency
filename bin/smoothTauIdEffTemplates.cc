@@ -7,9 +7,9 @@
  * \author Betty Calpas, RWTH Aachen
  *         Christian Veelken, LLR
  *
- * \version $Revision: 1.18 $
+ * \version $Revision: 1.17 $
  *
- * $Id: smoothTauIdEffTemplates.cc,v 1.18 2012/10/23 17:12:17 veelken Exp $
+ * $Id: smoothTauIdEffTemplates.cc,v 1.17 2012/10/18 15:07:25 veelken Exp $
  *
  */
 
@@ -27,7 +27,6 @@
 
 #include "RooGlobalFunc.h"
 #include "RooRealVar.h"
-#include "RooConstVar.h"
 #include "RooDataSet.h"
 #include "RooGaussian.h"
 #include "RooGenericPdf.h"
@@ -182,7 +181,6 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
     RooRealVar*  lambda = new RooRealVar("lambda", "slope", -1.1, -10., 10.);  
     fitFunction = new RooExponential("expo", "exponential PDF", x, *lambda);
     objectsToDelete.push_back(lambda);
-<<<<<<< smoothTauIdEffTemplates.cc
   } 
 
     //Betty ok for all, except for numb 5!!
@@ -198,11 +196,6 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
     else if ( fitFunctionType == "EXP3" ) {
     RooAbsArg* par1= new RooRealVar("par1", "par1", -1., -2., -1.e-6);
     RooAbsArg* par2= new RooRealVar("par2", "par2", 1., 0.1, 3.);
-=======
-  } else if ( fitFunctionType == "EXP2" ) {
-    RooAbsArg* par1 = new RooRealVar("par1", "par1", -1., -2., -1.e-6);
-    RooAbsArg* par2 = new RooRealVar("par2", "par2", 1., 0.1, 3.);
->>>>>>> 1.18
     fitFunction = new RooGenericPdf("g", "TMath::Exp(par1*TMath::Power(x,par2))", RooArgList(x, *par1, *par2));
     objectsToDelete.push_back(par1);
     objectsToDelete.push_back(par2);
@@ -217,14 +210,14 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
     RooRealVar* alpha   = 0;
     if        ( fitFunctionType == "CB1" ) {
       cbmean  = new RooRealVar("cbmean",  "cbmean",  90., 20., 180.);
-      cbsigma = new RooRealVar("cbsigma", "cbsigma", 1.,   1.,  40.); 
-      n       = new RooRealVar("n",       "n",       0.2,  0.,  10.); 
-      alpha   = new RooRealVar("alpha",   "alpha",   1.3,  0.,  10.);
+      cbsigma = new RooRealVar("cbsigma", "cbsigma", 1.,  1.,  40. ); 
+      n       = new RooRealVar("n",       "n",       0.2, 0.,  10. ); 
+      alpha   = new RooRealVar("alpha",   "alpha",   1.3, 0.,  10. );
     } else if ( fitFunctionType == "CB2" ) {
       cbmean  = new RooRealVar("cbmean",  "cbmean",  50., 20., 180.);
-      cbsigma = new RooRealVar("cbsigma", "cbsigma", 5.,   1., 200.); 
-      n       = new RooRealVar("n",       "n",       1.,   0.,  10.); 
-      alpha   = new RooRealVar("alpha",   "alpha",   1., -10.,  10.); 
+      cbsigma = new RooRealVar("cbsigma", "cbsigma", 5., 1.,  200.); 
+      n       = new RooRealVar("n",       "n",       1.,  0.,  10. ); 
+      alpha   = new RooRealVar("alpha",   "alpha",   1.,  -10.,  10. ); 
     }
     fitFunction = new RooCBShape("CristalBall", "CristalBall", x, *cbmean, *cbsigma, *alpha, *n);
     objectsToDelete.push_back(cbmean);
