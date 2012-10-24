@@ -7,9 +7,9 @@
  * \author Betty Calpas, RWTH Aachen
  *         Christian Veelken, LLR
  *
- * \version $Revision: 1.17 $
+ * \version $Revision: 1.20 $
  *
- * $Id: smoothTauIdEffTemplates.cc,v 1.17 2012/10/18 15:07:25 veelken Exp $
+ * $Id: smoothTauIdEffTemplates.cc,v 1.20 2012/10/24 10:36:14 calpas Exp $
  *
  */
 
@@ -183,16 +183,17 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
     objectsToDelete.push_back(lambda);
   } 
 
-    //Betty ok for all, except for numb 5!!
+    //Betty: modified Chris upper edge
     else if ( fitFunctionType == "EXP2" ) {
-    RooAbsArg* par1= new RooRealVar("par1", "par1", -1., -2., -1.e-6);
+    RooAbsArg* par1= new RooRealVar("par1", "par1", -1., -2., -1.e-2); // changed uper edge -1.e-6 into -1.e-2
     RooAbsArg* par2= new RooRealVar("par2", "par2", 0.4, 0.1, 3.);
     fitFunction = new RooGenericPdf("g", "TMath::Exp(par1*TMath::Power(x,par2))", RooArgList(x, *par1, *par2));
     objectsToDelete.push_back(par1);
     objectsToDelete.push_back(par2);
     } 
 
-    //Christian, doesnÂ´t work for all!! ok for numb 5
+/*
+    //Chris: doesn´t work for numb 5 histo because of uper edge too low 
     else if ( fitFunctionType == "EXP3" ) {
     RooAbsArg* par1= new RooRealVar("par1", "par1", -1., -2., -1.e-6);
     RooAbsArg* par2= new RooRealVar("par2", "par2", 1., 0.1, 3.);
@@ -200,6 +201,7 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
     objectsToDelete.push_back(par1);
     objectsToDelete.push_back(par2);
     } 
+*/
 
     else if ( fitFunctionType == "CB1" ||
 	      fitFunctionType == "CB2"   ){
