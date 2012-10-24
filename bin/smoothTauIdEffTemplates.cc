@@ -7,9 +7,9 @@
  * \author Betty Calpas, RWTH Aachen
  *         Christian Veelken, LLR
  *
- * \version $Revision: 1.17 $
+ * \version $Revision: 1.18 $
  *
- * $Id: smoothTauIdEffTemplates.cc,v 1.17 2012/10/18 15:07:25 veelken Exp $
+ * $Id: smoothTauIdEffTemplates.cc,v 1.18 2012/10/23 17:12:17 veelken Exp $
  *
  */
 
@@ -126,6 +126,10 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
 		     bool limit_xMax_fit, double xMax_fit)
 {  
   std::cout << "<smoothHistogram>:" << std::endl;
+  //cout<< "bool limit_xMin_fit: " << limit_xMin_fit << endl; //= 1
+  //cout<< "double xMin_fit: " << xMin_fit << endl; //= 200
+  //cout<< "bool limit_xMax_fit: " << limit_xMax_fit << endl; //= 1
+  //cout<< "double xMax_fit: " << xMax_fit << endl; //= 1500
 
   TAxis* xAxis = histogram->GetXaxis();
   double xMin_histogram = xAxis->GetXmin();
@@ -175,16 +179,36 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
     objectsToDelete.push_back(gauss);
   } else if ( fitFunctionType == "EXP1" ) {
     // create Expo
-    RooRealVar*  lambda = new RooRealVar("lambda", "slope", -1., -2., 10.);  
+    RooRealVar*  lambda = new RooRealVar("lambda", "slope", -1.1, -10., 10.);  
     fitFunction = new RooExponential("expo", "exponential PDF", x, *lambda);
     objectsToDelete.push_back(lambda);
-  } else if ( fitFunctionType == "EXP2" ) {
-    RooAbsArg* par1 = new RooRealVar("par1", "par1", -1., -2., -1.e-6);
-    RooAbsArg* par2 = new RooRealVar("par2", "par2", 1., 0.1, 3.);
+<<<<<<< smoothTauIdEffTemplates.cc
+  } 
+
+    //Betty ok for all, except for numb 5!!
+    else if ( fitFunctionType == "EXP2" ) {
+    RooAbsArg* par1= new RooRealVar("par1", "par1", -1., -2., -1.e-6);
+    RooAbsArg* par2= new RooRealVar("par2", "par2", 0.4, 0.1, 3.);
     fitFunction = new RooGenericPdf("g", "TMath::Exp(par1*TMath::Power(x,par2))", RooArgList(x, *par1, *par2));
     objectsToDelete.push_back(par1);
     objectsToDelete.push_back(par2);
-  } else if ( fitFunctionType == "CB1" ||
+    } 
+
+    //Christian, doesn´t work for all!! ok for numb 5
+    else if ( fitFunctionType == "EXP3" ) {
+    RooAbsArg* par1= new RooRealVar("par1", "par1", -1., -2., -1.e-6);
+    RooAbsArg* par2= new RooRealVar("par2", "par2", 1., 0.1, 3.);
+=======
+  } else if ( fitFunctionType == "EXP2" ) {
+    RooAbsArg* par1 = new RooRealVar("par1", "par1", -1., -2., -1.e-6);
+    RooAbsArg* par2 = new RooRealVar("par2", "par2", 1., 0.1, 3.);
+>>>>>>> 1.18
+    fitFunction = new RooGenericPdf("g", "TMath::Exp(par1*TMath::Power(x,par2))", RooArgList(x, *par1, *par2));
+    objectsToDelete.push_back(par1);
+    objectsToDelete.push_back(par2);
+    } 
+
+    else if ( fitFunctionType == "CB1" ||
 	      fitFunctionType == "CB2"   ){
     // create Crystal-ball function
     RooRealVar* cbmean  = 0;
