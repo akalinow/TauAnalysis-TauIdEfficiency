@@ -2,7 +2,7 @@ import FWCore.ParameterSet.Config as cms
 
 #--------------------------------------------------------------------------------
 # select pp collision events in "good" runs
-# ( following recommendations given at https://twiki.cern.ch/twiki/bin/view/CMS/Collisions2010Recipes )
+# (following recommendations given at https://twiki.cern.ch/twiki/bin/view/CMS/Collisions2010Recipes )
 #--------------------------------------------------------------------------------
 
 # veto events not recorded during periods of "physics declared"
@@ -41,7 +41,7 @@ scrapingBeamsFilter = cms.EDFilter("FilterOutScraping",
 )
 
 # veto events without a "good" primary vertex
-# ( see http://indico.cern.ch/getFile.py/access?subContId=0&contribId=2&resId=0&materialId=slides&confId=83613 )
+# (see http://indico.cern.ch/getFile.py/access?subContId=0&contribId=2&resId=0&materialId=slides&confId=83613 )
 primaryVertexFilter = cms.EDFilter("GoodVertexFilter",
     vertexCollection = cms.InputTag('offlinePrimaryVertices'),
     minimumNDOF = cms.uint32(4),
@@ -51,7 +51,7 @@ primaryVertexFilter = cms.EDFilter("GoodVertexFilter",
 
 #--------------------------------------------------------------------------------
 # add MET cleaning filters
-# (cf. https://twiki.cern.ch/twiki/bin/view/CMS/MissingETOptionalFilters)
+# (cf. https://twiki.cern.ch/twiki/bin/view/CMS/MissingETOptionalFilters )
 #--------------------------------------------------------------------------------
 
 # veto events with halo muons
@@ -62,9 +62,22 @@ primaryVertexFilter = cms.EDFilter("GoodVertexFilter",
 from CommonTools.RecoAlgos.HBHENoiseFilter_cfi import HBHENoiseFilter
 
 # veto events in which HCAL laser calibration fired
-##from RecoMET.METFilters.hcalLaserEventFilter_cfi import hcalLaserEventFilter
-##hcalLaserEventFilter.vetoByRunEventNumber=cms.untracked.bool(False)
-##hcalLaserEventFilter.vetoByHBHEOccupancy=cms.untracked.bool(True)
+from RecoMET.METFilters.hcalLaserEventFilter_cfi import hcalLaserEventFilter
+hcalLaserEventFilter.vetoByRunEventNumber=cms.untracked.bool(False)
+hcalLaserEventFilter.vetoByHBHEOccupancy=cms.untracked.bool(True)
+
+# CV: reject HCAL laser events based on run+event numbers, following instructions on
+#      https://twiki.cern.ch/twiki/bin/view/CMS/MissingETOptionalFilters#HCAL_laser_events_updated
+#    (updated recipe from November 2012)
+from EventFilter.HcalRawToDigi.hcallasereventfilter2012_cfi import hcallasereventfilter2012
+import string
+import os
+import gzip
+hcalLaserEventsFile = gzip.GzipFile(os.getenv('CMSSW_BASE') + "/src/EventFilter/HcalRawToDigi/data/AllBadHCALLaser.txt.gz")
+hcalLaserEventList = hcalLaserEventsFile.readlines()
+for hcalLaserEvent in hcalLaserEventList:
+    hcallasereventfilter2012.EventList.append(string.strip(hcalLaserEvent))
+print "Total number of HCAL laser events to be vetoed = %i" % len(hcallasereventfilter2012.EventList)
 
 # veto events with significant energy deposits close to dead/masked ECAL cells
 ##from RecoMET.METFilters.EcalDeadCellTriggerPrimitiveFilter_cfi import EcalDeadCellTriggerPrimitiveFilter
@@ -82,14 +95,19 @@ from CommonTools.RecoAlgos.HBHENoiseFilter_cfi import HBHENoiseFilter
 # veto events with anomalous supercrystals in ECAL endcap
 ##from RecoMET.METFilters.eeBadScFilter_cfi import eeBadScFilter
 
+# veto events with anomalous ECAL laser corrections
+from RecoMET.METFilters.ecalLaserCorrFilter_cfi import ecalLaserCorrFilter
+
 dataQualityFilters = cms.Sequence(
     hltPhysicsDeclared
    * dcsstatus
    * scrapingBeamsFilter
    * primaryVertexFilter
    ##* CSCTightHaloFilter
-   * HBHENoiseFilter
-   ##* hcalLaserEventFilter
+   ##* HBHENoiseFilter
+   * hcalLaserEventFilter
+   * hcallasereventfilter2012
    ##* goodVerticesForTrackingFailureFilter * trackingFailureFilter
    ##* eeBadScFilter
+   * ecalLaserCorrFilter
 )    
