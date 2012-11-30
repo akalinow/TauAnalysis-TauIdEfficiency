@@ -7,9 +7,9 @@
  * \author Betty Calpas, RWTH Aachen
  *         Christian Veelken, LLR
  *
- * \version $Revision: 1.20 $
+ * \version $Revision: 1.21 $
  *
- * $Id: smoothTauIdEffTemplates.cc,v 1.20 2012/10/24 10:36:14 calpas Exp $
+ * $Id: smoothTauIdEffTemplates.cc,v 1.21 2012/10/24 12:21:11 calpas Exp $
  *
  */
 
@@ -193,7 +193,7 @@ void smoothHistogram(TH1* histogram, const std::string& fitFunctionType,
     } 
 
 /*
-    //Chris: doesn´t work for numb 5 histo because of uper edge too low 
+    //Chris: does not work for numb 5 histo because of uper edge too low 
     else if ( fitFunctionType == "EXP3" ) {
     RooAbsArg* par1= new RooRealVar("par1", "par1", -1., -2., -1.e-6);
     RooAbsArg* par2= new RooRealVar("par2", "par2", 1., 0.1, 3.);
