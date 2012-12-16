@@ -8,6 +8,7 @@ import re
 import time
 import itertools
 import TauAnalysis.Configuration.tools.castor as castor
+import TauAnalysis.Configuration.tools.eos as eos
 
 # Where to store the files
 LOCAL_DIRECTORY = [
@@ -18,10 +19,14 @@ LOCAL_DIRECTORY = [
 ]
 
 # How to identify castor files
-_CASTOR_MATCHER = re.compile("/castor/cern.ch")
+_CASTOR_MATCHER = re.compile("/castor/cern.ch/")
+# How to identify eos files
+_EOS_MATCHER = re.compile("/store/")
 
 def is_on_castor(file):
     return file.find("rfio") != -1
+def is_on_eos(file):
+    return file.find("/store/") != -1
 
 def clean_name(file):
     return file.replace("rfio:", "")
@@ -38,7 +43,13 @@ def local_version(castor_file, local_directory = LOCAL_DIRECTORY):
     # Otherwise return last restul
     result = None
     for dir in local_directory:
-        local_file = _CASTOR_MATCHER.sub(dir, castor_file)
+        local_file = None
+        if is_on_castor(castor_file):
+            local_file = _CASTOR_MATCHER.sub(dir, castor_file)
+        elif is_on_eos(castor_file):
+            local_file = _EOS_MATCHER.sub(dir, castor_file)
+        else:
+            raise ValueError("Invalid fileName = %s !!" % castor_file)
         if os.path.exists(local_file):
             return local_file
         result = local_file
@@ -54,8 +65,14 @@ def local_version_current(castor_file, local_directory = LOCAL_DIRECTORY):
     #local_mtime = time.ctime(local_stat.st_mtime)
     local_mtime = time.localtime(local_stat.st_mtime)
     local_size = local_stat.st_size
-    # This call is memoized
-    castor_stat = list(castor.nslsl(castor_file))[0]
+    # This call is memorized
+    castor_stat = None
+    if is_on_castor(castor_file):
+        castor_stat = list(castor.nslsl(castor_file))[0]
+    elif is_on_eos(castor_file):
+        castor_stat = list(eos.lsl(castor_file))[0]
+    else:
+        raise ValueError("Invalid fileName = %s !!" % castor_file)
     castor_size = castor_stat["size"]
     #castor_mtime = time.mktime(
     #    unixtime_from_timestamp(castor_stat["Last modify"]))
@@ -105,7 +122,12 @@ class CopyWorker(threading.Thread):
         if not os.path.isdir(local_dirname):
             print "Creating local directory %s" % local_dirname
             os.makedirs(local_dirname, 0777)
-        command = ['nice', '--adjustment=15', 'rfcp', castor_file, local_path]
+        if is_on_castor(castor_file):
+            command = ['nice', '--adjustment=15', 'rfcp', castor_file, local_path]
+        elif is_on_eos(castor_file):
+            command = ['nice', '--adjustment=15', 'cmsStage', castor_file, local_path]
+        else:
+            raise ValueError("Invalid fileName = %s !!" % castor_file)
         # CV: check if users run certain interactive processes on local machine;
         #     postpone starting 'rfcp' command in case they do
         jobsToWaitFor = {
@@ -199,24 +221,31 @@ def needs_local_copy(castor_files, local_directory = LOCAL_DIRECTORY, verbose=Fa
     ''' Yield files from castor files that aren't current on local disk'''
     for file in castor_files:
         if not local_version_current(file, local_directory):
-            commandLine = 'stager_get -M %s -U myfiles' % file
-            sys.stdout.write("%s\n" % commandLine)
-            args = shlex.split(commandLine)
-            retVal = subprocess.Popen(args, stdout = subprocess.PIPE)
-            retVal.wait()
-            # CV: wait one second after each 'stager_get' command in order to avoid
-            #     generating too many castor request in too short a time
-            #    (limitation = 3000 requests per 15 minutes)
-            time.sleep(1)
-            yield file
-        ##else:
-        ##    print "file %s already exists locally --> skipping !!" % file
+            if is_on_castor(file):
+                commandLine = 'stager_get -M %s -U myfiles' % file
+                sys.stdout.write("%s\n" % commandLine)
+                args = shlex.split(commandLine)
+                retVal = subprocess.Popen(args, stdout = subprocess.PIPE)
+                retVal.wait()
+                # CV: wait one second after each 'stager_get' command in order to avoid
+                #     generating too many castor request in too short a time
+                #    (limitation = 3000 requests per 15 minutes)
+                time.sleep(1)
+                yield file
+            elif is_on_eos(file):
+                yield file
+            ##else:
+            ##    print "file %s already exists locally --> skipping !!" % file
 
 def expand_file_list(fileEntries):
      for fileEntry in fileEntries:
          if fileEntry.find("*") != -1:
-             for file in castor.nslsl(clean_name(fileEntry)):
-                 yield "rfio:" + file['path']
+             if is_on_castor(fileEntry):
+                 for file in castor.nslsl(clean_name(fileEntry)):
+                     yield "rfio:" + file['path']
+             elif is_on_eos(fileEntry):
+                 for file in eos.lsl(clean_name(fileEntry)):
+                     yield file['path']
          else:
              yield fileEntry
 
@@ -224,7 +253,7 @@ def castor_files_in(sample):
     ''' Copy the files associated with this sample to the local drive '''
     for subsample in sample.subsamples:
         for file in expand_file_list(subsample.files):
-            if is_on_castor(file):
+            if is_on_castor(file) or is_on_eos(file):
                 yield clean_name(file)
 
 def mirror_sample(sample, local_directory = LOCAL_DIRECTORY, max_jobs=10):
@@ -252,7 +281,7 @@ def update_sample_to_use_local_files(sample, local_directory = LOCAL_DIRECTORY, 
             if tiny_mode:
                 if count > 1:
                     break
-            if is_on_castor(input_file):
+            if is_on_castor(input_file) or is_on_eos(input_file):
                 #print "is on castor"
                 # strip rfio:
                 clean_file = clean_name(input_file)
