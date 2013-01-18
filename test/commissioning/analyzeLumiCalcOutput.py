@@ -8,7 +8,7 @@ from collections import defaultdict
 print("<analyzeLumiCalcOutput>:")
 
 if len(sys.argv) != 2:
-    raise ValueError("Usage: findBadCastorFiles.py fileName")
+    raise ValueError("Usage: analyzeLumiCalcOutput.py fileName")
 
 inputFileName = sys.argv[1]
 
@@ -67,4 +67,4 @@ print(" effLumi = %f /fb" % effLumiSum)
 print("--> average Prescale factor = %f" % (recLumiSum/effLumiSum))
 print("hltPaths:")
 for hltPathName, effLumiSum_hltPath in hltPaths.items():
-    print(" %s: %f /fb" % (hltPathName, effLumiSum_hltPath)) 
+    print(" %s: %f %s" % (hltPathName, effLumiSum_hltPath*units['/fb'], "/fb")) 
