@@ -41,12 +41,16 @@ print " firstRun = %i " % firstRun
 lastRun = int(runRange_match.group('lastRun'))
 print " lastRun = %i " % lastRun
 
-outputFileName_csv = "my" + os.path.basename(inputFileName_JSON).replace(".txt", "_%s.csv" % HLT_path)
-outputFileName_JSONforHLTpath =  "my" + os.path.basename(inputFileName_JSON).replace(".txt", "_%s.txt" % HLT_path)
+workingFilePath = "/data1/veelken/tmp/lumiCalc"
+
+outputFileName_csv = os.path.join(workingFilePath, "my" + os.path.basename(inputFileName_JSON).replace(".txt", "_%s.csv" % HLT_path))
+outputFileName_JSONforHLTpath =  os.path.join(workingFilePath, "my" + os.path.basename(inputFileName_JSON).replace(".txt", "_%s.txt" % HLT_path))
 outputFileName_histogram3d = "expPUpoissonMean_runs%ito%i_%s.root" % (firstRun, lastRun, HLT_path)
 outputFileName_histogram3d = outputFileName_histogram3d.replace("_HLT_", "_")
+outputFileName_histogram3d = outputFileName_histogram3d.replace("_v*", "")
 outputFileName_histogram1d = "expPUpoissonDist_runs%ito%i_%s.root" % (firstRun, lastRun, HLT_path)
 outputFileName_histogram1d = outputFileName_histogram1d.replace("_HLT_", "_")
+outputFileName_histogram1d = outputFileName_histogram1d.replace("_v*", "")
 
 def runCommand(commandLine):
     sys.stdout.write("%s\n" % commandLine)
@@ -56,21 +60,21 @@ def runCommand(commandLine):
     return retVal
 
 commandLine_lumiCalc2 = \
-  "lumiCalc2.py lumibyls -i %s --hltpath %s -o %s" % \
+  'lumiCalc2.py lumibyls -i %s --hltpath "%s" -o "%s"' % \
     (inputFileName_JSON, HLT_path, outputFileName_csv)
 runCommand(commandLine_lumiCalc2)
 
 commandLine_pileupReCalc_HLTpath = \
-  "pileupReCalc_HLTpaths.py -i %s --inputLumiJSON %s -o %s" % \
+  'pileupReCalc_HLTpaths.py -i %s --inputLumiJSON %s -o "%s"' % \
     (outputFileName_csv, inputFileName_lumiJSON, outputFileName_JSONforHLTpath)
 runCommand(commandLine_pileupReCalc_HLTpath)
 
 commandLine_pileupCalc3d = \
-  "pileupCalc.py -i %s --inputLumiJSON %s --calcMode true --minBiasXsec 69400 --maxPileupBin 60 --numPileupBins 600 %s" % \
+  'pileupCalc.py -i %s --inputLumiJSON "%s" --calcMode true --minBiasXsec 69400 --maxPileupBin 60 --numPileupBins 600 "%s"' % \
     (inputFileName_JSON, outputFileName_JSONforHLTpath, outputFileName_histogram3d)
 runCommand(commandLine_pileupCalc3d)
 
 commandLine_pileupCalc1d = \
-  "pileupCalc.py -i %s --inputLumiJSON %s --calcMode observed --minBiasXsec 69400 --maxPileupBin 60 --numPileupBins 60 %s" % \
+  'pileupCalc.py -i %s --inputLumiJSON "%s" --calcMode observed --minBiasXsec 69400 --maxPileupBin 60 --numPileupBins 60 "%s"' % \
     (inputFileName_JSON, outputFileName_JSONforHLTpath, outputFileName_histogram1d)
 runCommand(commandLine_pileupCalc1d)

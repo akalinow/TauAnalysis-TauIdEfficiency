@@ -164,7 +164,7 @@ bool PATPFTauSelectorForTauIdEff::filter(edm::Event& evt, const edm::EventSetup&
     for ( std::vector<reco::PFCandidatePtr>::const_iterator pfChargedJetConstituent = pfChargedJetConstituents.begin();
 	  pfChargedJetConstituent != pfChargedJetConstituents.end(); ++pfChargedJetConstituent ) {
       if ( TMath::Abs((*pfChargedJetConstituent)->charge()) > 0.5 ) ++numTracks;
-      if ( trackQualityCuts_->filter(**pfChargedJetConstituent) ) {
+      if ( trackQualityCuts_->filterCand(**pfChargedJetConstituent) ) {
 	++numSelTracks;
 	selPFChargedHadrons.push_back(*pfChargedJetConstituent);
       }

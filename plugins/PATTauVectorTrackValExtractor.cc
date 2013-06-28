@@ -55,10 +55,10 @@ const reco::Track* PATTauVectorTrackValExtractor::getTrack_pfTau(const pat::Tau&
   if ( collection_ == kLeadTrack ) {
     if ( tau.leadPFChargedHadrCand().isNonnull() ) track = tau.leadPFChargedHadrCand()->trackRef().get();
   } else if ( collection_ == kSignalConeTracks ) {
-    const reco::PFCandidateRefVector& tauSignalTracks = tau.signalPFChargedHadrCands();
+    const std::vector<reco::PFCandidatePtr>& tauSignalTracks = tau.signalPFChargedHadrCands();
     if ( index_ < tauSignalTracks.size() ) track = tauSignalTracks[index_]->trackRef().get();
   } else if ( collection_ == kSignalConeTracks ) {
-    const reco::PFCandidateRefVector& tauIsolationTracks = tau.isolationPFChargedHadrCands();
+    const std::vector<reco::PFCandidatePtr>& tauIsolationTracks = tau.isolationPFChargedHadrCands();
     if ( index_ < tauIsolationTracks.size() ) track = tauIsolationTracks[index_]->trackRef().get();
   } 
 

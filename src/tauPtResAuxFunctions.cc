@@ -48,8 +48,8 @@ bool isTauSignalPFCandidate(const pat::Tau& patTau, const reco::PFCandidatePtr& 
 {
   bool retVal = false;
   
-  const reco::PFCandidateRefVector& signalPFCandidates = patTau.signalPFCands();
-  for ( reco::PFCandidateRefVector::const_iterator signalPFCandidate = signalPFCandidates.begin();
+  const std::vector<reco::PFCandidatePtr>& signalPFCandidates = patTau.signalPFCands();
+  for ( std::vector<reco::PFCandidatePtr>::const_iterator signalPFCandidate = signalPFCandidates.begin();
 	signalPFCandidate != signalPFCandidates.end(); ++signalPFCandidate ) {
     if ( pfJetConstituent.key() == signalPFCandidate->key() ) retVal = true;
   }
@@ -126,7 +126,7 @@ double getTauPtManCorr(const pat::Tau& patTau, const reco::Vertex& vertex,
     if ( track.isNonnull() ) {
       double trackPt = track->pt();
       double trackPtErr = track->ptError();
-      if ( qualityCuts.filter(**pfJetConstituent) && 
+      if ( qualityCuts.filterCand(**pfJetConstituent) && 
 	   trackPtErr < (0.20*trackPt) && track->normalizedChi2() < 5.0 && track->hitPattern().numberOfValidPixelHits() >= 1 &&
 	   (trackPt - 3.*trackPtErr) > (*pfJetConstituent)->pt() && trackPt < (3.*patTau.pfJetRef()->pt()) ) {
 	if ( track->p() > leadTrackMom ) {
@@ -165,8 +165,8 @@ void printPatTau(const pat::Tau& patTau)
 	    << " eta = " << patTau.eta() << ", phi = " << patTau.phi() << std::endl;
 
   std::cout << "'signal' PFCandidates:" << std::endl;
-  const reco::PFCandidateRefVector& signalPFCandidates = patTau.signalPFCands();
-  for ( reco::PFCandidateRefVector::const_iterator signalPFCandidate = signalPFCandidates.begin();
+  const std::vector<reco::PFCandidatePtr>& signalPFCandidates = patTau.signalPFCands();
+  for ( std::vector<reco::PFCandidatePtr>::const_iterator signalPFCandidate = signalPFCandidates.begin();
 	signalPFCandidate != signalPFCandidates.end(); ++signalPFCandidate ) {
     std::cout << getPFCandidateType(**signalPFCandidate) << " #" << signalPFCandidate->key() << ":"  
 	      << " pt = " << (*signalPFCandidate)->pt() << "," 
@@ -174,8 +174,8 @@ void printPatTau(const pat::Tau& patTau)
   }
   
   std::cout << "'isolation' PFCandidates:" << std::endl;
-  const reco::PFCandidateRefVector& isolationPFCandidates = patTau.isolationPFCands();
-  for ( reco::PFCandidateRefVector::const_iterator isolationPFCandidate = isolationPFCandidates.begin();
+  const std::vector<reco::PFCandidatePtr>& isolationPFCandidates = patTau.isolationPFCands();
+  for ( std::vector<reco::PFCandidatePtr>::const_iterator isolationPFCandidate = isolationPFCandidates.begin();
 	isolationPFCandidate != isolationPFCandidates.end(); ++isolationPFCandidate ) {
     std::cout << getPFCandidateType(**isolationPFCandidate) << " #" << isolationPFCandidate->key() << ":" 
 	      << " pt = " << (*isolationPFCandidate)->pt() << "," 

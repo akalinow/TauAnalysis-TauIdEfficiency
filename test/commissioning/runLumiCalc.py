@@ -6,12 +6,13 @@ hltPaths = [
     #'HLT_Mu8_v*',
     #'HLT_L1ETM30_v*',
     #'HLT_L1SingleEG12_*',
-    #'HLT_Mu15_v*',    # for QCD muon enriched 
+    #'HLT_Mu15_eta2p1_v*', # for QCD muon enriched
+    #'HLT_Mu17_v*', # for QCD muon enriched
     #'HLT_IsoMu17_v*', # for W --> mu nu, Z --> mu+ mu- and Tau id. efficiency
     #'HLT_IsoMu24_v*',
     #'HLT_Mu13_Mu8_v*',
     #'HLT_DoubleMu11_Acoplanarity03_v3',
-    #'HLT_Mu17_Mu8_v*',
+    'HLT_Mu17_Mu8_v*',
     #'HLT_Mu15_eta2p1_v*',
     #'HLT_Mu24_eta2p1_v*',
     #'HLT_Mu30_eta2p1_v*',
@@ -48,13 +49,16 @@ hltPaths = [
     #'HLT_IsoMu17_eta2p1_LooseIsoPFTau20_v*',
     #'HLT_Ele20_CaloIdVT_CaloIsoRhoT_TrkIdT_TrkIsoT_LooseIsoPFTau20_v*',
     #'HLT_Ele22_eta2p1_WP90Rho_LooseIsoPFTau20_v*',
-    'HLT_IsoMu8_eta2p1_LooseIsoPFTau20_L1ETM26_v*',
-    'HLT_Ele13_eta2p1_WP90Rho_LooseIsoPFTau20_L1ETM36_v*'
+    #'HLT_IsoMu8_eta2p1_LooseIsoPFTau20_L1ETM26_v*',
+    #'HLT_Ele13_eta2p1_WP90Rho_LooseIsoPFTau20_L1ETM36_v*'
+    #'HLT_IsoMu8_eta2p1_LooseIsoPFTau20_v*',
+    #'HLT_Ele13_eta2p1_WP90Rho_LooseIsoPFTau20_v*'
 ]
 
 l1Seeds = {
-    'HLT_IsoMu8_eta2p1_LooseIsoPFTau20_L1ETM26_v*'        : 'L1_Mu7er_ETM*',
-    'HLT_Ele13_eta2p1_WP90Rho_LooseIsoPFTau20_L1ETM36_v*' : 'L1_IsoEG12er_ETM*'
+    #'HLT_IsoMu8_eta2p1_LooseIsoPFTau20_L1ETM26_v*'        : 'L1_Mu7er_ETM*',
+    #'HLT_Ele13_eta2p1_WP90Rho_LooseIsoPFTau20_L1ETM36_v*' : 'L1_IsoEG12er_ETM*'
+    'HLT_Mu17_Mu8_v*' : 'L1_DoubleMu_10_Open'
 }
 
 jsonFiles = {
@@ -63,6 +67,7 @@ jsonFiles = {
     #'2012RunCv2' : '/afs/cern.ch/user/v/veelken/scratch0/CMSSW_5_3_3_patch2/src/TauAnalysis/TauIdEfficiency/test/commissioning/Cert_198934-202459_8TeV_PromptReco_Collisions12_runCv2_JSON.txt',
     #'2012RunABCforHCP' : '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Prompt/Cert_190456-203853_8TeV_PromptReco_Collisions12_JSON_v2.txt'
     '2012RunABCD' : '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Prompt/Cert_190456-208686_8TeV_PromptReco_Collisions12_JSON.txt'
+    #'2012RunD' : '/afs/cern.ch/user/v/veelken/scratch0/CMSSW_5_3_3_patch2/src/TauAnalysis/TauIdEfficiency/test/commissioning/Cert_203894-208686_8TeV_PromptReco_Collisions12_JSON.txt'
 }
 
 workingFilePath = "/data1/veelken/tmp/lumiCalc"
@@ -90,7 +95,7 @@ for hltPath in hltPaths:
               '%s trgbyls --name "%s" -i %s' % (executable_lumiContext, l1Seeds[hltPath], jsonFile)
             MakeFile_dict[hltPath][jsonFileName]['lumiCalc_byLS_outputFileName'] = os.path.join(workingFilePath, 'lumiCalc_%s_%s_byLS.out' % (hltPath_abbr, jsonFileName))              
             MakeFile_dict[hltPath][jsonFileName]['lumiCalc_byLS_command'] = \
-              '%s lumibyls --hltpath "%s" -i %s' % (executable_lumiCalc, hltPath, jsonFile)
+              '%s lumibyls --minBiasXsec 69400 --hltpath "%s" -i %s' % (executable_lumiCalc, hltPath, jsonFile)
 
 def make_MakeFile_vstring(list_of_strings):
     retVal = ""
