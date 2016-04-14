@@ -1,33 +1,10 @@
-<export>
-</export>
-<library   name="TauAnalysisTauIdEfficiency_plugins" file="*.cc">
-  <use   name="FWCore/Framework"/>
-  <use   name="FWCore/MessageLogger"/>
-  <use   name="FWCore/PluginManager"/>
-  <use   name="FWCore/ParameterSet"/>
-  <use   name="CommonTools/Utils"/>
-  <use   name="CondFormats/PhysicsToolsObjects"/>
-  <use   name="DataFormats/BeamSpot"/>
-  <use   name="DataFormats/Candidate"/>
-  <use   name="DataFormats/Common"/>
-  <use   name="DataFormats/Math"/>
-  <use   name="DataFormats/TauReco"/>
-  <use   name="DataFormats/VertexReco"/>
-  <use   name="SimDataFormats/GeneratorProducts"/>
-  <use   name="SimDataFormats/PileupSummaryInfo"/>
-  <use   name="JetMETCorrections/Objects"/>
-  <use   name="PhysicsTools/JetMCUtils"/>
-  <use   name="PhysicsTools/MVAComputer"/>
-  <use   name="PhysicsTools/MVATrainer"/>
-  <use   name="PhysicsTools/SelectorUtils"/>
-  <use   name="PhysicsTools/PatUtils"/>
-  <use   name="RecoTauTag/RecoTau"/>
-  <use   name="TauAnalysis/BgEstimationTools"/>
-  <use   name="TauAnalysis/CandidateTools"/>
-  <use   name="TauAnalysis/Core"/>
-  <use   name="TauAnalysis/DQMTools"/>
-  <use   name="TauAnalysis/GenSimTools"/>
-  <use   name="TauAnalysis/RecoTools"/>
-  <use   name="TauAnalysis/TauIdEfficiency"/>
-  <use   name="rootgraphics"/>
-</library>
+<library   name="TauAnalysisTauIdEfficiencyPlugins" file="*.cc">
+
+<use   name="FWCore/Framework"/>
+<use   name="FWCore/ParameterSet"/>
+<use   name="FWCore/PluginManager"/>
+<use   name="DataFormats/PatCandidates"/>
+<use   name="CommonTools/Utils"/>
+
+<flags   EDM_PLUGIN="1"/>  
+</library>  
