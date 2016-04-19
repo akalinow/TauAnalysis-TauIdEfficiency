@@ -80,7 +80,9 @@ PFTauMerger::produce(edm::Event & iEvent, const edm::EventSetup & iSetup) {
 	    std::vector<pat::Tau::IdPair> aID;
 	    aID.push_back(pat::Tau::IdPair("againstMuonTight3",0));
 	    aID.push_back(pat::Tau::IdPair("againstMuonLoose3",0));
-	    aID.push_back(pat::Tau::IdPair("decayModeFindingNewDMs",0));	    
+	    aID.push_back(pat::Tau::IdPair("decayModeFindingNewDMs",0));
+	    aID.push_back(pat::Tau::IdPair("decayModeFinding",0));
+	    aID.push_back(pat::Tau::IdPair("byLooseCombinedIsolationDeltaBetaCorr3Hits",0));	    
 	    aPatTau.setTauIDs(aID);
             out->push_back(aPatTau);
         }
