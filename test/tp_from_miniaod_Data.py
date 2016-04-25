@@ -75,7 +75,7 @@ process.load("MuonAnalysis.TagAndProbe.common_modules_cff")
 process.tagMuons = cms.EDFilter("PATMuonSelector",
     src = cms.InputTag("slimmedMuons"),
     cut = cms.string("pt > 25 && abs(eta)<2.1 && "+MuonIDFlags.Tight2012.value()+
-                     " && pfIsolationR04().sumChargedHadronPt/pt < 0.1"),
+                     "&& (pfIsolationR03().sumChargedHadronPt + max(pfIsolationR03().sumNeutralHadronEt + pfIsolationR03().sumPhotonEt - 0.5 * pfIsolationR03().sumPUPt, 0.0))/pt() < 0.1"),
 )
 
 process.oneTag  = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("tagMuons"), minNumber = cms.uint32(1))
