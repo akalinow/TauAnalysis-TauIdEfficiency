@@ -13,7 +13,7 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 10000
 process.source = cms.Source("PoolSource", 
     fileNames = cms.untracked.vstring(),
 )
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(20000) )    
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100000) )    
 
 process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
 process.load('Configuration.StandardSequences.MagneticField_cff')
@@ -22,18 +22,19 @@ process.load("Configuration.StandardSequences.Reconstruction_cff")
 
 import os
 if "CMSSW_7_6_" in os.environ['CMSSW_VERSION']:
-    process.GlobalTag.globaltag = cms.string('76X_dataRun2_v15')
+    process.GlobalTag.globaltag = cms.string('76X_mcRun2_asymptotic_v12')
     process.source.fileNames = [
-        'file:///home/akalinow/scratch/CMS/TauID/Data/SingleMuon/Run2015D-16Dec2015-v1/MINIAOD/1/00006301-CAA8-E511-AD39-549F35AD8BC9.root',
+        'file:///home/akalinow/scratch/CMS/TauID/Data/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIIFall15MiniAODv2-PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v1/MINIAODSIM/0C4FAF25-DAC7-E511-A535-BCAEC54E98B3.root'
     ]
 else: raise RuntimeError, "Unknown CMSSW version %s" % os.environ['CMSSW_VERSION']
 
-dataPath = "/scratch_local/akalinow/CMS/TauID/Data/SingleMuon/Run2015D-16Dec2015-v1/MINIAOD"
+dataPath = "/home/akalinow/scratch/CMS/TauID/Data/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIIFall15MiniAODv2-PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v1/MINIAODSIM"
 command = "ls "+dataPath+"/*.root"
 fileList = commands.getoutput(command).split("\n")   
 process.source.fileNames =  cms.untracked.vstring()
 for aFile in fileList:
     process.source.fileNames.append('file:'+aFile)
+
 
 ## SELECT WHAT DATASET YOU'RE RUNNING ON
 TRIGGER="SingleMu"
@@ -59,7 +60,7 @@ process.triggerResultsFilter.hltResults = cms.InputTag("TriggerResults","","HLT"
 process.metSelector = cms.EDFilter("PATMETSelector",
     src = cms.InputTag("slimmedMETs"),
     cut = cms.string("pt < 25"),
-    filter = cms.bool(True),
+    filter =  cms.bool(True),                                
 )
 process.fastFilter     = cms.Sequence(process.goodVertexFilter + process.triggerResultsFilter + process.metSelector)
 
@@ -120,12 +121,30 @@ process.tpPairs = cms.EDProducer("CandViewShallowCloneCombiner",
 )
 process.onePair = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("tpPairs"), minNumber = cms.uint32(1))
 
-process.pairMETPtBalanceModule = cms.EDProducer("CandViewShallowCloneCombiner",
-    decay = cms.string('tpPairs slimmedMETs'),
-    cut = cms.string('50 < mass < 120'),
-)
+process.goodGenMuons.src = cms.InputTag("prunedGenParticles")
 
 process.njets30Module.objects = cms.InputTag("slimmedJets")
+
+process.pairMETPtBalanceModule = cms.EDProducer("CandMETPairPtBalance", 
+    pairs   = cms.InputTag("tpPairs"),
+    objects = cms.InputTag("slimmedMETs"),
+    objectSelection = cms.string(""), 
+    minTagObjDR   = cms.double(0.0),
+    minProbeObjDR = cms.double(0.0),
+)
+
+process.tagMuonsMCMatch = cms.EDProducer("MCMatcher", # cut on deltaR, deltaPt/Pt; pick best by deltaR
+    src     = cms.InputTag("tagMuons"), # RECO objects to match
+    matched = cms.InputTag("goodGenMuons"),   # mc-truth particle collection
+    mcPdgId     = cms.vint32(13),  # one or more PDG ID (13 = muon); absolute values (see below)
+    checkCharge = cms.bool(False), # True = require RECO and MC objects to have the same charge
+    mcStatus = cms.vint32(1),      # PYTHIA status code (1 = stable, 2 = shower, 3 = hard scattering)
+    maxDeltaR = cms.double(0.1),   # Minimum deltaR for the match
+    maxDPtRel = cms.double(0.5),   # Minimum deltaPt/Pt for the match
+    resolveAmbiguities = cms.bool(True),    # Forbid two RECO objects to match to the same GEN object
+    resolveByMatchQuality = cms.bool(True), # False = just match input in order; True = pick lowest deltaR pair first
+)
+process.probeMuonsMCMatch = process.tagMuonsMCMatch.clone(src = "probeTaus", maxDeltaR = 0.1, maxDPtRel = 1.0, resolveAmbiguities = False,  resolveByMatchQuality = False)
 
 process.tpTree = cms.EDAnalyzer("TagProbeFitTreeProducer",
     # choice of tag and probe pairs, and arbitration
@@ -151,7 +170,8 @@ process.tpTree = cms.EDAnalyzer("TagProbeFitTreeProducer",
         dz      = cms.string("daughter(0).vz - daughter(1).vz"),
         pt      = cms.string("pt"), 
         rapidity = cms.string("rapidity"),
-        deltaR   = cms.string("deltaR(daughter(0).eta, daughter(0).phi, daughter(1).eta, daughter(1).phi)"), 
+        deltaR   = cms.string("deltaR(daughter(0).eta, daughter(0).phi, daughter(1).eta, daughter(1).phi)"),
+        deltaPhi   = cms.string("daughter(0).phi - daughter(1).phi"), 
         probeMultiplicity = cms.InputTag("probeMultiplicity"),
         nJets30 = cms.InputTag("njets30Module"),
         METPtBalance = cms.InputTag("pairMETPtBalanceModule"),
@@ -159,18 +179,24 @@ process.tpTree = cms.EDAnalyzer("TagProbeFitTreeProducer",
     pairFlags = cms.PSet(
         BestZ = cms.InputTag("bestPairByZMass"),
     ),
-    isMC           = cms.bool(False),
-    addRunLumiInfo = cms.bool(False),
+    isMC           = cms.bool(True),
+    addRunLumiInfo = cms.bool(True),
+    tagMatches       = cms.InputTag("tagMuonsMCMatch"),
+    probeMatches     = cms.InputTag("probeMuonsMCMatch"),
+    motherPdgId      = cms.vint32(23),
+    makeMCUnbiasTree       = cms.bool(False), 
+    checkMotherInUnbiasEff = cms.bool(True),
 )
 
 process.nverticesModule.objects = cms.InputTag("offlineSlimmedPrimaryVertices")
 
 process.tnpSimpleSequence = cms.Sequence(
-    process.tagMuons +
+    process.goodGenMuons +
+    process.tagMuons*process.tagMuonsMCMatch +  
     process.oneTag     +
     process.tagTriggerMatchModule + 
     process.mtSelector*process.mtFilter +
-    process.probeTaus +
+    process.probeTaus*process.probeMuonsMCMatch +
     process.tpPairs    +
     process.onePair    +
     process.nverticesModule +
@@ -192,4 +218,4 @@ process.schedule = cms.Schedule(
    process.tagAndProbe
 )
 
-process.TFileService = cms.Service("TFileService", fileName = cms.string("tnpZ_Data.root"))
+process.TFileService = cms.Service("TFileService", fileName = cms.string("tnpZ_MC.root"))
