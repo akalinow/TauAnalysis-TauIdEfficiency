@@ -73,11 +73,14 @@ METPairPtBalance<T>::produce(edm::Event & iEvent, const edm::EventSetup & iSetup
         if (pair->numberOfDaughters() != 2) throw cms::Exception("LogicError", "Pairs must have *two* daughters");
         const reco::Candidate &tag   = *pair->daughter(0);
         const reco::Candidate &probe = *pair->daughter(1);
-
+	
         for (typename std::vector<const T *>::const_iterator ito = selbegin; ito != selend; ++ito) { 
             if (reco::deltaR2(  tag.eta(),   tag.phi(), (*ito)->eta(), (*ito)->phi()) > objDR2Tag_  &&
                 reco::deltaR2(probe.eta(), probe.phi(), (*ito)->eta(), (*ito)->phi()) > objDR2Probe_) {
-	      values.push_back((tag.p4() + probe.p4() + (*ito)->p4()).pt());
+	      //values.push_back((tag.p4() + probe.p4() + (*ito)->p4()).pt());
+	      values.push_back((*ito)->p4().pt());
+	      //values.push_back((tag.p4() + probe.p4()).Vect().Unit().x()*(*ito)->p4().Vect().Unit().x() +
+	      //	       (tag.p4() + probe.p4()).Vect().Unit().y()*(*ito)->p4().Vect().Unit().y());
             }
         }
     }

@@ -56,33 +56,43 @@ PFTauMerger::produce(edm::Event & iEvent, const edm::EventSetup & iSetup) {
     // copy reco::Taus, turning on the CaloCompatibility flag if enabled and possible
     for (std::vector<pat::Tau>::const_iterator it = taus->begin(), ed = taus->end(); it != ed; ++it) {
         if(!tausCut_(*it)) continue;
-	out->push_back(*it);
+	// TEST out->push_back(*it);
     }
     // merge reco::Track avoiding duplication of innerTracks
     if(mergeTracks_){
         for (size_t i = 0; i < tracks->size(); i++) {
 	    pat::PackedCandidateRef track(tracks, i);
             if(!tracksCut_(*track)) continue;
-            // check if it is a tau
+            // check if it is a tau	    
             bool isTau = false;
+	    const pat::Tau *aTau = 0;
             for(std::vector<pat::Tau>::const_iterator tau = taus->begin(); tau < taus->end(); tau++){
 	      if(reco::deltaR(tau->leadChargedHadrCand()->p4(),*track)<0.007){
-                    isTau = true;
-                    break;
+		isTau = true;
+		aTau = &(*tau);
+		break;
                 }
-            }
-            if(isTau) continue;           
+            }	    
             // make a pat::Tau from a track
             double energy = sqrt(track->p() * track->p() + 0.13957018);
             math::XYZTLorentzVector p4(track->px(), track->py(), track->pz(), energy);
 	    reco::BaseTau aBaseTau(track->charge(), p4, track->vertex());
 	    pat::Tau aPatTau(aBaseTau);
-	    std::vector<pat::Tau::IdPair> aID;
-	    aID.push_back(pat::Tau::IdPair("againstMuonTight3",0));
-	    aID.push_back(pat::Tau::IdPair("againstMuonLoose3",0));
-	    aID.push_back(pat::Tau::IdPair("decayModeFindingNewDMs",0));
-	    aID.push_back(pat::Tau::IdPair("decayModeFinding",0));
-	    aID.push_back(pat::Tau::IdPair("byLooseCombinedIsolationDeltaBetaCorr3Hits",0));	    
+	    std::vector<pat::Tau::IdPair> aID;	   
+            if(isTau){
+	      aID.push_back(pat::Tau::IdPair("againstMuonTight3",aTau->tauID("againstMuonTight3")));
+	      aID.push_back(pat::Tau::IdPair("againstMuonLoose3",aTau->tauID("againstMuonLoose3")));
+	      aID.push_back(pat::Tau::IdPair("decayModeFindingNewDMs",aTau->tauID("decayModeFindingNewDMs")));
+	      aID.push_back(pat::Tau::IdPair("decayModeFinding",aTau->tauID("decayModeFinding")));
+	      aID.push_back(pat::Tau::IdPair("byLooseCombinedIsolationDeltaBetaCorr3Hits",aTau->tauID("byLooseCombinedIsolationDeltaBetaCorr3Hits")));
+	    }
+	    else{
+	      aID.push_back(pat::Tau::IdPair("againstMuonTight3",0));
+	      aID.push_back(pat::Tau::IdPair("againstMuonLoose3",0));
+	      aID.push_back(pat::Tau::IdPair("decayModeFindingNewDMs",0));
+	      aID.push_back(pat::Tau::IdPair("decayModeFinding",0));
+	      aID.push_back(pat::Tau::IdPair("byLooseCombinedIsolationDeltaBetaCorr3Hits",0));
+	    }	    
 	    aPatTau.setTauIDs(aID);
             out->push_back(aPatTau);
         }

@@ -6,8 +6,8 @@ process.load('FWCore.MessageService.MessageLogger_cfi')
 process.source = cms.Source("EmptySource")
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1) )
 
-filePath = "/home/akalinow/scratch/CMS/TauID/Crab/Data/TauID_TnP/SingleMuon_Run2015D_16Dec2015_v1_v3/SingleMuon/SingleMuon_Run2015D_16Dec2015_v1_v3/160418_184453/0000/"
-
+#filePath = "/home/akalinow/scratch/CMS/TauID/Crab/Data/TauID_TnP/SingleMuon_Run2015D_16Dec2015_v1_v3/SingleMuon/SingleMuon_Run2015D_16Dec2015_v1_v3/160418_184453/0000/"
+filePath = "/home/akalinow/scratch/CMS/TauID/Crab/Data/TauID_TnP/SingleMuon_Run2015D_16Dec2015_v1_v5/SingleMuon/SingleMuon_Run2015D_16Dec2015_v1_v5/160426_125121/0000/"
 filePath+="/tnpZ_Data.root"
 
 efficiencyPSetTemplate = cms.PSet(

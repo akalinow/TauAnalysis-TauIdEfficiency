@@ -13,7 +13,7 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 10000
 process.source = cms.Source("PoolSource", 
     fileNames = cms.untracked.vstring(),
 )
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100000) )    
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10000) )    
 
 process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
 process.load('Configuration.StandardSequences.MagneticField_cff')
@@ -71,13 +71,16 @@ process.fastFilter     = cms.Sequence(process.goodVertexFilter + process.trigger
 ##   |_|  |_|\__,_|\___/|_| |_|___/
 ##                                 
 from MuonAnalysis.TagAndProbe.common_variables_cff import *
+from TauAnalysis.TauIdEfficiency.common_variables_tau_cff import *
 process.load("MuonAnalysis.TagAndProbe.common_modules_cff")
 
 process.tagMuons = cms.EDFilter("PATMuonSelector",
     src = cms.InputTag("slimmedMuons"),
-    cut = cms.string("pt > 25 && abs(eta)<2.1 && "+MuonIDFlags.Tight2012.value()+
-                     "&& (pfIsolationR03().sumChargedHadronPt + max(pfIsolationR03().sumNeutralHadronEt + pfIsolationR03().sumPhotonEt - 0.5 * pfIsolationR03().sumPUPt, 0.0))/pt() < 0.1"),
+    cut = cms.string("pt > 25 && abs(eta)<2.1 && "+ MuonIDFlags2016.Tight2016.value()+
+                     " && " + MuonIDFlags2016.Isolation2016.value())
 )
+
+
 
 process.oneTag  = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("tagMuons"), minNumber = cms.uint32(1))
 
@@ -171,7 +174,6 @@ process.tpTree = cms.EDAnalyzer("TagProbeFitTreeProducer",
         pt      = cms.string("pt"), 
         rapidity = cms.string("rapidity"),
         deltaR   = cms.string("deltaR(daughter(0).eta, daughter(0).phi, daughter(1).eta, daughter(1).phi)"),
-        deltaPhi   = cms.string("daughter(0).phi - daughter(1).phi"), 
         probeMultiplicity = cms.InputTag("probeMultiplicity"),
         nJets30 = cms.InputTag("njets30Module"),
         METPtBalance = cms.InputTag("pairMETPtBalanceModule"),

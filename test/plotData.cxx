@@ -12,7 +12,9 @@ void plotFitCanvas(std::string category = "againstMuonLoose3_pt_abseta"){
   std::string dirName = topDirectory+category+"/fit_eff_plots/";
   std::string objName = "abseta_PLOT";
   std::string objectPath = dirName+objName;
-  std::string binnedVars = "__byLooseCombinedIsolationDeltaBetaCorr3Hits_bin0__decayModeFinding_bin0__pair_deltaR_bin0__pair_dz_bin0__pair_probeMultiplicity_bin0__vpvPlusExpo/";  
+  std::string binnedVars = "__byLooseCombinedIsolationDeltaBetaCorr3Hits_bin0__decayModeFinding_bin0__pair_deltaR_bin0__pair_dz_bin0__pair_probeMultiplicity_bin0__vpvPlusExpo/";
+  binnedVars = "__byLooseCombinedIsolationDeltaBetaCorr3Hits_bin0__decayModeFinding_bin0__pair_deltaR_bin0__pair_dz_bin0__pair_probeMultiplicity_bin0__tag_triggerMatch_bin0__vpvPlusExpo/"; 
+  
   std::string endPattern = "__vpvPlusExpo/";
 
   dirName = topDirectory+category+"/abseta_bin0"+binnedVars;
@@ -139,7 +141,9 @@ void plotMistagRate(std::string category = "againstMuonLoose3_pt_abseta"){
   
   aEffCanvas->Print(("fig_png/"+category+"_misTagRateDATAvsMatchedMC.png").c_str());
 
+  std::cout<<"DATA: "<<std::endl;
   hxy_fit_eff->Print("all");
+  std::cout<<"MC: "<<std::endl;
   aGraphMCTrue->Print("all");
 }
 /////////////////////////////////////////////////////

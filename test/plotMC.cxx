@@ -12,6 +12,7 @@ void plotFitCanvas(std::string category = "againstMuonLoose3_pt_abseta"){
   std::string objName = "abseta_PLOT";
   std::string objectPath = dirName+objName;
   std::string binnedVars = "__byLooseCombinedIsolationDeltaBetaCorr3Hits_bin0__decayModeFinding_bin0__pair_deltaR_bin0__pair_dz_bin0__pair_probeMultiplicity_bin0__vpvPlusExpo/";
+  binnedVars = "__byLooseCombinedIsolationDeltaBetaCorr3Hits_bin0__decayModeFinding_bin0__pair_deltaR_bin0__pair_dz_bin0__pair_probeMultiplicity_bin0__tag_triggerMatch_bin0__vpvPlusExpo/"; 
 
   std::string aPattern = "pair_deltaR_bin0";
   if(category.find("mcTrue")!=std::string::npos) binnedVars.replace(binnedVars.find(aPattern),

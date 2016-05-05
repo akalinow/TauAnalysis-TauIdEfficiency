@@ -6,10 +6,8 @@ process.load('FWCore.MessageService.MessageLogger_cfi')
 process.source = cms.Source("EmptySource")
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1) )
 
-filePath = "/scratch_local/akalinow/CMS/TauID/Crab/Data/TauID_TnP/DYJetsToLL_M_50_TuneCUETP8M1_13TeV_amcatnloFXFX_pythia8_v3_ext4/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/DYJetsToLL_M_50_TuneCUETP8M1_13TeV_amcatnloFXFX_pythia8_v3_ext4/160418_184153/0000/"
-
-#filePath = "/home/akalinow/scratch/CMS/TauID/Crab/Data/TauID_TnP/WJetsToLNu_TuneCUETP8M1_13TeV_madgraphMLM_pythia8_v3/WJetsToLNu_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/WJetsToLNu_TuneCUETP8M1_13TeV_madgraphMLM_pythia8_v3/160418_184255/0000/"
-#filePath = "/home/akalinow/scratch/CMS/TauID/Crab/Data/TauID_TnP/TT_TuneCUETP8M1_13TeV_powheg_pythia8_v3_ext4/TT_TuneCUETP8M1_13TeV-powheg-pythia8/TT_TuneCUETP8M1_13TeV_powheg_pythia8_v3_ext4/160418_184354/0000/"
+#filePath = "/scratch_local/akalinow/CMS/TauID/Crab/Data/TauID_TnP/DYJetsToLL_M_50_TuneCUETP8M1_13TeV_amcatnloFXFX_pythia8_v3_ext4/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/DYJetsToLL_M_50_TuneCUETP8M1_13TeV_amcatnloFXFX_pythia8_v3_ext4/160418_184153/0000/"
+filePath = "/home/akalinow/scratch/CMS/TauID/Crab/Data/TauID_TnP/DYJetsToLL_M_50_TuneCUETP8M1_13TeV_amcatnloFXFX_pythia8_v5_ext4/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/DYJetsToLL_M_50_TuneCUETP8M1_13TeV_amcatnloFXFX_pythia8_v5_ext4/160426_105344/0000/"
 
 #filePath = "./"
 filePath += "tnpZ_MC.root"
@@ -23,6 +21,7 @@ efficiencyPSetTemplate = cms.PSet(
         #pt     = cms.vdouble( 10, 100 ),
         abseta = cms.vdouble(0.0, 1.2, 1.21),
         ## flags and conditions required at the denominator,
+        tag_triggerMatch = cms.vdouble(1.0,1.1),
         pair_probeMultiplicity = cms.vdouble(1.0,1.1),
         pair_dz = cms.vdouble(-0.05,0.05),             
         pair_deltaR = cms.vdouble(0.5,5.),
@@ -69,6 +68,7 @@ process.TnP_Muon_ID = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
         mass   = cms.vstring("Tag-muon Mass", "70", "120", "GeV/c^{2}"),
         #pt     = cms.vstring("muon p_{T}", "0", "1000", "GeV/c"),
         abseta = cms.vstring("muon |#eta|", "0", "2.4", ""),
+        tag_triggerMatch = cms.vstring("Tag matched to HLT item", "0", "1.1", ""),
         pair_dz = cms.vstring("#Deltaz between two muons", "-100", "100", "cm"),
         pair_deltaR = cms.vstring("#DeltaR between two muons", "0", "10", ""),
         pair_probeMultiplicity = cms.vstring("Probe multiplicity", "0", "5", ""),
@@ -84,17 +84,17 @@ process.TnP_Muon_ID = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
     ),
     ## What to fit
     Efficiencies = cms.PSet(
-        againstMuonLoose3_pt_abseta0 = againstMuonLoose3_pt_abseta0,        
+        #againstMuonLoose3_pt_abseta0 = againstMuonLoose3_pt_abseta0,        
         againstMuonLoose3_pt_abseta0_mcTrue = againstMuonLoose3_pt_abseta0_mcTrue,
-        againstMuonTight3_pt_abseta0 = againstMuonTight3_pt_abseta0,
+        #againstMuonTight3_pt_abseta0 = againstMuonTight3_pt_abseta0,
         againstMuonTight3_pt_abseta0_mcTrue = againstMuonTight3_pt_abseta0_mcTrue,
         
-        againstMuonLoose3_pt_abseta12 = againstMuonLoose3_pt_abseta12,        
+        #againstMuonLoose3_pt_abseta12 = againstMuonLoose3_pt_abseta12,        
         againstMuonLoose3_pt_abseta12_mcTrue = againstMuonLoose3_pt_abseta12_mcTrue,
-        againstMuonTight3_pt_abseta12 = againstMuonTight3_pt_abseta12,
+        #againstMuonTight3_pt_abseta12 = againstMuonTight3_pt_abseta12,
         againstMuonTight3_pt_abseta12_mcTrue = againstMuonTight3_pt_abseta12_mcTrue 
     ),
-    ## PDF for signal and background (double voigtian + exponential background)
+    ## PDF for signal and background (double voigtian + exponential background)                                  
     PDFs = cms.PSet(
         vpvPlusExpo = cms.vstring(
             "Voigtian::signal1(mass, mean1[90,80,100], width[2.495], sigma1[2,1,3])",
@@ -106,8 +106,8 @@ process.TnP_Muon_ID = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
             "Exponential::backgroundFail(mass, lf[-0.1,-1,0.1])",
             "efficiency[0.01,0,0.1]",
             "signalFractionInPassing[0.9]"
-        ),      
-    ),
+        ),          
+    ),    
     ## How to do the fit
     binnedFit = cms.bool(True),
     binsForFit = cms.uint32(40),
@@ -117,5 +117,6 @@ process.TnP_Muon_ID = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
 )
 
 process.p1 = cms.Path(process.TnP_Muon_ID)
+
 
 
