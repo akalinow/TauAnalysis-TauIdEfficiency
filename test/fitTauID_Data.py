@@ -24,7 +24,7 @@ efficiencyPSetTemplate = cms.PSet(
         decayModeFinding = cms.vdouble(0.5,1.1),
         byLooseCombinedIsolationDeltaBetaCorr3Hits = cms.vdouble(0.5,1.1),
     ),
-    BinToPDFmap = cms.vstring("vpvPlusExpo"), ## PDF to use, as defined below
+    BinToPDFmap = cms.vstring("cbPlusPolyEta0","*abseta_bin1*","cbPlusPolyEta1", "*abseta_bin2*","cbPlusPolyEta2")
 )
 
 againstMuonLoose3_pt_abseta = efficiencyPSetTemplate.clone()
@@ -62,21 +62,73 @@ process.TnP_Muon_ID = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
     ),
     ## PDF for signal and background (double voigtian + exponential background)
     PDFs = cms.PSet(
-        vpvPlusExpo = cms.vstring(
-            "Voigtian::signal1(mass, mean1[90,80,100], width[2.495], sigma1[2,1,3])",
-            "Voigtian::signal2(mass, mean2[90,80,100], width,        sigma2[4,2,10])",
-            "SUM::signal(vFrac[0.8,0,1]*signal1, signal2)",
-            "Exponential::backgroundPass1(mass, lp1[-0.1,-1,0.1])",
-            "Exponential::backgroundPass2(mass, lp2[-0.1,-1,0.1])",
-            "SUM::backgroundPass(vFracBkg[0.8,0,1]*backgroundPass1, backgroundPass2)",
-            "Exponential::backgroundFail(mass, lf[-0.1,-1,0.1])",
-            "efficiency[0.01,0,0.1]",
+        cbPlusPolyEta0 = cms.vstring(
+            "Voigtian::signal1Fail(mass, mean1Fail[91], width[2.495], sigma1Fail[1.137])",
+            "Voigtian::signal2Fail(mass, mean2Fail[86.3], width[2.495], sigma2Fail[4.71])",
+            "SUM::signalFail(vFracFail[0.926]*signal1Fail, signal2Fail)",
+            
+            "Voigtian::signal1Pass(mass, mean1Pass[90.93], width[2.495], sigma1Pass[1.09])",
+            "CBShape::signal2Pass(mass, mean2Pass[83.2], sigma2Pass[7.0], alpha[3], n[1])",
+            "SUM::signalPass(vFracPass[0.83]*signal1Pass, signal2Pass)",
+            
+            "Exponential::backgroundPass1(mass, lp1[-0.033])",
+            "Exponential::backgroundPass2(mass, lp2[-0.168])",
+            "Exponential::backgroundPass3(mass, lp3[-0.235,-1,0])",
+            "SUM::backgroundPass12(vFracBkgPass[0.2]*backgroundPass1, backgroundPass2)",
+            "SUM::backgroundPass(vFracBkgPass123[0.2,0,1]*backgroundPass12, backgroundPass3)",
+            
+            "Exponential::backgroundFail1(mass, lf[-0.039])",
+            "SUM::backgroundFail(backgroundFail1)",
+            
+            "efficiency[0.001,0,0.01]",
             "signalFractionInPassing[0.9]"
-        ),      
+        ),
+        cbPlusPolyEta1 = cms.vstring(
+            "Voigtian::signal1Fail(mass, mean1Fail[90.95], width[2.495], sigma1Fail[1.32])",
+            "Voigtian::signal2Fail(mass, mean2Fail[85.98], width[2.495], sigma2Fail[4.9])",
+            "SUM::signalFail(vFracFail[0.927]*signal1Fail, signal2Fail)",
+            
+            "Voigtian::signal1Pass(mass, mean1Pass[90.96], width[2.495], sigma1Pass[1.3])",
+            "CBShape::signal2Pass(mass, mean2Pass[85], sigma2Pass[4.4], alpha[4], n[0])",
+            "SUM::signalPass(vFracPass[0.91]*signal1Pass, signal2Pass)",
+            
+            "Exponential::backgroundPass1(mass, lp1[-0.033])",
+            "Exponential::backgroundPass2(mass, lp2[-0.168])",
+            "Exponential::backgroundPass3(mass, lp3[-0.235,-1,0])",
+            "SUM::backgroundPass12(vFracBkgPass12[0.2]*backgroundPass1, backgroundPass2)",
+            "SUM::backgroundPass(vFracBkgPass123[0.2,0,1]*backgroundPass12, backgroundPass3)",
+            
+            "Exponential::backgroundFail1(mass, lf[-0.039])",
+            "SUM::backgroundFail(backgroundFail1)",
+            
+            "efficiency[0.001,0,0.01]",
+            "signalFractionInPassing[0.9]"
+        ),
+        cbPlusPolyEta2 = cms.vstring(
+            "Voigtian::signal1Fail(mass, mean1Fail[90.92], width[2.495], sigma1Fail[1.617])",
+            "Voigtian::signal2Fail(mass, mean2Fail[86.02], width[2.495], sigma2Fail[5.18])",
+            "SUM::signalFail(vFracFail[0.93]*signal1Fail, signal2Fail)",
+            
+            "Voigtian::signal1Pass(mass, mean1Pass[90.7], width[2.495], sigma1Pass[1.6])",
+            "CBShape::signal2Pass(mass, mean2Pass[80.0], sigma2Pass[7], alpha[3], n[0.1])",
+            "SUM::signalPass(vFracPass[0.78]*signal1Pass, signal2Pass)",
+            
+            "Exponential::backgroundPass1(mass, lp1[0.02])",
+            "Exponential::backgroundPass2(mass, lp2[-0.140])",
+            "Exponential::backgroundPass3(mass, lp3[-0.235,-1,0])",
+            "SUM::backgroundPass12(vFracBkgPass[0.17]*backgroundPass1, backgroundPass2)",
+            "SUM::backgroundPass(vFracBkgPass123[0.2,0,1]*backgroundPass12, backgroundPass3)",
+            
+            "Exponential::backgroundFail1(mass, lf[-0.037])",
+            "SUM::backgroundFail(backgroundFail1)",
+            
+            "efficiency[0.001,0,0.01]",
+            "signalFractionInPassing[0.9]"
+        )
     ),
     ## How to do the fit
     binnedFit = cms.bool(True),
-    binsForFit = cms.uint32(40),
+    binsForFit = cms.uint32(15),
     saveDistributionsPlot = cms.bool(True),
     NumCPU = cms.uint32(1), ## leave to 1 for now, RooFit gives funny results otherwise
     SaveWorkspace = cms.bool(False),

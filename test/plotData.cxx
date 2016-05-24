@@ -56,32 +56,35 @@ void plotFitCanvas(std::string category = "againstMuonLoose3_pt_abseta"){
 }
 /////////////////////////////////////////////////////
 /////////////////////////////////////////////////////
-TGraphAsymmErrors *getMCResult(std::string category = "againstMuonLoose3_pt_abseta"){
+TGraphAsymmErrors *getMCResult(std::string category = "againstMuonLoose3_pt_abseta", bool count=false){
 
   TFile file(fNameMC.c_str());
 
   std::string aPattern = "abseta";
   category.replace(category.find(aPattern),aPattern.size(),"abseta0");
 
-  std::string dirName = topDirectory+category+"/fit_eff_plots/";
+  std::string fitType = "fit";
+  if(count) fitType = "cnt";
+
+  std::string dirName = topDirectory+category+"/"+fitType+"_eff_plots/";
+
   std::string objName = "abseta_PLOT";
   std::string objectPath = dirName+objName;
 
   TCanvas *aEffCanvas = (TCanvas*)file.Get(objectPath.c_str());
-  TGraphAsymmErrors *hxy_fit_eff_eta0 = (TGraphAsymmErrors*)aEffCanvas->FindObject("hxy_fit_eff");
-  hxy_fit_eff_eta0->SetName("hxy_fit_eff_eta0");
+  TGraphAsymmErrors *hxy_fit_eff_eta0 = (TGraphAsymmErrors*)aEffCanvas->FindObject(("hxy_"+fitType+"_eff").c_str());
+  hxy_fit_eff_eta0->SetName(("hxy_"+fitType+"_eff_eta0").c_str());
 
   aPattern = "abseta0";
   category.replace(category.find(aPattern),aPattern.size(),"abseta12");
-  dirName = topDirectory+category+"/fit_eff_plots/";
+  dirName = topDirectory+category+"/"+fitType+"_eff_plots/";
+  if(count) dirName = topDirectory+category+"/"+fitType+"_eff_plots/";
   objName = "abseta_PLOT";
   objectPath = dirName+objName;
   
   aEffCanvas = (TCanvas*)file.Get(objectPath.c_str());
-  TGraphAsymmErrors *hxy_fit_eff_eta12 = (TGraphAsymmErrors*)aEffCanvas->FindObject("hxy_fit_eff");
-  hxy_fit_eff_eta12->SetName("hxy_fit_eff_eta12");
-
-  hxy_fit_eff_eta0->Print("all");
+  TGraphAsymmErrors *hxy_fit_eff_eta12 = (TGraphAsymmErrors*)aEffCanvas->FindObject(("hxy_"+fitType+"_eff").c_str());
+  hxy_fit_eff_eta12->SetName(("hxy_"+fitType+"_eff_eta12").c_str());
 
   Double_t x, y;
   hxy_fit_eff_eta0->GetPoint(0,x,y);
@@ -91,7 +94,8 @@ TGraphAsymmErrors *getMCResult(std::string category = "againstMuonLoose3_pt_abse
   hxy_fit_eff_eta12->SetPointError(2,
 				   hxy_fit_eff_eta0->GetErrorXlow(0), hxy_fit_eff_eta0->GetErrorXhigh(0),
 				   hxy_fit_eff_eta0->GetErrorYlow(0), hxy_fit_eff_eta0->GetErrorYhigh(0));
-  
+
+  std::cout<<category<<" "<<fitType<<std::endl;
   hxy_fit_eff_eta12->Print("all");
   
   return hxy_fit_eff_eta12;
@@ -121,7 +125,7 @@ void plotMistagRate(std::string category = "againstMuonLoose3_pt_abseta"){
   }
 
   category = category+"_mcTrue";
-  TGraphAsymmErrors *aGraphMCTrue  = getMCResult(category);
+  TGraphAsymmErrors *aGraphMCTrue  = getMCResult(category, true);
   aGraphMCTrue->SetName("aGraphMCTrue");
   aGraphMCTrue->SetLineColor(2);
   aGraphMCTrue->SetMarkerColor(2);

@@ -60,9 +60,16 @@ process.triggerResultsFilter.hltResults = cms.InputTag("TriggerResults","","HLT"
 process.metSelector = cms.EDFilter("PATMETSelector",
     src = cms.InputTag("slimmedMETs"),
     cut = cms.string("pt < 25"),
-    filter =  cms.bool(True),                                
+    filter = cms.bool(True),                                
 )
-process.fastFilter     = cms.Sequence(process.goodVertexFilter + process.triggerResultsFilter + process.metSelector)
+
+
+process.muonFilter = cms.EDFilter("CandViewCountFilter",
+                                  src = cms.InputTag("slimmedMuons"),
+                                  minNumber = cms.uint32(1),
+                                  maxNumber = cms.uint32(2))
+
+process.fastFilter     = cms.Sequence(process.goodVertexFilter + process.triggerResultsFilter + process.muonFilter + process.metSelector)
 
 ##    __  __                       
 ##   |  \/  |_   _  ___  _ __  ___ 
@@ -74,12 +81,24 @@ from MuonAnalysis.TagAndProbe.common_variables_cff import *
 from TauAnalysis.TauIdEfficiency.common_variables_tau_cff import *
 process.load("MuonAnalysis.TagAndProbe.common_modules_cff")
 
+process.tagMuons = cms.EDProducer("PFMuonMerger",
+    mergeTracks = cms.bool(False),
+    muons     = cms.InputTag("slimmedMuons"),
+    photons     = cms.InputTag("slimmedPhotons"), 
+    tracks    = cms.InputTag("packedPFCandidates"),
+    ## Apply some minimal pt cut
+    muonsCut     = cms.string("pt > 25 && abs(eta)<2.1 && "+ MuonIDFlags2016.Tight2016.value()+
+                              " && " + MuonIDFlags2016.Isolation2016.value()),
+    tracksCut    = cms.string("pt > 25 && abs(eta)<2.1"),
+)
+
+'''
 process.tagMuons = cms.EDFilter("PATMuonSelector",
     src = cms.InputTag("slimmedMuons"),
     cut = cms.string("pt > 25 && abs(eta)<2.1 && "+ MuonIDFlags2016.Tight2016.value()+
                      " && " + MuonIDFlags2016.Isolation2016.value())
 )
-
+'''
 
 
 process.oneTag  = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("tagMuons"), minNumber = cms.uint32(1))
@@ -106,11 +125,12 @@ process.mtFilter = cms.EDFilter("CandViewCountFilter",
 ##
 process.mergedTaus = cms.EDProducer("PFTauMerger",
     mergeTracks = cms.bool(True),
-    taus     = cms.InputTag("slimmedTaus"), 
+    taus     = cms.InputTag("slimmedTaus"),
+    photons     = cms.InputTag("slimmedPhotons"), 
     tracks    = cms.InputTag("packedPFCandidates"),
     ## Apply some minimal pt cut
-    tausCut     = cms.string("pt > 20 && abs(eta)<2.3"),
-    tracksCut    = cms.string("pt > 20 && abs(eta)<2.3"),
+    tausCut     = cms.string("alternatLorentzVect.pt > 20 && abs(alternatLorentzVect.eta)<2.3"),
+    tracksCut    = cms.string("abs(eta)<2.3"),
 )
 
 process.probeTaus = cms.EDFilter("PATTauSelector",
@@ -140,14 +160,14 @@ process.tagMuonsMCMatch = cms.EDProducer("MCMatcher", # cut on deltaR, deltaPt/P
     src     = cms.InputTag("tagMuons"), # RECO objects to match
     matched = cms.InputTag("goodGenMuons"),   # mc-truth particle collection
     mcPdgId     = cms.vint32(13),  # one or more PDG ID (13 = muon); absolute values (see below)
-    checkCharge = cms.bool(False), # True = require RECO and MC objects to have the same charge
+    checkCharge = cms.bool(True), # True = require RECO and MC objects to have the same charge
     mcStatus = cms.vint32(1),      # PYTHIA status code (1 = stable, 2 = shower, 3 = hard scattering)
     maxDeltaR = cms.double(0.1),   # Minimum deltaR for the match
-    maxDPtRel = cms.double(0.5),   # Minimum deltaPt/Pt for the match
+    maxDPtRel = cms.double(1),   # Minimum deltaPt/Pt for the match
     resolveAmbiguities = cms.bool(True),    # Forbid two RECO objects to match to the same GEN object
     resolveByMatchQuality = cms.bool(True), # False = just match input in order; True = pick lowest deltaR pair first
 )
-process.probeMuonsMCMatch = process.tagMuonsMCMatch.clone(src = "probeTaus", maxDeltaR = 0.1, maxDPtRel = 1.0, resolveAmbiguities = False,  resolveByMatchQuality = False)
+process.probeMuonsMCMatch = process.tagMuonsMCMatch.clone(src = "probeTaus", maxDeltaR = 0.1, maxDPtRel = 1, resolveAmbiguities = False,  resolveByMatchQuality = False)
 
 process.tpTree = cms.EDAnalyzer("TagProbeFitTreeProducer",
     # choice of tag and probe pairs, and arbitration
@@ -155,7 +175,10 @@ process.tpTree = cms.EDAnalyzer("TagProbeFitTreeProducer",
     arbitration   = cms.string("None"),
     # probe variables: all useful ones
     variables = cms.PSet(
-        KinematicVariables,        
+        KinematicVariables,
+        decayMode =  cms.string('tauID("decayMode")'),
+        alternatLorentzVectPt =  cms.string("alternatLorentzVect.pt"),
+        alternatLorentzVectEta =  cms.string("alternatLorentzVect.eta"),
     ),
     flags = cms.PSet(
         decayModeFinding =  cms.string('tauID("decayModeFinding")'),
@@ -176,7 +199,7 @@ process.tpTree = cms.EDAnalyzer("TagProbeFitTreeProducer",
         deltaR   = cms.string("deltaR(daughter(0).eta, daughter(0).phi, daughter(1).eta, daughter(1).phi)"),
         probeMultiplicity = cms.InputTag("probeMultiplicity"),
         nJets30 = cms.InputTag("njets30Module"),
-        METPtBalance = cms.InputTag("pairMETPtBalanceModule"),
+        MET = cms.InputTag("pairMETPtBalanceModule"),
     ),
     pairFlags = cms.PSet(
         BestZ = cms.InputTag("bestPairByZMass"),
