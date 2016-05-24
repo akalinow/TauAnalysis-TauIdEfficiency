@@ -6,8 +6,8 @@ process.load('FWCore.MessageService.MessageLogger_cfi')
 process.source = cms.Source("EmptySource")
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1) )
 
-#filePath = "/home/akalinow/scratch/CMS/TauID/Crab/Data/TauID_TnP/SingleMuon_Run2015D_16Dec2015_v1_v3/SingleMuon/SingleMuon_Run2015D_16Dec2015_v1_v3/160418_184453/0000/"
-filePath = "/home/akalinow/scratch/CMS/TauID/Crab/Data/TauID_TnP/SingleMuon_Run2015D_16Dec2015_v1_v5/SingleMuon/SingleMuon_Run2015D_16Dec2015_v1_v5/160426_125121/0000/"
+filePath = "/home/akalinow/scratch/CMS/TauID/Crab/Data/TauID_TnP/SingleMuon_Run2015D_16Dec2015_v1_v11/SingleMuon/SingleMuon_Run2015D_16Dec2015_v1_v11/160520_134214/0000/"
+
 filePath+="/tnpZ_Data.root"
 
 efficiencyPSetTemplate = cms.PSet(
@@ -31,6 +31,7 @@ againstMuonLoose3_pt_abseta = efficiencyPSetTemplate.clone()
 
 againstMuonTight3_pt_abseta = efficiencyPSetTemplate.clone()
 againstMuonTight3_pt_abseta.EfficiencyCategoryAndState = cms.vstring("againstMuonTight3", "pass")
+againstMuonTight3_pt_abseta.BinToPDFmap = cms.vstring("cbPlusPolyTightEta0","*abseta_bin1*","cbPlusPolyTightEta1", "*abseta_bin2*","cbPlusPolyTightEta2")
 
 process.TnP_Muon_ID = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
     ## Input, output
@@ -124,7 +125,70 @@ process.TnP_Muon_ID = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
             
             "efficiency[0.001,0,0.01]",
             "signalFractionInPassing[0.9]"
-        )
+        ),
+         cbPlusPolyTightEta0 = cms.vstring(
+            "Voigtian::signal1Fail(mass, mean1Fail[90.98], width[2.495], sigma1Fail[1.27])",
+            "Voigtian::signal2Fail(mass, mean2Fail[84.88], width[2.495], sigma2Fail[4.67])",
+            "SUM::signalFail(vFracFail[0.944]*signal1Fail, signal2Fail)",
+            
+            "Voigtian::signal1Pass(mass, mean1Pass[90.79], width[2.495], sigma1Pass[1.36])",
+            "CBShape::signal2Pass(mass, mean2Pass[82.3], sigma2Pass[5.8], alpha[5], n[1])",
+            "SUM::signalPass(vFracPass[0.73]*signal1Pass, signal2Pass)",
+            
+            "Exponential::backgroundPass1(mass, lp1[-0.015])",
+            "Exponential::backgroundPass2(mass, lp2[-0.176])",
+            "Exponential::backgroundPass3(mass, lp3[-0.235,-1,0])",
+            "SUM::backgroundPass12(vFracBkgPass[0.150]*backgroundPass1, backgroundPass2)",
+             "SUM::backgroundPass(vFracBkgPass123[0.2,0,1]*backgroundPass12, backgroundPass3)",
+            
+            "Exponential::backgroundFail1(mass, lf[-0.039])",
+            "SUM::backgroundFail(backgroundFail1)",
+            
+            "efficiency[0.001,0,0.01]",
+            "signalFractionInPassing[0.9]"
+        ),
+         cbPlusPolyTightEta1 = cms.vstring(
+             "Voigtian::signal1Fail(mass, mean1Fail[90.949], width[2.495], sigma1Fail[1.427])",
+             "Voigtian::signal2Fail(mass, mean2Fail[85.48], width[2.495], sigma2Fail[4.86])",
+             "SUM::signalFail(vFracFail[0.936]*signal1Fail, signal2Fail)",
+            
+             "Voigtian::signal1Pass(mass, mean1Pass[91.5], width[2.495], sigma1Pass[1])",
+             "CBShape::signal2Pass(mass, mean2Pass[88], sigma2Pass[6.1], alpha[5], n[0])",
+             "SUM::signalPass(vFracPass[0.63]*signal1Pass, signal2Pass)",
+             
+             "Exponential::backgroundPass1(mass, lp1[0.1])",
+             "Exponential::backgroundPass2(mass, lp2[-0.153])",
+             "Exponential::backgroundPass3(mass, lp3[-0.235,-1,0])",
+             "SUM::backgroundPass12(vFracBkgPass[0.06]*backgroundPass1, backgroundPass2)",
+             "SUM::backgroundPass(vFracBkgPass123[0.2,0,1]*backgroundPass12, backgroundPass3)",
+             
+             "Exponential::backgroundFail1(mass, lf[-0.039, -1,0])",
+             "SUM::backgroundFail(backgroundFail1)",
+             
+             "efficiency[0.001,0,0.01]",
+             "signalFractionInPassing[0.9]"
+        ),
+        cbPlusPolyTightEta2 = cms.vstring(
+             "Voigtian::signal1Fail(mass, mean1Fail[90.915], width[2.495], sigma1Fail[1.615])",
+             "Voigtian::signal2Fail(mass, mean2Fail[86.01], width[2.495], sigma2Fail[5.17])",
+             "SUM::signalFail(vFracFail[0.923]*signal1Fail, signal2Fail)",
+            
+             "Voigtian::signal1Pass(mass, mean1Pass[90.5], width[2.495], sigma1Pass[0.5])",
+             "CBShape::signal2Pass(mass, mean2Pass[85], sigma2Pass[7], alpha[4], n[0])",
+             "SUM::signalPass(vFracPass[0.51]*signal1Pass, signal2Pass)",
+             
+             "Exponential::backgroundPass1(mass, lp1[0.02])",
+             "Exponential::backgroundPass2(mass, lp2[-0.141])",
+             "Exponential::backgroundPass3(mass, lp3[-0.235,-1,0])",
+             "SUM::backgroundPass12(vFracBkgPass[0.17]*backgroundPass1, backgroundPass2)",
+             "SUM::backgroundPass(vFracBkgPass123[0.2,0,1]*backgroundPass12, backgroundPass3)",
+             
+             "Exponential::backgroundFail1(mass, lf[-0.037])",
+             "SUM::backgroundFail(backgroundFail1)",
+             
+             "efficiency[0.001,0,0.01]",
+             "signalFractionInPassing[0.9]"
+        ),
     ),
     ## How to do the fit
     binnedFit = cms.bool(True),

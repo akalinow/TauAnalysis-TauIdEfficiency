@@ -6,10 +6,6 @@ process.load('FWCore.MessageService.MessageLogger_cfi')
 process.source = cms.Source("EmptySource")
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1) )
 
-#filePath = "/home/akalinow/scratch/CMS/TauID/Crab/Data/TauID_TnP/DYJetsToLL_M_50_TuneCUETP8M1_13TeV_amcatnloFXFX_pythia8_v5_ext4/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/DYJetsToLL_M_50_TuneCUETP8M1_13TeV_amcatnloFXFX_pythia8_v5_ext4/160426_105344/0000/"
-#filePath = "/home/akalinow/scratch/CMS/TauID/Crab/Data/TauID_TnP/WJetsToLNu_TuneCUETP8M1_13TeV_madgraphMLM_pythia8_v5/WJetsToLNu_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/WJetsToLNu_TuneCUETP8M1_13TeV_madgraphMLM_pythia8_v5/160426_124914/0000/"
-
-#v11
 filePath = "/home/akalinow/scratch/CMS/TauID/Crab/Data/TauID_TnP/DYJetsToLL_M_50_TuneCUETP8M1_13TeV_amcatnloFXFX_pythia8_v11_ext4/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/DYJetsToLL_M_50_TuneCUETP8M1_13TeV_amcatnloFXFX_pythia8_v11_ext4/160520_133905/0000/"
 
 #filePath = "./"
@@ -39,15 +35,15 @@ againstMuonLoose3_pt_abseta0 = efficiencyPSetTemplate.clone()
 
 againstMuonLoose3_pt_abseta0_mcTrue = efficiencyPSetTemplate.clone()
 againstMuonLoose3_pt_abseta0_mcTrue.BinnedVariables._Parameterizable__addParameter("mcTrue",cms.vdouble(0.5,1.1))
-#againstMuonLoose3_pt_abseta0_mcTrue.BinnedVariables._Parameterizable__addParameter("mcTrue",cms.vdouble(-0.1,0.4))
 
 againstMuonTight3_pt_abseta0 = efficiencyPSetTemplate.clone()
 againstMuonTight3_pt_abseta0.EfficiencyCategoryAndState = cms.vstring("againstMuonTight3", "pass")
+againstMuonTight3_pt_abseta0.BinToPDFmap = cms.vstring("cbPlusPolyTightEta0")
 
 againstMuonTight3_pt_abseta0_mcTrue = efficiencyPSetTemplate.clone()
 againstMuonTight3_pt_abseta0_mcTrue.BinnedVariables._Parameterizable__addParameter("mcTrue",cms.vdouble(0.5,1.1))
 againstMuonTight3_pt_abseta0_mcTrue.EfficiencyCategoryAndState = cms.vstring("againstMuonTight3", "pass")
-
+againstMuonTight3_pt_abseta0_mcTrue.BinToPDFmap = cms.vstring("cbPlusPolyTightEta0")
 
 againstMuonLoose3_pt_abseta12 = againstMuonLoose3_pt_abseta0.clone()
 againstMuonLoose3_pt_abseta12.BinnedVariables.abseta = cms.vdouble(1.2, 1.7, 2.3)
@@ -56,14 +52,14 @@ againstMuonLoose3_pt_abseta12.BinToPDFmap = cms.vstring("cbPlusPolyEta1","*abset
 againstMuonLoose3_pt_abseta12_mcTrue = againstMuonLoose3_pt_abseta0_mcTrue.clone()
 againstMuonLoose3_pt_abseta12_mcTrue.BinnedVariables.abseta = cms.vdouble(1.2, 1.7, 2.3)
 againstMuonLoose3_pt_abseta12_mcTrue.BinToPDFmap = cms.vstring("cbPlusPolyEta1","*abseta_bin0*","cbPlusPolyEta1", "*abseta_bin1*","cbPlusPolyEta2")
-##againstMuonLoose3_pt_abseta12_mcTrue.BinnedVariables.abseta = cms.vdouble(1.7, 2.3)
-##againstMuonLoose3_pt_abseta12_mcTrue.BinToPDFmap = cms.vstring("cbPlusPolyEta2")
 
 againstMuonTight3_pt_abseta12 = againstMuonTight3_pt_abseta0.clone()
 againstMuonTight3_pt_abseta12.BinnedVariables.abseta = cms.vdouble(1.2, 1.7, 2.3)
+againstMuonTight3_pt_abseta12.BinToPDFmap = cms.vstring("cbPlusPolyTightEta1","*abseta_bin0*","cbPlusPolyTightEta1", "*abseta_bin1*","cbPlusPolyTightEta2")
 
 againstMuonTight3_pt_abseta12_mcTrue = againstMuonTight3_pt_abseta0_mcTrue.clone()
 againstMuonTight3_pt_abseta12_mcTrue.BinnedVariables.abseta = cms.vdouble(1.2, 1.7, 2.3)
+againstMuonTight3_pt_abseta12_mcTrue.BinToPDFmap = cms.vstring("cbPlusPolyTightEta1","*abseta_bin0*","cbPlusPolyTightEta1", "*abseta_bin1*","cbPlusPolyTightEta2")
 
 ###############################################################
 ###############################################################
@@ -97,13 +93,13 @@ process.TnP_Muon_ID = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
     Efficiencies = cms.PSet(
         againstMuonLoose3_pt_abseta0 = againstMuonLoose3_pt_abseta0,        
         againstMuonLoose3_pt_abseta0_mcTrue = againstMuonLoose3_pt_abseta0_mcTrue,
-        #againstMuonTight3_pt_abseta0 = againstMuonTight3_pt_abseta0,
-        #againstMuonTight3_pt_abseta0_mcTrue = againstMuonTight3_pt_abseta0_mcTrue,
+        againstMuonTight3_pt_abseta0 = againstMuonTight3_pt_abseta0,
+        againstMuonTight3_pt_abseta0_mcTrue = againstMuonTight3_pt_abseta0_mcTrue,
         
         againstMuonLoose3_pt_abseta12 = againstMuonLoose3_pt_abseta12,        
         againstMuonLoose3_pt_abseta12_mcTrue = againstMuonLoose3_pt_abseta12_mcTrue,
-        #againstMuonTight3_pt_abseta12 = againstMuonTight3_pt_abseta12,
-        #againstMuonTight3_pt_abseta12_mcTrue = againstMuonTight3_pt_abseta12_mcTrue 
+        againstMuonTight3_pt_abseta12 = againstMuonTight3_pt_abseta12,
+        againstMuonTight3_pt_abseta12_mcTrue = againstMuonTight3_pt_abseta12_mcTrue 
     ),
     ## PDF for signal and background (double voigtian + exponential background)                                  
     PDFs = cms.PSet(        
@@ -163,7 +159,64 @@ process.TnP_Muon_ID = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
             
             "efficiency[0.001,0,0.01]",
             "signalFractionInPassing[0.9]"
-        )
+        ),
+        cbPlusPolyTightEta0 = cms.vstring(
+            "Voigtian::signal1Fail(mass, mean1Fail[90.98], width[2.495], sigma1Fail[1.27])",
+            "Voigtian::signal2Fail(mass, mean2Fail[84.88], width[2.495], sigma2Fail[4.67])",
+            "SUM::signalFail(vFracFail[0.944]*signal1Fail, signal2Fail)",
+            
+            "Voigtian::signal1Pass(mass, mean1Pass[90.79], width[2.495], sigma1Pass[1.36])",
+            "CBShape::signal2Pass(mass, mean2Pass[82.3], sigma2Pass[5.8], alpha[5], n[1])",
+            "SUM::signalPass(vFracPass[0.73]*signal1Pass, signal2Pass)",
+            
+            "Exponential::backgroundPass1(mass, lp1[-0.015])",
+            "Exponential::backgroundPass2(mass, lp2[-0.176])",            
+            "SUM::backgroundPass(vFracBkgPass[0.150]*backgroundPass1, backgroundPass2)",
+            
+            "Exponential::backgroundFail1(mass, lf[-0.039])",
+            "SUM::backgroundFail(backgroundFail1)",
+            
+            "efficiency[0.001,0,0.01]",
+            "signalFractionInPassing[0.9]"
+        ),
+         cbPlusPolyTightEta1 = cms.vstring(
+             "Voigtian::signal1Fail(mass, mean1Fail[90.949], width[2.495], sigma1Fail[1.427])",
+             "Voigtian::signal2Fail(mass, mean2Fail[85.48], width[2.495], sigma2Fail[4.86])",
+             "SUM::signalFail(vFracFail[0.936]*signal1Fail, signal2Fail)",
+            
+             "Voigtian::signal1Pass(mass, mean1Pass[91.5], width[2.495], sigma1Pass[1])",
+             "CBShape::signal2Pass(mass, mean2Pass[88], sigma2Pass[6.1], alpha[5], n[0])",
+             "SUM::signalPass(vFracPass[0.63]*signal1Pass, signal2Pass)",
+             
+             "Exponential::backgroundPass1(mass, lp1[0.1])",
+             "Exponential::backgroundPass2(mass, lp2[-0.153])",            
+             "SUM::backgroundPass(vFracBkgPass[0.06]*backgroundPass1, backgroundPass2)",
+             
+             "Exponential::backgroundFail1(mass, lf[-0.039, -1,0])",
+             "SUM::backgroundFail(backgroundFail1)",
+             
+             "efficiency[0.001,0,0.01]",
+             "signalFractionInPassing[0.9]"
+        ),
+        cbPlusPolyTightEta2 = cms.vstring(
+             "Voigtian::signal1Fail(mass, mean1Fail[90.915], width[2.495], sigma1Fail[1.615])",
+             "Voigtian::signal2Fail(mass, mean2Fail[86.01], width[2.495], sigma2Fail[5.17])",
+             "SUM::signalFail(vFracFail[0.923]*signal1Fail, signal2Fail)",
+            
+             "Voigtian::signal1Pass(mass, mean1Pass[90.5], width[2.495], sigma1Pass[0.5])",
+             "CBShape::signal2Pass(mass, mean2Pass[85], sigma2Pass[7], alpha[4], n[0])",
+             "SUM::signalPass(vFracPass[0.51]*signal1Pass, signal2Pass)",
+             
+             "Exponential::backgroundPass1(mass, lp1[0.02])",
+             "Exponential::backgroundPass2(mass, lp2[-0.141])",            
+             "SUM::backgroundPass(vFracBkgPass[0.17]*backgroundPass1, backgroundPass2)",
+             
+             "Exponential::backgroundFail1(mass, lf[-0.037])",
+             "SUM::backgroundFail(backgroundFail1)",
+             
+             "efficiency[0.001,0,0.01]",
+             "signalFractionInPassing[0.9]"
+        ),
     ),    
     ## How to do the fit
     binnedFit = cms.bool(True),
