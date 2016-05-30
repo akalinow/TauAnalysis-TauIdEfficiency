@@ -13,7 +13,7 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 10000
 process.source = cms.Source("PoolSource", 
     fileNames = cms.untracked.vstring(),
 )
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10000) )    
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000000) )    
 
 process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
 process.load('Configuration.StandardSequences.MagneticField_cff')
@@ -185,7 +185,8 @@ process.tpTree = cms.EDAnalyzer("TagProbeFitTreeProducer",
         decayModeFindingNewDMs =  cms.string('tauID("decayModeFindingNewDMs")'),
         byLooseCombinedIsolationDeltaBetaCorr3Hits = cms.string('tauID("byLooseCombinedIsolationDeltaBetaCorr3Hits")'),
         againstMuonLoose3 =  cms.string('tauID("againstMuonLoose3")'),
-        againstMuonTight3 =  cms.string('tauID("againstMuonTight3")')
+        againstMuonTight3 =  cms.string('tauID("againstMuonTight3")'),
+        againstElectronVLooseMVA5 = cms.string('tauID("againstElectronVLooseMVA5")')
     ),
     tagVariables = cms.PSet(    
         KinematicVariables,

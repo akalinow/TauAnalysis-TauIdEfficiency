@@ -78,7 +78,11 @@ METPairPtBalance<T>::produce(edm::Event & iEvent, const edm::EventSetup & iSetup
             if (reco::deltaR2(  tag.eta(),   tag.phi(), (*ito)->eta(), (*ito)->phi()) > objDR2Tag_  &&
                 reco::deltaR2(probe.eta(), probe.phi(), (*ito)->eta(), (*ito)->phi()) > objDR2Probe_) {
 	      //values.push_back((tag.p4() + probe.p4() + (*ito)->p4()).pt());
+
 	      values.push_back((*ito)->p4().pt());
+
+	      //float mt = sqrt(2*(*ito)->p4().pt()*tag.pt()*(1 - cos((*ito)->p4().phi() - tag.p4().phi())));
+	      //values.push_back(mt);
 	      //values.push_back((tag.p4() + probe.p4()).Vect().Unit().x()*(*ito)->p4().Vect().Unit().x() +
 	      //	       (tag.p4() + probe.p4()).Vect().Unit().y()*(*ito)->p4().Vect().Unit().y());
             }
