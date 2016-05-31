@@ -14,10 +14,10 @@
 #include "CommonTools/Utils/interface/StringCutObjectSelector.h"
 
 template<typename T>
-class METPairPtBalance : public edm::EDProducer {
+class MTPair : public edm::EDProducer {
     public:
-        explicit METPairPtBalance(const edm::ParameterSet & iConfig);
-        virtual ~METPairPtBalance() ;
+        explicit MTPair(const edm::ParameterSet & iConfig);
+        virtual ~MTPair() ;
 
         virtual void produce(edm::Event & iEvent, const edm::EventSetup & iSetup);
 
@@ -26,28 +26,28 @@ class METPairPtBalance : public edm::EDProducer {
         edm::EDGetTokenT<edm::View<T>> objects_; 
         StringCutObjectSelector<T,true> objCut_; // lazy parsing, to allow cutting on variables not in reco::Candidate class
         double objDR2Tag_, objDR2Probe_;
+        bool useProbe_;
 };
 
 template<typename T>
-METPairPtBalance<T>::METPairPtBalance(const edm::ParameterSet & iConfig) :
+MTPair<T>::MTPair(const edm::ParameterSet & iConfig) :
     pairs_(consumes<edm::View<reco::Candidate>>(iConfig.getParameter<edm::InputTag>("pairs"))),
     objects_(consumes<edm::View<T>>(iConfig.getParameter<edm::InputTag>("objects"))),
     objCut_(iConfig.existsAs<std::string>("objectSelection") ? iConfig.getParameter<std::string>("objectSelection") : "", true),
     objDR2Tag_(std::pow(iConfig.getParameter<double>("minTagObjDR"),2)),
-    objDR2Probe_(std::pow(iConfig.getParameter<double>("minProbeObjDR"),2))
+    objDR2Probe_(std::pow(iConfig.getParameter<double>("minProbeObjDR"),2)),
+    useProbe_(iConfig.getParameter<bool>("useProbe"))
 {
     produces<edm::ValueMap<float> >();
 }
 
 
 template<typename T>
-METPairPtBalance<T>::~METPairPtBalance()
-{
-}
+MTPair<T>::~MTPair(){ }
 
 template<typename T>
 void 
-METPairPtBalance<T>::produce(edm::Event & iEvent, const edm::EventSetup & iSetup) {
+MTPair<T>::produce(edm::Event & iEvent, const edm::EventSetup & iSetup) {
     using namespace edm;
 
     // read input
@@ -77,7 +77,11 @@ METPairPtBalance<T>::produce(edm::Event & iEvent, const edm::EventSetup & iSetup
         for (typename std::vector<const T *>::const_iterator ito = selbegin; ito != selend; ++ito) { 
             if (reco::deltaR2(  tag.eta(),   tag.phi(), (*ito)->eta(), (*ito)->phi()) > objDR2Tag_  &&
                 reco::deltaR2(probe.eta(), probe.phi(), (*ito)->eta(), (*ito)->phi()) > objDR2Probe_) {
-	      values.push_back((*ito)->p4().pt());
+	     
+	      float mtTag = sqrt(2*(*ito)->p4().pt()*tag.pt()*(1 - cos((*ito)->p4().phi() - tag.p4().phi())));
+	      float mtProbe = sqrt(2*(*ito)->p4().pt()*probe.pt()*(1 - cos((*ito)->p4().phi() - probe.p4().phi())));
+	      if(useProbe_) values.push_back(mtProbe);
+	      else  values.push_back(mtTag);
             }
         }
     }
@@ -91,7 +95,7 @@ METPairPtBalance<T>::produce(edm::Event & iEvent, const edm::EventSetup & iSetup
 }
 
 
-typedef METPairPtBalance<reco::Candidate> CandMETPairPtBalance;
+typedef MTPair<reco::Candidate> CandMTPair;
 
 #include "FWCore/Framework/interface/MakerMacros.h"
-DEFINE_FWK_MODULE(CandMETPairPtBalance);
+DEFINE_FWK_MODULE(CandMTPair);

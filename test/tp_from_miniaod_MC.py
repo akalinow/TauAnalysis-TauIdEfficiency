@@ -57,19 +57,13 @@ else:
 process.triggerResultsFilter.l1tResults = "gtDigis"
 process.triggerResultsFilter.throw = False
 process.triggerResultsFilter.hltResults = cms.InputTag("TriggerResults","","HLT")
-process.metSelector = cms.EDFilter("PATMETSelector",
-    src = cms.InputTag("slimmedMETs"),
-    cut = cms.string("pt < 25"),
-    filter = cms.bool(True),                                
-)
-
 
 process.muonFilter = cms.EDFilter("CandViewCountFilter",
                                   src = cms.InputTag("slimmedMuons"),
                                   minNumber = cms.uint32(1),
                                   maxNumber = cms.uint32(2))
 
-process.fastFilter     = cms.Sequence(process.goodVertexFilter + process.triggerResultsFilter + process.muonFilter + process.metSelector)
+process.fastFilter     = cms.Sequence(process.goodVertexFilter + process.triggerResultsFilter + process.muonFilter)
 
 ##    __  __                       
 ##   |  \/  |_   _  ___  _ __  ___ 
@@ -80,7 +74,7 @@ process.fastFilter     = cms.Sequence(process.goodVertexFilter + process.trigger
 from MuonAnalysis.TagAndProbe.common_variables_cff import *
 from TauAnalysis.TauIdEfficiency.common_variables_tau_cff import *
 process.load("MuonAnalysis.TagAndProbe.common_modules_cff")
-
+'''
 process.tagMuons = cms.EDProducer("PFMuonMerger",
     mergeTracks = cms.bool(False),
     muons     = cms.InputTag("slimmedMuons"),
@@ -91,15 +85,13 @@ process.tagMuons = cms.EDProducer("PFMuonMerger",
                               " && " + MuonIDFlags2016.Isolation2016.value()),
     tracksCut    = cms.string("pt > 25 && abs(eta)<2.1"),
 )
-
 '''
+
 process.tagMuons = cms.EDFilter("PATMuonSelector",
     src = cms.InputTag("slimmedMuons"),
     cut = cms.string("pt > 25 && abs(eta)<2.1 && "+ MuonIDFlags2016.Tight2016.value()+
                      " && " + MuonIDFlags2016.Isolation2016.value())
 )
-'''
-
 
 process.oneTag  = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("tagMuons"), minNumber = cms.uint32(1))
 
@@ -110,16 +102,6 @@ process.tagTriggerMatchModule = cms.EDProducer("TriggerObjectStandAloneMatch",
     maxTagObjDR   = cms.double(0.1),
 )
 
-process.mtSelector = cms.EDProducer("CandViewShallowCloneCombiner",
-     decay = cms.string("slimmedMETs tagMuons"),
-     checkCharge = cms.bool(False),                           
-     cut   = cms.string("sqrt(2*daughter(0).pt*daughter(1).pt*(1 - cos(daughter(0).phi - daughter(1).phi)))<40"),
-)
-process.mtFilter = cms.EDFilter("CandViewCountFilter",
-                           src = cms.InputTag("mtSelector"),
-                           minNumber = cms.uint32(1)
-                           )
-
 ##
 ## Taus
 ##
@@ -129,13 +111,14 @@ process.mergedTaus = cms.EDProducer("PFTauMerger",
     photons     = cms.InputTag("slimmedPhotons"), 
     tracks    = cms.InputTag("packedPFCandidates"),
     ## Apply some minimal pt cut
-    tausCut     = cms.string("alternatLorentzVect.pt > 20 && abs(alternatLorentzVect.eta)<2.3"),
+    tausCut     = cms.string("pt > 20 && abs(eta)<2.3"),
     tracksCut    = cms.string("abs(eta)<2.3"),
 )
 
 process.probeTaus = cms.EDFilter("PATTauSelector",
     src = cms.InputTag("mergedTaus"),
-    cut = cms.string(''),
+    cut = cms.string('tauID("byLooseCombinedIsolationDeltaBetaCorr3Hits")==1'),
+    minNumber = cms.uint32(1)
 )
 
 process.tpPairs = cms.EDProducer("CandViewShallowCloneCombiner",
@@ -154,6 +137,24 @@ process.pairMETPtBalanceModule = cms.EDProducer("CandMETPairPtBalance",
     objectSelection = cms.string(""), 
     minTagObjDR   = cms.double(0.0),
     minProbeObjDR = cms.double(0.0),
+)
+
+process.tagMTModule = cms.EDProducer("CandMTPair", 
+    pairs   = cms.InputTag("tpPairs"),
+    objects = cms.InputTag("slimmedMETs"),
+    objectSelection = cms.string(""), 
+    minTagObjDR   = cms.double(0.0),
+    minProbeObjDR = cms.double(0.0),
+    useProbe = cms.bool(False)                              
+)
+
+process.probeMTModule = cms.EDProducer("CandMTPair", 
+    pairs   = cms.InputTag("tpPairs"),
+    objects = cms.InputTag("slimmedMETs"),
+    objectSelection = cms.string(""), 
+    minTagObjDR   = cms.double(0.0),
+    minProbeObjDR = cms.double(0.0),
+    useProbe = cms.bool(True)                              
 )
 
 process.tagMuonsMCMatch = cms.EDProducer("MCMatcher", # cut on deltaR, deltaPt/Pt; pick best by deltaR
@@ -190,7 +191,8 @@ process.tpTree = cms.EDAnalyzer("TagProbeFitTreeProducer",
     ),
     tagVariables = cms.PSet(    
         KinematicVariables,
-        triggerMatch = cms.InputTag("tagTriggerMatchModule")
+        dB = cms.string("dB"),
+        triggerMatch = cms.InputTag("tagTriggerMatchModule"),
     ),
     tagFlags = cms.PSet(),
     pairVariables = cms.PSet(
@@ -201,6 +203,8 @@ process.tpTree = cms.EDAnalyzer("TagProbeFitTreeProducer",
         probeMultiplicity = cms.InputTag("probeMultiplicity"),
         nJets30 = cms.InputTag("njets30Module"),
         MET = cms.InputTag("pairMETPtBalanceModule"),
+        MTprobe = cms.InputTag("probeMTModule"),
+        MTtag = cms.InputTag("tagMTModule"),
     ),
     pairFlags = cms.PSet(
         BestZ = cms.InputTag("bestPairByZMass"),
@@ -221,13 +225,12 @@ process.tnpSimpleSequence = cms.Sequence(
     process.tagMuons*process.tagMuonsMCMatch +  
     process.oneTag     +
     process.tagTriggerMatchModule + 
-    process.mtSelector*process.mtFilter +
     process.probeTaus*process.probeMuonsMCMatch +
     process.tpPairs    +
     process.onePair    +
     process.nverticesModule +
     process.njets30Module +
-    process.pairMETPtBalanceModule +
+    process.pairMETPtBalanceModule + process.tagMTModule +  process.probeMTModule +
     process.probeMultiplicities + 
     process.bestPairByZMass + 
     process.tpTree
