@@ -25,17 +25,20 @@ efficiencyPSetTemplate = cms.PSet(
 
 againstMuonLoose3_Zmumu = efficiencyPSetTemplate.clone()
 againstMuonLoose3_Zmumu.BinnedVariables._Parameterizable__addParameter("mcTrue",cms.vdouble(0.5,1.0))
-againstMuonLoose3_Zmumu.BinToPDFmap = cms.vstring("Zll_Model_Eta0","*abseta_bin1*","Zll_Model_Eta1", "*abseta_bin2*","Zll_Model_Eta2")
-
-againstMuonLoose3_Ztautau = efficiencyPSetTemplate.clone()
-againstMuonLoose3_Ztautau.BinnedVariables._Parameterizable__addParameter("mcTrue",cms.vdouble(0,0.4))
-againstMuonLoose3_Ztautau.BinToPDFmap = cms.vstring("Zll_Model_Eta0","*abseta_bin1*","Zll_Model_Eta1", "*abseta_bin2*","Zll_Model_Eta2")
+againstMuonLoose3_Zmumu.BinToPDFmap = cms.vstring("Zll_Model_LooseEta0","*abseta_bin1*","Zll_Model_LooseEta1", "*abseta_bin2*","Zll_Model_LooseEta2")
 
 againstMuonLoose3_Zll = efficiencyPSetTemplate.clone()
-againstMuonLoose3_Zll.BinToPDFmap = cms.vstring("Zll_Model_Eta0","*abseta_bin1*","Zll_Model_Eta1", "*abseta_bin2*","Zll_Model_Eta2")
+againstMuonLoose3_Zll.BinToPDFmap = cms.vstring("Zll_Model_LooseEta0","*abseta_bin1*","Zll_Model_LooseEta1", "*abseta_bin2*","Zll_Model_LooseEta2")
 
+againstMuonTight3_Zmumu = againstMuonLoose3_Zmumu.clone()
+againstMuonTight3_Zmumu.EfficiencyCategoryAndState = cms.vstring("againstMuonTight3", "pass")
+againstMuonTight3_Zmumu.BinToPDFmap = cms.vstring("Zll_Model_TightEta0","*abseta_bin1*","Zll_Model_TightEta1", "*abseta_bin2*","Zll_Model_TightEta2")
 
-Zll_Model_Eta0_Template = cms.vstring(
+againstMuonTight3_Zll = againstMuonLoose3_Zmumu.clone()
+againstMuonTight3_Zll.EfficiencyCategoryAndState = cms.vstring("againstMuonTight3", "pass")
+againstMuonTight3_Zll.BinToPDFmap = cms.vstring("Zll_Model_TightEta0","*abseta_bin1*","Zll_Model_TightEta1", "*abseta_bin2*","Zll_Model_TightEta2")
+
+Zll_Model_LooseEta0_Template = cms.vstring(
             "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Zmumu/abseta_bin0__mcTrue_bin0__Zmumu_Model_Eta0/workspaceFixedParams:signalPass",
             "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Zmumu/abseta_bin0__mcTrue_bin0__Zmumu_Model_Eta0/workspaceFixedParams:signalFail",
             "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Ztautau/abseta_bin0__mcTrue_bin0__Ztautau_Model_Eta0/workspaceFixedParams:backgroundPass",
@@ -44,7 +47,7 @@ Zll_Model_Eta0_Template = cms.vstring(
             "signalFractionInPassing[0.9]"
             )
 
-Zll_Model_Eta1_Template = cms.vstring(
+Zll_Model_LooseEta1_Template = cms.vstring(
             "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Zmumu/abseta_bin1__mcTrue_bin0__Zmumu_Model_Eta1/workspaceFixedParams:signalPass",
             "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Zmumu/abseta_bin1__mcTrue_bin0__Zmumu_Model_Eta1/workspaceFixedParams:signalFail",
             "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Ztautau/abseta_bin1__mcTrue_bin0__Ztautau_Model_Eta1/workspaceFixedParams:backgroundPass",
@@ -53,11 +56,38 @@ Zll_Model_Eta1_Template = cms.vstring(
             "signalFractionInPassing[0.9]"
             )
 
-Zll_Model_Eta2_Template = cms.vstring(
+Zll_Model_LooseEta2_Template = cms.vstring(
             "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Zmumu/abseta_bin2__mcTrue_bin0__Zmumu_Model_Eta2/workspaceFixedParams:signalPass",
             "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Zmumu/abseta_bin2__mcTrue_bin0__Zmumu_Model_Eta2/workspaceFixedParams:signalFail",
             "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Ztautau/abseta_bin2__mcTrue_bin0__Ztautau_Model_Eta2/workspaceFixedParams:backgroundPass",
             "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Ztautau/abseta_bin2__mcTrue_bin0__Ztautau_Model_Eta2/workspaceFixedParams:backgroundFail",
+            "efficiency[0.001,0,0.01]",
+            "signalFractionInPassing[0.9]"
+            )
+
+Zll_Model_TightEta0_Template = cms.vstring(
+            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Zmumu/abseta_bin0__mcTrue_bin0__Zmumu_Model_Eta0/workspaceFixedParams:signalPass",
+            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Zmumu/abseta_bin0__mcTrue_bin0__Zmumu_Model_Eta0/workspaceFixedParams:signalFail",
+            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Ztautau/abseta_bin0__mcTrue_bin0__Ztautau_Model_Eta0/workspaceFixedParams:backgroundPass",
+            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Ztautau/abseta_bin0__mcTrue_bin0__Ztautau_Model_Eta0/workspaceFixedParams:backgroundFail",
+            "efficiency[0.001,0,0.01]",
+            "signalFractionInPassing[0.9]"
+            )
+
+Zll_Model_TightEta1_Template = cms.vstring(
+            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Zmumu/abseta_bin1__mcTrue_bin0__Zmumu_Model_Eta1/workspaceFixedParams:signalPass",
+            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Zmumu/abseta_bin1__mcTrue_bin0__Zmumu_Model_Eta1/workspaceFixedParams:signalFail",
+            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Ztautau/abseta_bin1__mcTrue_bin0__Ztautau_Model_Eta1/workspaceFixedParams:backgroundPass",
+            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Ztautau/abseta_bin1__mcTrue_bin0__Ztautau_Model_Eta1/workspaceFixedParams:backgroundFail",
+            "efficiency[0.001,0,0.01]",
+            "signalFractionInPassing[0.9]"
+            )
+
+Zll_Model_TightEta2_Template = cms.vstring(
+            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Zmumu/abseta_bin2__mcTrue_bin0__Zmumu_Model_Eta2/workspaceFixedParams:signalPass",
+            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Zmumu/abseta_bin2__mcTrue_bin0__Zmumu_Model_Eta2/workspaceFixedParams:signalFail",
+            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Ztautau/abseta_bin2__mcTrue_bin0__Ztautau_Model_Eta2/workspaceFixedParams:backgroundPass",
+            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Ztautau/abseta_bin2__mcTrue_bin0__Ztautau_Model_Eta2/workspaceFixedParams:backgroundFail",
             "efficiency[0.001,0,0.01]",
             "signalFractionInPassing[0.9]"
             )
@@ -91,13 +121,19 @@ process.TnP_Muon_ID = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
     ## What to fit
     Efficiencies = cms.PSet(
         againstMuonLoose3_Zmumu = againstMuonLoose3_Zmumu,
-        againstMuonLoose3_Ztautau = againstMuonLoose3_Ztautau,
         againstMuonLoose3_Zll = againstMuonLoose3_Zll,
+
+        againstMuonTight3_Zmumu = againstMuonTight3_Zmumu,
+        againstMuonTight3_Zll = againstMuonTight3_Zll,
     ),
     PDFs = cms.PSet(
-        Zll_Model_Eta0 = Zll_Model_Eta0_Template,
-        Zll_Model_Eta1 = Zll_Model_Eta1_Template,
-        Zll_Model_Eta2 = Zll_Model_Eta2_Template,
+        Zll_Model_LooseEta0 = Zll_Model_LooseEta0_Template,
+        Zll_Model_LooseEta1 = Zll_Model_LooseEta1_Template,
+        Zll_Model_LooseEta2 = Zll_Model_LooseEta2_Template,
+
+        Zll_Model_TightEta0 = Zll_Model_TightEta0_Template,
+        Zll_Model_TightEta1 = Zll_Model_TightEta1_Template,
+        Zll_Model_TightEta2 = Zll_Model_TightEta2_Template,
     ),    
     ## How to do the fit
     binnedFit = cms.bool(True),

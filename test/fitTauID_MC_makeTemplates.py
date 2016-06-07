@@ -31,6 +31,11 @@ againstMuonLoose3_Ztautau = efficiencyPSetTemplate.clone()
 againstMuonLoose3_Ztautau.BinnedVariables._Parameterizable__addParameter("mcTrue",cms.vdouble(0,0.4))
 againstMuonLoose3_Ztautau.BinToPDFmap = cms.vstring("Ztautau_Model_Eta0","*abseta_bin1*","Ztautau_Model_Eta1", "*abseta_bin2*","Ztautau_Model_Eta2")
 
+againstMuonTight3_Zmumu = againstMuonLoose3_Zmumu.clone()
+againstMuonTight3_Zmumu.EfficiencyCategoryAndState = cms.vstring("againstMuonTight3", "pass")
+
+againstMuonTight3_Ztautau = againstMuonLoose3_Ztautau.clone()
+againstMuonTight3_Ztautau.EfficiencyCategoryAndState = cms.vstring("againstMuonTight3", "pass")
 
 Zmumu_Model = cms.vstring(
     "Voigtian::signal1Fail(mass, mean1Fail[92, 85,95], width[2.495], sigma1Fail[1, 0.5,2])",
@@ -99,6 +104,9 @@ process.TnP_Muon_ID = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
     Efficiencies = cms.PSet(
         againstMuonLoose3_Zmumu = againstMuonLoose3_Zmumu,
         againstMuonLoose3_Ztautau = againstMuonLoose3_Ztautau,
+
+        againstMuonTight3_Zmumu = againstMuonTight3_Zmumu,
+        againstMuonTight3_Ztautau = againstMuonTight3_Ztautau,
     ),
     PDFs = cms.PSet(
         Zmumu_Model_Eta0 = Zmumu_Model,
