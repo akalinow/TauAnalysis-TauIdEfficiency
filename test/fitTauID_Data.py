@@ -6,11 +6,11 @@ process.load('FWCore.MessageService.MessageLogger_cfi')
 process.source = cms.Source("EmptySource")
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1) )
 
-filePath = "/home/akalinow/scratch/CMS/TauID/Crab/Data/TauID_TnP/SingleMuon_Run2015D_16Dec2015_v1_v11/SingleMuon/SingleMuon_Run2015D_16Dec2015_v1_v11/160520_134214/0000/"
+filePath = "/home/akalinow/scratch/CMS/TauID/Crab/Data/TauID_TnP/SingleMuon_Run2015D_16Dec2015_v1_v17/SingleMuon/SingleMuon_Run2015D_16Dec2015_v1_v17/160531_115649/0000/"
 filePath += "tnpZ_Data.root"
 
 efficiencyPSetTemplate = cms.PSet(
-    UnbinnedVariables = cms.vstring("mass"),
+    UnbinnedVariables = cms.vstring("mass","tag_pt", "tag_triggerMatch", "tag_dB", "pair_dz", "pair_deltaR", "pair_probeMultiplicity", "pair_MET", "pair_MTtag", "pair_MTprobe", "decayModeFinding", "byLooseCombinedIsolationDeltaBetaCorr3Hits"),
     EfficiencyCategoryAndState = cms.vstring("againstMuonLoose3", "pass"), ## Numerator definition
     BinnedVariables = cms.PSet(
         ## Binning in continuous variables
@@ -105,10 +105,15 @@ process.TnP_Muon_ID = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
     Variables = cms.PSet(
         mass   = cms.vstring("Tag-muon Mass", "70", "110", "GeV/c^{2}"),
         abseta = cms.vstring("muon |#eta|", "0", "2.4", ""),
+        tag_pt  = cms.vstring("tag pT", "0", "1500", ""),
         tag_triggerMatch = cms.vstring("Tag matched to HLT item", "0.5", "1.0", ""),
+        tag_dB  = cms.vstring("dB", "0.0", "0.004", ""),
         pair_dz = cms.vstring("#Deltaz between two muons", "-0.05", "0.05", "cm"),
         pair_deltaR = cms.vstring("#DeltaR between two muons", "0.5", "5", ""),
         pair_probeMultiplicity = cms.vstring("Probe multiplicity", "1", "1", ""),
+        pair_MET = cms.vstring("MET", "0", "25", ""),
+        pair_MTtag = cms.vstring("MTtag", "0", "40", ""),
+        pair_MTprobe = cms.vstring("MTprobe", "0", "40", ""),
         decayModeFinding = cms.vstring("Decay mode finding", "0.5", "1.0", ""),
         #decayModeFindingNewDMs = cms.vstring("Decay mode finding NewDMs", "0.5", "1.0", ""),
         byLooseCombinedIsolationDeltaBetaCorr3Hits = cms.vstring("Combined loose isolation", "0.5", "1.0", ""),
@@ -121,7 +126,7 @@ process.TnP_Muon_ID = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
     ## What to fit
     Efficiencies = cms.PSet(
         againstMuonLoose3 = againstMuonLoose3_Data,
-        againstMuonTight3 = againstMuonTight3_Data,
+        #againstMuonTight3 = againstMuonTight3_Data,
     ),
     PDFs = cms.PSet(
         Data_Model_LooseEta0 = Data_Model_LooseEta0_Template,

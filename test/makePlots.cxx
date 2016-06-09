@@ -103,8 +103,15 @@ void plotMistagRateMC(std::string category = "againstMuonLoose3"){
   TGraphAsymmErrors *aGraph  = getResultGraph(category+"_Zll");
   TGraphAsymmErrors *aGraphMCTrue  = getResultGraph(category+"_Zmumu");
   TGraphAsymmErrors *aGraphMCTrueCount  = getResultGraph(category+"_Zmumu", true);
-
+  
   if(!aGraph || !aGraphMCTrue || !aGraphMCTrueCount) return;
+
+  std::cout<<"Zll: "<<std::endl;
+  aGraph->Print();
+  std::cout<<"Zmumu fit: "<<std::endl;
+  aGraphMCTrue->Print();
+  std::cout<<"Zmumu count: "<<std::endl;
+  aGraphMCTrueCount->Print();
   
   aGraphMCTrue->SetName("aGraphMCTrue");
   aGraphMCTrue->SetLineColor(2);
@@ -116,7 +123,7 @@ void plotMistagRateMC(std::string category = "againstMuonLoose3"){
 
   TH1F *hFrame = new TH1F("hFrame","",3,0,2.3);
   hFrame->SetMinimum(1E-4);
-  hFrame->SetMaximum(3E-3);
+  hFrame->SetMaximum(5E-3);
   if(category.find("Tight")!=std::string::npos){
     hFrame->SetMinimum(5E-6);
     hFrame->SetMaximum(1.5E-3);
@@ -196,7 +203,7 @@ void plotMistagRateData(std::string category = "againstMuonLoose3"){
 
   TH1F *hFrame = new TH1F("hFrame","",3,0,2.3);
   hFrame->SetMinimum(1E-4);
-  hFrame->SetMaximum(3E-3);
+  hFrame->SetMaximum(4E-3);
   if(category.find("Tight")!=std::string::npos){
     hFrame->SetMinimum(5E-6);
     hFrame->SetMaximum(1.5E-3);
@@ -398,8 +405,8 @@ void fixModelParameters(){
   getParamsMC("againstMuonLoose3_Zmumu");
   getParamsMC("againstMuonLoose3_Ztautau");
 
-  getParamsMC("againstMuonTight3_Zmumu");
-  getParamsMC("againstMuonTight3_Ztautau");
+  //getParamsMC("againstMuonTight3_Zmumu");
+  //getParamsMC("againstMuonTight3_Ztautau");
 
 }
 /////////////////////////////////////////////////////

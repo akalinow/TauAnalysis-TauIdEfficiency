@@ -6,14 +6,14 @@ process.load('FWCore.MessageService.MessageLogger_cfi')
 process.source = cms.Source("EmptySource")
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1) )
 
-filePath = "/home/akalinow/scratch/CMS/TauID/Crab/Data/TauID_TnP/DYJetsToLL_M_50_TuneCUETP8M1_13TeV_amcatnloFXFX_pythia8_v11_ext4/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/DYJetsToLL_M_50_TuneCUETP8M1_13TeV_amcatnloFXFX_pythia8_v11_ext4/160520_133905/0000/"
+filePath = "/home/akalinow/scratch/CMS/TauID/Crab/Data/TauID_TnP/DYJetsToLL_M_50_TuneCUETP8M1_13TeV_amcatnloFXFX_pythia8_v17_ext4/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/DYJetsToLL_M_50_TuneCUETP8M1_13TeV_amcatnloFXFX_pythia8_v17_ext4/160531_115349/0000/"
 
 #filePath = "./"
 filePath += "tnpZ_MC.root"
 
 
 efficiencyPSetTemplate = cms.PSet(
-    UnbinnedVariables = cms.vstring("mass"),
+    UnbinnedVariables = cms.vstring("mass","tag_pt", "tag_triggerMatch", "tag_dB", "pair_dz", "pair_deltaR", "pair_probeMultiplicity", "pair_MET", "pair_MTtag", "pair_MTprobe", "decayModeFinding", "byLooseCombinedIsolationDeltaBetaCorr3Hits"),
     EfficiencyCategoryAndState = cms.vstring("againstMuonLoose3", "pass"), ## Numerator definition
     BinnedVariables = cms.PSet(
         ## Binning in continuous variables
@@ -86,10 +86,15 @@ process.TnP_Muon_ID = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
     Variables = cms.PSet(
         mass   = cms.vstring("Tag-muon Mass", "70", "110", "GeV/c^{2}"),
         abseta = cms.vstring("muon |#eta|", "0", "2.4", ""),
+        tag_pt  = cms.vstring("tag pT", "0", "1500", ""),
         tag_triggerMatch = cms.vstring("Tag matched to HLT item", "0.5", "1.0", ""),
+        tag_dB  = cms.vstring("dB", "0.0", "0.004", ""),
         pair_dz = cms.vstring("#Deltaz between two muons", "-0.05", "0.05", "cm"),
         pair_deltaR = cms.vstring("#DeltaR between two muons", "0.5", "5", ""),
         pair_probeMultiplicity = cms.vstring("Probe multiplicity", "1", "1", ""),
+        pair_MET = cms.vstring("MET", "0", "25", ""),
+        pair_MTtag = cms.vstring("MTprobe", "0", "40", ""),
+        pair_MTprobe = cms.vstring("MTprobe", "0", "40", ""),
         decayModeFinding = cms.vstring("Decay mode finding", "0.5", "1.0", ""),
         #decayModeFindingNewDMs = cms.vstring("Decay mode finding NewDMs", "0.5", "1.0", ""),
         byLooseCombinedIsolationDeltaBetaCorr3Hits = cms.vstring("Combined loose isolation", "0.5", "1.0", ""),
@@ -105,8 +110,8 @@ process.TnP_Muon_ID = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
         againstMuonLoose3_Zmumu = againstMuonLoose3_Zmumu,
         againstMuonLoose3_Ztautau = againstMuonLoose3_Ztautau,
 
-        againstMuonTight3_Zmumu = againstMuonTight3_Zmumu,
-        againstMuonTight3_Ztautau = againstMuonTight3_Ztautau,
+        #againstMuonTight3_Zmumu = againstMuonTight3_Zmumu,
+        #againstMuonTight3_Ztautau = againstMuonTight3_Ztautau,
     ),
     PDFs = cms.PSet(
         Zmumu_Model_Eta0 = Zmumu_Model,
