@@ -129,7 +129,7 @@ process.TnP_Muon_ID = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
     ## What to fit
     Efficiencies = cms.PSet(
         againstMuonLoose3 = againstMuonLoose3_Data,
-        #againstMuonTight3 = againstMuonTight3_Data,
+        againstMuonTight3 = againstMuonTight3_Data,
     ),
     PDFs = cms.PSet(
         Data_Model_LooseEta0 = Data_Model_LooseEta0_Template,

@@ -127,8 +127,8 @@ process.TnP_Muon_ID = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
         againstMuonLoose3_Zmumu = againstMuonLoose3_Zmumu,
         againstMuonLoose3_Zll = againstMuonLoose3_Zll,
 
-        #againstMuonTight3_Zmumu = againstMuonTight3_Zmumu,
-        #againstMuonTight3_Zll = againstMuonTight3_Zll,
+        againstMuonTight3_Zmumu = againstMuonTight3_Zmumu,
+        againstMuonTight3_Zll = againstMuonTight3_Zll,
     ),
     PDFs = cms.PSet(
         Zll_Model_LooseEta0 = Zll_Model_LooseEta0_Template,
