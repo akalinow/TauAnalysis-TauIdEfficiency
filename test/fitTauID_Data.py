@@ -6,7 +6,10 @@ process.load('FWCore.MessageService.MessageLogger_cfi')
 process.source = cms.Source("EmptySource")
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1) )
 
-filePath = "/home/akalinow/scratch/CMS/TauID/Crab/Data/TauID_TnP/SingleMuon_Run2015D_16Dec2015_v1_v17/SingleMuon/SingleMuon_Run2015D_16Dec2015_v1_v17/160531_115649/0000/"
+#filePath = "/home/akalinow/scratch/CMS/TauID/Crab/Data/TauID_TnP/SingleMuon_Run2015D_16Dec2015_v1_v17/SingleMuon/SingleMuon_Run2015D_16Dec2015_v1_v17/160531_115649/0000/"
+
+filePath = "/home/akalinow/scratch/CMS/TauID/Crab/Data/TauID_TnP/SingleMuon_Run2016B_PromptReco_v2_v22/SingleMuon/SingleMuon_Run2016B_PromptReco_v2_v22/160613_100728/0000/"
+
 filePath += "tnpZ_Data.root"
 
 efficiencyPSetTemplate = cms.PSet(
@@ -33,7 +36,7 @@ Data_Model_LooseEta0_Template = cms.vstring(
     "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Ztautau/abseta_bin0__mcTrue_bin0__Ztautau_Model_Eta0/workspaceFixedParams:backgroundFail",
     "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Ztautau/abseta_bin0__mcTrue_bin0__Ztautau_Model_Eta0/workspaceFixedParams:backgroundZtautauPass",
     "Exponential::backgroundWJetPass(mass, lp3[-0.235,-1,0])",
-    "SUM::backgroundPass(vFracWJetBkgPass[0.1,0,1]*backgroundWJetPass, backgroundZtautauPass)",
+    "SUM::backgroundPass(vFracWJetBkgPass[0.2,0,1]*backgroundWJetPass, backgroundZtautauPass)",
     "efficiency[0.001,0,0.01]",
     "signalFractionInPassing[0.9]"
             )
@@ -55,7 +58,7 @@ Data_Model_LooseEta2_Template = cms.vstring(
     "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Ztautau/abseta_bin2__mcTrue_bin0__Ztautau_Model_Eta2/workspaceFixedParams:backgroundFail",
     "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Ztautau/abseta_bin2__mcTrue_bin0__Ztautau_Model_Eta2/workspaceFixedParams:backgroundZtautauPass",
     "Exponential::backgroundWJetPass(mass, lp3[-0.235,-1,0])",
-    "SUM::backgroundPass(vFracWJetBkgPass[0.1,0,1]*backgroundWJetPass, backgroundZtautauPass)",
+    "SUM::backgroundPass(vFracWJetBkgPass[0.2,0.1,1]*backgroundWJetPass, backgroundZtautauPass)",
     "efficiency[0.001,0,0.01]",
     "signalFractionInPassing[0.9]"
 )
@@ -103,7 +106,7 @@ process.TnP_Muon_ID = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
     InputDirectoryName = cms.string("tpTree"),  
     ## Variables for binning
     Variables = cms.PSet(
-        mass   = cms.vstring("Tag-muon Mass", "70", "110", "GeV/c^{2}"),
+        mass   = cms.vstring("Tag-muon Mass", "60", "110", "GeV/c^{2}"),
         abseta = cms.vstring("muon |#eta|", "0", "2.4", ""),
         tag_pt  = cms.vstring("tag pT", "0", "1500", ""),
         tag_triggerMatch = cms.vstring("Tag matched to HLT item", "0.5", "1.0", ""),
@@ -113,7 +116,7 @@ process.TnP_Muon_ID = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
         pair_probeMultiplicity = cms.vstring("Probe multiplicity", "1", "1", ""),
         pair_MET = cms.vstring("MET", "0", "25", ""),
         pair_MTtag = cms.vstring("MTtag", "0", "40", ""),
-        pair_MTprobe = cms.vstring("MTprobe", "0", "40", ""),
+        pair_MTprobe = cms.vstring("MTprobe", "0", "4000", ""),
         decayModeFinding = cms.vstring("Decay mode finding", "0.5", "1.0", ""),
         #decayModeFindingNewDMs = cms.vstring("Decay mode finding NewDMs", "0.5", "1.0", ""),
         byLooseCombinedIsolationDeltaBetaCorr3Hits = cms.vstring("Combined loose isolation", "0.5", "1.0", ""),
@@ -139,7 +142,7 @@ process.TnP_Muon_ID = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
     ),    
     ## How to do the fit
     binnedFit = cms.bool(True),
-    binsForFit = cms.uint32(15),
+    binsForFit = cms.uint32(20),
     saveDistributionsPlot = cms.bool(False),
     NumCPU = cms.uint32(1), ## leave to 1 for now, RooFit gives funny results otherwise
     SaveWorkspace = cms.bool(True),

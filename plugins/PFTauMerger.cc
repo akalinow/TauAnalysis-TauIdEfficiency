@@ -82,7 +82,7 @@ PFTauMerger::produce(edm::Event & iEvent, const edm::EventSetup & iSetup) {
                 }
             }	    
             // make a pat::Tau from a track
-            double energy = sqrt(track->p() * track->p() + 0.13957018);
+            double energy = sqrt(track->p() * track->p() + 0.105658);	    
             math::XYZTLorentzVector p4(track->px(), track->py(), track->pz(), energy);
 	    /*
 	    for (std::vector<pat::Photon>::const_iterator itPhoton = photons->begin(); itPhoton!=photons->end(); ++itPhoton){

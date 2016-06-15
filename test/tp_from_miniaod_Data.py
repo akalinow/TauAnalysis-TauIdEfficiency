@@ -26,6 +26,11 @@ if "CMSSW_7_6_" in os.environ['CMSSW_VERSION']:
     process.source.fileNames = [
         'file:///home/akalinow/scratch/CMS/TauID/Data/SingleMuon/Run2015D-16Dec2015-v1/MINIAOD/1/00006301-CAA8-E511-AD39-549F35AD8BC9.root',
     ]
+elif "CMSSW_8_0_" in os.environ['CMSSW_VERSION']:
+    process.GlobalTag.globaltag = cms.string('80X_dataRun2_Prompt_v8')
+    process.source.fileNames = [
+        'file:///home/akalinow/scratch/CMS/TauID/Data/SingleMuon/Run2015D-16Dec2015-v1/MINIAOD/1/00006301-CAA8-E511-AD39-549F35AD8BC9.root',
+    ]
 else: raise RuntimeError, "Unknown CMSSW version %s" % os.environ['CMSSW_VERSION']
 
 dataPath = "/scratch_local/akalinow/CMS/TauID/Data/SingleMuon/Run2015D-16Dec2015-v1/MINIAOD"
@@ -48,7 +53,7 @@ process.goodVertexFilter = cms.EDFilter("VertexSelector",
 process.load("HLTrigger.HLTfilters.triggerResultsFilter_cfi")
 
 if TRIGGER == "SingleMu":
-    process.triggerResultsFilter.triggerConditions = cms.vstring('HLT_IsoMu18_v*')
+    process.triggerResultsFilter.triggerConditions = cms.vstring('HLT_IsoMu18_v*', 'HLT_IsoMu20_v*')
     
 else:
     raise RuntimeError, "TRIGGER must be 'SingleMu' or 'DoubleMu'"
@@ -171,8 +176,7 @@ process.tpTree = cms.EDAnalyzer("TagProbeFitTreeProducer",
         decayModeFindingNewDMs =  cms.string('tauID("decayModeFindingNewDMs")'),
         byLooseCombinedIsolationDeltaBetaCorr3Hits = cms.string('tauID("byLooseCombinedIsolationDeltaBetaCorr3Hits")'),
         againstMuonLoose3 =  cms.string('tauID("againstMuonLoose3")'),
-        againstMuonTight3 =  cms.string('tauID("againstMuonTight3")'),
-        againstElectronVLooseMVA5 = cms.string('tauID("againstElectronVLooseMVA5")')
+        againstMuonTight3 =  cms.string('tauID("againstMuonTight3")')
     ),
     tagVariables = cms.PSet(    
         KinematicVariables,

@@ -82,7 +82,7 @@ PFMuonMerger::produce(edm::Event & iEvent, const edm::EventSetup & iSetup) {
 	    //p4.SetE(p4.E()+itPhoton->p4().E());
 	  }
 	}
-	*/  	
+	*/	
 	reco::Muon aRecoMuon(it->charge(), p4, it->vertex());
 	out->push_back(pat::Muon(aRecoMuon));
        	

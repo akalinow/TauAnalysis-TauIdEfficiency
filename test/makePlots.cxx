@@ -161,7 +161,7 @@ void plotMistagRateMC(std::string category = "againstMuonLoose3"){
   aCanvas->SetWindowSize(700,200);
   TGraphAsymmErrors *grRatio = getRatioGraph(aGraph, aGraphMCTrueCount);
   hFrame->SetYTitle("#frac{DY #rightarrow ll with fit}{DY #rightarrow #mu #mu with count}");
-  hFrame->SetMaximum(1.05);
+  hFrame->SetMaximum(1.1);
   hFrame->SetMinimum(0.9);
   hFrame->GetYaxis()->SetTitleOffset(0.6);
   hFrame->GetYaxis()->SetLabelSize(0.08);
