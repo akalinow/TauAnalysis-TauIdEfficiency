@@ -405,8 +405,8 @@ void fixModelParameters(){
   getParamsMC("againstMuonLoose3_Zmumu");
   getParamsMC("againstMuonLoose3_Ztautau");
 
-  //getParamsMC("againstMuonTight3_Zmumu");
-  //getParamsMC("againstMuonTight3_Ztautau");
+  getParamsMC("againstMuonTight3_Zmumu");
+  getParamsMC("againstMuonTight3_Ztautau");
 
 }
 /////////////////////////////////////////////////////

@@ -34,6 +34,7 @@ againstMuonTight3_Zmumu.EfficiencyCategoryAndState = cms.vstring("againstMuonTig
 againstMuonTight3_Zmumu.BinToPDFmap = cms.vstring("Zll_Model_TightEta0","*abseta_bin1*","Zll_Model_TightEta1", "*abseta_bin2*","Zll_Model_TightEta2")
 
 againstMuonTight3_Zll = againstMuonLoose3_Zmumu.clone()
+againstMuonTight3_Zll.BinnedVariables.mcTrue = cms.vdouble(0,1.0)
 againstMuonTight3_Zll.EfficiencyCategoryAndState = cms.vstring("againstMuonTight3", "pass")
 againstMuonTight3_Zll.BinToPDFmap = cms.vstring("Zll_Model_TightEta0","*abseta_bin1*","Zll_Model_TightEta1", "*abseta_bin2*","Zll_Model_TightEta2")
 
