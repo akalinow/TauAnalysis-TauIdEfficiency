@@ -6,8 +6,8 @@ process.load('FWCore.MessageService.MessageLogger_cfi')
 process.source = cms.Source("EmptySource")
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1) )
 
-#filePath = "/home/akalinow/scratch/CMS/TauID/Crab/Data/TauID_TnP/SingleMuon_Run2015D_16Dec2015_v1_v17/SingleMuon/SingleMuon_Run2015D_16Dec2015_v1_v17/160531_115649/0000/"
-filePath = "/home/akalinow/scratch/CMS/TauID/Crab/Data/TauID_TnP/SingleMuon_Run2016B_PromptReco_v2_v22/SingleMuon/SingleMuon_Run2016B_PromptReco_v2_v22/160613_100728/0000/"
+#filePath = "/home/akalinow/scratch/CMS/TauID/Crab/Data/TauID_TnP/16_06_2016/SingleMuon_Run2016B_PromptReco_v2_v28/SingleMuon/SingleMuon_Run2016B_PromptReco_v2_v28/160616_085626/0000/"
+filePath = "/home/akalinow/scratch/CMS/TauID/Crab/Data/TauID_TnP/SingleMuon_Run2016B_PromptReco_v2_v30/SingleMuon/SingleMuon_Run2016B_PromptReco_v2_v30/160707_133020/0000/"
 
 filePath += "tnpZ_Data.root"
 
@@ -17,6 +17,7 @@ efficiencyPSetTemplate = cms.PSet(
     BinnedVariables = cms.PSet(
         ## Binning in continuous variables
         abseta = cms.vdouble(0.0, 1.2, 1.7, 2.3),
+        #run = cms.vdouble(271036, 274422, 275125),
         ## flags and conditions required at the denominator,
     ),
     BinToPDFmap = cms.vstring("Zll_Model"), ## PDF to use, as defined below
@@ -105,6 +106,7 @@ process.TnP_Muon_ID = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
     InputDirectoryName = cms.string("tpTree"),  
     ## Variables for binning
     Variables = cms.PSet(
+        run   = cms.vstring("Run", "271036", "274421", ""),
         mass   = cms.vstring("Tag-muon Mass", "60", "110", "GeV/c^{2}"),
         abseta = cms.vstring("muon |#eta|", "0", "2.4", ""),
         tag_pt  = cms.vstring("tag pT", "0", "1500", ""),

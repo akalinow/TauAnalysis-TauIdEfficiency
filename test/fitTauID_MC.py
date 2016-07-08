@@ -6,7 +6,7 @@ process.load('FWCore.MessageService.MessageLogger_cfi')
 process.source = cms.Source("EmptySource")
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1) )
 
-filePath = "/home/akalinow/scratch/CMS/TauID/Crab/Data/TauID_TnP/DYJetsToLL_M_50_TuneCUETP8M1_13TeV_amcatnloFXFX_pythia8_v17_ext4/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/DYJetsToLL_M_50_TuneCUETP8M1_13TeV_amcatnloFXFX_pythia8_v17_ext4/160531_115349/0000/"
+filePath = "/home/akalinow/scratch/CMS/TauID/Crab/Data/TauID_TnP/16_06_2016/DYJetsToLL_M_50_TuneCUETP8M1_13TeV_amcatnloFXFX_pythia8_v17_ext4/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/DYJetsToLL_M_50_TuneCUETP8M1_13TeV_amcatnloFXFX_pythia8_v17_ext4/160531_115349/0000/"
 
 #filePath = "./"
 filePath += "tnpZ_MC.root"
@@ -33,8 +33,7 @@ againstMuonTight3_Zmumu = againstMuonLoose3_Zmumu.clone()
 againstMuonTight3_Zmumu.EfficiencyCategoryAndState = cms.vstring("againstMuonTight3", "pass")
 againstMuonTight3_Zmumu.BinToPDFmap = cms.vstring("Zll_Model_TightEta0","*abseta_bin1*","Zll_Model_TightEta1", "*abseta_bin2*","Zll_Model_TightEta2")
 
-againstMuonTight3_Zll = againstMuonLoose3_Zmumu.clone()
-againstMuonTight3_Zll.BinnedVariables.mcTrue = cms.vdouble(0,1.0)
+againstMuonTight3_Zll = efficiencyPSetTemplate.clone()
 againstMuonTight3_Zll.EfficiencyCategoryAndState = cms.vstring("againstMuonTight3", "pass")
 againstMuonTight3_Zll.BinToPDFmap = cms.vstring("Zll_Model_TightEta0","*abseta_bin1*","Zll_Model_TightEta1", "*abseta_bin2*","Zll_Model_TightEta2")
 

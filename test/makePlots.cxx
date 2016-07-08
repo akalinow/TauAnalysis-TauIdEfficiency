@@ -1,7 +1,7 @@
 /////////////////////////////////////////////////////
 /////////////////////////////////////////////////////
 std::string fNameMC =   "TnP_MuonToTau_MisID_MC.root";
-std::string fNameData = "TnP_MuonToTau_MisID_Data.root";
+std::string fNameData = "TnP_MuonToTau_MisID_Data2015.root";
 
 std::string topDirectory = "tpTree/";
 /////////////////////////////////////////////////////
@@ -16,8 +16,14 @@ void plotFitCanvas(std::string category = "againstMuonLoose3_Zmumu", bool isData
   std::string objName = "fit_canvas";
   std::string objectPath = dirName+objName;
   std::string fitModelName = category.substr(category.find("3_")+2,category.size())+"_Model";
+  std::string binnedVars =   "__";
+  std::string workingPointName = "Loose";
+  if(category.find("Tight")!=string::npos) workingPointName = "Tight"; 
   fitModelName = "Zll_Model";
-  std::string binnedVars =   "__mcTrue_bin0__";  
+  
+  if(category.find("Zmumu")!=string::npos){
+    binnedVars =   "__mcTrue_bin0__";  
+  }
   if(isData){
     fitModelName = "Data_Model";
     binnedVars =   "__";
@@ -28,7 +34,7 @@ void plotFitCanvas(std::string category = "againstMuonLoose3_Zmumu", bool isData
     std::string etaBinNumber = std::to_string(iEta);
     std::string nameSuffix = "Eta"+etaBinNumber;
     if(isData) nameSuffix+="Data";
-    dirName = topDirectory+category+"/abseta_bin"+etaBinNumber+binnedVars+fitModelName+"_Eta"+etaBinNumber+"/";
+    dirName = topDirectory+category+"/abseta_bin"+etaBinNumber+binnedVars+fitModelName+"_"+workingPointName+"Eta"+etaBinNumber+"/";
     objectPath = dirName+objName;
        
     TCanvas *fit_canvas = (TCanvas*)file.Get(objectPath.c_str());
@@ -203,10 +209,10 @@ void plotMistagRateData(std::string category = "againstMuonLoose3"){
 
   TH1F *hFrame = new TH1F("hFrame","",3,0,2.3);
   hFrame->SetMinimum(1E-4);
-  hFrame->SetMaximum(4E-3);
+  hFrame->SetMaximum(5E-3);
   if(category.find("Tight")!=std::string::npos){
     hFrame->SetMinimum(5E-6);
-    hFrame->SetMaximum(1.5E-3);
+    hFrame->SetMaximum(2E-3);
   }
   hFrame->SetStats(kFALSE);
   hFrame->SetXTitle("|#eta|");
@@ -248,6 +254,7 @@ void plotMistagRateData(std::string category = "againstMuonLoose3"){
   hFrame->GetXaxis()->SetTitleSize(0.08);
   hFrame->Draw();  
   grRatio->Draw("p");
+  grRatio->Print();
 
   aCanvas->Print(("fig_png/"+category+"_misTagRateMCvsMatchedData_Ratio.png").c_str());
 
@@ -386,15 +393,79 @@ void plotAll(){
   
   plotFitCanvas("againstMuonLoose3_Zmumu",isData);
   plotFitCanvas("againstMuonLoose3_Ztautau",isData);
-  plotFitCanvas("againstMuonLoose3_Zll",isData);
-  plotMistagRate("againstMuonLoose3",isData);
 
+  plotFitCanvas("againstMuonLoose3_Zll",isData);
+  plotFitCanvas("againstMuonTight3_Zll",isData);
+  
+  plotMistagRate("againstMuonLoose3",isData);
   plotMistagRate("againstMuonTight3",isData);
 
   isData = true;
   plotFitCanvas("againstMuonLoose3",isData);
   plotMistagRate("againstMuonLoose3",isData);
+
+  plotFitCanvas("againstMuonTight3",isData);
+  plotMistagRate("againstMuonTight3",isData);
     
+}
+/////////////////////////////////////////////////////
+/////////////////////////////////////////////////////
+void plotDitributions(std::string variable){
+  
+  TFile *mcFile = new TFile("/home/akalinow/scratch/CMS/TauID/Crab/Data/TauID_TnP/16_06_2016/DYJetsToLL_M_50_TuneCUETP8M1_13TeV_amcatnloFXFX_pythia8_v17_ext4/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/DYJetsToLL_M_50_TuneCUETP8M1_13TeV_amcatnloFXFX_pythia8_v17_ext4/160531_115349/0000/tnpZ_MC.root");
+  TFile *dataFile = new TFile("/home/akalinow/scratch/CMS/TauID/Crab/Data/TauID_TnP/SingleMuon_Run2016B_PromptReco_v2_v30/SingleMuon/SingleMuon_Run2016B_PromptReco_v2_v30/160707_133020/0000/tnpZ_Data.root");
+  
+  TTree *dataTree = (TTree*)dataFile->Get("tpTree/fitter_tree");
+  TTree *mcTree = (TTree*)mcFile->Get("tpTree/fitter_tree");
+
+  TCut baseCut = "tag_triggerMatch==1 && tag_dB<0.004 && pair_probeMultiplicity==1 && pair_MET<25 &&  pair_MTtag<40 && abs(pair_dz)<0.05 && pair_deltaR>0.5 && decayModeFinding==1 && byLooseCombinedIsolationDeltaBetaCorr3Hits==1 && mass>85 && mass<95";
+  TCut mcCut = "mcTrue==1";
+  TCut etaCut = "1";
+
+  
+  TH1F *hMC = 0;  
+  if(variable=="pt"){
+    hMC = new TH1F("hMC","",20,0,100);
+    hMC->SetXTitle("p_{T}^{probe} [GeV/c]");
+  }
+  if(variable=="eta"){
+    hMC = new TH1F("hMC","",10,-2.4,2.4);
+    hMC->SetXTitle("#eta^{probe}");
+  }
+
+  TH1F *hData = (TH1F*)hMC->Clone("hData");
+
+  mcTree->Draw((variable+">>hMC").c_str(),baseCut && mcCut && etaCut,"goff");
+  dataTree->Draw((variable+">>hData").c_str(),baseCut && etaCut,"goff");
+
+  hMC->Scale(1.0/hMC->Integral(0,hMC->GetNbinsX()+1));
+  hData->Scale(1.0/hData->Integral(0,hData->GetNbinsX()+1));
+
+  if(hData->GetMaximum()>hMC->GetMaximum()){
+    hMC->SetMaximum(1.05*hData->GetMaximum());
+  }
+
+  hMC->SetLineWidth(3);
+  hData->SetLineWidth(3);
+
+  hMC->SetLineColor(2);
+  hData->SetLineColor(1);
+
+  hMC->SetStats(kFALSE);
+
+  TCanvas *aCanvas = new TCanvas("aCanvas","",460,500);
+  //aCanvas->SetLogy();
+  hMC->Draw();
+  hData->Draw("same");
+
+  TLegend *aLegend = new TLegend(0.7,0.7,0.9,0.85,NULL,"brNDC");
+  aLegend->SetTextSize(0.05);
+  aLegend->SetFillStyle(4000);
+  aLegend->SetBorderSize(0);
+  aLegend->SetFillColor(10);
+  aLegend->AddEntry(hMC,"DY MC","l");
+  aLegend->AddEntry(hData,"DATA","l");
+  aLegend->Draw();
 }
 /////////////////////////////////////////////////////
 /////////////////////////////////////////////////////

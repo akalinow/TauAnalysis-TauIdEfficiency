@@ -175,6 +175,7 @@ process.tpTree = cms.EDAnalyzer("TagProbeFitTreeProducer",
         decayModeFinding =  cms.string('tauID("decayModeFinding")'),
         decayModeFindingNewDMs =  cms.string('tauID("decayModeFindingNewDMs")'),
         byLooseCombinedIsolationDeltaBetaCorr3Hits = cms.string('tauID("byLooseCombinedIsolationDeltaBetaCorr3Hits")'),
+        byTightIsolationMVArun2v1DBoldDMwLT = cms.string('tauID("byTightIsolationMVArun2v1DBoldDMwLT")'),
         againstMuonLoose3 =  cms.string('tauID("againstMuonLoose3")'),
         againstMuonTight3 =  cms.string('tauID("againstMuonTight3")')
     ),
@@ -199,7 +200,7 @@ process.tpTree = cms.EDAnalyzer("TagProbeFitTreeProducer",
         BestZ = cms.InputTag("bestPairByZMass"),
     ),
     isMC           = cms.bool(False),
-    addRunLumiInfo = cms.bool(False),
+    addRunLumiInfo = cms.bool(True),
 )
 
 process.nverticesModule.objects = cms.InputTag("offlineSlimmedPrimaryVertices")
