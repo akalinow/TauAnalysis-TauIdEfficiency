@@ -7,8 +7,8 @@ process.source = cms.Source("EmptySource")
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1) )
 
 #filePath = "/home/akalinow/scratch/CMS/TauID/Crab/Data/TauID_TnP/16_06_2016/SingleMuon_Run2016B_PromptReco_v2_v28/SingleMuon/SingleMuon_Run2016B_PromptReco_v2_v28/160616_085626/0000/"
-#filePath = "/home/akalinow/scratch/CMS/TauID/Crab/Data/TauID_TnP/SingleMuon_Run2016B_PromptReco_v2_v30/SingleMuon/SingleMuon_Run2016B_PromptReco_v2_v30/160707_133020/0000/"
-filePath = "/home/akalinow/scratch/CMS/TauID/Crab/Data/TauID_TnP/"
+filePath = "/home/akalinow/scratch/CMS/TauID/Crab/Data/TauID_TnP/SingleMuon_Run2016B_PromptReco_v2_v30/SingleMuon/SingleMuon_Run2016B_PromptReco_v2_v30/160707_133020/0000/"
+#filePath = "/home/akalinow/scratch/CMS/TauID/Crab/Data/TauID_TnP/"
 
 filePath += "tnpZ_Data.root"
 

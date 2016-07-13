@@ -29,16 +29,17 @@ if "CMSSW_7_6_" in os.environ['CMSSW_VERSION']:
 elif "CMSSW_8_0_" in os.environ['CMSSW_VERSION']:
     process.GlobalTag.globaltag = cms.string('80X_dataRun2_Prompt_ICHEP16JEC_v0')
     process.source.fileNames = [
-        'file:///home/akalinow/scratch/CMS/TauID/Data/SingleMuon/Run2015D-16Dec2015-v1/MINIAOD/1/00006301-CAA8-E511-AD39-549F35AD8BC9.root',
+        'file:///home/akalinow/scratch/CMS/TauID/Data/SingleMuon/Run2016B-PromptReco-v2/MINIAOD/02D9C19F-571A-E611-AD8E-02163E013732.root',
     ]
 else: raise RuntimeError, "Unknown CMSSW version %s" % os.environ['CMSSW_VERSION']
-
+'''
 dataPath = "/scratch_local/akalinow/CMS/TauID/Data/SingleMuon/Run2015D-16Dec2015-v1/MINIAOD"
 command = "ls "+dataPath+"/*.root"
 fileList = commands.getoutput(command).split("\n")   
 process.source.fileNames =  cms.untracked.vstring()
 for aFile in fileList:
     process.source.fileNames.append('file:'+aFile)
+'''
 
 ## SELECT WHAT DATASET YOU'RE RUNNING ON
 TRIGGER="SingleMu"
@@ -59,6 +60,7 @@ else:
     raise RuntimeError, "TRIGGER must be 'SingleMu' or 'DoubleMu'"
 
 process.triggerResultsFilter.l1tResults = "gtStage2Digis"
+#process.triggerResultsFilter.l1tResults = "gtDigis"
 process.triggerResultsFilter.throw = False
 process.triggerResultsFilter.hltResults = cms.InputTag("TriggerResults","","HLT")
 
@@ -106,8 +108,8 @@ process.tagTriggerMatchModule = cms.EDProducer("TriggerObjectStandAloneMatch",
     objectSelection = cms.string('hasFilterLabel("hltL3crIsoL1sMu16L1f0L2f10QL3f18QL3trkIsoFiltered0p09")'),
     maxTagObjDR   = cms.double(0.1),
 )
-if process.GlobalTag.globaltag == cms.string('80X_dataRun2_Prompt_v8'):
-    process.tagTriggerMatchModule.objectSelection = cms.string('hasFilterLabel("hltL3crIsoL1sMu18L1f0L2f10QL3f20QL3trkIsoFiltered0p09")'),                                                  
+if process.GlobalTag.globaltag == cms.string('80X_dataRun2_Prompt_ICHEP16JEC_v0'):
+    process.tagTriggerMatchModule.objectSelection = cms.string('hasFilterLabel("hltL3crIsoL1sMu18L1f0L2f10QL3f20QL3trkIsoFiltered0p09")')                                                  
 
 ##
 ## Taus
