@@ -7,7 +7,8 @@ process.source = cms.Source("EmptySource")
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1) )
 
 #filePath = "/home/akalinow/scratch/CMS/TauID/Crab/Data/TauID_TnP/16_06_2016/SingleMuon_Run2016B_PromptReco_v2_v28/SingleMuon/SingleMuon_Run2016B_PromptReco_v2_v28/160616_085626/0000/"
-filePath = "/home/akalinow/scratch/CMS/TauID/Crab/Data/TauID_TnP/SingleMuon_Run2016B_PromptReco_v2_v30/SingleMuon/SingleMuon_Run2016B_PromptReco_v2_v30/160707_133020/0000/"
+#filePath = "/home/akalinow/scratch/CMS/TauID/Crab/Data/TauID_TnP/SingleMuon_Run2016B_PromptReco_v2_v30/SingleMuon/SingleMuon_Run2016B_PromptReco_v2_v30/160707_133020/0000/"
+filePath = "/home/akalinow/scratch/CMS/TauID/Crab/Data/TauID_TnP/"
 
 filePath += "tnpZ_Data.root"
 
@@ -106,7 +107,7 @@ process.TnP_Muon_ID = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
     InputDirectoryName = cms.string("tpTree"),  
     ## Variables for binning
     Variables = cms.PSet(
-        run   = cms.vstring("Run", "271036", "274421", ""),
+        run   = cms.vstring("Run", "0", "999999", ""),
         mass   = cms.vstring("Tag-muon Mass", "60", "110", "GeV/c^{2}"),
         abseta = cms.vstring("muon |#eta|", "0", "2.4", ""),
         tag_pt  = cms.vstring("tag pT", "0", "1500", ""),

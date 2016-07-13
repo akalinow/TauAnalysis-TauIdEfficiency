@@ -27,7 +27,7 @@ if "CMSSW_7_6_" in os.environ['CMSSW_VERSION']:
         'file:///home/akalinow/scratch/CMS/TauID/Data/SingleMuon/Run2015D-16Dec2015-v1/MINIAOD/1/00006301-CAA8-E511-AD39-549F35AD8BC9.root',
     ]
 elif "CMSSW_8_0_" in os.environ['CMSSW_VERSION']:
-    process.GlobalTag.globaltag = cms.string('80X_dataRun2_Prompt_v8')
+    process.GlobalTag.globaltag = cms.string('80X_dataRun2_Prompt_ICHEP16JEC_v0')
     process.source.fileNames = [
         'file:///home/akalinow/scratch/CMS/TauID/Data/SingleMuon/Run2015D-16Dec2015-v1/MINIAOD/1/00006301-CAA8-E511-AD39-549F35AD8BC9.root',
     ]
@@ -58,7 +58,7 @@ if TRIGGER == "SingleMu":
 else:
     raise RuntimeError, "TRIGGER must be 'SingleMu' or 'DoubleMu'"
 
-process.triggerResultsFilter.l1tResults = "gtDigis"
+process.triggerResultsFilter.l1tResults = "gtStage2Digis"
 process.triggerResultsFilter.throw = False
 process.triggerResultsFilter.hltResults = cms.InputTag("TriggerResults","","HLT")
 
@@ -106,6 +106,8 @@ process.tagTriggerMatchModule = cms.EDProducer("TriggerObjectStandAloneMatch",
     objectSelection = cms.string('hasFilterLabel("hltL3crIsoL1sMu16L1f0L2f10QL3f18QL3trkIsoFiltered0p09")'),
     maxTagObjDR   = cms.double(0.1),
 )
+if process.GlobalTag.globaltag == cms.string('80X_dataRun2_Prompt_v8'):
+    process.tagTriggerMatchModule.objectSelection = cms.string('hasFilterLabel("hltL3crIsoL1sMu18L1f0L2f10QL3f20QL3trkIsoFiltered0p09")'),                                                  
 
 ##
 ## Taus
@@ -175,7 +177,6 @@ process.tpTree = cms.EDAnalyzer("TagProbeFitTreeProducer",
         decayModeFinding =  cms.string('tauID("decayModeFinding")'),
         decayModeFindingNewDMs =  cms.string('tauID("decayModeFindingNewDMs")'),
         byLooseCombinedIsolationDeltaBetaCorr3Hits = cms.string('tauID("byLooseCombinedIsolationDeltaBetaCorr3Hits")'),
-        byTightIsolationMVArun2v1DBoldDMwLT = cms.string('tauID("byTightIsolationMVArun2v1DBoldDMwLT")'),
         againstMuonLoose3 =  cms.string('tauID("againstMuonLoose3")'),
         againstMuonTight3 =  cms.string('tauID("againstMuonTight3")')
     ),

@@ -1,7 +1,7 @@
 /////////////////////////////////////////////////////
 /////////////////////////////////////////////////////
 std::string fNameMC =   "TnP_MuonToTau_MisID_MC.root";
-std::string fNameData = "TnP_MuonToTau_MisID_Data2015.root";
+std::string fNameData = "/home/akalinow/scratch/Presentations/TauPOG_21_06_2016/TnP_MuonToTau_MisID_Data2016.root";
 
 std::string topDirectory = "tpTree/";
 /////////////////////////////////////////////////////
@@ -387,29 +387,6 @@ void getParamsMC(std::string category = "againstMuonLoose3_Zmumu"){
 }
 /////////////////////////////////////////////////////
 /////////////////////////////////////////////////////
-void plotAll(){
-
-  bool isData = false;
-  
-  plotFitCanvas("againstMuonLoose3_Zmumu",isData);
-  plotFitCanvas("againstMuonLoose3_Ztautau",isData);
-
-  plotFitCanvas("againstMuonLoose3_Zll",isData);
-  plotFitCanvas("againstMuonTight3_Zll",isData);
-  
-  plotMistagRate("againstMuonLoose3",isData);
-  plotMistagRate("againstMuonTight3",isData);
-
-  isData = true;
-  plotFitCanvas("againstMuonLoose3",isData);
-  plotMistagRate("againstMuonLoose3",isData);
-
-  plotFitCanvas("againstMuonTight3",isData);
-  plotMistagRate("againstMuonTight3",isData);
-    
-}
-/////////////////////////////////////////////////////
-/////////////////////////////////////////////////////
 void plotDitributions(std::string variable){
   
   TFile *mcFile = new TFile("/home/akalinow/scratch/CMS/TauID/Crab/Data/TauID_TnP/16_06_2016/DYJetsToLL_M_50_TuneCUETP8M1_13TeV_amcatnloFXFX_pythia8_v17_ext4/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/DYJetsToLL_M_50_TuneCUETP8M1_13TeV_amcatnloFXFX_pythia8_v17_ext4/160531_115349/0000/tnpZ_MC.root");
@@ -424,13 +401,21 @@ void plotDitributions(std::string variable){
 
   
   TH1F *hMC = 0;  
-  if(variable=="pt"){
+  if(variable.find("pt")!=std::string::npos){
     hMC = new TH1F("hMC","",20,0,100);
     hMC->SetXTitle("p_{T}^{probe} [GeV/c]");
   }
-  if(variable=="eta"){
+  if(variable.find("eta")!=std::string::npos){
     hMC = new TH1F("hMC","",10,-2.4,2.4);
     hMC->SetXTitle("#eta^{probe}");
+  }
+  if(variable=="mass"){
+    hMC = new TH1F("hMC","",10,80,100);
+    hMC->SetXTitle("m_{tag-probe} [GeV/c^{2}");
+  }
+  if(variable.find("MT")!=std::string::npos){
+    hMC = new TH1F("hMC","",10,00,100);
+    hMC->SetXTitle("m_{T}^{tag-MET} [GeV/c^{2}");
   }
 
   TH1F *hData = (TH1F*)hMC->Clone("hData");
@@ -466,6 +451,37 @@ void plotDitributions(std::string variable){
   aLegend->AddEntry(hMC,"DY MC","l");
   aLegend->AddEntry(hData,"DATA","l");
   aLegend->Draw();
+  aCanvas->Print(TString::Format("fig_png/%s.png",variable.c_str()).Data());
+}
+/////////////////////////////////////////////////////
+/////////////////////////////////////////////////////
+void plotAll(){
+
+  bool isData = false;
+  
+  plotFitCanvas("againstMuonLoose3_Zmumu",isData);
+  plotFitCanvas("againstMuonLoose3_Ztautau",isData);
+
+  plotFitCanvas("againstMuonLoose3_Zll",isData);
+  plotFitCanvas("againstMuonTight3_Zll",isData);
+  
+  plotMistagRate("againstMuonLoose3",isData);
+  plotMistagRate("againstMuonTight3",isData);
+
+  isData = true;
+  plotFitCanvas("againstMuonLoose3",isData);
+  plotMistagRate("againstMuonLoose3",isData);
+
+  plotFitCanvas("againstMuonTight3",isData);
+  plotMistagRate("againstMuonTight3",isData);
+
+  plotDitributions("pt");
+  plotDitributions("eta");
+  plotDitributions("mass");
+  plotDitributions("tag_pt");
+  plotDitributions("tag_eta");
+  plotDitributions("pair_MTtag");
+      
 }
 /////////////////////////////////////////////////////
 /////////////////////////////////////////////////////

@@ -27,7 +27,7 @@ if "CMSSW_7_6_" in os.environ['CMSSW_VERSION']:
         'file:///home/akalinow/scratch/CMS/TauID/Data/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIIFall15MiniAODv2-PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v1/MINIAODSIM/0C4FAF25-DAC7-E511-A535-BCAEC54E98B3.root'
     ]
 elif "CMSSW_8_0_" in os.environ['CMSSW_VERSION']:
-    process.GlobalTag.globaltag = cms.string('80X_mcRun2_asymptotic_2016_miniAODv2')
+    process.GlobalTag.globaltag = cms.string('80X_mcRun2_asymptotic_2016_miniAODv2_v1')
     process.source.fileNames = [
         'file:///home/akalinow/scratch/CMS/TauID/Data/SingleMuon/Run2015D-16Dec2015-v1/MINIAOD/1/00006301-CAA8-E511-AD39-549F35AD8BC9.root',
     ]
