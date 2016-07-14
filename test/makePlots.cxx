@@ -1,10 +1,8 @@
 /////////////////////////////////////////////////////
 /////////////////////////////////////////////////////
 std::string fNameMC =   "TnP_MuonToTau_MisID_MC.root";
-//std::string fNameData = "/home/akalinow/scratch/Presentations/TauPOG_21_06_2016/TnP_MuonToTau_MisID_Data2016.root";
-//std::string fNameData = "/home/akalinow/scratch/Presentations/TauPOG_21_06_2016/TnP_MuonToTau_MisID_Data2016.root";
-//std::string fNameData = "TnP_MuonToTau_MisID_Data2016_6fb.root";
-std::string fNameData = "TnP_MuonToTau_MisID_Data2016_4fb.root";
+std::string fNameData = "TnP_MuonToTau_MisID_Data2016_6fb.root";
+//std::string fNameData = "TnP_MuonToTau_MisID_Data2016_4fb.root";
 
 std::string topDirectory = "tpTree/";
 /////////////////////////////////////////////////////
