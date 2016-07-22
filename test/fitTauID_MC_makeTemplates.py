@@ -6,7 +6,7 @@ process.load('FWCore.MessageService.MessageLogger_cfi')
 process.source = cms.Source("EmptySource")
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1) )
 
-filePath = "/home/akalinow/scratch/CMS/TauID/Crab/Data/TauID_TnP/DYJetsToLL_M_50_TuneCUETP8M1_13TeV_amcatnloFXFX_pythia8_v17_ext4/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/DYJetsToLL_M_50_TuneCUETP8M1_13TeV_amcatnloFXFX_pythia8_v17_ext4/160531_115349/0000/"
+filePath = "/home/akalinow/scratch/CMS/TauID/Crab/Data/TauID_TnP/16_06_2016/DYJetsToLL_M_50_TuneCUETP8M1_13TeV_amcatnloFXFX_pythia8_v17_ext4/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/DYJetsToLL_M_50_TuneCUETP8M1_13TeV_amcatnloFXFX_pythia8_v17_ext4/160531_115349/0000/"
 
 #filePath = "./"
 filePath += "tnpZ_MC.root"
@@ -17,7 +17,7 @@ efficiencyPSetTemplate = cms.PSet(
     EfficiencyCategoryAndState = cms.vstring("againstMuonLoose3", "pass"), ## Numerator definition
     BinnedVariables = cms.PSet(
         ## Binning in continuous variables
-        abseta = cms.vdouble(0.0, 1.2, 1.7, 2.3),
+        abseta = cms.vdouble(0.0, 0.4, 0.8, 1.2, 1.7, 2.3),
         ## flags and conditions required at the denominator,
     ),
     BinToPDFmap = cms.vstring("Zmumu_Model"), ## PDF to use, as defined below
@@ -25,11 +25,11 @@ efficiencyPSetTemplate = cms.PSet(
 
 againstMuonLoose3_Zmumu = efficiencyPSetTemplate.clone()
 againstMuonLoose3_Zmumu.BinnedVariables._Parameterizable__addParameter("mcTrue",cms.vdouble(0.5,1.0))
-againstMuonLoose3_Zmumu.BinToPDFmap = cms.vstring("Zmumu_Model_Eta0","*abseta_bin1*","Zmumu_Model_Eta1", "*abseta_bin2*","Zmumu_Model_Eta2")
+againstMuonLoose3_Zmumu.BinToPDFmap = cms.vstring("Zmumu_Model_Eta0","*abseta_bin1*","Zmumu_Model_Eta1", "*abseta_bin2*","Zmumu_Model_Eta2", "*abseta_bin3*","Zmumu_Model_Eta3", "*abseta_bin4*","Zmumu_Model_Eta4")
 
 againstMuonLoose3_Ztautau = efficiencyPSetTemplate.clone()
 againstMuonLoose3_Ztautau.BinnedVariables._Parameterizable__addParameter("mcTrue",cms.vdouble(0,0.4))
-againstMuonLoose3_Ztautau.BinToPDFmap = cms.vstring("Ztautau_Model_Eta0","*abseta_bin1*","Ztautau_Model_Eta1", "*abseta_bin2*","Ztautau_Model_Eta2")
+againstMuonLoose3_Ztautau.BinToPDFmap = cms.vstring("Ztautau_Model_Eta0","*abseta_bin1*","Ztautau_Model_Eta1", "*abseta_bin2*","Ztautau_Model_Eta2", "*abseta_bin3*","Ztautau_Model_Eta3", "*abseta_bin4*","Ztautau_Model_Eta4")
 
 againstMuonTight3_Zmumu = againstMuonLoose3_Zmumu.clone()
 againstMuonTight3_Zmumu.EfficiencyCategoryAndState = cms.vstring("againstMuonTight3", "pass")
@@ -64,7 +64,8 @@ Ztautau_Model = cms.vstring(
     "SUM::signalPass(0*signal1Pass)",
 
     "Gaussian::backgroundPass1(mass, mean1p[55, 50,60], sigma1p[12,10,20])",
-    "Exponential::backgroundPass2(mass, lp2[-0.168, -1,0.1])",            
+    #"Exponential::backgroundPass2(mass, lp2[-0.168, -1,0.1])",
+    "Chebychev::backgroundPass2(mass, cPass[0,-1,1])",
     "SUM::backgroundZtautauPass(vFracBkgPass[0.2, 0,1]*backgroundPass1, backgroundPass2)",
     "SUM::backgroundPass(backgroundZtautauPass)",
     
@@ -87,6 +88,7 @@ process.TnP_Muon_ID = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
     Variables = cms.PSet(
         mass   = cms.vstring("Tag-muon Mass", "60", "110", "GeV/c^{2}"),
         abseta = cms.vstring("muon |#eta|", "0", "2.4", ""),
+        pt  = cms.vstring("probe pT", "40", "45", ""),
         tag_pt  = cms.vstring("tag pT", "0", "1500", ""),
         tag_triggerMatch = cms.vstring("Tag matched to HLT item", "0.5", "1.0", ""),
         tag_dB  = cms.vstring("dB", "0.0", "0.004", ""),
@@ -118,10 +120,14 @@ process.TnP_Muon_ID = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
         Zmumu_Model_Eta0 = Zmumu_Model,
         Zmumu_Model_Eta1 = Zmumu_Model,
         Zmumu_Model_Eta2 = Zmumu_Model,
+        Zmumu_Model_Eta3 = Zmumu_Model,
+        Zmumu_Model_Eta4 = Zmumu_Model,
 
         Ztautau_Model_Eta0 = Ztautau_Model,
         Ztautau_Model_Eta1 = Ztautau_Model,
         Ztautau_Model_Eta2 = Ztautau_Model,
+        Ztautau_Model_Eta3 = Ztautau_Model,
+        Ztautau_Model_Eta4 = Ztautau_Model,
     ),    
     ## How to do the fit
     binnedFit = cms.bool(True),

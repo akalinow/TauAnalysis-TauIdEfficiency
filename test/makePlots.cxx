@@ -1,13 +1,16 @@
 /////////////////////////////////////////////////////
 /////////////////////////////////////////////////////
 std::string fNameMC =   "TnP_MuonToTau_MisID_MC.root";
-std::string fNameData = "TnP_MuonToTau_MisID_Data2016_6fb.root";
-//std::string fNameData = "TnP_MuonToTau_MisID_Data2016_4fb.root";
+std::string fNameData = "TnP_MuonToTau_MisID_Data.root";
 
 std::string topDirectory = "tpTree/";
 /////////////////////////////////////////////////////
 /////////////////////////////////////////////////////
-void plotFitCanvas(std::string category = "againstMuonLoose3_Zmumu", bool isData=false){
+#include "tdrstyle.C"
+#include "CMS_lumi.C"
+/////////////////////////////////////////////////////
+/////////////////////////////////////////////////////
+void plotFitCanvas(std::string category = "againstMuonLoose3_Zmumu", bool isData=false, bool allProbes=false){
 
   std::string fName = fNameMC;
   if(isData) fName = fNameData;
@@ -30,7 +33,7 @@ void plotFitCanvas(std::string category = "againstMuonLoose3_Zmumu", bool isData
     binnedVars =   "__";
   }
 
-  for(unsigned int iEta=0;iEta<3;++iEta){
+  for(unsigned int iEta=0;iEta<5;++iEta){
 
     std::string etaBinNumber = std::to_string(iEta);
     std::string nameSuffix = "Eta"+etaBinNumber;
@@ -45,9 +48,75 @@ void plotFitCanvas(std::string category = "againstMuonLoose3_Zmumu", bool isData
     
     fit_canvas->Draw();
     fit_canvas->Print(("./fig_png/"+category+"_fit_canvas_"+nameSuffix+".png").c_str());
-    TPad *aPad = (TPad*)fit_canvas->FindObject("fit_canvas_1");
+    TPad *aPad = 0;    
+    if(allProbes) aPad = (TPad*)fit_canvas->FindObject("fit_canvas_3");
+    else aPad = (TPad*)fit_canvas->FindObject("fit_canvas_1");
+    
+    aPad->SetLeftMargin(0.15);
+    aPad->SetTopMargin(0.05);
+    aPad->SetRightMargin(0.05);
+    RooHist *aDataHist = (RooHist*)aPad->FindObject("h_data_binned");
+    RooCurve *aSumModel = 0;
+    if(allProbes) aSumModel = (RooCurve*)aPad->FindObject("simPdf_Norm[mass]");    
+    else aSumModel = (RooCurve*)aPad->FindObject("pdfPass_Norm[mass]");        
+    RooCurve *aBkgModel = 0;
+    if(allProbes)aBkgModel = (RooCurve*)aPad->FindObject("simPdf_Norm[mass]_Comp[backgroundPass,backgroundFail]");
+    else aBkgModel = (RooCurve*)aPad->FindObject("pdfPass_Norm[mass]_Comp[backgroundPass]");    
+    TFrame *aFrame = (TFrame*)aPad->FindObject("TFrame");
+    TH1D *hFrame;
+    TAxis *xAxis = (TAxis*)aDataHist->FindObject("xaxis");
+    TAxis *yAxis = (TAxis*)aPad->FindObject("yaxis");
+    TList *aList = aPad->GetListOfPrimitives();
+    TIter next(aList);
+    while (TObject *obj = next()){
+      std::string objName(obj->GetName());
+      if(objName.find("frame_")!=std::string::npos) hFrame = (TH1D*)obj;
+    }
+
+    hFrame->GetXaxis()->SetTitle("Tag-Probe mass [GeV/c^{2}]");
+    hFrame->GetYaxis()->SetTitleOffset(1.8);
+    hFrame->GetYaxis()->SetTitle("Events");
+    
+    aBkgModel->SetLineColor(2);
+    aSumModel->SetLineColor(4);
+    
+    TLegend *aLegend;
+    if(iEta<3) aLegend = new TLegend(0.2,0.75,0.45,0.9); 
+    else aLegend = new TLegend(0.55,0.75,0.9,0.9);
+    aLegend->SetTextSize(0.05);
+    aLegend->SetBorderSize(0);
+    aLegend->AddEntry(aDataHist,"Observed","lp");
+    aLegend->AddEntry(aSumModel,"S+B fit","lp");
+    aLegend->AddEntry(aBkgModel,"B component","lp");
+
+    std::string label = "muon veto}{passing probes}";
+    if(allProbes) label = "muon veto}{all probes}";
+    if(category.find("Loose")!=std::string::npos) label = "#splitline{Loose " + label;
+    if(category.find("Tight")!=std::string::npos) label = "#splitline{Tight " + label;
+    TLatex * aLatex = new TLatex(0,0,"");
+      
+    int iPeriod = 4;//Luminosity period
+    int iPosX = 0;
+    lumiTextSize = 1.0;
+    cmsTextSize = 0.85;
+    if(allProbes){
+      cmsText = "        CMS";
+      extraText = "           Preliminary";
+    }
+    CMS_lumi(aPad, iPeriod, iPosX);
+    aLegend->Draw();
+
     aPad->SetCanvasSize(1000,1000);
-    aPad->Print(("./fig_png/"+category+"_fit_passing"+nameSuffix+".png").c_str());    
+    
+    if(allProbes){
+      //aPad->SetLogy();
+      aLatex->DrawLatexNDC(0.18,0.2,label.c_str());
+      aPad->Print(("./fig_png/"+category+"_fit_all"+nameSuffix+".png").c_str());
+    }
+    else{
+      aLatex->DrawLatexNDC(0.18,0.15,label.c_str());
+      aPad->Print(("./fig_png/"+category+"_fit_passing"+nameSuffix+".png").c_str());
+    }
   }
 }
 /////////////////////////////////////////////////////
@@ -80,10 +149,10 @@ TGraphAsymmErrors *getResultGraph(std::string category = "againstMuonLoose3", bo
 TGraphAsymmErrors* getRatioGraph(TGraphAsymmErrors *graph1,
 				 TGraphAsymmErrors *graph2){
 
-  TGraphAsymmErrors *grRatio = new TGraphAsymmErrors(3);
+  TGraphAsymmErrors *grRatio = new TGraphAsymmErrors(5);
   Double_t x1, y1, x2, y2; 
   Double_t eX1, eX2, eY1, eY2;
-  for(int iPoint=0;iPoint<3;++iPoint){
+  for(int iPoint=0;iPoint<5;++iPoint){
     graph1->GetPoint(iPoint,x1,y1);
     graph2->GetPoint(iPoint,x2,y2);
     eX1 = graph1->GetErrorX(iPoint);
@@ -97,7 +166,7 @@ TGraphAsymmErrors* getRatioGraph(TGraphAsymmErrors *graph1,
     grRatio->SetPointError(iPoint,eX1,eX1,error,error);
   }
 
-  grRatio->SetMarkerColor(2);
+  grRatio->SetMarkerColor(1);
   grRatio->SetMarkerStyle(21);
   grRatio->SetMarkerSize(1.5);
 
@@ -141,7 +210,6 @@ void plotMistagRateMC(std::string category = "againstMuonLoose3"){
 
   TLegend *aLegend = new TLegend(0.12,0.1,0.3,0.45,NULL,"brNDC");
   aLegend->SetTextSize(0.05);
-  aLegend->SetFillStyle(4000);
   aLegend->SetBorderSize(0);
   aLegend->SetFillColor(10);
   aLegend->AddEntry(aGraph,"MC Z#rightarrow ll","lp");
@@ -149,36 +217,39 @@ void plotMistagRateMC(std::string category = "againstMuonLoose3"){
   aLegend->AddEntry(aGraphMCTrueCount,"#splitline{tag&probe matched to #mu}{event count}","lp");
 
   TCanvas *aCanvas = new TCanvas("aCanvas", "",4,29,700,500);
-  aCanvas->SetHighLightColor(2);
-  aCanvas->Range(0,0,1,1);
-  aCanvas->SetFillColor(0);
-  aCanvas->SetBorderMode(0);
-  aCanvas->SetBorderSize(2);
-  aCanvas->SetFrameBorderMode(0);
-  
-  hFrame->Draw();
+  aCanvas->Divide(1,2);
+  TPad *pad1 = (TPad*)aCanvas->GetPad(1);
+  TPad *pad2 = (TPad*)aCanvas->GetPad(2);
+  pad1->SetPad(0.01,0.29,0.99,0.99);
+  pad2->SetPad(0.01,0.01,0.99,0.38);
+  pad1->SetTopMargin(0.07);
+  pad2->SetBottomMargin(0.25);
+
+  aCanvas->cd(1);
+  hFrame->GetXaxis()->SetLabelColor(10);
+  hFrame->DrawCopy();
   aGraph->Draw("p");
   aGraphMCTrue->Draw("p");
   aGraphMCTrueCount->Draw("p");
   aLegend->Draw();
-
-  aCanvas->Print(("fig_png/"+category+"_misTagRateMCvsMatchedMC.png").c_str());
-
-  aCanvas->SetLeftMargin(0.1);
-  aCanvas->SetWindowSize(700,200);
+  
+  aCanvas->cd(2);
   TGraphAsymmErrors *grRatio = getRatioGraph(aGraph, aGraphMCTrueCount);
   hFrame->SetYTitle("#frac{DY #rightarrow ll with fit}{DY #rightarrow #mu #mu with count}");
   hFrame->SetMaximum(1.1);
   hFrame->SetMinimum(0.9);
+  hFrame->GetXaxis()->SetLabelColor(1);
   hFrame->GetYaxis()->SetTitleOffset(0.6);
-  hFrame->GetYaxis()->SetLabelSize(0.08);
-  hFrame->GetYaxis()->SetTitleSize(0.08);
-  hFrame->GetXaxis()->SetLabelSize(0.08);
-  hFrame->GetXaxis()->SetTitleSize(0.08);
+  hFrame->GetYaxis()->SetLabelSize(0.1);
+  hFrame->GetYaxis()->SetTitleSize(0.1);
+  hFrame->GetXaxis()->SetLabelSize(0.1);
+  hFrame->GetXaxis()->SetTitleSize(0.12);
   hFrame->Draw();  
   grRatio->Draw("p");
+  grRatio->Print();
 
-  aCanvas->Print(("fig_png/"+category+"_misTagRateMCvsMatchedMC_Ratio.png").c_str());
+  aCanvas->Print(("fig_png/"+category+"_misTagRateMCvsMatchedMC.png").c_str());
+
 }
 /////////////////////////////////////////////////////
 /////////////////////////////////////////////////////
@@ -186,7 +257,7 @@ void plotMistagRateData(std::string category = "againstMuonLoose3"){
 
   bool useCount = false;
   bool isData = true;
-  
+ 
   TGraphAsymmErrors *aGraphData  = getResultGraph(category, useCount, isData);
 
   useCount = true;
@@ -201,64 +272,81 @@ void plotMistagRateData(std::string category = "againstMuonLoose3"){
   aGraphMCTrueCount->Print("all");
   
   aGraphData->SetName("aGraphData");
-  aGraphData->SetLineColor(2);
-  aGraphData->SetMarkerColor(2);
+  aGraphData->SetLineColor(1);
+  aGraphData->SetLineStyle(2);
+  aGraphData->SetMarkerColor(1);
+  aGraphData->SetMarkerStyle(21);
 
   aGraphMCTrueCount->SetName("aGraphMCTrueCount");
-  aGraphMCTrueCount->SetLineColor(4);
-  aGraphMCTrueCount->SetMarkerColor(4);
+  aGraphMCTrueCount->SetLineColor(2);
+  aGraphMCTrueCount->SetMarkerColor(2);
 
   TH1F *hFrame = new TH1F("hFrame","",3,0,2.3);
   hFrame->SetMinimum(1E-4);
-  hFrame->SetMaximum(5E-3);
+  hFrame->SetMaximum(6E-3);
   if(category.find("Tight")!=std::string::npos){
-    hFrame->SetMinimum(5E-6);
-    hFrame->SetMaximum(2E-3);
+    hFrame->SetMinimum(0);
+    hFrame->SetMaximum(4.5E-3);
   }
   hFrame->SetStats(kFALSE);
   hFrame->SetXTitle("|#eta|");
-  hFrame->SetYTitle("");
-
-  TLegend *aLegend = new TLegend(0.12,0.1,0.3,0.45,NULL,"brNDC");
-  aLegend->SetTextSize(0.05);
-  aLegend->SetFillStyle(4000);
+  hFrame->SetYTitle("#mu #rightarrow #tau misidentification rate");
+  TH1F *hFrameClone = (TH1F*)hFrame->Clone("hFrameClone");
+  
+  TLegend *aLegend = new TLegend(0.65,0.75,0.9,0.9);
+  aLegend->SetTextSize(0.07);
   aLegend->SetBorderSize(0);
-  aLegend->SetFillColor(10);
-  aLegend->AddEntry(aGraphData,"Data","lp");
-  aLegend->AddEntry(aGraphMCTrueCount,"#splitline{tag&probe matched to #mu}{event count}","lp");
+  aLegend->AddEntry(aGraphData,"Observed","lp");
+  aLegend->AddEntry(aGraphMCTrueCount,"Z #rightarrow #mu #mu simul.","lp");
+
+  std::string label = "}{muon veto}";
+  if(category.find("Loose")!=std::string::npos) label = "#splitline{Loose " + label;
+  if(category.find("Tight")!=std::string::npos) label = "#splitline{Tight " + label;
+  TLatex * aLatex = new TLatex(0,0,"");
+  aLatex->SetTextSize(0.07);
 
   TCanvas *aCanvas = new TCanvas("aCanvas", "",4,29,700,500);
-  aCanvas->SetHighLightColor(2);
-  aCanvas->Range(0,0,1,1);
-  aCanvas->SetFillColor(0);
-  aCanvas->SetBorderMode(0);
-  aCanvas->SetBorderSize(2);
-  aCanvas->SetFrameBorderMode(0);
-  
-  hFrame->Draw();
-  aGraphData->Draw("p");
+  aCanvas->Divide(1,2);
+  TPad *pad1 = (TPad*)aCanvas->GetPad(1);
+  TPad *pad2 = (TPad*)aCanvas->GetPad(2);
+  pad1->SetPad(0.01,0.29,0.99,0.99);
+  pad2->SetPad(0.01,0.01,0.99,0.38);
+  pad1->SetTopMargin(0.07);
+  pad2->SetBottomMargin(0.25);
+
+  aCanvas->cd(1);
+  hFrame->GetXaxis()->SetLabelColor(10);
+  hFrame->DrawCopy();
   aGraphMCTrueCount->Draw("p");
+  aGraphData->Draw("p");
   aLegend->Draw();
-
-  aCanvas->Print(("fig_png/"+category+"_misTagRateMCvsMatchedData.png").c_str());
-
-  aCanvas->SetLeftMargin(0.1);
-  aCanvas->SetWindowSize(700,200);
+  aLatex->DrawLatexNDC(0.7,0.6,label.c_str());
+  int iPeriod = 4;//Luminosity period
+  int iPosX = 0;
+  lumiTextSize = 0.9;
+  cmsTextSize = 1.0;
+  CMS_lumi(pad1, iPeriod, iPosX);
+   
+  aCanvas->cd(2);
   TGraphAsymmErrors *grRatio = getRatioGraph(aGraphData, aGraphMCTrueCount);
-  hFrame->SetYTitle("#frac{DATA}{DY #rightarrow #mu #mu with count}");
-  hFrame->SetMaximum(3.0);
-  hFrame->SetMinimum(0.0);
+  hFrame->SetYTitle("#frac{DATA}{Simulation}");
+  hFrame->SetMaximum(1.7);
+  hFrame->SetMinimum(0.9);
+  if(category.find("Tight")!=std::string::npos){
+    hFrame->SetMaximum(3.2);
+    hFrame->SetMinimum(0.9);
+  }
+  hFrame->GetXaxis()->SetLabelColor(1);
   hFrame->GetYaxis()->SetTitleOffset(0.6);
-  hFrame->GetYaxis()->SetLabelSize(0.08);
-  hFrame->GetYaxis()->SetTitleSize(0.08);
-  hFrame->GetXaxis()->SetLabelSize(0.08);
-  hFrame->GetXaxis()->SetTitleSize(0.08);
+  hFrame->GetYaxis()->SetLabelSize(0.1);
+  hFrame->GetYaxis()->SetTitleSize(0.1);
+  hFrame->GetXaxis()->SetLabelSize(0.1);
+  hFrame->GetXaxis()->SetTitleSize(0.12);
   hFrame->Draw();  
   grRatio->Draw("p");
   grRatio->Print();
-
-  aCanvas->Print(("fig_png/"+category+"_misTagRateMCvsMatchedData_Ratio.png").c_str());
-
+  
+  aCanvas->Print(("fig_png/"+category+"_misTagRateMCvsMatchedData.png").c_str());
 }
 /////////////////////////////////////////////////////
 /////////////////////////////////////////////////////
@@ -362,7 +450,7 @@ void getParamsMC(std::string category = "againstMuonLoose3_Zmumu"){
   std::string aPattern = "";
   std::string binnedVars =   "__mcTrue_bin0__";
     
-  for(unsigned int iEta=0;iEta<3;++iEta){
+  for(unsigned int iEta=0;iEta<5;++iEta){
 
     std::string etaBinNumber = std::to_string(iEta);
   
@@ -458,8 +546,22 @@ void plotDitributions(std::string variable){
 /////////////////////////////////////////////////////
 void plotAll(){
 
-  bool isData = false;
+  setTDRStyle();
+  writeExtraText = true;       // if extra text
+  extraText  = "Preliminary";  // default extra text is "Preliminary"
+  lumi_8TeV  = "19.1 fb^{-1}"; // default is "19.7 fb^{-1}"
+  lumi_7TeV  = "4.9 fb^{-1}";  // default is "5.1 fb^{-1}"
+  lumi_13TeV  = "6.3 fb^{-1}";  // default is "20.1 fb^{-1}"
+
+  //plotMistagRate("againstMuonTight3",true);
+  //plotFitCanvas("againstMuonLoose3",true);
+  //plotFitCanvas("againstMuonLoose3",true,true);
+  //return;
+
+
   
+  bool isData = false;
+
   plotFitCanvas("againstMuonLoose3_Zmumu",isData);
   plotFitCanvas("againstMuonLoose3_Ztautau",isData);
 
@@ -471,11 +573,15 @@ void plotAll(){
 
   isData = true;
   plotFitCanvas("againstMuonLoose3",isData);
+  plotFitCanvas("againstMuonLoose3",isData,true);
   plotMistagRate("againstMuonLoose3",isData);
 
   plotFitCanvas("againstMuonTight3",isData);
+  plotFitCanvas("againstMuonTight3",isData,true);
   plotMistagRate("againstMuonTight3",isData);
 
+
+  return;
   plotDitributions("pt");
   plotDitributions("eta");
   plotDitributions("mass");
