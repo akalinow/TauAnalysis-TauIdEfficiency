@@ -551,7 +551,7 @@ void plotAll(){
   extraText  = "Preliminary";  // default extra text is "Preliminary"
   lumi_8TeV  = "19.1 fb^{-1}"; // default is "19.7 fb^{-1}"
   lumi_7TeV  = "4.9 fb^{-1}";  // default is "5.1 fb^{-1}"
-  lumi_13TeV  = "6.3 fb^{-1}";  // default is "20.1 fb^{-1}"
+  lumi_13TeV  = "12.9 fb^{-1}";  // default is "20.1 fb^{-1}"
 
   //plotMistagRate("againstMuonTight3",true);
   //plotFitCanvas("againstMuonLoose3",true);
