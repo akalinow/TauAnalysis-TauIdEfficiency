@@ -54,21 +54,21 @@ process.goodVertexFilter = cms.EDFilter("VertexSelector",
 process.load("HLTrigger.HLTfilters.triggerResultsFilter_cfi")
 
 if TRIGGER == "SingleMu":
-    process.triggerResultsFilter.triggerConditions = cms.vstring('HLT_IsoMu18_v*')
+    process.triggerResultsFilter.triggerConditions = cms.vstring('HLT_IsoMu18_v*', 'HLT_IsoMu20_v*')
     
 else:
     raise RuntimeError, "TRIGGER must be 'SingleMu' or 'DoubleMu'"
 
-process.triggerResultsFilter.l1tResults = "gtDigis"
+process.triggerResultsFilter.l1tResults = "gtStage2Digis"
 process.triggerResultsFilter.throw = False
-process.triggerResultsFilter.hltResults = cms.InputTag("TriggerResults","","HLT")
+process.triggerResultsFilter.hltResults = cms.InputTag("TriggerResults","","HLT2")
 
 process.muonFilter = cms.EDFilter("CandViewCountFilter",
                                   src = cms.InputTag("slimmedMuons"),
                                   minNumber = cms.uint32(1),
                                   maxNumber = cms.uint32(2))
 
-process.fastFilter     = cms.Sequence(process.goodVertexFilter + process.triggerResultsFilter + process.muonFilter)
+process.fastFilter     = cms.Sequence(process.goodVertexFilter + process.triggerResultsFilter +  process.muonFilter)
 
 ##    __  __                       
 ##   |  \/  |_   _  ___  _ __  ___ 
