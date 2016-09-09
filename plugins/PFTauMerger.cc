@@ -82,7 +82,7 @@ PFTauMerger::produce(edm::Event & iEvent, const edm::EventSetup & iSetup) {
                 }
             }	    
             // make a pat::Tau from a track
-            double energy = sqrt(track->p() * track->p() + 0.105658);	    
+            double energy = sqrt(track->p() * track->p() +  0.13957018*0.13957018);	    
             math::XYZTLorentzVector p4(track->px(), track->py(), track->pz(), energy);
 	    /*
 	    for (std::vector<pat::Photon>::const_iterator itPhoton = photons->begin(); itPhoton!=photons->end(); ++itPhoton){
@@ -103,7 +103,7 @@ PFTauMerger::produce(edm::Event & iEvent, const edm::EventSetup & iSetup) {
 	      aID.push_back(pat::Tau::IdPair("decayMode",aTau->decayMode()));
 	      aID.push_back(pat::Tau::IdPair("againstMuonTight3",aTau->tauID("againstMuonTight3")));
 	      aID.push_back(pat::Tau::IdPair("againstMuonLoose3",aTau->tauID("againstMuonLoose3")));
-	      aID.push_back(pat::Tau::IdPair("againstElectronVLooseMVA5",aTau->tauID("againstElectronVLooseMVA5")));
+	      aID.push_back(pat::Tau::IdPair("againstElectronVLooseMVA6",aTau->tauID("againstElectronVLooseMVA6")));
 	      aID.push_back(pat::Tau::IdPair("decayModeFindingNewDMs",aTau->tauID("decayModeFindingNewDMs")));
 	      aID.push_back(pat::Tau::IdPair("decayModeFinding",aTau->tauID("decayModeFinding")));
 	      aID.push_back(pat::Tau::IdPair("byLooseCombinedIsolationDeltaBetaCorr3Hits",aTau->tauID("byLooseCombinedIsolationDeltaBetaCorr3Hits")));
@@ -112,7 +112,7 @@ PFTauMerger::produce(edm::Event & iEvent, const edm::EventSetup & iSetup) {
 	      aID.push_back(pat::Tau::IdPair("decayMode",-1));
 	      aID.push_back(pat::Tau::IdPair("againstMuonTight3",0));
 	      aID.push_back(pat::Tau::IdPair("againstMuonLoose3",0));
-	      aID.push_back(pat::Tau::IdPair("againstElectronVLooseMVA5",0));
+	      aID.push_back(pat::Tau::IdPair("againstElectronVLooseMVA6",0));
 	      aID.push_back(pat::Tau::IdPair("decayModeFindingNewDMs",0));
 	      aID.push_back(pat::Tau::IdPair("decayModeFinding",0));
 	      aID.push_back(pat::Tau::IdPair("byLooseCombinedIsolationDeltaBetaCorr3Hits",0));

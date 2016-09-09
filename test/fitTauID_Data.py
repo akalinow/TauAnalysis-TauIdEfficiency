@@ -6,11 +6,8 @@ process.load('FWCore.MessageService.MessageLogger_cfi')
 process.source = cms.Source("EmptySource")
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1) )
 
-#filePath = "/home/akalinow/scratch/CMS/TauID/Crab/Data/TauID_TnP/16_06_2016/SingleMuon_Run2016B_PromptReco_v2_v28/SingleMuon/SingleMuon_Run2016B_PromptReco_v2_v28/160616_085626/0000/"
-#filePath = "/home/akalinow/scratch/CMS/TauID/Crab/Data/TauID_TnP/SingleMuon_Run2016B_PromptReco_v2_v30/SingleMuon/SingleMuon_Run2016B_PromptReco_v2_v30/160707_133020/0000/"
-filePath = "/home/akalinow/scratch/CMS/TauID/Crab/Data/TauID_TnP/"
-
-filePath += "tnpZ_Data_12.9fb.root"
+filePath = "/home/akalinow/scratch/CMS/TauID/Crab/Data/TauID_TnP/08_09_2016/"
+filePath += "tnpZ_Data.root"
 
 efficiencyPSetTemplate = cms.PSet(
     UnbinnedVariables = cms.vstring("mass","tag_pt", "tag_triggerMatch", "tag_dB", "pair_dz", "pair_deltaR", "pair_probeMultiplicity", "pair_MET", "pair_MTtag", "pair_MTprobe", "decayModeFinding", "byLooseCombinedIsolationDeltaBetaCorr3Hits"),
