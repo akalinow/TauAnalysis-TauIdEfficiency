@@ -6,16 +6,15 @@ process.load('FWCore.MessageService.MessageLogger_cfi')
 process.source = cms.Source("EmptySource")
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1) )
 
-filePath = "/home/akalinow/scratch/CMS/TauID/Crab/Data/TauID_TnP/08_09_2016/"
+filePath = "/home/akalinow/scratch/CMS/TauID/Crab/Data/TauID_TnP/15_09_2016/"
 filePath += "tnpZ_MC.root"
 
-
 efficiencyPSetTemplate = cms.PSet(
-    UnbinnedVariables = cms.vstring("mass","abseta","tag_pt", "tag_triggerMatch", "tag_dB", "pair_dz", "pair_deltaR", "pair_probeMultiplicity", "pair_MET", "pair_MTtag", "pair_MTprobe", "decayModeFinding", "byLooseCombinedIsolationDeltaBetaCorr3Hits"),
+    UnbinnedVariables = cms.vstring("mass","tag_pt", "tag_triggerMatch", "tag_dB", "pair_dz", "pair_deltaR", "pair_probeMultiplicity", "pair_MET", "pair_MTtag", "pair_MTprobe", "decayModeFinding", "byLooseCombinedIsolationDeltaBetaCorr3Hits"),
     EfficiencyCategoryAndState = cms.vstring("againstMuonLoose3", "pass"), ## Numerator definition
     BinnedVariables = cms.PSet(
-        ## Binning in continuous variables        
-        pt = cms.vdouble(10, 20, 30, 40, 50, 100),
+        ## Binning in continuous variables
+        abseta = cms.vdouble(0.0, 0.4, 0.8, 1.2, 1.7, 2.3),
         ## flags and conditions required at the denominator,
     ),
     BinToPDFmap = cms.vstring("Zmumu_Model"), ## PDF to use, as defined below
@@ -23,11 +22,11 @@ efficiencyPSetTemplate = cms.PSet(
 
 againstMuonLoose3_Zmumu = efficiencyPSetTemplate.clone()
 againstMuonLoose3_Zmumu.BinnedVariables._Parameterizable__addParameter("mcTrue",cms.vdouble(0.5,1.0))
-againstMuonLoose3_Zmumu.BinToPDFmap = cms.vstring("Zmumu_Model_Pt0","*pt_bin1*","Zmumu_Model_Pt1", "*pt_bin2*","Zmumu_Model_Pt2", "*pt_bin3*","Zmumu_Model_Pt3", "*pt_bin4*","Zmumu_Model_Pt4")
+againstMuonLoose3_Zmumu.BinToPDFmap = cms.vstring("Zmumu_Model_Eta0","*abseta_bin1*","Zmumu_Model_Eta1", "*abseta_bin2*","Zmumu_Model_Eta2", "*abseta_bin3*","Zmumu_Model_Eta3", "*abseta_bin4*","Zmumu_Model_Eta4")
 
 againstMuonLoose3_Ztautau = efficiencyPSetTemplate.clone()
 againstMuonLoose3_Ztautau.BinnedVariables._Parameterizable__addParameter("mcTrue",cms.vdouble(0,0.4))
-againstMuonLoose3_Ztautau.BinToPDFmap = cms.vstring("Ztautau_Model_Pt0","*pt_bin1*","Ztautau_Model_Pt1", "*pt_bin2*","Ztautau_Model_Pt2", "*pt_bin3*","Ztautau_Model_Pt3", "*pt_bin4*","Ztautau_Model_Pt4")
+againstMuonLoose3_Ztautau.BinToPDFmap = cms.vstring("Ztautau_Model_Eta0","*abseta_bin1*","Ztautau_Model_Eta1", "*abseta_bin2*","Ztautau_Model_Eta2", "*abseta_bin3*","Ztautau_Model_Eta3", "*abseta_bin4*","Ztautau_Model_Eta4")
 
 againstMuonTight3_Zmumu = againstMuonLoose3_Zmumu.clone()
 againstMuonTight3_Zmumu.EfficiencyCategoryAndState = cms.vstring("againstMuonTight3", "pass")
@@ -85,8 +84,7 @@ process.TnP_Muon_ID = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
     ## Variables for binning
     Variables = cms.PSet(
         mass   = cms.vstring("Tag-muon Mass", "60", "110", "GeV/c^{2}"),
-        abseta = cms.vstring("muon |#eta|", "0", "0.8", ""),
-        pt  = cms.vstring("probe pT", "0", "100", ""),
+        abseta = cms.vstring("muon |#eta|", "0", "2.4", ""),
         tag_pt  = cms.vstring("tag pT", "0", "1500", ""),
         tag_triggerMatch = cms.vstring("Tag matched to HLT item", "0.5", "1.0", ""),
         tag_dB  = cms.vstring("dB", "0.0", "0.004", ""),
@@ -111,21 +109,21 @@ process.TnP_Muon_ID = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
         againstMuonLoose3_Zmumu = againstMuonLoose3_Zmumu,
         againstMuonLoose3_Ztautau = againstMuonLoose3_Ztautau,
 
-        #againstMuonTight3_Zmumu = againstMuonTight3_Zmumu,
-        #againstMuonTight3_Ztautau = againstMuonTight3_Ztautau,
+        againstMuonTight3_Zmumu = againstMuonTight3_Zmumu,
+        againstMuonTight3_Ztautau = againstMuonTight3_Ztautau,
     ),
     PDFs = cms.PSet(
-        Zmumu_Model_Pt0 = Zmumu_Model,
-        Zmumu_Model_Pt1 = Zmumu_Model,
-        Zmumu_Model_Pt2 = Zmumu_Model,
-        Zmumu_Model_Pt3 = Zmumu_Model,
-        Zmumu_Model_Pt4 = Zmumu_Model,
+        Zmumu_Model_Eta0 = Zmumu_Model,
+        Zmumu_Model_Eta1 = Zmumu_Model,
+        Zmumu_Model_Eta2 = Zmumu_Model,
+        Zmumu_Model_Eta3 = Zmumu_Model,
+        Zmumu_Model_Eta4 = Zmumu_Model,
 
-        Ztautau_Model_Pt0 = Ztautau_Model,
-        Ztautau_Model_Pt1 = Ztautau_Model,
-        Ztautau_Model_Pt2 = Ztautau_Model,
-        Ztautau_Model_Pt3 = Ztautau_Model,
-        Ztautau_Model_Pt4 = Ztautau_Model,
+        Ztautau_Model_Eta0 = Ztautau_Model,
+        Ztautau_Model_Eta1 = Ztautau_Model,
+        Ztautau_Model_Eta2 = Ztautau_Model,
+        Ztautau_Model_Eta3 = Ztautau_Model,
+        Ztautau_Model_Eta4 = Ztautau_Model,
     ),    
     ## How to do the fit
     binnedFit = cms.bool(True),

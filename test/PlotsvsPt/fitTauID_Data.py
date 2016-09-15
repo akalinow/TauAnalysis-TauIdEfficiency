@@ -6,7 +6,7 @@ process.load('FWCore.MessageService.MessageLogger_cfi')
 process.source = cms.Source("EmptySource")
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1) )
 
-filePath = "/home/akalinow/scratch/CMS/TauID/Crab/Data/TauID_TnP/06_09_2016/"
+filePath = "/home/akalinow/scratch/CMS/TauID/Crab/Data/TauID_TnP/08_09_2016/"
 filePath += "tnpZ_Data.root"
 
 efficiencyPSetTemplate = cms.PSet(
@@ -95,7 +95,7 @@ process.TnP_Muon_ID = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
     Variables = cms.PSet(
         run   = cms.vstring("Run", "0", "999999", ""),
         mass   = cms.vstring("Tag-muon Mass", "60", "110", "GeV/c^{2}"),
-        abseta = cms.vstring("muon |#eta|", "0", "0.8", ""),
+        abseta = cms.vstring("muon |#eta|", "0.0", "0.8", ""),
         pt  = cms.vstring("probe pT", "0", "100", ""),
         tag_pt  = cms.vstring("tag pT", "0", "1500", ""),
         tag_triggerMatch = cms.vstring("Tag matched to HLT item", "0.5", "1.0", ""),

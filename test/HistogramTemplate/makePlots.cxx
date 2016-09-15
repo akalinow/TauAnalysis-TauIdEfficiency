@@ -20,25 +20,25 @@ void plotFitCanvas(std::string category = "againstMuonLoose3_Zmumu", bool isData
   std::string objName = "fit_canvas";
   std::string objectPath = dirName+objName;
   std::string fitModelName = category.substr(category.find("3_")+2,category.size())+"_Model";
-  std::string binnedVars =   "";
+  std::string binnedVars =   "__";
   std::string workingPointName = "Loose";
   if(category.find("Tight")!=string::npos) workingPointName = "Tight"; 
   fitModelName = "Zll_Model";
   
   if(category.find("Zmumu")!=string::npos){
-    binnedVars =   "mcTrue_bin0__";  
+    binnedVars =   "__mcTrue_bin0__";  
   }
   if(isData){
     fitModelName = "Data_Model";
-    binnedVars =   "";
+    binnedVars =   "__";
   }
 
-  for(unsigned int iPt=0;iPt<5;++iPt){
+  for(unsigned int iEta=0;iEta<5;++iEta){
 
-    std::string etaBinNumber = std::to_string(iPt);
-    std::string nameSuffix = "Pt"+etaBinNumber;
+    std::string etaBinNumber = std::to_string(iEta);
+    std::string nameSuffix = "Eta"+etaBinNumber;
     if(isData) nameSuffix+="Data";
-    dirName = topDirectory+category+"/"+binnedVars+"pt_bin"+etaBinNumber+"__"+fitModelName+"_"+workingPointName+"Pt"+etaBinNumber+"/";
+    dirName = topDirectory+category+"/abseta_bin"+etaBinNumber+binnedVars+fitModelName+"_"+workingPointName+"Eta"+etaBinNumber+"/";
     objectPath = dirName+objName;
        
     TCanvas *fit_canvas = (TCanvas*)file.Get(objectPath.c_str());
@@ -81,7 +81,7 @@ void plotFitCanvas(std::string category = "againstMuonLoose3_Zmumu", bool isData
     aSumModel->SetLineColor(4);
     
     TLegend *aLegend;
-    if(iPt<3) aLegend = new TLegend(0.2,0.75,0.45,0.9); 
+    if(iEta<3) aLegend = new TLegend(0.2,0.75,0.45,0.9); 
     else aLegend = new TLegend(0.55,0.75,0.9,0.9);
     aLegend->SetTextSize(0.05);
     aLegend->SetBorderSize(0);
@@ -132,7 +132,7 @@ TGraphAsymmErrors *getResultGraph(std::string category = "againstMuonLoose3", bo
 
   std::string dirName = topDirectory+category+"/"+fitType+"_eff_plots/";
 
-  std::string objName = "pt_PLOT";
+  std::string objName = "abseta_PLOT";
   std::string objectPath = dirName+objName;
 
   TCanvas *aEffCanvas = (TCanvas*)file.Get(objectPath.c_str());
@@ -155,15 +155,15 @@ TGraphAsymmErrors* getRatioGraph(TGraphAsymmErrors *graph1,
   for(int iPoint=0;iPoint<5;++iPoint){
     graph1->GetPoint(iPoint,x1,y1);
     graph2->GetPoint(iPoint,x2,y2);
-    eX1 = graph1->GetErrorXlow(iPoint);
-    eX2 = graph2->GetErrorXhigh(iPoint);
-    eY1 = graph1->GetErrorYlow(iPoint);
-    eY2 = graph2->GetErrorYhigh(iPoint);
+    eX1 = graph1->GetErrorX(iPoint);
+    eX2 = graph2->GetErrorX(iPoint);
+    eY1 = graph1->GetErrorY(iPoint);
+    eY2 = graph2->GetErrorY(iPoint);
 
     float ratio = y1/y2;
     float error = ratio*sqrt(pow(eY1/y1,2) +  pow(eY2/y2,2));
     grRatio->SetPoint(iPoint, x1,ratio);
-    grRatio->SetPointError(iPoint,eX1,eX2,error,error);
+    grRatio->SetPointError(iPoint,eX1,eX1,error,error);
   }
 
   grRatio->SetMarkerColor(1);
@@ -197,24 +197,24 @@ void plotMistagRateMC(std::string category = "againstMuonLoose3"){
   aGraphMCTrueCount->SetLineColor(4);
   aGraphMCTrueCount->SetMarkerColor(4);
 
-  TH1F *hFrame = new TH1F("hFrame","",3,10,100);
-  hFrame->SetMinimum(1E-3);
-  hFrame->SetMaximum(1.5E-2);
+  TH1F *hFrame = new TH1F("hFrame","",3,0,2.3);
+  hFrame->SetMinimum(1E-4);
+  hFrame->SetMaximum(5E-3);
   if(category.find("Tight")!=std::string::npos){
     hFrame->SetMinimum(5E-6);
     hFrame->SetMaximum(1.5E-3);
   }
   hFrame->SetStats(kFALSE);
-  hFrame->SetXTitle("p_{T} [GeV/c]");
+  hFrame->SetXTitle("|#eta|");
   hFrame->SetYTitle("");
 
-  TLegend *aLegend = new TLegend(0.6,0.65,0.9,0.9,NULL,"brNDC");
+  TLegend *aLegend = new TLegend(0.12,0.1,0.3,0.45,NULL,"brNDC");
   aLegend->SetTextSize(0.05);
   aLegend->SetBorderSize(0);
   aLegend->SetFillColor(10);
   aLegend->AddEntry(aGraph,"MC Z#rightarrow ll","lp");
-  aLegend->AddEntry(aGraphMCTrue,"MC Z#rightarrow #mu#mu, fit","lp");
-  aLegend->AddEntry(aGraphMCTrueCount,"MC Z#rightarrow #mu#mu, count","lp");
+  aLegend->AddEntry(aGraphMCTrue,"#splitline{MC Z#rightarrow #mu#mu with}{tag&probe matched to #mu}","lp");
+  aLegend->AddEntry(aGraphMCTrueCount,"#splitline{tag&probe matched to #mu}{event count}","lp");
 
   TCanvas *aCanvas = new TCanvas("aCanvas", "",4,29,700,500);
   aCanvas->Divide(1,2);
@@ -236,8 +236,8 @@ void plotMistagRateMC(std::string category = "againstMuonLoose3"){
   aCanvas->cd(2);
   TGraphAsymmErrors *grRatio = getRatioGraph(aGraph, aGraphMCTrueCount);
   hFrame->SetYTitle("#frac{DY #rightarrow ll with fit}{DY #rightarrow #mu #mu with count}");
-  hFrame->SetMaximum(1.2);
-  hFrame->SetMinimum(0.8);
+  hFrame->SetMaximum(1.1);
+  hFrame->SetMinimum(0.9);
   hFrame->GetXaxis()->SetLabelColor(1);
   hFrame->GetYaxis()->SetTitleOffset(0.6);
   hFrame->GetYaxis()->SetLabelSize(0.1);
@@ -246,8 +246,6 @@ void plotMistagRateMC(std::string category = "againstMuonLoose3"){
   hFrame->GetXaxis()->SetTitleSize(0.12);
   hFrame->Draw();  
   grRatio->Draw("p");
-
-  std::cout<<"Ratio Zll fit/Zmumu count: "<<std::endl;
   grRatio->Print();
 
   aCanvas->Print(("fig_png/"+category+"_misTagRateMCvsMatchedMC.png").c_str());
@@ -283,15 +281,15 @@ void plotMistagRateData(std::string category = "againstMuonLoose3"){
   aGraphMCTrueCount->SetLineColor(2);
   aGraphMCTrueCount->SetMarkerColor(2);
 
-  TH1F *hFrame = new TH1F("hFrame","",5,10,100);
-  hFrame->SetMinimum(2E-3);
-  hFrame->SetMaximum(1.5E-2);
+  TH1F *hFrame = new TH1F("hFrame","",3,0,2.3);
+  hFrame->SetMinimum(1E-4);
+  hFrame->SetMaximum(6E-3);
   if(category.find("Tight")!=std::string::npos){
     hFrame->SetMinimum(0);
     hFrame->SetMaximum(4.5E-3);
   }
   hFrame->SetStats(kFALSE);
-  hFrame->SetXTitle("p_{T} [GeV/c]");
+  hFrame->SetXTitle("|#eta|");
   hFrame->SetYTitle("#mu #rightarrow #tau misidentification rate");
   TH1F *hFrameClone = (TH1F*)hFrame->Clone("hFrameClone");
   
@@ -332,8 +330,8 @@ void plotMistagRateData(std::string category = "againstMuonLoose3"){
   aCanvas->cd(2);
   TGraphAsymmErrors *grRatio = getRatioGraph(aGraphData, aGraphMCTrueCount);
   hFrame->SetYTitle("#frac{DATA}{Simulation}");
-  hFrame->SetMaximum(1.4);
-  hFrame->SetMinimum(0.6);
+  hFrame->SetMaximum(1.7);
+  hFrame->SetMinimum(0.9);
   if(category.find("Tight")!=std::string::npos){
     hFrame->SetMaximum(3.2);
     hFrame->SetMinimum(0.9);
@@ -441,43 +439,6 @@ void fixParamsForPdf(RooAbsPdf *aPdf){
 }
 /////////////////////////////////////////////////////
 /////////////////////////////////////////////////////
-void getParamsMC(std::string category = "againstMuonLoose3_Zmumu"){
-
-  TFile file(fNameMC.c_str(),"UPDATE");
-
-  std::string dirName = topDirectory+category;
-  std::string objName = "w";
-  std::string objectPath = dirName+"/"+objName;
-  std::string fitModelName = category.substr(category.find("3_")+2,category.size())+"_Model";  
-  std::string aPattern = "";
-  std::string binnedVars = "__mcTrue_bin0__";
-    
-  for(unsigned int iEta=0;iEta<5;++iEta){
-
-    std::string etaBinNumber = std::to_string(iEta);
-  
-    dirName = topDirectory+category+"/abseta_bin"+etaBinNumber+binnedVars+fitModelName+"_Eta"+etaBinNumber+"/";
-    objectPath = dirName+objName;
- 
-    RooWorkspace *aWorkspace = (RooWorkspace*)file.Get(objectPath.c_str());
-
-    std::cout<<objectPath<<" aWorkspace: "<<aWorkspace<<std::endl;
-    if(!aWorkspace) return;
-    
-    aWorkspace->SetName("workspaceConst");
-
-    std::string pdfNames[5] = {"signalFail", "signalPass", "backgroundFail", "backgroundPass", "backgroundZtautauPass"};
-    
-    for(auto aName : pdfNames){
-      RooAbsPdf *aPdf = (RooAbsPdf*)aWorkspace->obj(aName.c_str());
-      if(aPdf) fixParamsForPdf(aPdf);
-    }
-    file.cd(dirName.c_str());
-    aWorkspace->Write("workspaceFixedParams");
-  }   
-}
-/////////////////////////////////////////////////////
-/////////////////////////////////////////////////////
 void getDataHistPdf(std::string category = "againstMuonLoose3_Zmumu"){
 
   TFile *file = new TFile(fNameMC.c_str(),"UPDATE");
@@ -489,11 +450,11 @@ void getDataHistPdf(std::string category = "againstMuonLoose3_Zmumu"){
   std::string aPattern = "";
   std::string binnedVars =   "mcTrue_bin0__";
     
-  for(unsigned int iPt=0;iPt<5;++iPt){
+  for(unsigned int iEta=0;iEta<5;++iEta){
 
-    std::string ptBinNumber = std::to_string(iPt);
+    std::string etaBinNumber = std::to_string(iEta);
   
-    dirName = topDirectory+category+"/"+binnedVars+"pt_bin"+ptBinNumber+"__"+fitModelName+"_Pt"+ptBinNumber+"/";
+    dirName = topDirectory+category+"/""abseta_bin"+etaBinNumber+"__"+binnedVars+fitModelName+"_Eta"+etaBinNumber+"/";
     objectPath = dirName+objName;
  
     RooWorkspace *aWorkspace = (RooWorkspace*)file->Get(objectPath.c_str());
@@ -538,6 +499,43 @@ void getDataHistPdf(std::string category = "againstMuonLoose3_Zmumu"){
     aNewWorkspace->Write("workspaceHistPdf");
   }
   delete file;
+}
+/////////////////////////////////////////////////////
+/////////////////////////////////////////////////////
+void getParamsMC(std::string category = "againstMuonLoose3_Zmumu"){
+
+  TFile file(fNameMC.c_str(),"UPDATE");
+
+  std::string dirName = topDirectory+category;
+  std::string objName = "w";
+  std::string objectPath = dirName+"/"+objName;
+  std::string fitModelName = category.substr(category.find("3_")+2,category.size())+"_Model";  
+  std::string aPattern = "";
+  std::string binnedVars =   "__mcTrue_bin0__";
+    
+  for(unsigned int iEta=0;iEta<5;++iEta){
+
+    std::string etaBinNumber = std::to_string(iEta);
+  
+    dirName = topDirectory+category+"/abseta_bin"+etaBinNumber+binnedVars+fitModelName+"_Eta"+etaBinNumber+"/";
+    objectPath = dirName+objName;
+ 
+    RooWorkspace *aWorkspace = (RooWorkspace*)file.Get(objectPath.c_str());
+
+    std::cout<<objectPath<<" aWorkspace: "<<aWorkspace<<std::endl;
+    if(!aWorkspace) return;
+    
+    aWorkspace->SetName("workspaceConst");
+
+    std::string pdfNames[5] = {"signalFail", "signalPass", "backgroundFail", "backgroundPass", "backgroundZtautauPass"};
+    
+    for(auto aName : pdfNames){
+      RooAbsPdf *aPdf = (RooAbsPdf*)aWorkspace->obj(aName.c_str());
+      if(aPdf) fixParamsForPdf(aPdf);
+    }
+    file.cd(dirName.c_str());
+    aWorkspace->Write("workspaceFixedParams");
+  }   
 }
 /////////////////////////////////////////////////////
 /////////////////////////////////////////////////////
@@ -618,13 +616,10 @@ void plotAll(){
   lumi_7TeV  = "4.9 fb^{-1}";  // default is "5.1 fb^{-1}"
   lumi_13TeV  = "15.93 fb^{-1}";  // default is "20.1 fb^{-1}"
 
-  
-  plotFitCanvas("againstMuonLoose3_Zll",false);
-  plotMistagRate("againstMuonLoose3",false);
-
-  plotFitCanvas("againstMuonLoose3",true);
-  plotMistagRate("againstMuonLoose3",true);
-  return;
+  //plotMistagRate("againstMuonTight3",true);
+  //plotFitCanvas("againstMuonLoose3",true);
+  //plotFitCanvas("againstMuonLoose3",true,true);
+  //return;
 
 
   
@@ -666,6 +661,9 @@ void fixModelParameters(){
 
   getDataHistPdf("againstMuonLoose3_Zmumu");
   getDataHistPdf("againstMuonLoose3_Ztautau");
+
+  getDataHistPdf("againstMuonTight3_Zmumu");
+  getDataHistPdf("againstMuonTight3_Ztautau");
   return;
 
   getParamsMC("againstMuonLoose3_Zmumu");
