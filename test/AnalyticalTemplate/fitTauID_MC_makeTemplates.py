@@ -6,15 +6,16 @@ process.load('FWCore.MessageService.MessageLogger_cfi')
 process.source = cms.Source("EmptySource")
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1) )
 
-filePath = "/home/akalinow/scratch/CMS/TauID/Crab/Data/TauID_TnP/14_09_2016/"
+filePath = "/home/akalinow/scratch/CMS/TauID/Crab/Data/TauID_TnP/15_09_2016/"
 filePath += "tnpZ_MC.root"
 
 efficiencyPSetTemplate = cms.PSet(
-    UnbinnedVariables = cms.vstring("mass","tag_pt", "tag_triggerMatch", "tag_dB", "pair_dz", "pair_deltaR", "pair_probeMultiplicity", "pair_MET", "pair_MTtag", "pair_MTprobe", "decayModeFinding", "byLooseCombinedIsolationDeltaBetaCorr3Hits"),
+    UnbinnedVariables = cms.vstring("mass","alternatLorentzVectPt", "alternatLorentzVectEta", "tag_pt", "tag_triggerMatch", "tag_dB", "pair_dz", "pair_deltaR", "pair_probeMultiplicity", "pair_MET", "pair_MTtag", "pair_MTprobe", "decayModeFinding", "byLooseCombinedIsolationDeltaBetaCorr3Hits"),
     EfficiencyCategoryAndState = cms.vstring("againstMuonLoose3", "pass"), ## Numerator definition
     BinnedVariables = cms.PSet(
         ## Binning in continuous variables
         abseta = cms.vdouble(0.0, 0.4, 0.8, 1.2, 1.7, 2.3),
+        #abseta = cms.vdouble(0.0, 0.4),
         ## flags and conditions required at the denominator,
     ),
     BinToPDFmap = cms.vstring("Zmumu_Model"), ## PDF to use, as defined below
@@ -35,12 +36,12 @@ againstMuonTight3_Ztautau = againstMuonLoose3_Ztautau.clone()
 againstMuonTight3_Ztautau.EfficiencyCategoryAndState = cms.vstring("againstMuonTight3", "pass")
 
 Zmumu_Model = cms.vstring(
-    "Voigtian::signal1Fail(mass, mean1Fail[92, 85,95], width[2.495], sigma1Fail[1, 0.1,2])",
-    "Voigtian::signal2Fail(mass, mean2Fail[92, 85,95], width[2.495], sigma2Fail[3, 2,10])",
+    "Voigtian::signal1Fail(mass, meanFail[92, 85,95], width1[2.495], sigmaFail[2, 0.5,10])",
+     "CBShape::signal2Fail(mass, meanFail[92, 85,95], sigmaFail[2, 0.5,10], alphaFail[3,0,5], nFail[2,0,5])",
     "SUM::signalFail(vFracFail[0.9, 0,1]*signal1Fail, signal2Fail)",
     
-    "Voigtian::signal1Pass(mass, mean1Pass[92, 85,95], width[2.495], sigma1Pass[2, 1,10])",
-    "CBShape::signal2Pass(mass, mean2Pass[92, 80,95], sigma2Pass[5, 2, 10], alpha[3, 1,5], n[2, 0,5])",
+    "Voigtian::signal1Pass(mass, meanPass[92, 85,95], width[2.495], sigmaPass[2, 0.5,10])",
+     "CBShape::signal2Pass(mass, meanPass[92, 85,95], sigmaPass[2, 0.5, 10], alphaPass[3,0,5], nPass[2, 0,5])",
     "SUM::signalPass(vFracPass[0.9, 0,1]*signal1Pass, signal2Pass)",
     
     "Exponential::backgroundPass1(mass, lp1[-0.033])",
@@ -85,7 +86,8 @@ process.TnP_Muon_ID = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
     Variables = cms.PSet(
         mass   = cms.vstring("Tag-muon Mass", "60", "110", "GeV/c^{2}"),
         abseta = cms.vstring("muon |#eta|", "0", "2.4", ""),
-        pt  = cms.vstring("probe pT", "40", "45", ""),
+        alternatLorentzVectPt = cms.vstring("probe tau pT", "20", "1500", ""),
+        alternatLorentzVectEta = cms.vstring("probe tau eta", "-2.4", "2.4", ""),
         tag_pt  = cms.vstring("tag pT", "0", "1500", ""),
         tag_triggerMatch = cms.vstring("Tag matched to HLT item", "0.5", "1.0", ""),
         tag_dB  = cms.vstring("dB", "0.0", "0.004", ""),
@@ -128,7 +130,7 @@ process.TnP_Muon_ID = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
     ),    
     ## How to do the fit
     binnedFit = cms.bool(True),
-    binsForFit = cms.uint32(20),
+    binsForFit = cms.uint32(50),
     saveDistributionsPlot = cms.bool(False),
     NumCPU = cms.uint32(1), ## leave to 1 for now, RooFit gives funny results otherwise
     SaveWorkspace = cms.bool(True),

@@ -14,7 +14,7 @@ filePath += "tnpZ_Data.root"
 #####
 
 efficiencyPSetTemplate = cms.PSet(
-    UnbinnedVariables = cms.vstring("mass","tag_pt", "tag_triggerMatch", "tag_dB", "pair_dz", "pair_deltaR", "pair_probeMultiplicity", "pair_MET", "pair_MTtag", "pair_MTprobe", "decayModeFinding", "byLooseCombinedIsolationDeltaBetaCorr3Hits"),
+    UnbinnedVariables = cms.vstring("mass","alternatLorentzVectPt", "alternatLorentzVectEta","tag_pt", "tag_triggerMatch", "tag_dB", "pair_dz", "pair_deltaR", "pair_probeMultiplicity", "pair_MET", "pair_MTtag", "pair_MTprobe", "decayModeFinding", "byLooseCombinedIsolationDeltaBetaCorr3Hits"),
     EfficiencyCategoryAndState = cms.vstring("againstMuonLoose3", "pass"), ## Numerator definition
     BinnedVariables = cms.PSet(
         ## Binning in continuous variables
@@ -38,7 +38,7 @@ Data_Model_LooseEta0_Template = cms.vstring(
     "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Ztautau/abseta_bin0__mcTrue_bin0__Ztautau_Model_Eta0/workspaceHistPdf:backgroundFail",
     "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Ztautau/abseta_bin0__mcTrue_bin0__Ztautau_Model_Eta0/workspaceHistPdf:backgroundZtautauPass",
     "Exponential::backgroundWJetPass(mass, lp3[-0.235,-1,0])",
-    "SUM::backgroundPass(vFracWJetBkgPass[0.2,0,1]*backgroundWJetPass, backgroundZtautauPass)",
+    "SUM::backgroundPass(vFracWJetBkgPass[0.2,0.1,1]*backgroundWJetPass, backgroundZtautauPass)",
     "efficiency[0.001,0,0.01]",
     "signalFractionInPassing[0.9]"
             )
@@ -49,7 +49,7 @@ Data_Model_LooseEta1_Template = cms.vstring(
     "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Ztautau/abseta_bin1__mcTrue_bin0__Ztautau_Model_Eta1/workspaceHistPdf:backgroundFail",
     "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Ztautau/abseta_bin1__mcTrue_bin0__Ztautau_Model_Eta1/workspaceHistPdf:backgroundZtautauPass",
     "Exponential::backgroundWJetPass(mass, lp3[-0.235,-1,0])",
-    "SUM::backgroundPass(vFracWJetBkgPass[0.1,0,1]*backgroundWJetPass, backgroundZtautauPass)",
+    "SUM::backgroundPass(vFracWJetBkgPass[0.2,0.1,1]*backgroundWJetPass, backgroundZtautauPass)",
     "efficiency[0.001,0,0.01]",
     "signalFractionInPassing[0.9]"           
 )
@@ -104,7 +104,7 @@ Data_Model_TightEta1_Template = cms.vstring(
     "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Ztautau/abseta_bin1__mcTrue_bin0__Ztautau_Model_Eta1/workspaceHistPdf:backgroundFail",
     "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Ztautau/abseta_bin1__mcTrue_bin0__Ztautau_Model_Eta1/workspaceHistPdf:backgroundZtautauPass",
     "Exponential::backgroundWJetPass(mass, lp3[-0.235,-1,0])",
-    "SUM::backgroundPass(vFracWJetBkgPass[0.1,0,1]*backgroundWJetPass, backgroundZtautauPass)",
+    "SUM::backgroundPass(vFracWJetBkgPass[0.2,0.1,1]*backgroundWJetPass, backgroundZtautauPass)",
     "efficiency[0.001,0,0.01]",
     "signalFractionInPassing[0.9]"           
 )
@@ -115,7 +115,7 @@ Data_Model_TightEta2_Template = cms.vstring(
     "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Ztautau/abseta_bin2__mcTrue_bin0__Ztautau_Model_Eta2/workspaceHistPdf:backgroundFail",
     "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Ztautau/abseta_bin2__mcTrue_bin0__Ztautau_Model_Eta2/workspaceHistPdf:backgroundZtautauPass",
     "Exponential::backgroundWJetPass(mass, lp3[-0.235,-1,0])",
-    "SUM::backgroundPass(vFracWJetBkgPass[0.1,0,1]*backgroundWJetPass, backgroundZtautauPass)",
+    "SUM::backgroundPass(vFracWJetBkgPass[0.2,0.1,1]*backgroundWJetPass, backgroundZtautauPass)",
     "efficiency[0.001,0,0.01]",
     "signalFractionInPassing[0.9]"
 )
@@ -126,7 +126,7 @@ Data_Model_TightEta3_Template = cms.vstring(
     "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Ztautau/abseta_bin3__mcTrue_bin0__Ztautau_Model_Eta3/workspaceHistPdf:backgroundFail",
     "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Ztautau/abseta_bin3__mcTrue_bin0__Ztautau_Model_Eta3/workspaceHistPdf:backgroundZtautauPass",
     "Exponential::backgroundWJetPass(mass, lp3[-0.235,-1,0])",
-    "SUM::backgroundPass(vFracWJetBkgPass[0.1,0,1]*backgroundWJetPass, backgroundZtautauPass)",
+    "SUM::backgroundPass(vFracWJetBkgPass[0.2,0.1,1]*backgroundWJetPass, backgroundZtautauPass)",
     "efficiency[0.001,0,0.01]",
     "signalFractionInPassing[0.9]"
 )
@@ -137,7 +137,7 @@ Data_Model_TightEta4_Template = cms.vstring(
     "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Ztautau/abseta_bin4__mcTrue_bin0__Ztautau_Model_Eta4/workspaceHistPdf:backgroundFail",
     "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Ztautau/abseta_bin4__mcTrue_bin0__Ztautau_Model_Eta4/workspaceHistPdf:backgroundZtautauPass",
     "Exponential::backgroundWJetPass(mass, lp3[-0.235,-1,0])",
-    "SUM::backgroundPass(vFracWJetBkgPass[0.1,0,1]*backgroundWJetPass, backgroundZtautauPass)",
+    "SUM::backgroundPass(vFracWJetBkgPass[0.2,0.1,1]*backgroundWJetPass, backgroundZtautauPass)",
     "efficiency[0.001,0,0.01]",
     "signalFractionInPassing[0.9]"
 )
@@ -155,6 +155,8 @@ process.TnP_Muon_ID = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
         run   = cms.vstring("Run", "0", "999999", ""),
         mass   = cms.vstring("Tag-muon Mass", "60", "110", "GeV/c^{2}"),
         abseta = cms.vstring("muon |#eta|", "0", "2.4", ""),
+        alternatLorentzVectPt = cms.vstring("probe tau pT", "20", "1500", ""),
+        alternatLorentzVectEta = cms.vstring("probe tau eta", "-2.4", "2.4", ""),
         tag_pt  = cms.vstring("tag pT", "0", "1500", ""),
         tag_triggerMatch = cms.vstring("Tag matched to HLT item", "0.5", "1.0", ""),
         tag_dB  = cms.vstring("dB", "0.0", "0.004", ""),

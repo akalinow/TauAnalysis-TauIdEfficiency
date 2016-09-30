@@ -291,7 +291,7 @@ void plotMistagRateData(std::string category = "againstMuonLoose3"){
     hFrame->SetMaximum(4.5E-3);
   }
   hFrame->SetStats(kFALSE);
-  hFrame->SetXTitle("p_{T} [GeV/c]");
+  hFrame->SetXTitle("p_{T}^{#mu} [GeV/c]");
   hFrame->SetYTitle("#mu #rightarrow #tau misidentification rate");
   TH1F *hFrameClone = (TH1F*)hFrame->Clone("hFrameClone");
   
@@ -616,7 +616,7 @@ void plotAll(){
   extraText  = "Preliminary";  // default extra text is "Preliminary"
   lumi_8TeV  = "19.1 fb^{-1}"; // default is "19.7 fb^{-1}"
   lumi_7TeV  = "4.9 fb^{-1}";  // default is "5.1 fb^{-1}"
-  lumi_13TeV  = "15.93 fb^{-1}";  // default is "20.1 fb^{-1}"
+  lumi_13TeV  = "15.9 fb^{-1}";  // default is "20.1 fb^{-1}"
 
   
   plotFitCanvas("againstMuonLoose3_Zll",false);
@@ -624,6 +624,9 @@ void plotAll(){
 
   plotFitCanvas("againstMuonLoose3",true);
   plotMistagRate("againstMuonLoose3",true);
+
+  plotFitCanvas("againstMuonTight3",true);
+  plotMistagRate("againstMuonTight3",true);
   return;
 
 
@@ -666,6 +669,9 @@ void fixModelParameters(){
 
   getDataHistPdf("againstMuonLoose3_Zmumu");
   getDataHistPdf("againstMuonLoose3_Ztautau");
+
+  getDataHistPdf("againstMuonTight3_Zmumu");
+  getDataHistPdf("againstMuonTight3_Ztautau");
   return;
 
   getParamsMC("againstMuonLoose3_Zmumu");

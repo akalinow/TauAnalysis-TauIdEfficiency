@@ -109,7 +109,6 @@ void plotFitCanvas(std::string category = "againstMuonLoose3_Zmumu", bool isData
     aPad->SetCanvasSize(1000,1000);
     
     if(allProbes){
-      //aPad->SetLogy();
       aLatex->DrawLatexNDC(0.18,0.2,label.c_str());
       aPad->Print(("./fig_png/"+category+"_fit_all"+nameSuffix+".png").c_str());
     }
@@ -199,16 +198,17 @@ void plotMistagRateMC(std::string category = "againstMuonLoose3"){
 
   TH1F *hFrame = new TH1F("hFrame","",3,0,2.3);
   hFrame->SetMinimum(1E-4);
-  hFrame->SetMaximum(5E-3);
+  hFrame->SetMaximum(6E-3);
   if(category.find("Tight")!=std::string::npos){
-    hFrame->SetMinimum(5E-6);
-    hFrame->SetMaximum(1.5E-3);
+    hFrame->SetMinimum(0);
+    hFrame->SetMaximum(4.5E-3);
   }
+
   hFrame->SetStats(kFALSE);
   hFrame->SetXTitle("|#eta|");
-  hFrame->SetYTitle("");
+  hFrame->SetYTitle("#mu #rightarrow #tau misidentification rate");
 
-  TLegend *aLegend = new TLegend(0.12,0.1,0.3,0.45,NULL,"brNDC");
+  TLegend *aLegend = new TLegend(0.65,0.55,0.9,0.9);
   aLegend->SetTextSize(0.05);
   aLegend->SetBorderSize(0);
   aLegend->SetFillColor(10);
@@ -333,8 +333,8 @@ void plotMistagRateData(std::string category = "againstMuonLoose3"){
   hFrame->SetMaximum(1.7);
   hFrame->SetMinimum(0.9);
   if(category.find("Tight")!=std::string::npos){
-    hFrame->SetMaximum(3.2);
-    hFrame->SetMinimum(0.9);
+    hFrame->SetMaximum(3.6);
+    hFrame->SetMinimum(0.7);
   }
   hFrame->GetXaxis()->SetLabelColor(1);
   hFrame->GetYaxis()->SetTitleOffset(0.6);
@@ -354,6 +354,73 @@ void plotMistagRate(std::string category = "againstMuonLoose3", bool isData=fals
 
   if(isData) plotMistagRateData(category);
   else plotMistagRateMC(category);
+
+}
+/////////////////////////////////////////////////////
+/////////////////////////////////////////////////////
+void plotFittedWidth(){
+
+
+  float yMCFail[5] = {1.175, 1.207, 1.291, 1.388, 1.614};
+  float yMCFailError[5] = {0.004, 0.004, 0.005, 0.005, 0.005};
+  
+  float yMCPass[5] = {1.08, 1.3, 1.30, 1.6, 3.0};
+  float yMCPassError[5] = {0.08, 0.1, 0.09, 0.2, 0.4};
+
+  float yDataFail[5] = {1.273, 1.285, 1.408, 1.502, 1.825};
+  float yDataFailError[5] = {0.004, 0.005, 0.005, 0.005, 0.006};
+
+  float yDataPass[5] = {0.88, 1.0, 1.25, 1.2, 1.8};
+  float yDataPassError[5] = {0.1, 0.1, 0.09, 0.3, 0.6};
+
+  float x[5] = {0.199823, 0.597364, 0.996381, 1.44261, 1.97812};
+  float xError[5] = {0.2, 0.2, 0.2, 0.25, 0.32};
+
+  TGraphErrors *grMCFail = new TGraphErrors(5, x, yMCFail, xError, yMCFailError);
+  TGraphErrors *grMCPass = new TGraphErrors(5, x, yMCPass, xError, yMCPassError);
+  grMCFail->SetMarkerColor(2);
+  grMCFail->SetLineColor(2);
+  grMCPass->SetMarkerColor(2);
+  grMCPass->SetLineColor(2);
+   
+  TGraphErrors *grDataFail = new TGraphErrors(5, x, yDataFail, xError, yDataFailError);
+  TGraphErrors *grDataPass = new TGraphErrors(5, x, yDataPass, xError, yDataPassError);
+  grDataFail->SetLineColor(1);
+  grDataFail->SetLineStyle(2);
+  grDataFail->SetMarkerColor(1);
+  grDataFail->SetMarkerStyle(21);  
+  grDataPass->SetLineColor(1);
+  grDataPass->SetLineStyle(2);
+  grDataPass->SetMarkerColor(1);
+  grDataPass->SetMarkerStyle(21);
+  
+  TH1F *hFrame = new TH1F("hFrame","",3,0,2.3);
+  hFrame->SetMinimum(0.95);
+  hFrame->SetMaximum(3.2);
+  hFrame->SetStats(kFALSE);
+  hFrame->SetXTitle("|#eta|");
+  hFrame->SetYTitle("Voightian sigma");
+
+  TLegend *aLegend = new TLegend(0.2,0.75,0.6,0.9);
+  aLegend->SetTextSize(0.07);
+  aLegend->SetBorderSize(0);
+  aLegend->AddEntry(grDataFail,"Observed","lp");
+  aLegend->AddEntry(grMCFail,"Z #rightarrow #mu #mu simul.","lp");
+
+  TCanvas *aCanvas = new TCanvas("aCanvas", "",4,29,700,500);
+  hFrame->Draw();
+  grMCFail->Draw("p");
+  grDataFail->Draw("p");
+  aLegend->Draw();
+  aCanvas->Print("fig_png/LooseFittedWidthFail.png");
+
+  hFrame->SetMinimum(0.8);
+  hFrame->SetMaximum(3.2);
+  hFrame->Draw();
+  grMCPass->Draw("p");
+  grDataPass->Draw("p");
+  aLegend->Draw();
+  aCanvas->Print("fig_png/LooseFittedWidthPass.png");
 
 }
 /////////////////////////////////////////////////////
@@ -433,7 +500,10 @@ void fixParamsForPdf(RooAbsPdf *aPdf){
   RooFIter aIterator = aPdfVariables->fwdIterator();
   RooRealVar *aVar = (RooRealVar*)aIterator.next();
   while(aVar){
-    if(std::string(aVar->GetName()).find("mass")==std::string::npos) aVar->setConstant();
+    if(std::string(aVar->GetName()).find("mass")==std::string::npos
+       && std::string(aVar->GetName()).find("sigmaFail")==std::string::npos &&
+          std::string(aVar->GetName()).find("sigmaPass")==std::string::npos
+       ) aVar->setConstant();
     aVar = (RooRealVar*)aIterator.next();
   }
 }
@@ -551,20 +621,16 @@ void plotAll(){
   extraText  = "Preliminary";  // default extra text is "Preliminary"
   lumi_8TeV  = "19.1 fb^{-1}"; // default is "19.7 fb^{-1}"
   lumi_7TeV  = "4.9 fb^{-1}";  // default is "5.1 fb^{-1}"
-  lumi_13TeV  = "12.9 fb^{-1}";  // default is "20.1 fb^{-1}"
+  lumi_13TeV  = "15.9 fb^{-1}";  // default is "20.1 fb^{-1}"
 
-  //plotMistagRate("againstMuonTight3",true);
-  //plotFitCanvas("againstMuonLoose3",true);
-  //plotFitCanvas("againstMuonLoose3",true,true);
+  plotFittedWidth();
   //return;
-
-
   
   bool isData = false;
 
   plotFitCanvas("againstMuonLoose3_Zmumu",isData);
-  plotFitCanvas("againstMuonLoose3_Ztautau",isData);
-
+  plotFitCanvas("againstMuonTight3_Zmumu",isData);
+  
   plotFitCanvas("againstMuonLoose3_Zll",isData);
   plotFitCanvas("againstMuonTight3_Zll",isData);
   

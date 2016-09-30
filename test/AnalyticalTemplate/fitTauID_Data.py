@@ -6,11 +6,11 @@ process.load('FWCore.MessageService.MessageLogger_cfi')
 process.source = cms.Source("EmptySource")
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1) )
 
-filePath = "/home/akalinow/scratch/CMS/TauID/Crab/Data/TauID_TnP/14_09_2016/"
+filePath = "/home/akalinow/scratch/CMS/TauID/Crab/Data/TauID_TnP/15_09_2016/"
 filePath += "tnpZ_Data.root"
 
 efficiencyPSetTemplate = cms.PSet(
-    UnbinnedVariables = cms.vstring("mass","tag_pt", "tag_triggerMatch", "tag_dB", "pair_dz", "pair_deltaR", "pair_probeMultiplicity", "pair_MET", "pair_MTtag", "pair_MTprobe", "decayModeFinding", "byLooseCombinedIsolationDeltaBetaCorr3Hits"),
+    UnbinnedVariables = cms.vstring("mass","alternatLorentzVectPt", "alternatLorentzVectEta", "tag_pt", "tag_triggerMatch", "tag_dB", "pair_dz", "pair_deltaR", "pair_probeMultiplicity", "pair_MET", "pair_MTtag", "pair_MTprobe", "decayModeFinding", "byLooseCombinedIsolationDeltaBetaCorr3Hits"),
     EfficiencyCategoryAndState = cms.vstring("againstMuonLoose3", "pass"), ## Numerator definition
     BinnedVariables = cms.PSet(
         ## Binning in continuous variables
@@ -29,32 +29,32 @@ againstMuonTight3_Data.BinToPDFmap = cms.vstring("Data_Model_TightEta0","*abseta
 againstMuonTight3_Data.EfficiencyCategoryAndState = cms.vstring("againstMuonTight3", "pass")
 
 Data_Model_LooseEta0_Template = cms.vstring(
-    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Zmumu/abseta_bin0__mcTrue_bin0__Zmumu_Model_Eta0/workspaceHistPdf:signalPass",
-    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Zmumu/abseta_bin0__mcTrue_bin0__Zmumu_Model_Eta0/workspaceHistPdf:signalFail",
-    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Ztautau/abseta_bin0__mcTrue_bin0__Ztautau_Model_Eta0/workspaceHistPdf:backgroundFail",
-    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Ztautau/abseta_bin0__mcTrue_bin0__Ztautau_Model_Eta0/workspaceHistPdf:backgroundZtautauPass",
+    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Zmumu/abseta_bin0__mcTrue_bin0__Zmumu_Model_Eta0/workspaceFixedParams:signalPass",
+    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Zmumu/abseta_bin0__mcTrue_bin0__Zmumu_Model_Eta0/workspaceFixedParams:signalFail",
+    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Ztautau/abseta_bin0__mcTrue_bin0__Ztautau_Model_Eta0/workspaceFixedParams:backgroundFail",
+    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Ztautau/abseta_bin0__mcTrue_bin0__Ztautau_Model_Eta0/workspaceFixedParams:backgroundZtautauPass",
     "Exponential::backgroundWJetPass(mass, lp3[-0.235,-1,0])",
-    "SUM::backgroundPass(vFracWJetBkgPass[0.2,0,1]*backgroundWJetPass, backgroundZtautauPass)",
+    "SUM::backgroundPass(vFracWJetBkgPass[0.2,0.1,1]*backgroundWJetPass, backgroundZtautauPass)",
     "efficiency[0.001,0,0.01]",
     "signalFractionInPassing[0.9]"
             )
 
 Data_Model_LooseEta1_Template = cms.vstring(
-    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Zmumu/abseta_bin1__mcTrue_bin0__Zmumu_Model_Eta1/workspaceHistPdf:signalPass",
-    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Zmumu/abseta_bin1__mcTrue_bin0__Zmumu_Model_Eta1/workspaceHistPdf:signalFail",
-    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Ztautau/abseta_bin1__mcTrue_bin0__Ztautau_Model_Eta1/workspaceHistPdf:backgroundFail",
-    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Ztautau/abseta_bin1__mcTrue_bin0__Ztautau_Model_Eta1/workspaceHistPdf:backgroundZtautauPass",
+    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Zmumu/abseta_bin1__mcTrue_bin0__Zmumu_Model_Eta1/workspaceFixedParams:signalPass",
+    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Zmumu/abseta_bin1__mcTrue_bin0__Zmumu_Model_Eta1/workspaceFixedParams:signalFail",
+    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Ztautau/abseta_bin1__mcTrue_bin0__Ztautau_Model_Eta1/workspaceFixedParams:backgroundFail",
+    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Ztautau/abseta_bin1__mcTrue_bin0__Ztautau_Model_Eta1/workspaceFixedParams:backgroundZtautauPass",
     "Exponential::backgroundWJetPass(mass, lp3[-0.235,-1,0])",
-    "SUM::backgroundPass(vFracWJetBkgPass[0.1,0,1]*backgroundWJetPass, backgroundZtautauPass)",
+    "SUM::backgroundPass(vFracWJetBkgPass[0.15,0.1,1]*backgroundWJetPass, backgroundZtautauPass)",
     "efficiency[0.001,0,0.01]",
     "signalFractionInPassing[0.9]"           
 )
 
 Data_Model_LooseEta2_Template = cms.vstring(
-    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Zmumu/abseta_bin2__mcTrue_bin0__Zmumu_Model_Eta2/workspaceHistPdf:signalPass",
-    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Zmumu/abseta_bin2__mcTrue_bin0__Zmumu_Model_Eta2/workspaceHistPdf:signalFail",
-    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Ztautau/abseta_bin2__mcTrue_bin0__Ztautau_Model_Eta2/workspaceHistPdf:backgroundFail",
-    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Ztautau/abseta_bin2__mcTrue_bin0__Ztautau_Model_Eta2/workspaceHistPdf:backgroundZtautauPass",
+    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Zmumu/abseta_bin2__mcTrue_bin0__Zmumu_Model_Eta2/workspaceFixedParams:signalPass",
+    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Zmumu/abseta_bin2__mcTrue_bin0__Zmumu_Model_Eta2/workspaceFixedParams:signalFail",
+    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Ztautau/abseta_bin2__mcTrue_bin0__Ztautau_Model_Eta2/workspaceFixedParams:backgroundFail",
+    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Ztautau/abseta_bin2__mcTrue_bin0__Ztautau_Model_Eta2/workspaceFixedParams:backgroundZtautauPass",
     "Exponential::backgroundWJetPass(mass, lp3[-0.235,-1,0])",
     "SUM::backgroundPass(vFracWJetBkgPass[0.2,0.1,1]*backgroundWJetPass, backgroundZtautauPass)",
     "efficiency[0.001,0,0.01]",
@@ -62,10 +62,10 @@ Data_Model_LooseEta2_Template = cms.vstring(
 )
 
 Data_Model_LooseEta3_Template = cms.vstring(
-    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Zmumu/abseta_bin3__mcTrue_bin0__Zmumu_Model_Eta3/workspaceHistPdf:signalPass",
-    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Zmumu/abseta_bin3__mcTrue_bin0__Zmumu_Model_Eta3/workspaceHistPdf:signalFail",
-    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Ztautau/abseta_bin3__mcTrue_bin0__Ztautau_Model_Eta3/workspaceHistPdf:backgroundFail",
-    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Ztautau/abseta_bin3__mcTrue_bin0__Ztautau_Model_Eta3/workspaceHistPdf:backgroundZtautauPass",
+    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Zmumu/abseta_bin3__mcTrue_bin0__Zmumu_Model_Eta3/workspaceFixedParams:signalPass",
+    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Zmumu/abseta_bin3__mcTrue_bin0__Zmumu_Model_Eta3/workspaceFixedParams:signalFail",
+    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Ztautau/abseta_bin3__mcTrue_bin0__Ztautau_Model_Eta3/workspaceFixedParams:backgroundFail",
+    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Ztautau/abseta_bin3__mcTrue_bin0__Ztautau_Model_Eta3/workspaceFixedParams:backgroundZtautauPass",
     "Exponential::backgroundWJetPass(mass, lp3[-0.235,-1,0])",
     "SUM::backgroundPass(vFracWJetBkgPass[0.2,0.1,1]*backgroundWJetPass, backgroundZtautauPass)",
     "efficiency[0.001,0,0.01]",
@@ -73,10 +73,10 @@ Data_Model_LooseEta3_Template = cms.vstring(
 )
 
 Data_Model_LooseEta4_Template = cms.vstring(
-    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Zmumu/abseta_bin4__mcTrue_bin0__Zmumu_Model_Eta4/workspaceHistPdf:signalPass",
-    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Zmumu/abseta_bin4__mcTrue_bin0__Zmumu_Model_Eta4/workspaceHistPdf:signalFail",
-    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Ztautau/abseta_bin4__mcTrue_bin0__Ztautau_Model_Eta4/workspaceHistPdf:backgroundFail",
-    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Ztautau/abseta_bin4__mcTrue_bin0__Ztautau_Model_Eta4/workspaceHistPdf:backgroundZtautauPass",
+    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Zmumu/abseta_bin4__mcTrue_bin0__Zmumu_Model_Eta4/workspaceFixedParams:signalPass",
+    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Zmumu/abseta_bin4__mcTrue_bin0__Zmumu_Model_Eta4/workspaceFixedParams:signalFail",
+    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Ztautau/abseta_bin4__mcTrue_bin0__Ztautau_Model_Eta4/workspaceFixedParams:backgroundFail",
+    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Ztautau/abseta_bin4__mcTrue_bin0__Ztautau_Model_Eta4/workspaceFixedParams:backgroundZtautauPass",
     "Exponential::backgroundWJetPass(mass, lp3[-0.235,-1,0])",
     "SUM::backgroundPass(vFracWJetBkgPass[0.2,0.1,1]*backgroundWJetPass, backgroundZtautauPass)",
     "efficiency[0.001,0,0.01]",
@@ -84,10 +84,10 @@ Data_Model_LooseEta4_Template = cms.vstring(
 )
 
 Data_Model_TightEta0_Template = cms.vstring(
-    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Zmumu/abseta_bin0__mcTrue_bin0__Zmumu_Model_Eta0/workspaceHistPdf:signalPass",
-    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Zmumu/abseta_bin0__mcTrue_bin0__Zmumu_Model_Eta0/workspaceHistPdf:signalFail",
-    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Ztautau/abseta_bin0__mcTrue_bin0__Ztautau_Model_Eta0/workspaceHistPdf:backgroundFail",
-    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Ztautau/abseta_bin0__mcTrue_bin0__Ztautau_Model_Eta0/workspaceHistPdf:backgroundZtautauPass",
+    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Zmumu/abseta_bin0__mcTrue_bin0__Zmumu_Model_Eta0/workspaceFixedParams:signalPass",
+    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Zmumu/abseta_bin0__mcTrue_bin0__Zmumu_Model_Eta0/workspaceFixedParams:signalFail",
+    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Ztautau/abseta_bin0__mcTrue_bin0__Ztautau_Model_Eta0/workspaceFixedParams:backgroundFail",
+    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Ztautau/abseta_bin0__mcTrue_bin0__Ztautau_Model_Eta0/workspaceFixedParams:backgroundZtautauPass",
     "Exponential::backgroundWJetPass(mass, lp3[-0.235,-1,0])",
     "SUM::backgroundPass(vFracWJetBkgPass[0.1,0,1]*backgroundWJetPass, backgroundZtautauPass)",
     "efficiency[0.001,0,0.01]",
@@ -95,10 +95,10 @@ Data_Model_TightEta0_Template = cms.vstring(
             )
 
 Data_Model_TightEta1_Template = cms.vstring(
-    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Zmumu/abseta_bin1__mcTrue_bin0__Zmumu_Model_Eta1/workspaceHistPdf:signalPass",
-    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Zmumu/abseta_bin1__mcTrue_bin0__Zmumu_Model_Eta1/workspaceHistPdf:signalFail",
-    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Ztautau/abseta_bin1__mcTrue_bin0__Ztautau_Model_Eta1/workspaceHistPdf:backgroundFail",
-    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Ztautau/abseta_bin1__mcTrue_bin0__Ztautau_Model_Eta1/workspaceHistPdf:backgroundZtautauPass",
+    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Zmumu/abseta_bin1__mcTrue_bin0__Zmumu_Model_Eta1/workspaceFixedParams:signalPass",
+    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Zmumu/abseta_bin1__mcTrue_bin0__Zmumu_Model_Eta1/workspaceFixedParams:signalFail",
+    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Ztautau/abseta_bin1__mcTrue_bin0__Ztautau_Model_Eta1/workspaceFixedParams:backgroundFail",
+    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Ztautau/abseta_bin1__mcTrue_bin0__Ztautau_Model_Eta1/workspaceFixedParams:backgroundZtautauPass",
     "Exponential::backgroundWJetPass(mass, lp3[-0.235,-1,0])",
     "SUM::backgroundPass(vFracWJetBkgPass[0.1,0,1]*backgroundWJetPass, backgroundZtautauPass)",
     "efficiency[0.001,0,0.01]",
@@ -106,10 +106,10 @@ Data_Model_TightEta1_Template = cms.vstring(
 )
 
 Data_Model_TightEta2_Template = cms.vstring(
-    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Zmumu/abseta_bin2__mcTrue_bin0__Zmumu_Model_Eta2/workspaceHistPdf:signalPass",
-    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Zmumu/abseta_bin2__mcTrue_bin0__Zmumu_Model_Eta2/workspaceHistPdf:signalFail",
-    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Ztautau/abseta_bin2__mcTrue_bin0__Ztautau_Model_Eta2/workspaceHistPdf:backgroundFail",
-    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Ztautau/abseta_bin2__mcTrue_bin0__Ztautau_Model_Eta2/workspaceHistPdf:backgroundZtautauPass",
+    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Zmumu/abseta_bin2__mcTrue_bin0__Zmumu_Model_Eta2/workspaceFixedParams:signalPass",
+    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Zmumu/abseta_bin2__mcTrue_bin0__Zmumu_Model_Eta2/workspaceFixedParams:signalFail",
+    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Ztautau/abseta_bin2__mcTrue_bin0__Ztautau_Model_Eta2/workspaceFixedParams:backgroundFail",
+    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Ztautau/abseta_bin2__mcTrue_bin0__Ztautau_Model_Eta2/workspaceFixedParams:backgroundZtautauPass",
     "Exponential::backgroundWJetPass(mass, lp3[-0.235,-1,0])",
     "SUM::backgroundPass(vFracWJetBkgPass[0.1,0,1]*backgroundWJetPass, backgroundZtautauPass)",
     "efficiency[0.001,0,0.01]",
@@ -117,10 +117,10 @@ Data_Model_TightEta2_Template = cms.vstring(
 )
 
 Data_Model_TightEta3_Template = cms.vstring(
-    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Zmumu/abseta_bin3__mcTrue_bin0__Zmumu_Model_Eta3/workspaceHistPdf:signalPass",
-    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Zmumu/abseta_bin3__mcTrue_bin0__Zmumu_Model_Eta3/workspaceHistPdf:signalFail",
-    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Ztautau/abseta_bin3__mcTrue_bin0__Ztautau_Model_Eta3/workspaceHistPdf:backgroundFail",
-    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Ztautau/abseta_bin3__mcTrue_bin0__Ztautau_Model_Eta3/workspaceHistPdf:backgroundZtautauPass",
+    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Zmumu/abseta_bin3__mcTrue_bin0__Zmumu_Model_Eta3/workspaceFixedParams:signalPass",
+    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Zmumu/abseta_bin3__mcTrue_bin0__Zmumu_Model_Eta3/workspaceFixedParams:signalFail",
+    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Ztautau/abseta_bin3__mcTrue_bin0__Ztautau_Model_Eta3/workspaceFixedParams:backgroundFail",
+    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Ztautau/abseta_bin3__mcTrue_bin0__Ztautau_Model_Eta3/workspaceFixedParams:backgroundZtautauPass",
     "Exponential::backgroundWJetPass(mass, lp3[-0.235,-1,0])",
     "SUM::backgroundPass(vFracWJetBkgPass[0.1,0,1]*backgroundWJetPass, backgroundZtautauPass)",
     "efficiency[0.001,0,0.01]",
@@ -128,10 +128,10 @@ Data_Model_TightEta3_Template = cms.vstring(
 )
 
 Data_Model_TightEta4_Template = cms.vstring(
-    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Zmumu/abseta_bin4__mcTrue_bin0__Zmumu_Model_Eta4/workspaceHistPdf:signalPass",
-    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Zmumu/abseta_bin4__mcTrue_bin0__Zmumu_Model_Eta4/workspaceHistPdf:signalFail",
-    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Ztautau/abseta_bin4__mcTrue_bin0__Ztautau_Model_Eta4/workspaceHistPdf:backgroundFail",
-    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Ztautau/abseta_bin4__mcTrue_bin0__Ztautau_Model_Eta4/workspaceHistPdf:backgroundZtautauPass",
+    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Zmumu/abseta_bin4__mcTrue_bin0__Zmumu_Model_Eta4/workspaceFixedParams:signalPass",
+    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Zmumu/abseta_bin4__mcTrue_bin0__Zmumu_Model_Eta4/workspaceFixedParams:signalFail",
+    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Ztautau/abseta_bin4__mcTrue_bin0__Ztautau_Model_Eta4/workspaceFixedParams:backgroundFail",
+    "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Ztautau/abseta_bin4__mcTrue_bin0__Ztautau_Model_Eta4/workspaceFixedParams:backgroundZtautauPass",
     "Exponential::backgroundWJetPass(mass, lp3[-0.235,-1,0])",
     "SUM::backgroundPass(vFracWJetBkgPass[0.1,0,1]*backgroundWJetPass, backgroundZtautauPass)",
     "efficiency[0.001,0,0.01]",
@@ -152,6 +152,8 @@ process.TnP_Muon_ID = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
         mass   = cms.vstring("Tag-muon Mass", "60", "110", "GeV/c^{2}"),
         abseta = cms.vstring("muon |#eta|", "0", "2.4", ""),
         pt  = cms.vstring("probe pT", "40", "45", ""),
+        alternatLorentzVectPt = cms.vstring("probe tau pT", "20", "1500", ""),
+        alternatLorentzVectEta = cms.vstring("probe tau eta", "-2.4", "2.4", ""),
         tag_pt  = cms.vstring("tag pT", "0", "1500", ""),
         tag_triggerMatch = cms.vstring("Tag matched to HLT item", "0.5", "1.0", ""),
         tag_dB  = cms.vstring("dB", "0.0", "0.004", ""),
@@ -190,7 +192,7 @@ process.TnP_Muon_ID = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
     ),    
     ## How to do the fit
     binnedFit = cms.bool(True),
-    binsForFit = cms.uint32(20),
+    binsForFit = cms.uint32(50),
     saveDistributionsPlot = cms.bool(False),
     NumCPU = cms.uint32(1), ## leave to 1 for now, RooFit gives funny results otherwise
     SaveWorkspace = cms.bool(True),
