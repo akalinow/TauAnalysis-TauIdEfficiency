@@ -96,7 +96,7 @@ PFTauMerger::produce(edm::Event & iEvent, const edm::EventSetup & iSetup) {
 	    }
 	    else{
 	      aPatTau.setalternatLorentzVect(p4);
-	      aID.push_back(pat::Tau::IdPair("decayMode",-2));
+	      aID.push_back(pat::Tau::IdPair("decayMode",-1));
 	      aID.push_back(pat::Tau::IdPair("againstMuonTight3",0));
 	      aID.push_back(pat::Tau::IdPair("againstMuonLoose3",0));
 	      aID.push_back(pat::Tau::IdPair("againstElectronVLooseMVA6",0));
@@ -107,7 +107,6 @@ PFTauMerger::produce(edm::Event & iEvent, const edm::EventSetup & iSetup) {
 	    }	    
 	    aPatTau.setTauIDs(aID);
             out->push_back(aPatTau);
-	    break;
         }
     }
     iEvent.put(out);

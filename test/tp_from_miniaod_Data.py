@@ -55,7 +55,7 @@ process.goodVertexFilter = cms.EDFilter("VertexSelector",
 process.load("HLTrigger.HLTfilters.triggerResultsFilter_cfi")
 
 if TRIGGER == "SingleMu":
-    process.triggerResultsFilter.triggerConditions = cms.vstring('HLT_IsoMu18_v*', 'HLT_IsoMu20_v*', 'HLT_IsoMu22_v*)
+    process.triggerResultsFilter.triggerConditions = cms.vstring('HLT_IsoMu18_v*', 'HLT_IsoMu20_v*', 'HLT_IsoMu22_v*')
     
 else:
     raise RuntimeError, "TRIGGER must be 'SingleMu' or 'DoubleMu'"
@@ -80,19 +80,6 @@ process.fastFilter     = cms.Sequence(process.goodVertexFilter + process.trigger
 from MuonAnalysis.TagAndProbe.common_variables_cff import *
 from TauAnalysis.TauIdEfficiency.common_variables_tau_cff import *
 process.load("MuonAnalysis.TagAndProbe.common_modules_cff")
-
-'''
-process.tagMuons = cms.EDProducer("PFMuonMerger",
-    mergeTracks = cms.bool(False),
-    muons     = cms.InputTag("slimmedMuons"),
-    photons     = cms.InputTag("slimmedPhotons"), 
-    tracks    = cms.InputTag("packedPFCandidates"),
-    ## Apply some minimal pt cut
-    muonsCut     = cms.string("pt > 25 && abs(eta)<2.1 && "+ MuonIDFlags2016.Tight2016.value()+
-                              " && " + MuonIDFlags2016.Isolation2016.value()),
-    tracksCut    = cms.string("pt > 25 && abs(eta)<2.1"),
-)
-'''
 
 process.tagMuons = cms.EDFilter("PATMuonSelector",
     src = cms.InputTag("slimmedMuons"),
@@ -124,12 +111,12 @@ process.mergedTaus = cms.EDProducer("PFTauMerger",
 
 process.probeTaus = cms.EDFilter("PATTauSelector",
     src = cms.InputTag("mergedTaus"),
-    cut = cms.string('tauID("byLooseCombinedIsolationDeltaBetaCorr3Hits")==1'),
+    cut = cms.string('tauID("byLooseCombinedIsolationDeltaBetaCorr3Hits")==1 || tauID("byTightIsolationMVArun2v1DBoldDMwLT")==1'),
     minNumber = cms.uint32(1)
 )
 
 process.tpPairs = cms.EDProducer("CandViewShallowCloneCombiner",
-    cut = cms.string('40 < mass < 160 && abs(daughter(0).vz - daughter(1).vz) < 4'),
+    cut = cms.string('40 < mass < 200 && abs(daughter(0).vz - daughter(1).vz) < 4'),
     decay = cms.string('tagMuons@+ probeTaus@-')
 )
 process.onePair = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("tpPairs"), minNumber = cms.uint32(1))
@@ -218,6 +205,7 @@ process.tnpSimpleSequence = cms.Sequence(
     process.nverticesModule +
     process.njets30Module +     
     process.pairMETPtBalanceModule + process.tagMTModule +  process.probeMTModule +
+    process.pairAlternativeMass +
     process.probeMultiplicities + 
     process.bestPairByZMass + 
     process.tpTree
