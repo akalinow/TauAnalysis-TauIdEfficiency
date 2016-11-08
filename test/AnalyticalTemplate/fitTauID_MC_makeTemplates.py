@@ -6,7 +6,7 @@ process.load('FWCore.MessageService.MessageLogger_cfi')
 process.source = cms.Source("EmptySource")
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1) )
 
-filePath = "/home/akalinow/scratch/CMS/TauID/Crab/Data/TauID_TnP/15_09_2016/"
+filePath = "/home/akalinow/scratch/CMS/TauID/Crab/Data/TauID_TnP/08_11_2016/"
 filePath += "tnpZ_MC.root"
 
 efficiencyPSetTemplate = cms.PSet(
@@ -84,7 +84,7 @@ process.TnP_Muon_ID = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
     InputDirectoryName = cms.string("tpTree"),  
     ## Variables for binning
     Variables = cms.PSet(
-        mass   = cms.vstring("Tag-muon Mass", "60", "110", "GeV/c^{2}"),
+        mass   = cms.vstring("Tag-muon Mass", "70", "110", "GeV/c^{2}"),
         abseta = cms.vstring("muon |#eta|", "0", "2.4", ""),
         alternatLorentzVectPt = cms.vstring("probe tau pT", "20", "1500", ""),
         alternatLorentzVectEta = cms.vstring("probe tau eta", "-2.4", "2.4", ""),

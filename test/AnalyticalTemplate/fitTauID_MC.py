@@ -6,11 +6,11 @@ process.load('FWCore.MessageService.MessageLogger_cfi')
 process.source = cms.Source("EmptySource")
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1) )
 
-filePath = "/home/akalinow/scratch/CMS/TauID/Crab/Data/TauID_TnP/15_09_2016/"
+filePath = "/home/akalinow/scratch/CMS/TauID/Crab/Data/TauID_TnP/08_11_2016/"
 filePath += "tnpZ_MC.root"
 
 efficiencyPSetTemplate = cms.PSet(
-    UnbinnedVariables = cms.vstring("mass", "alternatLorentzVectPt", "alternatLorentzVectEta", "tag_pt", "tag_triggerMatch", "tag_dB", "pair_dz", "pair_deltaR", "pair_probeMultiplicity", "pair_MET", "pair_MTtag", "pair_MTprobe", "decayModeFinding", "byLooseCombinedIsolationDeltaBetaCorr3Hits"),
+    UnbinnedVariables = cms.vstring("mass", "alternatLorentzVectPt", "alternatLorentzVectEta", "tag_pt", "tag_triggerMatch", "tag_dB", "pair_dz", "pair_deltaR", "pair_probeMultiplicity", "pair_BestZ", "pair_MET", "pair_MTtag", "pair_MTprobe", "decayModeFinding", "byLooseCombinedIsolationDeltaBetaCorr3Hits"),
     EfficiencyCategoryAndState = cms.vstring("againstMuonLoose3", "pass"), ## Numerator definition
     BinnedVariables = cms.PSet(
         ## Binning in continuous variables
@@ -21,7 +21,9 @@ efficiencyPSetTemplate = cms.PSet(
 )
 
 againstMuonLoose3_Zmumu = efficiencyPSetTemplate.clone()
-againstMuonLoose3_Zmumu.BinnedVariables._Parameterizable__addParameter("mcTrue",cms.vdouble(0.5,1.0))
+#againstMuonLoose3_Zmumu.BinnedVariables._Parameterizable__addParameter("mcTrue",cms.vdouble(0.5,1.0))
+againstMuonLoose3_Zmumu.BinnedVariables._Parameterizable__addParameter("pair_ZDecayMode",cms.vdouble(6.5,7.5))
+
 againstMuonLoose3_Zmumu.BinToPDFmap = cms.vstring("Zll_Model_LooseEta0","*abseta_bin1*","Zll_Model_LooseEta1", "*abseta_bin2*","Zll_Model_LooseEta2", "*abseta_bin3*","Zll_Model_LooseEta3", "*abseta_bin4*","Zll_Model_LooseEta4")
 
 againstMuonLoose3_Zll = efficiencyPSetTemplate.clone()
@@ -135,9 +137,8 @@ process.TnP_Muon_ID = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
     InputDirectoryName = cms.string("tpTree"),  
     ## Variables for binning
     Variables = cms.PSet(
-        mass   = cms.vstring("Tag-muon Mass", "60", "110", "GeV/c^{2}"),
+        mass   = cms.vstring("Tag-muon Mass", "70", "120", "GeV/c^{2}"),
         abseta = cms.vstring("muon |#eta|", "0", "2.4", ""),
-        pt  = cms.vstring("probe pT", "40", "45", ""),
         alternatLorentzVectPt = cms.vstring("probe tau pT", "20", "1500", ""),
         alternatLorentzVectEta = cms.vstring("probe tau eta", "-2.4", "2.4", ""),
         tag_pt  = cms.vstring("tag pT", "0", "1500", ""),
@@ -145,14 +146,15 @@ process.TnP_Muon_ID = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
         tag_dB  = cms.vstring("dB", "0.0", "0.004", ""),
         pair_dz = cms.vstring("#Deltaz between two muons", "-0.05", "0.05", "cm"),
         pair_deltaR = cms.vstring("#DeltaR between two muons", "0.5", "5", ""),
-        pair_probeMultiplicity = cms.vstring("Probe multiplicity", "1", "1", ""),
-        pair_MET = cms.vstring("MET", "0", "25", ""),
+        pair_probeMultiplicity = cms.vstring("Probe multiplicity", "1", "10", ""),
+        pair_BestZ = cms.vstring("pair closest to Z mass", "0.5", "1.0", ""),
+        pair_MET = cms.vstring("MET", "0", "4000", ""),
         pair_MTtag = cms.vstring("MTtag", "0", "40", ""),
         pair_MTprobe = cms.vstring("MTprobe", "0", "4000", ""),
         decayModeFinding = cms.vstring("Decay mode finding", "0.5", "1.0", ""),
-        #decayModeFindingNewDMs = cms.vstring("Decay mode finding NewDMs", "0.5", "1.0", ""),
         byLooseCombinedIsolationDeltaBetaCorr3Hits = cms.vstring("Combined loose isolation", "0.5", "1.0", ""),
         mcTrue = cms.vstring("Match to gen muons", "0.0", "1.0", ""),
+        pair_ZDecayMode = cms.vstring("Z decay mode", "0", "10", ""),
     ),
     ## Flags you want to use to define numerator and possibly denominator
     Categories = cms.PSet(
@@ -164,8 +166,8 @@ process.TnP_Muon_ID = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
         againstMuonLoose3_Zmumu = againstMuonLoose3_Zmumu,
         againstMuonLoose3_Zll = againstMuonLoose3_Zll,
 
-        againstMuonTight3_Zmumu = againstMuonTight3_Zmumu,
-        againstMuonTight3_Zll = againstMuonTight3_Zll,
+        #againstMuonTight3_Zmumu = againstMuonTight3_Zmumu,
+        #againstMuonTight3_Zll = againstMuonTight3_Zll,
     ),
     PDFs = cms.PSet(
         Zll_Model_LooseEta0 = Zll_Model_LooseEta0_Template,

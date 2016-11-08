@@ -54,7 +54,7 @@ process.goodVertexFilter = cms.EDFilter("VertexSelector",
 process.load("HLTrigger.HLTfilters.triggerResultsFilter_cfi")
 
 if TRIGGER == "SingleMu":
-    process.triggerResultsFilter.triggerConditions = cms.vstring('HLT_IsoMu18_v*', 'HLT_IsoMu20_v*')
+    process.triggerResultsFilter.triggerConditions = cms.vstring('HLT_IsoMu18_v*', 'HLT_IsoMu20_v*','HLT_IsoMu22_v*')
     
 else:
     raise RuntimeError, "TRIGGER must be 'SingleMu' or 'DoubleMu'"
@@ -103,7 +103,7 @@ process.oneTag  = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("tagMuo
 process.tagTriggerMatchModule = cms.EDProducer("TriggerObjectStandAloneMatch", 
     tags   = cms.InputTag("tagMuons"),
     objects = cms.InputTag("selectedPatTrigger"),
-    objectSelection = cms.string('hasFilterLabel("hltL3crIsoL1sMu16L1f0L2f10QL3f18QL3trkIsoFiltered0p09")'),
+    objectSelection = cms.string('hasFilterLabel("hltL3crIsoL1sMu20L1f0L2f10QL3f22QL3trkIsoFiltered0p09")'),
     maxTagObjDR   = cms.double(0.1),
 )
 
@@ -127,7 +127,7 @@ process.probeTaus = cms.EDFilter("PATTauSelector",
 )
 
 process.tpPairs = cms.EDProducer("CandViewShallowCloneCombiner",
-    cut = cms.string('60 < mass < 120 && abs(daughter(0).vz - daughter(1).vz) < 4'),
+    cut = cms.string('40 < mass < 160 && abs(daughter(0).vz - daughter(1).vz) < 4'),
     decay = cms.string('tagMuons@+ probeTaus@-')
 )
 process.onePair = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("tpPairs"), minNumber = cms.uint32(1))
@@ -202,6 +202,7 @@ process.tpTree = cms.EDAnalyzer("TagProbeFitTreeProducer",
         decayModeFinding =  cms.string('tauID("decayModeFinding")'),
         decayModeFindingNewDMs =  cms.string('tauID("decayModeFindingNewDMs")'),
         byLooseCombinedIsolationDeltaBetaCorr3Hits = cms.string('tauID("byLooseCombinedIsolationDeltaBetaCorr3Hits")'),
+        byTightIsolationMVArun2v1DBoldDMwLT = cms.string('tauID("byTightIsolationMVArun2v1DBoldDMwLT")'),
         againstMuonLoose3 =  cms.string('tauID("againstMuonLoose3")'),
         againstMuonTight3 =  cms.string('tauID("againstMuonTight3")'),
     ),
