@@ -1,0 +1,9 @@
+<use name="DataFormats/HepMCCandidate"/>
+
+<use name="root"/>
+<use name="CLHEP"/>
+
+
+<export>
+  <lib   name="1"/>
+</export>
