@@ -149,6 +149,12 @@ process.probeMTModule = cms.EDProducer("CandMTPair",
     useProbe = cms.bool(True)                              
 )
 
+process.pairAlternativeMass = cms.EDProducer("CandPairVariables", 
+    pairs   = cms.InputTag("tpPairs"),
+    genParticles = cms.InputTag("prunedGenParticles"),
+    variableName =  cms.string("alternativeMass")
+)
+
 process.tpTree = cms.EDAnalyzer("TagProbeFitTreeProducer",
     # choice of tag and probe pairs, and arbitration
     tagProbePairs = cms.InputTag("tpPairs"),
