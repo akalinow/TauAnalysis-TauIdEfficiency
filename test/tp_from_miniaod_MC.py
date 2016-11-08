@@ -13,7 +13,7 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 10000
 process.source = cms.Source("PoolSource", 
     fileNames = cms.untracked.vstring(),
 )
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000000) )    
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10000) )    
 
 process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
 process.load('Configuration.StandardSequences.MagneticField_cff')
@@ -33,7 +33,7 @@ elif "CMSSW_8_0_" in os.environ['CMSSW_VERSION']:
     ]
 else: raise RuntimeError, "Unknown CMSSW version %s" % os.environ['CMSSW_VERSION']
 
-dataPath = "/home/akalinow/scratch/CMS/TauID/Data/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIIFall15MiniAODv2-PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v1/MINIAODSIM"
+dataPath = "/home/akalinow/scratch/CMS/TauID/Data/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISpring16MiniAODv2-PUSpring16RAWAODSIM_reHLT_80X_mcRun2_asymptotic_v14_ext1-v1/MINIAODSIM/"
 command = "ls "+dataPath+"/*.root"
 fileList = commands.getoutput(command).split("\n")   
 process.source.fileNames =  cms.untracked.vstring()
@@ -162,6 +162,18 @@ process.probeMTModule = cms.EDProducer("CandMTPair",
     useProbe = cms.bool(True)                              
 )
 
+process.pairAlternativeMass = cms.EDProducer("CandPairVariables", 
+    pairs   = cms.InputTag("tpPairs"),
+    genParticles = cms.InputTag("prunedGenParticles"),
+    variableName =  cms.string("alternativeMass")
+)
+
+process.ZDecayMode = cms.EDProducer("CandPairVariables", 
+    pairs   = cms.InputTag("tpPairs"),
+    genParticles = cms.InputTag("prunedGenParticles"),
+    variableName =  cms.string("ZDecayMode")
+)
+
 process.tagMuonsMCMatch = cms.EDProducer("MCMatcher", # cut on deltaR, deltaPt/Pt; pick best by deltaR
     src     = cms.InputTag("tagMuons"), # RECO objects to match
     matched = cms.InputTag("goodGenMuons"),   # mc-truth particle collection
@@ -209,6 +221,8 @@ process.tpTree = cms.EDAnalyzer("TagProbeFitTreeProducer",
         MET = cms.InputTag("pairMETPtBalanceModule"),
         MTprobe = cms.InputTag("probeMTModule"),
         MTtag = cms.InputTag("tagMTModule"),
+        alternativeMass = cms.InputTag("pairAlternativeMass"),
+        ZDecayMode = cms.InputTag("ZDecayMode"),
     ),
     pairFlags = cms.PSet(
         BestZ = cms.InputTag("bestPairByZMass"),
@@ -235,6 +249,7 @@ process.tnpSimpleSequence = cms.Sequence(
     process.nverticesModule +
     process.njets30Module +
     process.pairMETPtBalanceModule + process.tagMTModule +  process.probeMTModule +
+    process.pairAlternativeMass + process.ZDecayMode +
     process.probeMultiplicities + 
     process.bestPairByZMass + 
     process.tpTree

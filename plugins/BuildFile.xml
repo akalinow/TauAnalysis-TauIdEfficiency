@@ -5,6 +5,7 @@
 <use   name="FWCore/PluginManager"/>
 <use   name="DataFormats/PatCandidates"/>
 <use   name="CommonTools/Utils"/>
+<use   name="TauAnalysis/TauIdEfficiency"/>
 
 <flags   EDM_PLUGIN="1"/>  
 </library>  

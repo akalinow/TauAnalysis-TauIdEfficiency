@@ -361,17 +361,17 @@ void plotMistagRate(std::string category = "againstMuonLoose3", bool isData=fals
 void plotFittedWidth(){
 
 
-  float yMCFail[5] = {1.175, 1.207, 1.291, 1.388, 1.614};
-  float yMCFailError[5] = {0.004, 0.004, 0.005, 0.005, 0.005};
+  float yMCFail[5] = {1.177, 1.203, 1.297, 1.391, 1.617};
+  float yMCFailError[5] = {0.003, 0.003, 0.003, 0.003, 0.004};
   
-  float yMCPass[5] = {1.08, 1.3, 1.30, 1.6, 3.0};
-  float yMCPassError[5] = {0.08, 0.1, 0.09, 0.2, 0.4};
+  float yMCPass[5] = {1.09, 1.13, 1.35, 1.6, 1.5};
+  float yMCPassError[5] = {0.06, 0.07, 0.07, 0.1, 0.2};
 
-  float yDataFail[5] = {1.273, 1.285, 1.408, 1.502, 1.825};
-  float yDataFailError[5] = {0.004, 0.005, 0.005, 0.005, 0.006};
+  float yDataFail[5] = {1.278, 1.290, 1.404, 1.506, 1.840};
+  float yDataFailError[5] = {0.003, 0.003, 0.004, 0.004, 0.004};
 
-  float yDataPass[5] = {0.88, 1.0, 1.25, 1.2, 1.8};
-  float yDataPassError[5] = {0.1, 0.1, 0.09, 0.3, 0.6};
+  float yDataPass[5] = {1.02, 1.04, 1.24, 1.2, 1.4};
+  float yDataPassError[5] = {0.07, 0.08, 0.07, 0.2, 0.5};
 
   float x[5] = {0.199823, 0.597364, 0.996381, 1.44261, 1.97812};
   float xError[5] = {0.2, 0.2, 0.2, 0.25, 0.32};
@@ -396,7 +396,7 @@ void plotFittedWidth(){
   
   TH1F *hFrame = new TH1F("hFrame","",3,0,2.3);
   hFrame->SetMinimum(0.95);
-  hFrame->SetMaximum(3.2);
+  hFrame->SetMaximum(2.5);
   hFrame->SetStats(kFALSE);
   hFrame->SetXTitle("|#eta|");
   hFrame->SetYTitle("Voightian sigma");
@@ -415,7 +415,7 @@ void plotFittedWidth(){
   aCanvas->Print("fig_png/LooseFittedWidthFail.png");
 
   hFrame->SetMinimum(0.8);
-  hFrame->SetMaximum(3.2);
+  hFrame->SetMaximum(2.5);
   hFrame->Draw();
   grMCPass->Draw("p");
   grDataPass->Draw("p");
@@ -624,7 +624,7 @@ void plotAll(){
   lumi_13TeV  = "15.9 fb^{-1}";  // default is "20.1 fb^{-1}"
 
   plotFittedWidth();
-  //return;
+  return;
   
   bool isData = false;
 

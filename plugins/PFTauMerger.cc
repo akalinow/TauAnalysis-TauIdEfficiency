@@ -61,11 +61,6 @@ PFTauMerger::produce(edm::Event & iEvent, const edm::EventSetup & iSetup) {
     std::auto_ptr<std::vector<pat::Tau> >  out(new std::vector<pat::Tau>());
     out->reserve(taus->size() + (mergeTracks_?tracks->size():0));
 
-    // copy reco::Taus, turning on the CaloCompatibility flag if enabled and possible
-    for (std::vector<pat::Tau>::const_iterator it = taus->begin(), ed = taus->end(); it != ed; ++it) {
-        if(!tausCut_(*it)) continue;
-	//out->push_back(*it);
-    }
     // merge reco::Track avoiding duplication of innerTracks
     if(mergeTracks_){
         for (size_t i = 0; i < tracks->size(); i++) {
@@ -83,21 +78,11 @@ PFTauMerger::produce(edm::Event & iEvent, const edm::EventSetup & iSetup) {
             }	    
             // make a pat::Tau from a track
             double energy = sqrt(track->p() * track->p() +  0.13957018*0.13957018);	    
-            math::XYZTLorentzVector p4(track->px(), track->py(), track->pz(), energy);
-	    /*
-	    for (std::vector<pat::Photon>::const_iterator itPhoton = photons->begin(); itPhoton!=photons->end(); ++itPhoton){
-	      float isolation = itPhoton->chargedHadronIso() + itPhoton->neutralHadronIso() + itPhoton->photonIso();
-	      if(itPhoton->p4().E()/p4.E()<1000.1 &&
-		 ((reco::deltaR(p4,*itPhoton)<0.07 && itPhoton->pt()>2) ||
-		 (reco::deltaR(p4,*itPhoton)>0.07 && reco::deltaR(p4,*itPhoton)<0.5 && itPhoton->pt()>4 && isolation<1.0))){
-		p4+=itPhoton->p4();
-		//p4.SetE(p4.E()+itPhoton->p4().E());
-	      }
-	    }
-	    */
+            math::XYZTLorentzVector p4(track->px(), track->py(), track->pz(), energy);	    
 	    reco::BaseTau aBaseTau(track->charge(), p4, track->vertex());
 	    pat::Tau aPatTau(aBaseTau);
-	    std::vector<pat::Tau::IdPair> aID;	   
+	    std::vector<pat::Tau::IdPair> aID;
+
             if(isTau){	     	      
 	      aPatTau.setalternatLorentzVect(aTau->p4());
 	      aID.push_back(pat::Tau::IdPair("decayMode",aTau->decayMode()));
@@ -107,18 +92,22 @@ PFTauMerger::produce(edm::Event & iEvent, const edm::EventSetup & iSetup) {
 	      aID.push_back(pat::Tau::IdPair("decayModeFindingNewDMs",aTau->tauID("decayModeFindingNewDMs")));
 	      aID.push_back(pat::Tau::IdPair("decayModeFinding",aTau->tauID("decayModeFinding")));
 	      aID.push_back(pat::Tau::IdPair("byLooseCombinedIsolationDeltaBetaCorr3Hits",aTau->tauID("byLooseCombinedIsolationDeltaBetaCorr3Hits")));
+	      aID.push_back(pat::Tau::IdPair("byTightIsolationMVArun2v1DBoldDMwLT",aTau->tauID("byTightIsolationMVArun2v1DBoldDMwLT")));	      
 	    }
 	    else{
-	      aID.push_back(pat::Tau::IdPair("decayMode",-1));
+	      aPatTau.setalternatLorentzVect(p4);
+	      aID.push_back(pat::Tau::IdPair("decayMode",-2));
 	      aID.push_back(pat::Tau::IdPair("againstMuonTight3",0));
 	      aID.push_back(pat::Tau::IdPair("againstMuonLoose3",0));
 	      aID.push_back(pat::Tau::IdPair("againstElectronVLooseMVA6",0));
 	      aID.push_back(pat::Tau::IdPair("decayModeFindingNewDMs",0));
 	      aID.push_back(pat::Tau::IdPair("decayModeFinding",0));
 	      aID.push_back(pat::Tau::IdPair("byLooseCombinedIsolationDeltaBetaCorr3Hits",0));
+	      aID.push_back(pat::Tau::IdPair("byTightIsolationMVArun2v1DBoldDMwLT",0));	      
 	    }	    
 	    aPatTau.setTauIDs(aID);
             out->push_back(aPatTau);
+	    break;
         }
     }
     iEvent.put(out);
