@@ -21,16 +21,8 @@ process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condD
 process.load("Configuration.StandardSequences.Reconstruction_cff")
 
 import os
-if "CMSSW_7_6_" in os.environ['CMSSW_VERSION']:
-    process.GlobalTag.globaltag = cms.string('76X_dataRun2_v15')
-    process.source.fileNames = [
-        'file:///home/akalinow/scratch/CMS/TauID/Data/SingleMuon/Run2015D-16Dec2015-v1/MINIAOD/1/00006301-CAA8-E511-AD39-549F35AD8BC9.root',
-    ]
-elif "CMSSW_8_0_" in os.environ['CMSSW_VERSION']:
-    process.GlobalTag.globaltag = cms.string('80X_dataRun2_Prompt_ICHEP16JEC_v0')
-    process.source.fileNames = [
-        'file:///home/akalinow/scratch/CMS/TauID/Data/SingleMuon/Run2015D-16Dec2015-v1/MINIAOD/1/00006301-CAA8-E511-AD39-549F35AD8BC9.root',
-    ]
+if "CMSSW_8_0_" in os.environ['CMSSW_VERSION']:
+    process.GlobalTag.globaltag = cms.string('80X_dataRun2_2016SeptRepro_v6')
 else: raise RuntimeError, "Unknown CMSSW version %s" % os.environ['CMSSW_VERSION']
 
 '''
@@ -55,7 +47,7 @@ process.goodVertexFilter = cms.EDFilter("VertexSelector",
 process.load("HLTrigger.HLTfilters.triggerResultsFilter_cfi")
 
 if TRIGGER == "SingleMu":
-    process.triggerResultsFilter.triggerConditions = cms.vstring('HLT_IsoMu18_v*', 'HLT_IsoMu20_v*', 'HLT_IsoMu22_v*')
+    process.triggerResultsFilter.triggerConditions = cms.vstring('HLT_IsoMu24_v*','HLT_IsoTkMu24_v*')    
     
 else:
     raise RuntimeError, "TRIGGER must be 'SingleMu' or 'DoubleMu'"
@@ -92,7 +84,7 @@ process.oneTag  = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("tagMuo
 process.tagTriggerMatchModule = cms.EDProducer("TriggerObjectStandAloneMatch", 
     tags   = cms.InputTag("tagMuons"),
     objects = cms.InputTag("selectedPatTrigger"),
-    objectSelection = cms.string('hasFilterLabel("hltL3crIsoL1sMu20L1f0L2f10QL3f22QL3trkIsoFiltered0p09")'),
+    objectSelection = cms.string('hasFilterLabel("hltL3crIsoL1sMu22L1f0L2f10QL3f24QL3trkIsoFiltered0p09") || hasFilterLabel("hltL3fL1sMu22L1f0Tkf24QL3trkIsoFiltered0p09")'),
     maxTagObjDR   = cms.double(0.1),
 )
 

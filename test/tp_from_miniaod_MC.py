@@ -13,7 +13,7 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 10000
 process.source = cms.Source("PoolSource", 
     fileNames = cms.untracked.vstring(),
 )
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10000) )    
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )    
 
 process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
 process.load('Configuration.StandardSequences.MagneticField_cff')
@@ -21,19 +21,11 @@ process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condD
 process.load("Configuration.StandardSequences.Reconstruction_cff")
 
 import os
-if "CMSSW_7_6_" in os.environ['CMSSW_VERSION']:
-    process.GlobalTag.globaltag = cms.string('76X_mcRun2_asymptotic_v12')
-    process.source.fileNames = [
-        'file:///home/akalinow/scratch/CMS/TauID/Data/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIIFall15MiniAODv2-PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v1/MINIAODSIM/0C4FAF25-DAC7-E511-A535-BCAEC54E98B3.root'
-    ]
-elif "CMSSW_8_0_" in os.environ['CMSSW_VERSION']:
-    process.GlobalTag.globaltag = cms.string('80X_mcRun2_asymptotic_2016_miniAODv2_v1')
-    process.source.fileNames = [
-        'file:///home/akalinow/scratch/CMS/TauID/Data/SingleMuon/Run2015D-16Dec2015-v1/MINIAOD/1/00006301-CAA8-E511-AD39-549F35AD8BC9.root',
-    ]
+if "CMSSW_8_0_" in os.environ['CMSSW_VERSION']:
+    process.GlobalTag.globaltag = cms.string('80X_mcRun2_asymptotic_2016_TrancheIV_v7')
 else: raise RuntimeError, "Unknown CMSSW version %s" % os.environ['CMSSW_VERSION']
 
-dataPath = "/home/akalinow/scratch/CMS/TauID/Data/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISpring16MiniAODv2-PUSpring16RAWAODSIM_reHLT_80X_mcRun2_asymptotic_v14_ext1-v1/MINIAODSIM/"
+dataPath = "/home/akalinow/scratch/CMS/TauID/Data/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1-v2/MINIAODSIM/"
 command = "ls "+dataPath+"/*.root"
 fileList = commands.getoutput(command).split("\n")   
 process.source.fileNames =  cms.untracked.vstring()
@@ -54,14 +46,13 @@ process.goodVertexFilter = cms.EDFilter("VertexSelector",
 process.load("HLTrigger.HLTfilters.triggerResultsFilter_cfi")
 
 if TRIGGER == "SingleMu":
-    process.triggerResultsFilter.triggerConditions = cms.vstring('HLT_IsoMu18_v*', 'HLT_IsoMu20_v*','HLT_IsoMu22_v*')
-    
+    process.triggerResultsFilter.triggerConditions = cms.vstring('HLT_IsoMu24_v*','HLT_IsoTkMu24_v*')    
 else:
     raise RuntimeError, "TRIGGER must be 'SingleMu' or 'DoubleMu'"
 
 process.triggerResultsFilter.l1tResults = "gtStage2Digis"
 process.triggerResultsFilter.throw = False
-process.triggerResultsFilter.hltResults = cms.InputTag("TriggerResults","","HLT2")
+process.triggerResultsFilter.hltResults = cms.InputTag("TriggerResults","","HLT")
 
 process.muonFilter = cms.EDFilter("CandViewCountFilter",
                                   src = cms.InputTag("slimmedMuons"),
@@ -91,7 +82,7 @@ process.oneTag  = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("tagMuo
 process.tagTriggerMatchModule = cms.EDProducer("TriggerObjectStandAloneMatch", 
     tags   = cms.InputTag("tagMuons"),
     objects = cms.InputTag("selectedPatTrigger"),
-    objectSelection = cms.string('hasFilterLabel("hltL3crIsoL1sMu20L1f0L2f10QL3f22QL3trkIsoFiltered0p09")'),
+    objectSelection = cms.string('hasFilterLabel("hltL3crIsoL1sMu22L1f0L2f10QL3f24QL3trkIsoFiltered0p09") || hasFilterLabel("hltL3fL1sMu22L1f0Tkf24QL3trkIsoFiltered0p09")'),
     maxTagObjDR   = cms.double(0.1),
 )
 
