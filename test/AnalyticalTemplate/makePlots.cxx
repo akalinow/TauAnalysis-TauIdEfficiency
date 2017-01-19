@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////
 /////////////////////////////////////////////////////
-std::string fNameMC =   "TnP_MuonToTau_MisID_MC_mcTrue.root";
+std::string fNameMC =   "TnP_MuonToTau_MisID_MC.root";
 std::string fNameData = "TnP_MuonToTau_MisID_Data.root";
 
 std::string topDirectory = "tpTree/";
@@ -330,11 +330,11 @@ void plotMistagRateData(std::string category = "againstMuonLoose3"){
   aCanvas->cd(2);
   TGraphAsymmErrors *grRatio = getRatioGraph(aGraphData, aGraphMCTrueCount);
   hFrame->SetYTitle("#frac{DATA}{Simulation}");
-  hFrame->SetMaximum(1.7);
-  hFrame->SetMinimum(0.9);
+  hFrame->SetMaximum(1.5);
+  hFrame->SetMinimum(0.5);
   if(category.find("Tight")!=std::string::npos){
-    hFrame->SetMaximum(3.6);
-    hFrame->SetMinimum(0.7);
+    hFrame->SetMaximum(1.5);
+    hFrame->SetMinimum(0.5);
   }
   hFrame->GetXaxis()->SetLabelColor(1);
   hFrame->GetYaxis()->SetTitleOffset(0.6);
@@ -621,10 +621,10 @@ void plotAll(){
   extraText  = "Preliminary";  // default extra text is "Preliminary"
   lumi_8TeV  = "19.1 fb^{-1}"; // default is "19.7 fb^{-1}"
   lumi_7TeV  = "4.9 fb^{-1}";  // default is "5.1 fb^{-1}"
-  lumi_13TeV  = "15.9 fb^{-1}";  // default is "20.1 fb^{-1}"
+  lumi_13TeV  = "36.8 fb^{-1}";  // default is "20.1 fb^{-1}"
 
-  plotFittedWidth();
-  return;
+  //plotFittedWidth();
+  //return;
   
   bool isData = false;
 
@@ -636,7 +636,7 @@ void plotAll(){
   
   plotMistagRate("againstMuonLoose3",isData);
   plotMistagRate("againstMuonTight3",isData);
-
+  
   isData = true;
   plotFitCanvas("againstMuonLoose3",isData);
   plotFitCanvas("againstMuonLoose3",isData,true);
@@ -645,7 +645,6 @@ void plotAll(){
   plotFitCanvas("againstMuonTight3",isData);
   plotFitCanvas("againstMuonTight3",isData,true);
   plotMistagRate("againstMuonTight3",isData);
-
 
   return;
   plotDitributions("pt");

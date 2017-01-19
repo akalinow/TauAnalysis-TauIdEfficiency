@@ -6,11 +6,11 @@ process.load('FWCore.MessageService.MessageLogger_cfi')
 process.source = cms.Source("EmptySource")
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1) )
 
-filePath = "/home/akalinow/scratch/CMS/TauID/Crab/Data/TauID_TnP/15_09_2016/"
+filePath = "/home/akalinow/scratch/CMS/TauID/Crab/Data/TauID_TnP/18_01_2017/"
 filePath += "tnpZ_Data.root"
 
 efficiencyPSetTemplate = cms.PSet(
-    UnbinnedVariables = cms.vstring("mass","alternatLorentzVectPt", "alternatLorentzVectEta", "tag_pt", "tag_triggerMatch", "tag_dB", "pair_dz", "pair_deltaR", "pair_probeMultiplicity", "pair_MET", "pair_MTtag", "pair_MTprobe", "decayModeFinding", "byLooseCombinedIsolationDeltaBetaCorr3Hits"),
+    UnbinnedVariables = cms.vstring("mass","alternatLorentzVectPt", "alternatLorentzVectEta", "tag_pt", "tag_triggerMatch", "tag_dB", "pair_dz", "pair_deltaR", "pair_probeMultiplicity", "pair_BestZ", "pair_MET", "pair_MTtag", "pair_MTprobe", "decayModeFinding", "byLooseCombinedIsolationDeltaBetaCorr3Hits"),
     EfficiencyCategoryAndState = cms.vstring("againstMuonLoose3", "pass"), ## Numerator definition
     BinnedVariables = cms.PSet(
         ## Binning in continuous variables
@@ -149,9 +149,8 @@ process.TnP_Muon_ID = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
     ## Variables for binning
     Variables = cms.PSet(
         run   = cms.vstring("Run", "0", "999999", ""),
-        mass   = cms.vstring("Tag-muon Mass", "60", "110", "GeV/c^{2}"),
+        mass   = cms.vstring("Tag-muon Mass", "70", "120", "GeV/c^{2}"),
         abseta = cms.vstring("muon |#eta|", "0", "2.4", ""),
-        pt  = cms.vstring("probe pT", "40", "45", ""),
         alternatLorentzVectPt = cms.vstring("probe tau pT", "20", "1500", ""),
         alternatLorentzVectEta = cms.vstring("probe tau eta", "-2.4", "2.4", ""),
         tag_pt  = cms.vstring("tag pT", "0", "1500", ""),
@@ -160,6 +159,7 @@ process.TnP_Muon_ID = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
         pair_dz = cms.vstring("#Deltaz between two muons", "-0.05", "0.05", "cm"),
         pair_deltaR = cms.vstring("#DeltaR between two muons", "0.5", "5", ""),
         pair_probeMultiplicity = cms.vstring("Probe multiplicity", "1", "1", ""),
+        pair_BestZ = cms.vstring("pair closest to Z mass", "0.5", "1.0", ""),
         pair_MET = cms.vstring("MET", "0", "25", ""),
         pair_MTtag = cms.vstring("MTtag", "0", "40", ""),
         pair_MTprobe = cms.vstring("MTprobe", "0", "4000", ""),
