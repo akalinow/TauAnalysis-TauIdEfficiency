@@ -6,7 +6,7 @@ process.load('FWCore.MessageService.MessageLogger_cfi')
 process.source = cms.Source("EmptySource")
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1) )
 
-filePath = "/home/akalinow/scratch/CMS/TauID/Crab/Data/TauID_TnP/18_01_2017/"
+filePath = "/dmj/hep/akalinow/scratch/CMS/TauID/Crab/Data/TauID_TnP/18_01_2017/"
 filePath += "tnpZ_MC.root"
 
 efficiencyPSetTemplate = cms.PSet(
@@ -90,11 +90,11 @@ process.TnP_Muon_ID = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
         tag_pt  = cms.vstring("tag pT", "0", "1500", ""),
         tag_triggerMatch = cms.vstring("Tag matched to HLT item", "0.5", "1.0", ""),
         tag_dB  = cms.vstring("dB", "0.0", "0.004", ""),
-        pair_dz = cms.vstring("#Deltaz between two muons", "-0.05", "0.05", "cm"),
+        pair_dz = cms.vstring("#Deltaz between two muons", "-0.01", "0.01", "cm"),
         pair_deltaR = cms.vstring("#DeltaR between two muons", "0.5", "5", ""),
         pair_probeMultiplicity = cms.vstring("Probe multiplicity", "1", "1", ""),
         pair_BestZ = cms.vstring("pair closest to Z mass", "0.5", "1.0", ""),
-        pair_MET = cms.vstring("MET", "0", "25", ""),
+        pair_MET = cms.vstring("MET", "0", "2500", ""),
         pair_MTtag = cms.vstring("MTtag", "0", "40", ""),
         pair_MTprobe = cms.vstring("MTprobe", "0", "4000", ""),
         decayModeFinding = cms.vstring("Decay mode finding", "0.5", "1.0", ""),

@@ -1,6 +1,7 @@
 /////////////////////////////////////////////////////
 /////////////////////////////////////////////////////
 std::string fNameMC =   "TnP_MuonToTau_MisID_MC.root";
+std::string fNameMCTemplate =   "TnP_MuonToTau_MisID_MC_Templates.root";
 std::string fNameData = "TnP_MuonToTau_MisID_Data.root";
 
 std::string topDirectory = "tpTree/";
@@ -10,10 +11,15 @@ std::string topDirectory = "tpTree/";
 #include "CMS_lumi.C"
 /////////////////////////////////////////////////////
 /////////////////////////////////////////////////////
-void plotFitCanvas(std::string category = "againstMuonLoose3_Zmumu", bool isData=false, bool allProbes=false){
+void plotFitCanvas(std::string category = "againstMuonLoose3_Zmumu",
+		   bool isData=false, 
+		   bool allProbes=false,
+		   bool isTemplate=false
+		   ){
 
   std::string fName = fNameMC;
   if(isData) fName = fNameData;
+  if(isTemplate) fName = fNameMCTemplate;
   TFile file(fName.c_str());
 
   std::string dirName = topDirectory+category+"/fit_eff_plots/";
@@ -25,12 +31,18 @@ void plotFitCanvas(std::string category = "againstMuonLoose3_Zmumu", bool isData
   if(category.find("Tight")!=string::npos) workingPointName = "Tight"; 
   fitModelName = "Zll_Model";
   
-  if(category.find("Zmumu")!=string::npos){
+  if(category.find("Zmumu")!=string::npos || category.find("Ztautau")!=string::npos){
     binnedVars =   "__mcTrue_bin0__";  
   }
   if(isData){
     fitModelName = "Data_Model";
     binnedVars =   "__";
+  }
+  if(isTemplate){
+    std::string type = category.substr(category.find("_")+1);
+    std::cout<<"type: "<<type<<std::endl;
+    fitModelName = type+"_Model";
+    workingPointName = "";
   }
 
   for(unsigned int iEta=0;iEta<5;++iEta){
@@ -81,8 +93,8 @@ void plotFitCanvas(std::string category = "againstMuonLoose3_Zmumu", bool isData
     aSumModel->SetLineColor(4);
     
     TLegend *aLegend;
-    if(iEta<3) aLegend = new TLegend(0.2,0.75,0.45,0.9); 
-    else aLegend = new TLegend(0.55,0.75,0.9,0.9);
+    //if(iEta<3) aLegend = new TLegend(0.2,0.75,0.45,0.9); 
+    aLegend = new TLegend(0.55,0.75,0.9,0.9);
     aLegend->SetTextSize(0.05);
     aLegend->SetBorderSize(0);
     aLegend->AddEntry(aDataHist,"Observed","lp");
@@ -103,7 +115,8 @@ void plotFitCanvas(std::string category = "againstMuonLoose3_Zmumu", bool isData
       cmsText = "        CMS";
       extraText = "           Preliminary";
     }
-    CMS_lumi(aPad, iPeriod, iPosX);
+    if(!isTemplate) CMS_lumi(aPad, iPeriod, iPosX);
+    if(isTemplate) aPad->SetLogy();
     aLegend->Draw();
 
     aPad->SetCanvasSize(1000,1000);
@@ -355,6 +368,112 @@ void plotMistagRate(std::string category = "againstMuonLoose3", bool isData=fals
   if(isData) plotMistagRateData(category);
   else plotMistagRateMC(category);
 
+}
+/////////////////////////////////////////////////////
+/////////////////////////////////////////////////////
+string getExpoEff(float number, float error=0){
+
+  char text[200];
+  int base;
+  if(number>1) base = (unsigned int)(fabs(log(number)/log(10.0)) + 0.0);
+  else base = (unsigned int)(fabs(log(number)/log(10.0)) + 0.99);
+  
+  if(base<2){
+    if(error<0.001) sprintf(text," ${\\mathrm %4.4f \\pm %4.4f}$ ",number,error);
+    else if(error<0.01) sprintf(text," ${\\mathrm %3.3f \\pm %3.3f}$ ",number,error);
+    else if(error<0.1) sprintf(text," ${\\mathrm %3.2f \\pm %3.2f}$ ",number,error);
+    else if(error<10) sprintf(text," ${\\mathrm %3.1f \\pm %3.1f}$ ",number,error);
+    else if(error<100) sprintf(text," ${\\mathrm %3.0f \\pm %3.0f}$ ",number,error);
+    else if(error<1000) sprintf(text," ${\\mathrm %2.0f \\pm %2.0f}$ ",number,error);
+    else if(error<10000) sprintf(text," ${\\mathrm %2.0f \\pm %2.0f}$ ",number,error);
+    else std::cout<<"expoEff: error: "<<error<<std::endl;
+    string result;
+    result.append(text);
+    return result;
+  }
+  int sgn = (unsigned int)(log(number)/fabs(log(number)));
+  float tmp = number*pow(10.0,-sgn*base);
+  if(base!=0) sprintf(text,"${\\mathrm (%3.2f \\pm",tmp);
+  else sprintf(text,"${\\mathrm  %3.2f $",tmp);
+  string result;
+  result.append(text);
+
+  sgn = (unsigned int)(log(error)/fabs(log(error)));
+  tmp = error*pow(10.0,-sgn*base);
+  if(base!=0) sprintf(text," %3.2f) \\cdot 10^{%d}}$",tmp,sgn*base);
+  else sprintf(text," %3.2f}$",tmp);
+  result.append(text);
+
+  return result;
+}
+/////////////////////////////////////////////////////
+/////////////////////////////////////////////////////
+void makeMistagRateTable(){
+
+  Double_t valueMCX, valueMCY, errorMCY;
+  Double_t valueDataX, valueDataY, errorDataY;
+  Double_t valueRatioX, valueRatioY, errorRatioY;
+
+  float etaRanges[6] = {0.0, 0.4, 0.8, 1.2, 1.7, 2.3};
+  
+  ofstream out("table.tex");
+  out<<"\\documentclass{article}"<<std::endl;
+  out<<std::endl;
+  out<<"\\begin{document} "<<std::endl;
+  out<<"\\begin{center} "<<std::endl;
+  out<<"\\begin{tabular}{|c|c|c|c|} \\hline "<<std::endl;
+  out<<"  WP & Simulation & Data & Data/Simulation \\\\  "<<std::endl;
+  
+    for(unsigned int iEta=0;iEta<5;++iEta){
+
+      if(iEta==0) out<<"  \\hline \\multicolumn{4}{|c|}{$|\\eta|<"<<etaRanges[iEta+1]<<"$} \\\\ \\hline "<<std::endl;
+      else out<<"  \\hline \\multicolumn{4}{|c|}{$"<<etaRanges[iEta]<<"<|\\eta|<"<<etaRanges[iEta+1]<<"$} \\\\ \\hline "<<std::endl;
+      
+      for(unsigned int iWP=0;iWP<2;++iWP){
+
+	std::string category = "againstMuonLoose3";
+	if(iWP==1) category = "againstMuonTight3";
+	
+	TGraphAsymmErrors *aGraphZllFit  = getResultGraph(category+"_Zll");
+	TGraphAsymmErrors *aGraphData  = getResultGraph(category, false, true);
+	TGraphAsymmErrors *aGraphZmumuCount  = getResultGraph(category+"_Zmumu", true, false);
+	TGraphAsymmErrors *aGraphRatio = getRatioGraph(aGraphData, aGraphZmumuCount);
+	if(!aGraphData || !aGraphZmumuCount || !aGraphZllFit) return;
+
+	if(iEta==0){
+	std::cout<<category<<std::endl;
+	std::cout<<"DATA: "<<std::endl;
+	aGraphData->Print("all");
+	std::cout<<"Z->mumu count: "<<std::endl;
+	aGraphZmumuCount->Print("all");
+	std::cout<<"Z->ll fit: "<<std::endl;
+	aGraphZllFit->Print("all");
+	std::cout<<"DATA/Z->mumu count: "<<std::endl;
+	aGraphRatio->Print("all");
+	}
+	
+      
+	aGraphZmumuCount->GetPoint(iEta, valueMCX, valueMCY);
+	aGraphData->GetPoint(iEta, valueDataX, valueDataY);
+	aGraphRatio->GetPoint(iEta, valueRatioX, valueRatioY);
+	
+	errorDataY = aGraphData->GetErrorY(iEta);
+	errorMCY = aGraphZmumuCount->GetErrorY(iEta);
+	errorRatioY = aGraphRatio->GetErrorY(iEta);
+	
+	out<<category<<" "
+	   <<" & "<<getExpoEff(valueMCY,errorMCY)
+	   <<" & "<<getExpoEff(valueDataY,errorDataY)
+	   <<" & "<<getExpoEff(valueRatioY,errorRatioY)
+	   <<"\\\\"<<std::endl;
+      }
+    }
+    out<<"\\hline"<<std::endl;
+    out<<"\\end{tabular}"<<std::endl;
+    out<<"\\end{center}"<<std::endl;
+    out<<"\\end{document}"<<std::endl;
+    out.close();
+  
 }
 /////////////////////////////////////////////////////
 /////////////////////////////////////////////////////
@@ -627,6 +746,11 @@ void plotAll(){
   //return;
   
   bool isData = false;
+  bool allProbes = false;
+  bool isTemplate = true;
+
+  plotFitCanvas("againstMuonLoose3_Zmumu",isData, allProbes, isTemplate);
+  plotFitCanvas("againstMuonLoose3_Ztautau",isData, allProbes, isTemplate);
 
   plotFitCanvas("againstMuonLoose3_Zmumu",isData);
   plotFitCanvas("againstMuonTight3_Zmumu",isData);
@@ -645,6 +769,8 @@ void plotAll(){
   plotFitCanvas("againstMuonTight3",isData);
   plotFitCanvas("againstMuonTight3",isData,true);
   plotMistagRate("againstMuonTight3",isData);
+
+  makeMistagRateTable();
 
   return;
   plotDitributions("pt");
