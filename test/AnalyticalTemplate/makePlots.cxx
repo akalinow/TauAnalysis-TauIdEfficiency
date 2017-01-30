@@ -249,8 +249,8 @@ void plotMistagRateMC(std::string category = "againstMuonLoose3"){
   aCanvas->cd(2);
   TGraphAsymmErrors *grRatio = getRatioGraph(aGraph, aGraphMCTrueCount);
   hFrame->SetYTitle("#frac{DY #rightarrow ll with fit}{DY #rightarrow #mu #mu with count}");
-  hFrame->SetMaximum(1.1);
-  hFrame->SetMinimum(0.9);
+  hFrame->SetMaximum(1.15);
+  hFrame->SetMinimum(0.85);
   hFrame->GetXaxis()->SetLabelColor(1);
   hFrame->GetYaxis()->SetTitleOffset(0.6);
   hFrame->GetYaxis()->SetLabelSize(0.1);
@@ -477,138 +477,108 @@ void makeMistagRateTable(){
 }
 /////////////////////////////////////////////////////
 /////////////////////////////////////////////////////
-void plotFittedWidth(){
-
-
-  float yMCFail[5] = {1.177, 1.203, 1.297, 1.391, 1.617};
-  float yMCFailError[5] = {0.003, 0.003, 0.003, 0.003, 0.004};
+TGraphErrors * getFittedParamGraph(std::string paramName,
+				   bool isData = false,
+				   std::string category = "againstMuonLoose3",
+				   std::string pdfName = "signalPass"){
   
-  float yMCPass[5] = {1.09, 1.13, 1.35, 1.6, 1.5};
-  float yMCPassError[5] = {0.06, 0.07, 0.07, 0.1, 0.2};
+  std::string dirName = topDirectory+category;
+  std::string objName = "w";
+  std::string objectPath = dirName+"/"+objName;
+  std::string fitModelName = "Zll_Model";
+  std::string aPattern = "";
+  std::string binnedVars =   "__mcTrue_bin0__";
+  std::string workingPointName = category.substr(category.find("Muon")+4,5);
+  std::string fName = fNameMC;
 
-  float yDataFail[5] = {1.278, 1.290, 1.404, 1.506, 1.840};
-  float yDataFailError[5] = {0.003, 0.003, 0.004, 0.004, 0.004};
+  if(isData){
+    binnedVars = "__Data_";
+    fName = fNameData;
+    fitModelName = "Model";
+  }
+  else{
+    category+="_Zmumu";
+  }
+  
+  TFile file(fName.c_str());
 
-  float yDataPass[5] = {1.02, 1.04, 1.24, 1.2, 1.4};
-  float yDataPassError[5] = {0.07, 0.08, 0.07, 0.2, 0.5};
+  float y[5] = {0,0,0,0,0};
+  float yError[5] = {0,0,0,0,0};
+  
+  for(unsigned int iEta=0;iEta<5;++iEta){
+
+    std::string etaBinNumber = std::to_string(iEta);  
+    dirName = topDirectory+category+"/abseta_bin"+etaBinNumber+binnedVars+fitModelName+"_"+workingPointName+"Eta"+etaBinNumber+"/";
+    objectPath = dirName+objName;
+ 
+    RooWorkspace *aWorkspace = (RooWorkspace*)file.Get(objectPath.c_str());
+    std::cout<<objectPath<<" aWorkspace: "<<aWorkspace<<std::endl;
+    if(!aWorkspace) return 0;
+    
+    RooAbsPdf *aPdf = (RooAbsPdf*)aWorkspace->obj(pdfName.c_str());
+    RooArgSet *aPdfVariables = aPdf->getVariables();
+    RooRealVar *aVar = (RooRealVar*)aPdfVariables->find(paramName.c_str());
+    if(aVar){
+      float value = aVar->getValV();
+      float error = aVar->getError();
+      y[iEta] = value;
+      yError[iEta] = error;
+    }   
+  }
 
   float x[5] = {0.199823, 0.597364, 0.996381, 1.44261, 1.97812};
   float xError[5] = {0.2, 0.2, 0.2, 0.25, 0.32};
 
-  TGraphErrors *grMCFail = new TGraphErrors(5, x, yMCFail, xError, yMCFailError);
-  TGraphErrors *grMCPass = new TGraphErrors(5, x, yMCPass, xError, yMCPassError);
-  grMCFail->SetMarkerColor(2);
-  grMCFail->SetLineColor(2);
-  grMCPass->SetMarkerColor(2);
-  grMCPass->SetLineColor(2);
-   
-  TGraphErrors *grDataFail = new TGraphErrors(5, x, yDataFail, xError, yDataFailError);
-  TGraphErrors *grDataPass = new TGraphErrors(5, x, yDataPass, xError, yDataPassError);
-  grDataFail->SetLineColor(1);
-  grDataFail->SetLineStyle(2);
-  grDataFail->SetMarkerColor(1);
-  grDataFail->SetMarkerStyle(21);  
-  grDataPass->SetLineColor(1);
-  grDataPass->SetLineStyle(2);
-  grDataPass->SetMarkerColor(1);
-  grDataPass->SetMarkerStyle(21);
+  TGraphErrors *gr = new TGraphErrors(5, x, y, xError, yError);
+
+  return gr;
+}
+/////////////////////////////////////////////////////
+/////////////////////////////////////////////////////
+void plotFittedParams(std::string paramName,
+		      std::string category = "againstMuonLoose3_Zmumu",
+		      std::string pdfName = "signalPass"){
+  
+  bool isData = false;
+  TGraphErrors *grMC = getFittedParamGraph(paramName, isData, category, pdfName);
+  isData = true;
+  TGraphErrors *grData = getFittedParamGraph(paramName, isData, category, pdfName);
+
+  grMC->SetMarkerColor(2);
+  grMC->SetLineColor(2);
+
+  grData->SetLineColor(1);
+  grData->SetLineStyle(2);
+  grData->SetMarkerColor(1);
+  grData->SetMarkerStyle(21);
+
+  grMC->Draw("AC");
+  grData->Draw("AC");
+  float maxY = max(grMC->GetYaxis()->GetXmax(), grData->GetYaxis()->GetXmax());
+  float minY = min(grMC->GetYaxis()->GetXmin(), grData->GetYaxis()->GetXmin());
+  maxY+=(maxY-minY)*0.4;
   
   TH1F *hFrame = new TH1F("hFrame","",3,0,2.3);
-  hFrame->SetMinimum(0.95);
-  hFrame->SetMaximum(2.5);
+  hFrame->SetMinimum(minY);
+  hFrame->SetMaximum(maxY);
   hFrame->SetStats(kFALSE);
   hFrame->SetXTitle("|#eta|");
-  hFrame->SetYTitle("Voightian sigma");
+  hFrame->SetYTitle(paramName.c_str());
 
   TLegend *aLegend = new TLegend(0.2,0.75,0.6,0.9);
   aLegend->SetTextSize(0.07);
   aLegend->SetBorderSize(0);
-  aLegend->AddEntry(grDataFail,"Observed","lp");
-  aLegend->AddEntry(grMCFail,"Z #rightarrow #mu #mu simul.","lp");
+  aLegend->AddEntry(grData,"Observed","lp");
+  aLegend->AddEntry(grMC,"Z #rightarrow #mu #mu simul.","lp");
 
   TCanvas *aCanvas = new TCanvas("aCanvas", "",4,29,700,500);
   hFrame->Draw();
-  grMCFail->Draw("p");
-  grDataFail->Draw("p");
+  grMC->Draw("p");
+  grData->Draw("p");
   aLegend->Draw();
-  aCanvas->Print("fig_png/LooseFittedWidthFail.png");
-
-  hFrame->SetMinimum(0.8);
-  hFrame->SetMaximum(2.5);
-  hFrame->Draw();
-  grMCPass->Draw("p");
-  grDataPass->Draw("p");
-  aLegend->Draw();
-  aCanvas->Print("fig_png/LooseFittedWidthPass.png");
-
-}
-/////////////////////////////////////////////////////
-/////////////////////////////////////////////////////
-void plotMisIdVsMass(){
-
-  /* 
-60-70
-
-x[0]=0.577131, y[0]=0.0822561, exl[0]=0.577131, exh[0]=0.622869, eyl[0]=0.000700314, eyh[0]=0.000705739
-
-70-80
-
-x[0]=0.572356, y[0]=0.0224239, exl[0]=0.572356, exh[0]=0.627644, eyl[0]=0.000274601, eyh[0]=0.000277894
-
-80-85
-
-x[0]=0.574981, y[0]=0.00611134, exl[0]=0.574981, exh[0]=0.625019, eyl[0]=0.000123982, eyh[0]=0.000126497
-
-85-95
-
-x[0]=0.572822, y[0]=0.00256906, exl[0]=0.572822, exh[0]=0.627178, eyl[0]=2.86164e-05, eyh[0]=2.8935e-05
-
-95-100
-
-x[0]=0.581184, y[0]=0.00258284, exl[0]=0.581184, exh[0]=0.618816, eyl[0]=7.47759e-05, eyh[0]=7.69588e-05
-
-100-110
-
-x[0]=0.578683, y[0]=0.00298973, exl[0]=0.578683, exh[0]=0.621317, eyl[0]=0.000126367, eyh[0]=0.000131787
-
-110-120
-
-x[0]=0.583116, y[0]=0.00396451, exl[0]=0.583116, exh[0]=0.616884, eyl[0]=0.000261604, eyh[0]=0.000279323
-  */
-  
-  const Int_t n = 7;
-  Double_t x[n]   = {65, 75, 82.5, 90, 97.5, 105, 115};
-  Double_t y[n]   = {0.0822561, 0.0224239, 0.00611134, 0.00256906, 0.00258284, 0.00298973, 0.00396451}; 
-  Double_t exl[n] = {5, 5, 2.5, 5, 2.5, 5, 5};
-  Double_t exh[n] = {5, 5, 2.5, 5, 2.5, 5, 5};
-  Double_t eyl[n] = {0.000700314, 0.000274601, 0.000123982, 2.86164e-05, 7.47759e-05, 0.000126367, 0.000261604};
-  Double_t eyh[n] = {0.000700314, 0.000274601, 0.000123982, 2.86164e-05, 7.47759e-05, 0.000126367, 0.000261604};
- 
- TGraphAsymmErrors *aGraph = new TGraphAsymmErrors(n,x,y,exl,exh,eyl,eyh);
- aGraph->SetMarkerColor(4);
- aGraph->SetMarkerStyle(21);
- aGraph->Print();
-
-
- TH1F *hFrame = new TH1F("hFrame","",20,60,120);
- hFrame->SetStats(kFALSE);
- hFrame->SetMinimum(0.001);
- hFrame->SetMaximum(0.09);
- hFrame->GetYaxis()->SetTitleOffset(1.3);
- hFrame->SetXTitle("m_{#mu #mu} [GeV]");
- hFrame->SetYTitle("#mu #rightarrow #mu mis. ID.");
-
- TCanvas *aCanvas = new TCanvas("aCanvas", "",4,29,700,500);
- aCanvas->SetFillColor(0);
- aCanvas->SetBorderMode(0);
- aCanvas->SetBorderSize(2);
- aCanvas->SetFrameBorderMode(0);
- 
- hFrame->Draw();
- aGraph->Draw("P");
-
- aCanvas->Print("fig_png/MisIdVsMass.png");
- 
+  std::string workingPointName = category.substr(category.find("Muon")+4,5);
+  std::string figName = "fig_png/"+paramName+"_"+workingPointName+".png";
+  aCanvas->Print(figName.c_str());   
 }
 /////////////////////////////////////////////////////
 /////////////////////////////////////////////////////
@@ -619,16 +589,23 @@ void fixParamsForPdf(RooAbsPdf *aPdf){
   RooFIter aIterator = aPdfVariables->fwdIterator();
   RooRealVar *aVar = (RooRealVar*)aIterator.next();
   while(aVar){
-    if(std::string(aVar->GetName()).find("mass")==std::string::npos
-       && std::string(aVar->GetName()).find("sigmaFail")==std::string::npos &&
-          std::string(aVar->GetName()).find("sigmaPass")==std::string::npos
+    if(std::string(aVar->GetName()).find("mass")==std::string::npos &&
+       std::string(aVar->GetName()).find("sigmaFail")==std::string::npos &&
+       std::string(aVar->GetName()).find("sigmaPass")==std::string::npos &&
+       std::string(aVar->GetName()).find("meanFail")==std::string::npos &&
+       std::string(aVar->GetName()).find("meanPass")==std::string::npos
        ) aVar->setConstant();
+    if(std::string(aVar->GetName()).find("meanFail")!=std::string::npos ||
+       std::string(aVar->GetName()).find("meanPass")!=std::string::npos){
+      aVar->setRange(88.0,92.0);
+    }
+    
     aVar = (RooRealVar*)aIterator.next();
   }
 }
 /////////////////////////////////////////////////////
 /////////////////////////////////////////////////////
-void getParamsMC(std::string category = "againstMuonLoose3_Zmumu"){
+void fixParamsMC(std::string category = "againstMuonLoose3_Zmumu"){
 
   TFile file(fNameMC.c_str(),"UPDATE");
 
@@ -742,8 +719,16 @@ void plotAll(){
   lumi_7TeV  = "4.9 fb^{-1}";  // default is "5.1 fb^{-1}"
   lumi_13TeV  = "36.8 fb^{-1}";  // default is "20.1 fb^{-1}"
 
-  //plotFittedWidth();
-  //return;
+
+  plotFittedParams("sigmaPass", "againstMuonLoose3", "signalPass");
+  plotFittedParams("sigmaFail", "againstMuonLoose3", "signalFail");
+  plotFittedParams("meanPass", "againstMuonLoose3", "signalPass");
+  plotFittedParams("meanFail", "againstMuonLoose3", "signalFail");
+
+  plotFittedParams("sigmaPass", "againstMuonTight3", "signalPass");
+  plotFittedParams("sigmaFail", "againstMuonTight3", "signalFail");
+  plotFittedParams("meanPass", "againstMuonTight3", "signalPass");
+  plotFittedParams("meanFail", "againstMuonTight3", "signalFail");
   
   bool isData = false;
   bool allProbes = false;
@@ -787,11 +772,11 @@ void fixModelParameters(){
 
   fNameMC = "TnP_MuonToTau_MisID_MC_Templates.root";
 
-  getParamsMC("againstMuonLoose3_Zmumu");
-  getParamsMC("againstMuonLoose3_Ztautau");
+  fixParamsMC("againstMuonLoose3_Zmumu");
+  fixParamsMC("againstMuonLoose3_Ztautau");
 
-  getParamsMC("againstMuonTight3_Zmumu");
-  getParamsMC("againstMuonTight3_Ztautau");
+  fixParamsMC("againstMuonTight3_Zmumu");
+  fixParamsMC("againstMuonTight3_Ztautau");
 
 }
 /////////////////////////////////////////////////////

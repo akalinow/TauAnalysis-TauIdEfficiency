@@ -83,7 +83,7 @@ process.TnP_Muon_ID = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
     InputDirectoryName = cms.string("tpTree"),  
     ## Variables for binning
     Variables = cms.PSet(
-        mass   = cms.vstring("Tag-muon Mass", "70", "120", "GeV/c^{2}"),
+        mass   = cms.vstring("Tag-muon Mass", "60", "120", "GeV/c^{2}"),
         abseta = cms.vstring("muon |#eta|", "0", "2.4", ""),
         alternatLorentzVectPt = cms.vstring("probe tau pT", "20", "1500", ""),
         alternatLorentzVectEta = cms.vstring("probe tau eta", "-2.4", "2.4", ""),

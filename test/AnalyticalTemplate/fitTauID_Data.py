@@ -149,7 +149,7 @@ process.TnP_Muon_ID = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
     ## Variables for binning
     Variables = cms.PSet(
         run   = cms.vstring("Run", "0", "999999", ""),
-        mass   = cms.vstring("Tag-muon Mass", "70", "120", "GeV/c^{2}"),
+        mass   = cms.vstring("Tag-muon Mass", "60", "120", "GeV/c^{2}"),
         abseta = cms.vstring("muon |#eta|", "0", "2.4", ""),
         alternatLorentzVectPt = cms.vstring("probe tau pT", "20", "1500", ""),
         alternatLorentzVectEta = cms.vstring("probe tau eta", "-2.4", "2.4", ""),
@@ -192,7 +192,7 @@ process.TnP_Muon_ID = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
     ),    
     ## How to do the fit
     binnedFit = cms.bool(True),
-    binsForFit = cms.uint32(25),
+    binsForFit = cms.uint32(50),
     saveDistributionsPlot = cms.bool(False),
     NumCPU = cms.uint32(1), ## leave to 1 for now, RooFit gives funny results otherwise
     SaveWorkspace = cms.bool(True),
