@@ -236,6 +236,7 @@ void plotMistagRateMC(std::string category = "againstMuonLoose3"){
   pad1->SetPad(0.01,0.29,0.99,0.99);
   pad2->SetPad(0.01,0.01,0.99,0.38);
   pad1->SetTopMargin(0.07);
+  pad1->SetBottomMargin(0.13);
   pad2->SetBottomMargin(0.25);
 
   aCanvas->cd(1);
@@ -302,11 +303,12 @@ void plotMistagRateData(std::string category = "againstMuonLoose3"){
     hFrame->SetMaximum(4.5E-3);
   }
   hFrame->SetStats(kFALSE);
+  hFrame->GetYaxis()->SetTitleOffset(1.2);
   hFrame->SetXTitle("|#eta|");
   hFrame->SetYTitle("#mu #rightarrow #tau misidentification rate");
   TH1F *hFrameClone = (TH1F*)hFrame->Clone("hFrameClone");
   
-  TLegend *aLegend = new TLegend(0.65,0.75,0.9,0.9);
+  TLegend *aLegend = new TLegend(0.6,0.75,0.85,0.9);
   aLegend->SetTextSize(0.07);
   aLegend->SetBorderSize(0);
   aLegend->AddEntry(aGraphData,"Observed","lp");
@@ -325,6 +327,7 @@ void plotMistagRateData(std::string category = "againstMuonLoose3"){
   pad1->SetPad(0.01,0.29,0.99,0.99);
   pad2->SetPad(0.01,0.01,0.99,0.38);
   pad1->SetTopMargin(0.07);
+  pad1->SetBottomMargin(0.13);
   pad2->SetBottomMargin(0.25);
 
   aCanvas->cd(1);
@@ -343,14 +346,14 @@ void plotMistagRateData(std::string category = "againstMuonLoose3"){
   aCanvas->cd(2);
   TGraphAsymmErrors *grRatio = getRatioGraph(aGraphData, aGraphMCTrueCount);
   hFrame->SetYTitle("#frac{DATA}{Simulation}");
-  hFrame->SetMaximum(1.5);
+  hFrame->SetMaximum(2.0);
   hFrame->SetMinimum(0.5);
   if(category.find("Tight")!=std::string::npos){
-    hFrame->SetMaximum(1.5);
+    hFrame->SetMaximum(2.0);
     hFrame->SetMinimum(0.5);
   }
   hFrame->GetXaxis()->SetLabelColor(1);
-  hFrame->GetYaxis()->SetTitleOffset(0.6);
+  hFrame->GetYaxis()->SetTitleOffset(0.4);
   hFrame->GetYaxis()->SetLabelSize(0.1);
   hFrame->GetYaxis()->SetTitleSize(0.1);
   hFrame->GetXaxis()->SetLabelSize(0.1);

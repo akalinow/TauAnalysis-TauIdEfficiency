@@ -35,12 +35,12 @@ againstMuonTight3_Ztautau = againstMuonLoose3_Ztautau.clone()
 againstMuonTight3_Ztautau.EfficiencyCategoryAndState = cms.vstring("againstMuonTight3", "pass")
 
 Zmumu_Model = cms.vstring(
-    "Voigtian::signal1Fail(mass, meanFail[92, 85,95], width1[2.495], sigmaFail[2, 0.5,10])",
-     "CBShape::signal2Fail(mass, meanFail[92, 85,95], sigmaFail[2, 0.5,10], alphaFail[3,0,5], nFail[2,0,5])",
+    "Voigtian::signal1Fail(mass, meanFail[92, 85,95], width1[2.495], sigmaFail[2, 0.5,5])",
+    "CBShape::signal2Fail(mass, meanFail[92, 85,95], sigmaFail[2, 0.5,5], alphaFail[3,0,5], nFail[2,0,5])",
     "SUM::signalFail(vFracFail[0.9, 0,1]*signal1Fail, signal2Fail)",
     
-    "Voigtian::signal1Pass(mass, meanPass[92, 85,95], width[2.495], sigmaPass[2, 0.5,10])",
-     "CBShape::signal2Pass(mass, meanPass[92, 85,95], sigmaPass[2, 0.5, 10], alphaPass[3,0,5], nPass[2, 0,5])",
+    "Voigtian::signal1Pass(mass, meanPass[92, 85,95], width[2.495], sigmaPass[2, 0.5,5])",
+    "CBShape::signal2Pass(mass, meanPass[92, 85,95], sigmaPass[2, 0.5,5], alphaPass[3,0,5], nPass[2, 0,5])",
     "SUM::signalPass(vFracPass[0.9, 0,1]*signal1Pass, signal2Pass)",
     
     "Exponential::backgroundPass1(mass, lp1[-0.033])",
