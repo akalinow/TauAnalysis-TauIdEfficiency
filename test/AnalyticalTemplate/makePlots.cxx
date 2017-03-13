@@ -85,6 +85,8 @@ void plotFitCanvas(std::string category = "againstMuonLoose3_Zmumu",
       if(objName.find("frame_")!=std::string::npos) hFrame = (TH1D*)obj;
     }
 
+    float max = hFrame->GetMaximum();
+    hFrame->SetMaximum(1.3*max);
     hFrame->GetXaxis()->SetTitle("Tag-Probe mass [GeV/c^{2}]");
     hFrame->GetYaxis()->SetTitleOffset(1.8);
     hFrame->GetYaxis()->SetTitle("Events");
