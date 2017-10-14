@@ -58,7 +58,7 @@ PFMuonMerger::produce(edm::Event & iEvent, const edm::EventSetup & iSetup) {
     iEvent.getByToken(photonToken_,photons);
     if(mergeTracks_) iEvent.getByToken(trackToken_,tracks);
 
-    std::auto_ptr<std::vector<pat::Muon> >  out(new std::vector<pat::Muon>());
+    std::unique_ptr<std::vector<pat::Muon> >  out(new std::vector<pat::Muon>());
     out->reserve(muons->size() + (mergeTracks_?tracks->size():0));
 
     // copy reco::Muons, turning on the CaloCompatibility flag if enabled and possible
@@ -109,7 +109,7 @@ PFMuonMerger::produce(edm::Event & iEvent, const edm::EventSetup & iSetup) {
         }
     }
 
-    iEvent.put(out);
+    iEvent.put(std::move(out));
 }
 
 #include "FWCore/Framework/interface/MakerMacros.h"

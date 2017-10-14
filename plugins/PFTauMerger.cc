@@ -58,7 +58,7 @@ PFTauMerger::produce(edm::Event & iEvent, const edm::EventSetup & iSetup) {
     iEvent.getByToken(tauToken_,taus);
     if(mergeTracks_) iEvent.getByToken(trackToken_,tracks);
 
-    std::auto_ptr<std::vector<pat::Tau> >  out(new std::vector<pat::Tau>());
+    std::unique_ptr<std::vector<pat::Tau> >  out(new std::vector<pat::Tau>());
     out->reserve(taus->size() + (mergeTracks_?tracks->size():0));
 
     // merge reco::Track avoiding duplication of innerTracks
@@ -109,7 +109,7 @@ PFTauMerger::produce(edm::Event & iEvent, const edm::EventSetup & iSetup) {
             out->push_back(aPatTau);
         }
     }
-    iEvent.put(out);
+    iEvent.put(std::move(out));
 }
 
 #include "FWCore/Framework/interface/MakerMacros.h"

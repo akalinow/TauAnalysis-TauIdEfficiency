@@ -23,6 +23,8 @@ process.load("Configuration.StandardSequences.Reconstruction_cff")
 import os
 if "CMSSW_8_0_" in os.environ['CMSSW_VERSION']:
     process.GlobalTag.globaltag = cms.string('80X_mcRun2_asymptotic_2016_TrancheIV_v7')
+elif "CMSSW_9_2_" in os.environ['CMSSW_VERSION']:
+    process.GlobalTag.globaltag = cms.string('92X_upgrade2017_realistic_v10')
 else: raise RuntimeError, "Unknown CMSSW version %s" % os.environ['CMSSW_VERSION']
 
 dataPath = "/home/akalinow/scratch/CMS/TauID/Data/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1-v2/MINIAODSIM/"
@@ -46,7 +48,7 @@ process.goodVertexFilter = cms.EDFilter("VertexSelector",
 process.load("HLTrigger.HLTfilters.triggerResultsFilter_cfi")
 
 if TRIGGER == "SingleMu":
-    process.triggerResultsFilter.triggerConditions = cms.vstring('HLT_IsoMu24_v*','HLT_IsoTkMu24_v*')    
+    process.triggerResultsFilter.triggerConditions = cms.vstring('HLT_IsoMu24_v*','HLT_IsoMu24_eta2p1_v*')    
 else:
     raise RuntimeError, "TRIGGER must be 'SingleMu' or 'DoubleMu'"
 
@@ -79,10 +81,17 @@ process.tagMuons = cms.EDFilter("PATMuonSelector",
 
 process.oneTag  = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("tagMuons"), minNumber = cms.uint32(1))
 
+process.unpackedPatTrigger = cms.EDProducer("PATTriggerObjectStandAloneUnpacker",
+     patTriggerObjectsStandAlone = cms.InputTag('slimmedPatTrigger'),
+     triggerResults              = cms.InputTag('TriggerResults::HLT'),
+     unpackFilterLabels = cms.bool(True)
+)
+
+
 process.tagTriggerMatchModule = cms.EDProducer("TriggerObjectStandAloneMatch", 
     tags   = cms.InputTag("tagMuons"),
-    objects = cms.InputTag("selectedPatTrigger"),
-    objectSelection = cms.string('hasFilterLabel("hltL3crIsoL1sMu22L1f0L2f10QL3f24QL3trkIsoFiltered0p09") || hasFilterLabel("hltL3fL1sMu22L1f0Tkf24QL3trkIsoFiltered0p09")'),
+    objects = cms.InputTag("unpackedPatTrigger"),
+    objectSelection = cms.string('hasFilterLabel("hltL3crIsoL1sSingleMu22L1f0L2f10QL3f24QL3trkIsoFiltered0p07") || hasFilterLabel("hltL3crIsoL1sSingleMu22erL1f0L2f10QL3f24QL3trkIsoFiltered0p07")'),
     maxTagObjDR   = cms.double(0.1),
 )
 
@@ -222,6 +231,7 @@ process.tnpSimpleSequence = cms.Sequence(
     process.goodGenMuons +
     process.tagMuons*process.tagMuonsMCMatch +  
     process.oneTag     +
+    process.unpackedPatTrigger +
     process.tagTriggerMatchModule + 
     process.probeTaus*process.probeMuonsMCMatch +
     process.tpPairs    +
