@@ -27,7 +27,8 @@ elif "CMSSW_9_2_" in os.environ['CMSSW_VERSION']:
     process.GlobalTag.globaltag = cms.string('92X_upgrade2017_realistic_v10')
 else: raise RuntimeError, "Unknown CMSSW version %s" % os.environ['CMSSW_VERSION']
 
-dataPath = "/home/akalinow/scratch/CMS/TauID/Data/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1-v2/MINIAODSIM/"
+dataPath = "/home/akalinow/scratch/CMS/TauID/Data/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISummer17MiniAOD-92X_upgrade2017_realistic_v10_ext1-v2/MINIAODSIM/"
+
 command = "ls "+dataPath+"/*.root"
 fileList = commands.getoutput(command).split("\n")   
 process.source.fileNames =  cms.untracked.vstring()
@@ -181,7 +182,7 @@ process.tpTree = cms.EDAnalyzer("TagProbeFitTreeProducer",
     arbitration   = cms.string("None"),
     # probe variables: all useful ones
     variables = cms.PSet(
-        KinematicVariables,
+        KinematicVariables,       
         decayMode =  cms.string('tauID("decayMode")'),
         alternatLorentzVectPt =  cms.string("alternatLorentzVect.pt"),
         alternatLorentzVectEta =  cms.string("alternatLorentzVect.eta"),
@@ -198,6 +199,7 @@ process.tpTree = cms.EDAnalyzer("TagProbeFitTreeProducer",
         KinematicVariables,
         dB = cms.string("dB"),
         triggerMatch = cms.InputTag("tagTriggerMatchModule"),
+        isolation = MuonIDFlags2016.IsolationValue2016
     ),
     tagFlags = cms.PSet(),
     pairVariables = cms.PSet(
@@ -212,6 +214,12 @@ process.tpTree = cms.EDAnalyzer("TagProbeFitTreeProducer",
         MTtag = cms.InputTag("tagMTModule"),
         alternativeMass = cms.InputTag("pairAlternativeMass"),
         ZDecayMode = cms.InputTag("ZDecayMode"),
+        ## Gen related variables                                                                                                                                                                                                 
+        genWeight    = cms.InputTag("genAdditionalInfo", "genWeight"),
+        truePileUp   = cms.InputTag("genAdditionalInfo", "truePileUp"),
+        actualPileUp = cms.InputTag("genAdditionalInfo", "actualPileUp"),
+        ###
+        nVertices   = cms.InputTag("nverticesModule")
     ),
     pairFlags = cms.PSet(
         BestZ = cms.InputTag("bestPairByZMass"),
@@ -226,6 +234,8 @@ process.tpTree = cms.EDAnalyzer("TagProbeFitTreeProducer",
 )
 
 process.nverticesModule.objects = cms.InputTag("offlineSlimmedPrimaryVertices")
+
+process.genAdditionalInfo.pileUpInfoTag = cms.InputTag("slimmedAddPileupInfo")
 
 process.tnpSimpleSequence = cms.Sequence(
     process.goodGenMuons +
@@ -242,6 +252,7 @@ process.tnpSimpleSequence = cms.Sequence(
     process.pairAlternativeMass + process.ZDecayMode +
     process.probeMultiplicities + 
     process.bestPairByZMass + 
+    process.genAdditionalInfo +
     process.tpTree
 )
 

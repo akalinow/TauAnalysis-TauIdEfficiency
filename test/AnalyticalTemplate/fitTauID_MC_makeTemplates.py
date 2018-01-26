@@ -7,10 +7,11 @@ process.source = cms.Source("EmptySource")
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1) )
 
 filePath = "/dmj/hep/akalinow/scratch/CMS/TauID/Crab/Data/TauID_TnP/18_01_2017/"
+filePath = "/home/akalinow/scratch/CMS/TauID/Crab/Data/TauID_TnP_2017/Test1_Mu2Tau_2017/"
 filePath += "tnpZ_MC.root"
 
 efficiencyPSetTemplate = cms.PSet(
-    UnbinnedVariables = cms.vstring("mass","alternatLorentzVectPt", "alternatLorentzVectEta", "tag_pt", "tag_triggerMatch", "tag_dB", "pair_dz", "pair_deltaR", "pair_probeMultiplicity", "pair_BestZ", "pair_MET", "pair_MTtag", "pair_MTprobe", "decayModeFinding", "byLooseCombinedIsolationDeltaBetaCorr3Hits"),
+    UnbinnedVariables = cms.vstring("mass","weight", "alternatLorentzVectPt", "alternatLorentzVectEta", "tag_pt", "tag_triggerMatch", "tag_dB", "pair_dz", "pair_deltaR", "pair_probeMultiplicity", "pair_BestZ", "pair_MET", "pair_MTtag", "pair_MTprobe", "decayModeFinding", "byLooseCombinedIsolationDeltaBetaCorr3Hits"),
     EfficiencyCategoryAndState = cms.vstring("againstMuonLoose3", "pass"), ## Numerator definition
     BinnedVariables = cms.PSet(
         ## Binning in continuous variables
@@ -81,12 +82,13 @@ process.TnP_Muon_ID = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
     OutputFileName = cms.string("TnP_MuonToTau_MisID_MC_Templates.root"),
     InputTreeName = cms.string("fitter_tree"), 
     InputDirectoryName = cms.string("tpTree"),  
+    WeightVariable = cms.string("weight"),
     ## Variables for binning
     Variables = cms.PSet(
         mass   = cms.vstring("Tag-muon Mass", "60", "120", "GeV/c^{2}"),
-        abseta = cms.vstring("muon |#eta|", "0", "2.4", ""),
+        abseta = cms.vstring("muon |#eta|", "0", "2.3", ""),
         alternatLorentzVectPt = cms.vstring("probe tau pT", "20", "1500", ""),
-        alternatLorentzVectEta = cms.vstring("probe tau eta", "-2.4", "2.4", ""),
+        alternatLorentzVectEta = cms.vstring("probe tau eta", "-2.3", "2.3", ""),
         tag_pt  = cms.vstring("tag pT", "0", "1500", ""),
         tag_triggerMatch = cms.vstring("Tag matched to HLT item", "0.5", "1.0", ""),
         tag_dB  = cms.vstring("dB", "0.0", "0.004", ""),
@@ -101,6 +103,7 @@ process.TnP_Muon_ID = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
         #decayModeFindingNewDMs = cms.vstring("Decay mode finding NewDMs", "0.5", "1.0", ""),
         byLooseCombinedIsolationDeltaBetaCorr3Hits = cms.vstring("Combined loose isolation", "0.5", "1.0", ""),
         mcTrue = cms.vstring("Match to gen muons", "0.0", "1.0", ""),
+	weight = cms.vstring("weight","0","10","")
     ),
     ## Flags you want to use to define numerator and possibly denominator
     Categories = cms.PSet(

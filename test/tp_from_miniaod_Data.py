@@ -193,6 +193,7 @@ process.tpTree = cms.EDAnalyzer("TagProbeFitTreeProducer",
         MTprobe = cms.InputTag("probeMTModule"),
         MTtag = cms.InputTag("tagMTModule"),
         alternativeMass = cms.InputTag("pairAlternativeMass"),
+	nVertices   = cms.InputTag("nverticesModule"),
     ),
     pairFlags = cms.PSet(
         BestZ = cms.InputTag("bestPairByZMass"),

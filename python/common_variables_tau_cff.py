@@ -10,8 +10,13 @@ MuonIDFlags2016 = cms.PSet(
     #fabs(recoMu.muonBestTrack()->dz(vertex->position())) < 0.5 missing
     #"track.hitPattern.numberOfValidMuonHits > 0" always false in miniAOD
 
-    Isolation2016 = cms.string("(pfIsolationR03.sumChargedHadronPt + max(pfIsolationR03.sumNeutralHadronEt +"
-                             + "pfIsolationR03.sumPhotonEt - 0.5 * pfIsolationR03.sumPUPt, 0.0))/pt() < 0.1")
+    IsolationValue2016 =  cms.string("(pfIsolationR03.sumChargedHadronPt + max(pfIsolationR03.sumNeutralHadronEt +"
+                                     + "pfIsolationR03.sumPhotonEt - 0.5 * pfIsolationR03.sumPUPt, 0.0))/pt()"),
+
+    Isolation2016 =   cms.string("(pfIsolationR03.sumChargedHadronPt + max(pfIsolationR03.sumNeutralHadronEt +"
+                                     + "pfIsolationR03.sumPhotonEt - 0.5 * pfIsolationR03.sumPUPt, 0.0))/pt() < 0.1"),
+                    
+
 )
 
 
