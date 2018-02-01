@@ -109,7 +109,7 @@ void plotFitCanvas(std::string category = "againstMuonLoose3_Zmumu",
     if(category.find("Tight")!=std::string::npos) label = "#splitline{Tight " + label;
     TLatex * aLatex = new TLatex(0,0,"");
       
-    int iPeriod = 4;//Luminosity period
+    int iPeriod = 5;//Luminosity period
     int iPosX = 0;
     lumiTextSize = 1.0;
     cmsTextSize = 0.85;
@@ -156,6 +156,29 @@ TGraphAsymmErrors *getResultGraph(std::string category = "againstMuonLoose3", bo
 
   TGraphAsymmErrors *hxy_fit_eff = (TGraphAsymmErrors*)aEffCanvas->FindObject(("hxy_"+fitType+"_eff").c_str());
 
+  ///Fix against weighted eta values
+  int nPoints = hxy_fit_eff->GetN();
+  Double_t x,y;
+  std::cout<<"nPoints: "<<nPoints<<std::endl;
+  float edges[6] = {0.0, 0.4, 0.8, 1.2, 1.7, 2.3};
+
+  for(unsigned int iPoint=0;iPoint<nPoints;iPoint++){
+    float width = edges[iPoint+1] - edges[iPoint];    
+    hxy_fit_eff->SetPointEXlow(iPoint,width/2.0);
+    hxy_fit_eff->SetPointEXhigh(iPoint,width/2.0);
+    hxy_fit_eff->GetPoint(iPoint,x,y);
+
+    float eyHigh = hxy_fit_eff->GetErrorYhigh(iPoint);
+    float eyLow = hxy_fit_eff->GetErrorYlow(iPoint);
+    float ey = std::min(eyHigh, eyLow);
+    hxy_fit_eff->SetPointEYlow(iPoint,ey);
+    hxy_fit_eff->SetPointEYhigh(iPoint,ey);
+    
+    x = edges[iPoint] + (edges[iPoint+1] - edges[iPoint])/2.0;    
+    hxy_fit_eff->SetPoint(iPoint,x,y);
+  }
+  /////////////////////////////////
+
   return hxy_fit_eff;
 }
 /////////////////////////////////////////////////////
@@ -163,10 +186,12 @@ TGraphAsymmErrors *getResultGraph(std::string category = "againstMuonLoose3", bo
 TGraphAsymmErrors* getRatioGraph(TGraphAsymmErrors *graph1,
 				 TGraphAsymmErrors *graph2){
 
-  TGraphAsymmErrors *grRatio = new TGraphAsymmErrors(5);
+  int nPoints = graph1->GetN();
+  
+  TGraphAsymmErrors *grRatio = new TGraphAsymmErrors(nPoints);
   Double_t x1, y1, x2, y2; 
   Double_t eX1, eX2, eY1, eY2;
-  for(int iPoint=0;iPoint<5;++iPoint){
+  for(int iPoint=0;iPoint<nPoints;++iPoint){
     graph1->GetPoint(iPoint,x1,y1);
     graph2->GetPoint(iPoint,x2,y2);
     eX1 = graph1->GetErrorX(iPoint);
@@ -213,17 +238,17 @@ void plotMistagRateMC(std::string category = "againstMuonLoose3"){
 
   TH1F *hFrame = new TH1F("hFrame","",3,0,2.3);
   hFrame->SetMinimum(1E-4);
-  hFrame->SetMaximum(6E-3);
+  hFrame->SetMaximum(7E-3);
   if(category.find("Tight")!=std::string::npos){
     hFrame->SetMinimum(0);
-    hFrame->SetMaximum(4.5E-3);
+    hFrame->SetMaximum(7E-3);
   }
 
   hFrame->SetStats(kFALSE);
   hFrame->SetXTitle("|#eta|");
   hFrame->SetYTitle("#mu #rightarrow #tau misidentification rate");
 
-  TLegend *aLegend = new TLegend(0.65,0.55,0.9,0.9);
+  TLegend *aLegend = new TLegend(0.55,0.55,0.9,0.9);
   aLegend->SetTextSize(0.05);
   aLegend->SetBorderSize(0);
   aLegend->SetFillColor(10);
@@ -299,10 +324,10 @@ void plotMistagRateData(std::string category = "againstMuonLoose3"){
 
   TH1F *hFrame = new TH1F("hFrame","",3,0,2.3);
   hFrame->SetMinimum(1E-4);
-  hFrame->SetMaximum(6E-3);
+  hFrame->SetMaximum(7E-3);
   if(category.find("Tight")!=std::string::npos){
     hFrame->SetMinimum(0);
-    hFrame->SetMaximum(4.5E-3);
+    hFrame->SetMaximum(7E-3);
   }
   hFrame->SetStats(kFALSE);
   hFrame->GetYaxis()->SetTitleOffset(1.2);
@@ -339,7 +364,7 @@ void plotMistagRateData(std::string category = "againstMuonLoose3"){
   aGraphData->Draw("p");
   aLegend->Draw();
   aLatex->DrawLatexNDC(0.7,0.6,label.c_str());
-  int iPeriod = 4;//Luminosity period
+  int iPeriod = 5;//Luminosity period
   int iPosX = 0;
   lumiTextSize = 0.9;
   cmsTextSize = 1.0;
@@ -428,8 +453,10 @@ void makeMistagRateTable(){
   out<<"\\begin{center} "<<std::endl;
   out<<"\\begin{tabular}{|c|c|c|c|} \\hline "<<std::endl;
   out<<"  WP & Simulation & Data & Data/Simulation \\\\  "<<std::endl;
+
+  int nPoints = 5;
   
-    for(unsigned int iEta=0;iEta<5;++iEta){
+    for(unsigned int iEta=0;iEta<nPoints;++iEta){
 
       if(iEta==0) out<<"  \\hline \\multicolumn{4}{|c|}{$|\\eta|<"<<etaRanges[iEta+1]<<"$} \\\\ \\hline "<<std::endl;
       else out<<"  \\hline \\multicolumn{4}{|c|}{$"<<etaRanges[iEta]<<"<|\\eta|<"<<etaRanges[iEta+1]<<"$} \\\\ \\hline "<<std::endl;
@@ -722,7 +749,8 @@ void plotAll(){
   extraText  = "Preliminary";  // default extra text is "Preliminary"
   lumi_8TeV  = "19.1 fb^{-1}"; // default is "19.7 fb^{-1}"
   lumi_7TeV  = "4.9 fb^{-1}";  // default is "5.1 fb^{-1}"
-  lumi_13TeV  = "36.8 fb^{-1}";  // default is "20.1 fb^{-1}"
+  //lumi_13TeV  = "36.8 fb^{-1}";  // default is "20.1 fb^{-1}" Run2016
+  lumi_13TeV  = "41.4 fb^{-1}";  // default is "20.1 fb^{-1}" Run2017
 
 
   plotFittedParams("sigmaPass", "againstMuonLoose3", "signalPass");
