@@ -23,18 +23,20 @@ process.load("Configuration.StandardSequences.Reconstruction_cff")
 import os
 if "CMSSW_8_0_" in os.environ['CMSSW_VERSION']:
     process.GlobalTag.globaltag = cms.string('80X_dataRun2_2016SeptRepro_v6')
-elif "CMSSW_9_2_" in os.environ['CMSSW_VERSION']:
-    process.GlobalTag.globaltag = cms.string('92X_dataRun2_Prompt_v9')
 else: raise RuntimeError, "Unknown CMSSW version %s" % os.environ['CMSSW_VERSION']
 
+if "CMSSW_9_4_" in os.environ['CMSSW_VERSION']:
+    process.GlobalTag.globaltag = cms.string('94X_dataRun2_ReReco_EOY17_v2')
+else: raise RuntimeError, "Unknown CMSSW version %s" % os.environ['CMSSW_VERSION']
 
-dataPath = "/home/akalinow/scratch/CMS/HiggsCP/Data/SingleMuon/Run2017C-PromptReco-v3/MINIAOD/"
+'''
+dataPath = "/scratch_local/akalinow/CMS/TauID/Data/SingleMuon/Run2015D-16Dec2015-v1/MINIAOD"
 command = "ls "+dataPath+"/*.root"
 fileList = commands.getoutput(command).split("\n")   
 process.source.fileNames =  cms.untracked.vstring()
 for aFile in fileList:
     process.source.fileNames.append('file:'+aFile)
-
+'''
 
 ## SELECT WHAT DATASET YOU'RE RUNNING ON
 TRIGGER="SingleMu"
@@ -49,7 +51,7 @@ process.goodVertexFilter = cms.EDFilter("VertexSelector",
 process.load("HLTrigger.HLTfilters.triggerResultsFilter_cfi")
 
 if TRIGGER == "SingleMu":
-    process.triggerResultsFilter.triggerConditions = cms.vstring('HLT_IsoMu24_v*','HLT_IsoMu24_eta2p1_v*')    
+    process.triggerResultsFilter.triggerConditions = cms.vstring('HLT_IsoMu27_v*')    
     
 else:
     raise RuntimeError, "TRIGGER must be 'SingleMu' or 'DoubleMu'"
@@ -77,12 +79,11 @@ process.load("MuonAnalysis.TagAndProbe.common_modules_cff")
 
 process.tagMuons = cms.EDFilter("PATMuonSelector",
     src = cms.InputTag("slimmedMuons"),
-    cut = cms.string("pt > 25 && abs(eta)<2.1 && "+ MuonIDFlags2016.Tight2016.value()+
+    cut = cms.string("pt > 28 && abs(eta)<2.1 && "+ MuonIDFlags2016.Tight2016.value()+
                      " && " + MuonIDFlags2016.Isolation2016.value())
 )
 
 process.oneTag  = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("tagMuons"), minNumber = cms.uint32(1))
-
 
 process.unpackedPatTrigger = cms.EDProducer("PATTriggerObjectStandAloneUnpacker",
      patTriggerObjectsStandAlone = cms.InputTag('slimmedPatTrigger'),
@@ -90,11 +91,10 @@ process.unpackedPatTrigger = cms.EDProducer("PATTriggerObjectStandAloneUnpacker"
      unpackFilterLabels = cms.bool(True)
 )
 
-
 process.tagTriggerMatchModule = cms.EDProducer("TriggerObjectStandAloneMatch", 
     tags   = cms.InputTag("tagMuons"),
     objects = cms.InputTag("unpackedPatTrigger"),
-    objectSelection = cms.string('hasFilterLabel("hltL3crIsoL1sSingleMu22L1f0L2f10QL3f24QL3trkIsoFiltered0p07") || hasFilterLabel("hltL3crIsoL1sSingleMu22erL1f0L2f10QL3f24QL3trkIsoFiltered0p07")'),
+    objectSelection = cms.string('hasFilterLabel("hltL3crIsoL1sMu22Or25L1f0L2f10QL3f27QL3trkIsoFiltered0p07")'),
     maxTagObjDR   = cms.double(0.1),
 )
 
@@ -103,7 +103,7 @@ process.tagTriggerMatchModule = cms.EDProducer("TriggerObjectStandAloneMatch",
 ##
 process.mergedTaus = cms.EDProducer("PFTauMerger",
     mergeTracks = cms.bool(True),
-    taus     = cms.InputTag("slimmedTaus"),
+    taus     = cms.InputTag("NewTauIDsEmbedded"),
     photons     = cms.InputTag("slimmedPhotons"), 
     tracks    = cms.InputTag("packedPFCandidates"),
     ## Apply some minimal pt cut
@@ -113,7 +113,7 @@ process.mergedTaus = cms.EDProducer("PFTauMerger",
 
 process.probeTaus = cms.EDFilter("PATTauSelector",
     src = cms.InputTag("mergedTaus"),
-    cut = cms.string('tauID("byLooseCombinedIsolationDeltaBetaCorr3Hits")==1 || tauID("byTightIsolationMVArun2v1DBoldDMwLT")==1'),
+    cut = cms.string('tauID("byTightIsolationMVArun2v1DBoldDMwLTNew")==1'),
     minNumber = cms.uint32(1)
 )
 
@@ -171,15 +171,15 @@ process.tpTree = cms.EDAnalyzer("TagProbeFitTreeProducer",
     flags = cms.PSet(
         decayModeFinding =  cms.string('tauID("decayModeFinding")'),
         decayModeFindingNewDMs =  cms.string('tauID("decayModeFindingNewDMs")'),
-        byLooseCombinedIsolationDeltaBetaCorr3Hits = cms.string('tauID("byLooseCombinedIsolationDeltaBetaCorr3Hits")'),
-        byTightIsolationMVArun2v1DBoldDMwLT = cms.string('tauID("byTightIsolationMVArun2v1DBoldDMwLT")'),
+        byTightIsolationMVArun2v1DBoldDMwLTNew = cms.string('tauID("byTightIsolationMVArun2v1DBoldDMwLTNew")'),
         againstMuonLoose3 =  cms.string('tauID("againstMuonLoose3")'),
         againstMuonTight3 =  cms.string('tauID("againstMuonTight3")')
     ),
     tagVariables = cms.PSet(    
         KinematicVariables,
         dB = cms.string("dB"),
-        triggerMatch = cms.InputTag("tagTriggerMatchModule")
+        triggerMatch = cms.InputTag("tagTriggerMatchModule"),
+        nVertices   = cms.InputTag("nverticesModule"),
     ),
     tagFlags = cms.PSet(),
     pairVariables = cms.PSet(
@@ -193,7 +193,7 @@ process.tpTree = cms.EDAnalyzer("TagProbeFitTreeProducer",
         MTprobe = cms.InputTag("probeMTModule"),
         MTtag = cms.InputTag("tagMTModule"),
         alternativeMass = cms.InputTag("pairAlternativeMass"),
-	nVertices   = cms.InputTag("nverticesModule"),
+        nVertices   = cms.InputTag("nverticesModule"),
     ),
     pairFlags = cms.PSet(
         BestZ = cms.InputTag("bestPairByZMass"),
@@ -203,6 +203,12 @@ process.tpTree = cms.EDAnalyzer("TagProbeFitTreeProducer",
 )
 
 process.nverticesModule.objects = cms.InputTag("offlineSlimmedPrimaryVertices")
+
+###Rerun tauID
+process.load('RecoTauTag.Configuration.loadRecoTauTagMVAsFromPrepDB_cfi')
+from tauIdRerun import *
+addMVA_WPs_run2_2017(process)
+##############
 
 process.tnpSimpleSequence = cms.Sequence(
     process.tagMuons +
@@ -223,6 +229,8 @@ process.tnpSimpleSequence = cms.Sequence(
 
 process.tagAndProbe = cms.Path( 
     process.fastFilter +
+    process.rerunMvaIsolation2SeqRun2 + 
+    getattr(process, "NewTauIDsEmbedded") +
     process.mergedTaus +                 
     process.tnpSimpleSequence
 )

@@ -92,7 +92,8 @@ PFTauMerger::produce(edm::Event & iEvent, const edm::EventSetup & iSetup) {
 	      aID.push_back(pat::Tau::IdPair("decayModeFindingNewDMs",aTau->tauID("decayModeFindingNewDMs")));
 	      aID.push_back(pat::Tau::IdPair("decayModeFinding",aTau->tauID("decayModeFinding")));
 	      aID.push_back(pat::Tau::IdPair("byLooseCombinedIsolationDeltaBetaCorr3Hits",aTau->tauID("byLooseCombinedIsolationDeltaBetaCorr3Hits")));
-	      aID.push_back(pat::Tau::IdPair("byTightIsolationMVArun2v1DBoldDMwLT",aTau->tauID("byTightIsolationMVArun2v1DBoldDMwLT")));	      
+	      aID.push_back(pat::Tau::IdPair("byTightIsolationMVArun2v1DBoldDMwLT",aTau->tauID("byTightIsolationMVArun2v1DBoldDMwLT")));
+	      aID.push_back(pat::Tau::IdPair("byTightIsolationMVArun2v1DBoldDMwLTNew",aTau->tauID("byTightIsolationMVArun2v1DBoldDMwLTNew")));	      
 	    }
 	    else{
 	      aPatTau.setalternatLorentzVect(p4);
@@ -104,6 +105,7 @@ PFTauMerger::produce(edm::Event & iEvent, const edm::EventSetup & iSetup) {
 	      aID.push_back(pat::Tau::IdPair("decayModeFinding",0));
 	      aID.push_back(pat::Tau::IdPair("byLooseCombinedIsolationDeltaBetaCorr3Hits",0));
 	      aID.push_back(pat::Tau::IdPair("byTightIsolationMVArun2v1DBoldDMwLT",0));	      
+	      aID.push_back(pat::Tau::IdPair("byTightIsolationMVArun2v1DBoldDMwLTNew",0));
 	    }	    
 	    aPatTau.setTauIDs(aID);
             out->push_back(aPatTau);
