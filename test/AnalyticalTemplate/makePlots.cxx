@@ -124,11 +124,11 @@ void plotFitCanvas(std::string category = "againstMuonLoose3_Zmumu",
     aPad->SetCanvasSize(1000,1000);
     
     if(allProbes){
-      aLatex->DrawLatexNDC(0.18,0.2,label.c_str());
+      aLatex->DrawLatexNDC(0.18,0.85,label.c_str());
       aPad->Print(("./fig_png/"+category+"_fit_all"+nameSuffix+".png").c_str());
     }
     else{
-      aLatex->DrawLatexNDC(0.18,0.15,label.c_str());
+      aLatex->DrawLatexNDC(0.18,0.85,label.c_str());
       aPad->Print(("./fig_png/"+category+"_fit_passing"+nameSuffix+".png").c_str());
     }
   }
@@ -376,7 +376,7 @@ void plotMistagRateData(std::string category = "againstMuonLoose3"){
   hFrame->SetMaximum(2.0);
   hFrame->SetMinimum(0.5);
   if(category.find("Tight")!=std::string::npos){
-    hFrame->SetMaximum(2.0);
+    hFrame->SetMaximum(2.5);
     hFrame->SetMinimum(0.5);
   }
   hFrame->GetXaxis()->SetLabelColor(1);
