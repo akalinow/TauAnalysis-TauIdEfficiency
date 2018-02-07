@@ -7,7 +7,7 @@ process.source = cms.Source("EmptySource")
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1) )
 
 filePath = "/dmj/hep/akalinow/scratch/CMS/TauID/Crab/Data/TauID_TnP/18_01_2017/"
-filePath = "/cms/cms/akalinow/CMS/TauID/Crab/Data/TauID_TnP_2017/v5_Mu2Tau_2017/"
+filePath = "/cms/cms/akalinow/CMS/TauID/Crab/Data/TauID_TnP_2017/v6_Mu2Tau_2017/"
 filePath += "tnpZ_MCwithWeights.root"
 
 efficiencyPSetTemplate = cms.PSet(
@@ -62,13 +62,13 @@ Ztautau_Model = cms.vstring(
     "SUM::signalPass(0*signal1Pass)",
 
     "Gaussian::backgroundPass1(mass, mean1p[55, 50,60], sigma1p[12,10,20])",
-    #"Exponential::backgroundPass2(mass, lp2[-0.168, -1,0.1])",
     "Chebychev::backgroundPass2(mass, cPass[0,-1,1])",
     "SUM::backgroundZtautauPass(vFracBkgPass[0.2, 0,1]*backgroundPass1, backgroundPass2)",
     "SUM::backgroundPass(backgroundZtautauPass)",
     
-    "Gaussian::backgroundFail1(mass, mean1p[55, 50,60], sigma1p[12,10,20])",
-    "Exponential::backgroundFail2(mass, lf[-0.039, -1, 0.1])",
+    "Gaussian::backgroundFail1(mass, mean1f[70,60,80], sigma1f[12,1,20])",
+    #"Exponential::backgroundFail2(mass, lf[-0.039, -1, 0.1])",
+    "Chebychev::backgroundFail2(mass, cFail[0,-1,1])",
     "SUM::backgroundFail(vFracBkgFail[0.2, 0,1]*backgroundFail1,backgroundFail2)",
     
     "efficiency[0.001,0,0.01]",
@@ -133,7 +133,7 @@ process.TnP_Muon_ID = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
     ),    
     ## How to do the fit
     binnedFit = cms.bool(True),
-    binsForFit = cms.uint32(50),
+    binsForFit = cms.uint32(40),
     saveDistributionsPlot = cms.bool(False),
     NumCPU = cms.uint32(1), ## leave to 1 for now, RooFit gives funny results otherwise
     SaveWorkspace = cms.bool(True),

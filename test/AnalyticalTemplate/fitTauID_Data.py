@@ -6,8 +6,8 @@ process.load('FWCore.MessageService.MessageLogger_cfi')
 process.source = cms.Source("EmptySource")
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1) )
 
-filePath = "/cms/cms/akalinow/CMS/TauID/Crab/Data/TauID_TnP_2017/v5_Mu2Tau_2017/"
-filePath += "tnpZ_DatawithWeights.root"
+filePath = "/cms/cms/akalinow/CMS/TauID/Crab/Data/TauID_TnP_2017/v6_Mu2Tau_2017/"
+filePath += "tnpZ_Data.root"
 
 efficiencyPSetTemplate = cms.PSet(
     UnbinnedVariables = cms.vstring("mass","alternatLorentzVectPt", "alternatLorentzVectEta", "tag_pt", "tag_triggerMatch", "tag_dB", "pair_dz", "pair_deltaR", "pair_probeMultiplicity", "pair_BestZ", "pair_MET", "pair_MTtag", "pair_MTprobe", "decayModeFinding", "byLooseCombinedIsolationDeltaBetaCorr3Hits"),
@@ -192,7 +192,7 @@ process.TnP_Muon_ID = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
     ),    
     ## How to do the fit
     binnedFit = cms.bool(True),
-    binsForFit = cms.uint32(50),
+    binsForFit = cms.uint32(40),
     saveDistributionsPlot = cms.bool(False),
     NumCPU = cms.uint32(1), ## leave to 1 for now, RooFit gives funny results otherwise
     SaveWorkspace = cms.bool(True),

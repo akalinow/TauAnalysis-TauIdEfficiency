@@ -7,7 +7,7 @@ process.source = cms.Source("EmptySource")
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1) )
 
 #filePath = "/dmj/hep/akalinow/scratch/CMS/TauID/Crab/Data/TauID_TnP/18_01_2017/"
-filePath = "/cms/cms/akalinow/CMS/TauID/Crab/Data/TauID_TnP_2017/v5_Mu2Tau_2017/"
+filePath = "/cms/cms/akalinow/CMS/TauID/Crab/Data/TauID_TnP_2017/v6_Mu2Tau_2017/"
 filePath += "tnpZ_MCwithWeights.root"
 
 efficiencyPSetTemplate = cms.PSet(
@@ -187,7 +187,7 @@ process.TnP_Muon_ID = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
     ),    
     ## How to do the fit
     binnedFit = cms.bool(True),
-    binsForFit = cms.uint32(50),
+    binsForFit = cms.uint32(40),
     saveDistributionsPlot = cms.bool(False),
     NumCPU = cms.uint32(1), ## leave to 1 for now, RooFit gives funny results otherwise
     SaveWorkspace = cms.bool(True),
