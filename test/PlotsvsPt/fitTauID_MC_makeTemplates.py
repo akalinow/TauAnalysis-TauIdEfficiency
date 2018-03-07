@@ -6,12 +6,12 @@ process.load('FWCore.MessageService.MessageLogger_cfi')
 process.source = cms.Source("EmptySource")
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1) )
 
-filePath = "/home/akalinow/scratch/CMS/TauID/Crab/Data/TauID_TnP/15_09_2016/"
+filePath = "/cms/cms/akalinow/CMS/TauID/Crab/Data/TauID_TnP_2017/v6_Mu2Tau_2017/"
 filePath += "tnpZ_MC.root"
 
 
 efficiencyPSetTemplate = cms.PSet(
-    UnbinnedVariables = cms.vstring("mass","alternatLorentzVectPt", "alternatLorentzVectEta","abseta","tag_pt", "tag_triggerMatch", "tag_dB", "pair_dz", "pair_deltaR", "pair_probeMultiplicity", "pair_MET", "pair_MTtag", "pair_MTprobe", "decayModeFinding", "byLooseCombinedIsolationDeltaBetaCorr3Hits"),
+    UnbinnedVariables = cms.vstring("mass","weight", "alternatLorentzVectPt", "alternatLorentzVectEta", "tag_pt", "tag_triggerMatch", "tag_dB", "pair_dz", "pair_deltaR", "pair_probeMultiplicity", "pair_BestZ", "pair_MET", "pair_MTtag", "pair_MTprobe", "decayModeFinding", "byLooseCombinedIsolationDeltaBetaCorr3Hits"),
     EfficiencyCategoryAndState = cms.vstring("againstMuonLoose3", "pass"), ## Numerator definition
     BinnedVariables = cms.PSet(
         ## Binning in continuous variables        
@@ -36,12 +36,12 @@ againstMuonTight3_Ztautau = againstMuonLoose3_Ztautau.clone()
 againstMuonTight3_Ztautau.EfficiencyCategoryAndState = cms.vstring("againstMuonTight3", "pass")
 
 Zmumu_Model = cms.vstring(
-    "Voigtian::signal1Fail(mass, mean1Fail[92, 85,95], width[2.495], sigma1Fail[1, 0.1,2])",
-    "Voigtian::signal2Fail(mass, mean2Fail[92, 85,95], width[2.495], sigma2Fail[3, 2,10])",
+    "Voigtian::signal1Fail(mass, meanFail[92, 85,95], width1[2.495], sigmaFail[2, 0.5,5])",
+    "CBShape::signal2Fail(mass, meanFail[92, 85,95], sigmaFail[2, 0.5,5], alphaFail[3,0,5], nFail[2,0,5])",
     "SUM::signalFail(vFracFail[0.9, 0,1]*signal1Fail, signal2Fail)",
     
-    "Voigtian::signal1Pass(mass, mean1Pass[92, 85,95], width[2.495], sigma1Pass[2, 1,10])",
-    "CBShape::signal2Pass(mass, mean2Pass[92, 80,95], sigma2Pass[5, 2, 10], alpha[3, 1,5], n[2, 0,5])",
+    "Voigtian::signal1Pass(mass, meanPass[92, 85,95], width[2.495], sigmaPass[2, 0.5,5])",
+    "CBShape::signal2Pass(mass, meanPass[92, 85,95], sigmaPass[2, 0.5,5], alphaPass[3,0,5], nPass[2, 0,5])",
     "SUM::signalPass(vFracPass[0.9, 0,1]*signal1Pass, signal2Pass)",
     
     "Exponential::backgroundPass1(mass, lp1[-0.033])",
@@ -62,13 +62,13 @@ Ztautau_Model = cms.vstring(
     "SUM::signalPass(0*signal1Pass)",
 
     "Gaussian::backgroundPass1(mass, mean1p[55, 50,60], sigma1p[12,10,20])",
-    #"Exponential::backgroundPass2(mass, lp2[-0.168, -1,0.1])",
     "Chebychev::backgroundPass2(mass, cPass[0,-1,1])",
     "SUM::backgroundZtautauPass(vFracBkgPass[0.2, 0,1]*backgroundPass1, backgroundPass2)",
     "SUM::backgroundPass(backgroundZtautauPass)",
     
-    "Gaussian::backgroundFail1(mass, mean1p[55, 50,60], sigma1p[12,10,20])",
-    "Exponential::backgroundFail2(mass, lf[-0.039, -1, 0.1])",
+    "Gaussian::backgroundFail1(mass, mean1f[70,60,80], sigma1f[12,1,20])",
+    #"Exponential::backgroundFail2(mass, lf[-0.039, -1, 0.1])",
+    "Chebychev::backgroundFail2(mass, cFail[0,-1,1])",
     "SUM::backgroundFail(vFracBkgFail[0.2, 0,1]*backgroundFail1,backgroundFail2)",
     
     "efficiency[0.001,0,0.01]",
@@ -84,24 +84,26 @@ process.TnP_Muon_ID = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
     InputDirectoryName = cms.string("tpTree"),  
     ## Variables for binning
     Variables = cms.PSet(
-        mass   = cms.vstring("Tag-muon Mass", "60", "110", "GeV/c^{2}"),
+        mass   = cms.vstring("Tag-muon Mass", "60", "120", "GeV/c^{2}"),
         abseta = cms.vstring("muon |#eta|", "0", "0.8", ""),
         pt  = cms.vstring("probe pT", "0", "100", ""),
         alternatLorentzVectPt = cms.vstring("probe tau pT", "20", "1500", ""),
-        alternatLorentzVectEta = cms.vstring("probe tau eta", "-2.4", "2.4", ""),        
+        alternatLorentzVectEta = cms.vstring("probe tau eta", "-2.3", "2.3", ""),        
         tag_pt  = cms.vstring("tag pT", "0", "1500", ""),
         tag_triggerMatch = cms.vstring("Tag matched to HLT item", "0.5", "1.0", ""),
         tag_dB  = cms.vstring("dB", "0.0", "0.004", ""),
-        pair_dz = cms.vstring("#Deltaz between two muons", "-0.05", "0.05", "cm"),
+        pair_dz = cms.vstring("#Deltaz between two muons", "-0.01", "0.01", "cm"),
         pair_deltaR = cms.vstring("#DeltaR between two muons", "0.5", "5", ""),
         pair_probeMultiplicity = cms.vstring("Probe multiplicity", "1", "1", ""),
-        pair_MET = cms.vstring("MET", "0", "25", ""),
+        pair_BestZ = cms.vstring("pair closest to Z mass", "0.5", "1.0", ""),
+        pair_MET = cms.vstring("MET", "0", "2500", ""),
         pair_MTtag = cms.vstring("MTtag", "0", "40", ""),
         pair_MTprobe = cms.vstring("MTprobe", "0", "4000", ""),
         decayModeFinding = cms.vstring("Decay mode finding", "0.5", "1.0", ""),
         #decayModeFindingNewDMs = cms.vstring("Decay mode finding NewDMs", "0.5", "1.0", ""),
         byLooseCombinedIsolationDeltaBetaCorr3Hits = cms.vstring("Combined loose isolation", "0.5", "1.0", ""),
         mcTrue = cms.vstring("Match to gen muons", "0.0", "1.0", ""),
+        weight = cms.vstring("weight","0","10","")
     ),
     ## Flags you want to use to define numerator and possibly denominator
     Categories = cms.PSet(
@@ -113,8 +115,8 @@ process.TnP_Muon_ID = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
         againstMuonLoose3_Zmumu = againstMuonLoose3_Zmumu,
         againstMuonLoose3_Ztautau = againstMuonLoose3_Ztautau,
 
-        againstMuonTight3_Zmumu = againstMuonTight3_Zmumu,
-        againstMuonTight3_Ztautau = againstMuonTight3_Ztautau,
+        #againstMuonTight3_Zmumu = againstMuonTight3_Zmumu,
+        #againstMuonTight3_Ztautau = againstMuonTight3_Ztautau,
     ),
     PDFs = cms.PSet(
         Zmumu_Model_Pt0 = Zmumu_Model,
