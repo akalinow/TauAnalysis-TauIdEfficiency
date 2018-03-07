@@ -450,7 +450,7 @@ void fixParamsMC(std::string category = "againstMuonLoose3_Zmumu"){
   std::string objectPath = dirName+"/"+objName;
   std::string fitModelName = category.substr(category.find("3_")+2,category.size())+"_Model";  
   std::string aPattern = "";
-  std::string binnedVars =   "__mcTrue_bin0__";
+  std::string binnedVars =   "mcTrue_bin0__";
     
   for(unsigned int iPt=0;iPt<5;++iPt){
 
