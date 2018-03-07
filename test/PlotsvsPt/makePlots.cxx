@@ -441,7 +441,7 @@ void fixParamsForPdf(RooAbsPdf *aPdf){
 }
 /////////////////////////////////////////////////////
 /////////////////////////////////////////////////////
-void getParamsMC(std::string category = "againstMuonLoose3_Zmumu"){
+void fixParamsMC(std::string category = "againstMuonLoose3_Zmumu"){
 
   TFile file(fNameMC.c_str(),"UPDATE");
 
@@ -450,13 +450,13 @@ void getParamsMC(std::string category = "againstMuonLoose3_Zmumu"){
   std::string objectPath = dirName+"/"+objName;
   std::string fitModelName = category.substr(category.find("3_")+2,category.size())+"_Model";  
   std::string aPattern = "";
-  std::string binnedVars = "__mcTrue_bin0__";
+  std::string binnedVars =   "__mcTrue_bin0__";
     
-  for(unsigned int iEta=0;iEta<5;++iEta){
+  for(unsigned int iPt=0;iPt<5;++iPt){
 
-    std::string etaBinNumber = std::to_string(iEta);
+    std::string ptBinNumber = std::to_string(iPt);
   
-    dirName = topDirectory+category+"/abseta_bin"+etaBinNumber+binnedVars+fitModelName+"_Eta"+etaBinNumber+"/";
+    dirName = topDirectory+category+"/"+binnedVars+"pt_bin"+ptBinNumber+"__"+fitModelName+"_Pt"+ptBinNumber+"/";
     objectPath = dirName+objName;
  
     RooWorkspace *aWorkspace = (RooWorkspace*)file.Get(objectPath.c_str());
@@ -667,18 +667,11 @@ void fixModelParameters(){
 
   fNameMC = "TnP_MuonToTau_MisID_MC_Templates.root";
 
-  getDataHistPdf("againstMuonLoose3_Zmumu");
-  getDataHistPdf("againstMuonLoose3_Ztautau");
+  fixParamsMC("againstMuonLoose3_Zmumu");
+  fixParamsMC("againstMuonLoose3_Ztautau");
 
-  getDataHistPdf("againstMuonTight3_Zmumu");
-  getDataHistPdf("againstMuonTight3_Ztautau");
-  return;
-
-  getParamsMC("againstMuonLoose3_Zmumu");
-  getParamsMC("againstMuonLoose3_Ztautau");
-
-  getParamsMC("againstMuonTight3_Zmumu");
-  getParamsMC("againstMuonTight3_Ztautau");
+  fixParamsMC("againstMuonTight3_Zmumu");
+  fixParamsMC("againstMuonTight3_Ztautau");
 
 }
 /////////////////////////////////////////////////////
