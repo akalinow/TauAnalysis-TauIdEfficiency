@@ -36,91 +36,91 @@ againstMuonTight3_Zll.EfficiencyCategoryAndState = cms.vstring("againstMuonTight
 againstMuonTight3_Zll.BinToPDFmap = cms.vstring("Zll_Model_TightPt0","*pt_bin1*","Zll_Model_TightPt1", "*pt_bin2*","Zll_Model_TightPt2", "*pt_bin3*","Zll_Model_TightPt3", "*pt_bin4*","Zll_Model_TightPt4")
 
 Zll_Model_LoosePt0_Template = cms.vstring(
-            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Zmumu/mcTrue_bin0__pt_bin0__Zmumu_Model_Pt0/workspaceHistPdf:signalPass",
-            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Zmumu/mcTrue_bin0__pt_bin0__Zmumu_Model_Pt0/workspaceHistPdf:signalFail",
-            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Ztautau/mcTrue_bin0__pt_bin0__Ztautau_Model_Pt0/workspaceHistPdf:backgroundPass",
-            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Ztautau/mcTrue_bin0__pt_bin0__Ztautau_Model_Pt0/workspaceHistPdf:backgroundFail",
+            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Zmumu/mcTrue_bin0__pt_bin0__Zmumu_Model_Pt0/workspaceFixedParams:signalPass",
+            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Zmumu/mcTrue_bin0__pt_bin0__Zmumu_Model_Pt0/workspaceFixedParams:signalFail",
+            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Ztautau/mcTrue_bin0__pt_bin0__Ztautau_Model_Pt0/workspaceFixedParams:backgroundPass",
+            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Ztautau/mcTrue_bin0__pt_bin0__Ztautau_Model_Pt0/workspaceFixedParams:backgroundFail",
             "efficiency[0.001,0,0.01]",
             "signalFractionInPassing[0.9]"
             )
 
 Zll_Model_LoosePt1_Template = cms.vstring(
-            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Zmumu/mcTrue_bin0__pt_bin1__Zmumu_Model_Pt1/workspaceHistPdf:signalPass",
-            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Zmumu/mcTrue_bin0__pt_bin1__Zmumu_Model_Pt1/workspaceHistPdf:signalFail",
-            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Ztautau/mcTrue_bin0__pt_bin1__Ztautau_Model_Pt1/workspaceHistPdf:backgroundPass",
-            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Ztautau/mcTrue_bin0__pt_bin1__Ztautau_Model_Pt1/workspaceHistPdf:backgroundFail",
+            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Zmumu/mcTrue_bin0__pt_bin1__Zmumu_Model_Pt1/workspaceFixedParams:signalPass",
+            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Zmumu/mcTrue_bin0__pt_bin1__Zmumu_Model_Pt1/workspaceFixedParams:signalFail",
+            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Ztautau/mcTrue_bin0__pt_bin1__Ztautau_Model_Pt1/workspaceFixedParams:backgroundPass",
+            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Ztautau/mcTrue_bin0__pt_bin1__Ztautau_Model_Pt1/workspaceFixedParams:backgroundFail",
             "efficiency[0.001,0,0.01]",
             "signalFractionInPassing[0.9]"
             )
 
 Zll_Model_LoosePt2_Template = cms.vstring(
-            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Zmumu/mcTrue_bin0__pt_bin2__Zmumu_Model_Pt2/workspaceHistPdf:signalPass",
-            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Zmumu/mcTrue_bin0__pt_bin2__Zmumu_Model_Pt2/workspaceHistPdf:signalFail",
-            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Ztautau/mcTrue_bin0__pt_bin2__Ztautau_Model_Pt2/workspaceHistPdf:backgroundPass",
-            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Ztautau/mcTrue_bin0__pt_bin2__Ztautau_Model_Pt2/workspaceHistPdf:backgroundFail",
+            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Zmumu/mcTrue_bin0__pt_bin2__Zmumu_Model_Pt2/workspaceFixedParams:signalPass",
+            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Zmumu/mcTrue_bin0__pt_bin2__Zmumu_Model_Pt2/workspaceFixedParams:signalFail",
+            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Ztautau/mcTrue_bin0__pt_bin2__Ztautau_Model_Pt2/workspaceFixedParams:backgroundPass",
+            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Ztautau/mcTrue_bin0__pt_bin2__Ztautau_Model_Pt2/workspaceFixedParams:backgroundFail",
             "efficiency[0.001,0,0.01]",
             "signalFractionInPassing[0.9]"
             )
 
 Zll_Model_LoosePt3_Template = cms.vstring(
-            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Zmumu/mcTrue_bin0__pt_bin3__Zmumu_Model_Pt3/workspaceHistPdf:signalPass",
-            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Zmumu/mcTrue_bin0__pt_bin3__Zmumu_Model_Pt3/workspaceHistPdf:signalFail",
-            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Ztautau/mcTrue_bin0__pt_bin3__Ztautau_Model_Pt3/workspaceHistPdf:backgroundPass",
-            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Ztautau/mcTrue_bin0__pt_bin3__Ztautau_Model_Pt3/workspaceHistPdf:backgroundFail",
+            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Zmumu/mcTrue_bin0__pt_bin3__Zmumu_Model_Pt3/workspaceFixedParams:signalPass",
+            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Zmumu/mcTrue_bin0__pt_bin3__Zmumu_Model_Pt3/workspaceFixedParams:signalFail",
+            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Ztautau/mcTrue_bin0__pt_bin3__Ztautau_Model_Pt3/workspaceFixedParams:backgroundPass",
+            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Ztautau/mcTrue_bin0__pt_bin3__Ztautau_Model_Pt3/workspaceFixedParams:backgroundFail",
             "efficiency[0.001,0,0.01]",
             "signalFractionInPassing[0.9]"
             )
 
 Zll_Model_LoosePt4_Template = cms.vstring(
-            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Zmumu/mcTrue_bin0__pt_bin4__Zmumu_Model_Pt4/workspaceHistPdf:signalPass",
-            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Zmumu/mcTrue_bin0__pt_bin4__Zmumu_Model_Pt4/workspaceHistPdf:signalFail",
-            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Ztautau/mcTrue_bin0__pt_bin4__Ztautau_Model_Pt4/workspaceHistPdf:backgroundPass",
-            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Ztautau/mcTrue_bin0__pt_bin4__Ztautau_Model_Pt4/workspaceHistPdf:backgroundFail",
+            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Zmumu/mcTrue_bin0__pt_bin4__Zmumu_Model_Pt4/workspaceFixedParams:signalPass",
+            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Zmumu/mcTrue_bin0__pt_bin4__Zmumu_Model_Pt4/workspaceFixedParams:signalFail",
+            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Ztautau/mcTrue_bin0__pt_bin4__Ztautau_Model_Pt4/workspaceFixedParams:backgroundPass",
+            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonLoose3_Ztautau/mcTrue_bin0__pt_bin4__Ztautau_Model_Pt4/workspaceFixedParams:backgroundFail",
             "efficiency[0.001,0,0.01]",
             "signalFractionInPassing[0.9]"
             )
 
 Zll_Model_TightPt0_Template = cms.vstring(
-            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Zmumu/mcTrue_bin0__pt_bin0__Zmumu_Model_Pt0/workspaceHistPdf:signalPass",
-            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Zmumu/mcTrue_bin0__pt_bin0__Zmumu_Model_Pt0/workspaceHistPdf:signalFail",
-            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Ztautau/mcTrue_bin0__pt_bin0__Ztautau_Model_Pt0/workspaceHistPdf:backgroundPass",
-            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Ztautau/mcTrue_bin0__pt_bin0__Ztautau_Model_Pt0/workspaceHistPdf:backgroundFail",
+            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Zmumu/mcTrue_bin0__pt_bin0__Zmumu_Model_Pt0/workspaceFixedParams:signalPass",
+            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Zmumu/mcTrue_bin0__pt_bin0__Zmumu_Model_Pt0/workspaceFixedParams:signalFail",
+            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Ztautau/mcTrue_bin0__pt_bin0__Ztautau_Model_Pt0/workspaceFixedParams:backgroundPass",
+            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Ztautau/mcTrue_bin0__pt_bin0__Ztautau_Model_Pt0/workspaceFixedParams:backgroundFail",
             "efficiency[0.001,0,0.01]",
             "signalFractionInPassing[0.9]"
             )
 
 Zll_Model_TightPt1_Template = cms.vstring(
-            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Zmumu/mcTrue_bin0__pt_bin1__Zmumu_Model_Pt1/workspaceHistPdf:signalPass",
-            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Zmumu/mcTrue_bin0__pt_bin1__Zmumu_Model_Pt1/workspaceHistPdf:signalFail",
-            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Ztautau/mcTrue_bin0__pt_bin1__Ztautau_Model_Pt1/workspaceHistPdf:backgroundPass",
-            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Ztautau/mcTrue_bin0__pt_bin1__Ztautau_Model_Pt1/workspaceHistPdf:backgroundFail",
+            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Zmumu/mcTrue_bin0__pt_bin1__Zmumu_Model_Pt1/workspaceFixedParams:signalPass",
+            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Zmumu/mcTrue_bin0__pt_bin1__Zmumu_Model_Pt1/workspaceFixedParams:signalFail",
+            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Ztautau/mcTrue_bin0__pt_bin1__Ztautau_Model_Pt1/workspaceFixedParams:backgroundPass",
+            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Ztautau/mcTrue_bin0__pt_bin1__Ztautau_Model_Pt1/workspaceFixedParams:backgroundFail",
             "efficiency[0.001,0,0.01]",
             "signalFractionInPassing[0.9]"
             )
 
 Zll_Model_TightPt2_Template = cms.vstring(
-            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Zmumu/mcTrue_bin0__pt_bin2__Zmumu_Model_Pt2/workspaceHistPdf:signalPass",
-            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Zmumu/mcTrue_bin0__pt_bin2__Zmumu_Model_Pt2/workspaceHistPdf:signalFail",
-            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Ztautau/mcTrue_bin0__pt_bin2__Ztautau_Model_Pt2/workspaceHistPdf:backgroundPass",
-            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Ztautau/mcTrue_bin0__pt_bin2__Ztautau_Model_Pt2/workspaceHistPdf:backgroundFail",
+            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Zmumu/mcTrue_bin0__pt_bin2__Zmumu_Model_Pt2/workspaceFixedParams:signalPass",
+            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Zmumu/mcTrue_bin0__pt_bin2__Zmumu_Model_Pt2/workspaceFixedParams:signalFail",
+            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Ztautau/mcTrue_bin0__pt_bin2__Ztautau_Model_Pt2/workspaceFixedParams:backgroundPass",
+            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Ztautau/mcTrue_bin0__pt_bin2__Ztautau_Model_Pt2/workspaceFixedParams:backgroundFail",
             "efficiency[0.001,0,0.01]",
             "signalFractionInPassing[0.9]"
             )
 
 Zll_Model_TightPt3_Template = cms.vstring(
-            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Zmumu/mcTrue_bin0__pt_bin3__Zmumu_Model_Pt3/workspaceHistPdf:signalPass",
-            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Zmumu/mcTrue_bin0__pt_bin3__Zmumu_Model_Pt3/workspaceHistPdf:signalFail",
-            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Ztautau/mcTrue_bin0__pt_bin3__Ztautau_Model_Pt3/workspaceHistPdf:backgroundPass",
-            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Ztautau/mcTrue_bin0__pt_bin3__Ztautau_Model_Pt3/workspaceHistPdf:backgroundFail",
+            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Zmumu/mcTrue_bin0__pt_bin3__Zmumu_Model_Pt3/workspaceFixedParams:signalPass",
+            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Zmumu/mcTrue_bin0__pt_bin3__Zmumu_Model_Pt3/workspaceFixedParams:signalFail",
+            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Ztautau/mcTrue_bin0__pt_bin3__Ztautau_Model_Pt3/workspaceFixedParams:backgroundPass",
+            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Ztautau/mcTrue_bin0__pt_bin3__Ztautau_Model_Pt3/workspaceFixedParams:backgroundFail",
             "efficiency[0.001,0,0.01]",
             "signalFractionInPassing[0.9]"
             )
 
 Zll_Model_TightPt4_Template = cms.vstring(
-            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Zmumu/mcTrue_bin0__pt_bin4__Zmumu_Model_Pt4/workspaceHistPdf:signalPass",
-            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Zmumu/mcTrue_bin0__pt_bin4__Zmumu_Model_Pt4/workspaceHistPdf:signalFail",
-            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Ztautau/mcTrue_bin0__pt_bin4__Ztautau_Model_Pt4/workspaceHistPdf:backgroundPass",
-            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Ztautau/mcTrue_bin0__pt_bin4__Ztautau_Model_Pt4/workspaceHistPdf:backgroundFail",
+            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Zmumu/mcTrue_bin0__pt_bin4__Zmumu_Model_Pt4/workspaceFixedParams:signalPass",
+            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Zmumu/mcTrue_bin0__pt_bin4__Zmumu_Model_Pt4/workspaceFixedParams:signalFail",
+            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Ztautau/mcTrue_bin0__pt_bin4__Ztautau_Model_Pt4/workspaceFixedParams:backgroundPass",
+            "#import TnP_MuonToTau_MisID_MC_Templates.root:tpTree/againstMuonTight3_Ztautau/mcTrue_bin0__pt_bin4__Ztautau_Model_Pt4/workspaceFixedParams:backgroundFail",
             "efficiency[0.001,0,0.01]",
             "signalFractionInPassing[0.9]"
             )

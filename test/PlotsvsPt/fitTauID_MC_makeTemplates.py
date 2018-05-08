@@ -10,6 +10,7 @@ filePath = "/mnt/shared/scratch_local/akalinow/CMS/TauID/Crab/Data/TauID_TnP_201
 filePath += "tnpZ_MC.root"
 
 
+
 efficiencyPSetTemplate = cms.PSet(
     UnbinnedVariables = cms.vstring("mass","weight", "alternatLorentzVectPt", "alternatLorentzVectEta", "tag_pt", "tag_triggerMatch", "tag_dB", "pair_dz", "pair_deltaR", "pair_probeMultiplicity", "pair_BestZ", "pair_MET", "pair_MTtag", "pair_MTprobe", "decayModeFinding", "byLooseCombinedIsolationDeltaBetaCorr3Hits"),
     EfficiencyCategoryAndState = cms.vstring("againstMuonLoose3", "pass"), ## Numerator definition
