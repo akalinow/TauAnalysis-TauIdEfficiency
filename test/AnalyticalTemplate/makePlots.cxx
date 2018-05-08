@@ -117,6 +117,11 @@ void plotFitCanvas(std::string category = "againstMuonLoose3_Zmumu",
       cmsText = "        CMS";
       extraText = "           Preliminary";
     }
+    else{
+      cmsText = "CMS";
+      extraText = "Preliminary";
+
+    }
     if(!isTemplate) CMS_lumi(aPad, iPeriod, iPosX);
     if(isTemplate) aPad->SetLogy();
     aLegend->Draw();
