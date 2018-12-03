@@ -3,6 +3,21 @@ import FWCore.ParameterSet.Config as cms
 import commands
 import subprocess
 
+#Checkout DNN training files if those are not present in the working area
+#(dut to size the DNN training files should not be send with input sandbox)
+import os
+
+DNN_data_path = os.environ["CMSSW_BASE"]+"/external/"+os.environ["SCRAM_ARCH"]+"/data/RecoTauTag/TrainingFiles/data"
+isDNN_present = os.path.exists(DNN_data_path)
+
+print "isDNN_present:",isDNN_present
+
+if not isDNN_present:
+    command = "cd $CMSSW_BASE/src; "
+    command += "git clone https://github.com/cms-tau-pog/RecoTauTag-TrainingFiles -b nonQuantizedDNN RecoTauTag/TrainingFiles/data; "
+    command += "cd -;"
+    os.system(command)
+
 process = cms.Process("TagProbe")
 
 process.load('Configuration.StandardSequences.Services_cff')
@@ -26,11 +41,11 @@ if "CMSSW_8_0_" in os.environ['CMSSW_VERSION']:
 elif "CMSSW_9_2_" in os.environ['CMSSW_VERSION']:
     process.GlobalTag.globaltag = cms.string('92X_upgrade2017_realistic_v10')
 elif "CMSSW_9_4_" in os.environ['CMSSW_VERSION']:
-    process.GlobalTag.globaltag = cms.string('94X_mc2017_realistic_v10')
+    process.GlobalTag.globaltag = cms.string('94X_mc2017_realistic_v15')
 else: raise RuntimeError, "Unknown CMSSW version %s" % os.environ['CMSSW_VERSION']
 
 
-dataPath = "/home/akalinow/scratch/CMS/TauID/Data/DYJetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8/MINIAODSIM/RECOSIMstep_94X_mc2017_realistic_v10_ext1-v1/"
+dataPath = "/home/akalinow/scratch/CMS/TauID/Data/DYJetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU2017RECOSIMstep_12Apr2018_94X_mc2017_realistic_v14-v1/"
 command = "ls "+dataPath+"/*.root"
 fileList = commands.getoutput(command).split("\n")   
 process.source.fileNames =  cms.untracked.vstring()
@@ -103,7 +118,7 @@ process.tagTriggerMatchModule = cms.EDProducer("TriggerObjectStandAloneMatch",
 ##
 process.mergedTaus = cms.EDProducer("PFTauMerger",
     mergeTracks = cms.bool(True),
-    taus     = cms.InputTag("NewTauIDsEmbedded"),
+    taus     = cms.InputTag("slimmedTausNewMVAIDs"),
     photons     = cms.InputTag("slimmedPhotons"), 
     tracks    = cms.InputTag("packedPFCandidates"),
     ## Apply some minimal pt cut
@@ -113,7 +128,7 @@ process.mergedTaus = cms.EDProducer("PFTauMerger",
 
 process.probeTaus = cms.EDFilter("PATTauSelector",
     src = cms.InputTag("mergedTaus"),
-    cut = cms.string('tauID("byTightIsolationMVArun2v1DBoldDMwLTNew")==1'),
+    cut = cms.string('tauID("byTightIsolationMVArun2v1DBnewDMwLT2017v2")==1'),
     minNumber = cms.uint32(1)
 )
 
@@ -193,7 +208,7 @@ process.tpTree = cms.EDAnalyzer("TagProbeFitTreeProducer",
     flags = cms.PSet(
         decayModeFinding =  cms.string('tauID("decayModeFinding")'),
         decayModeFindingNewDMs =  cms.string('tauID("decayModeFindingNewDMs")'),
-        byTightIsolationMVArun2v1DBoldDMwLTNew = cms.string('tauID("byTightIsolationMVArun2v1DBoldDMwLTNew")'),
+        byTightIsolationMVArun2v1DBnewDMwLT2017v2 = cms.string('tauID("byTightIsolationMVArun2v1DBnewDMwLT2017v2")'),
         againstMuonLoose3 =  cms.string('tauID("againstMuonLoose3")'),
         againstMuonTight3 =  cms.string('tauID("againstMuonTight3")'),
     ),
@@ -216,8 +231,9 @@ process.tpTree = cms.EDAnalyzer("TagProbeFitTreeProducer",
         MTprobe = cms.InputTag("probeMTModule"),
         MTtag = cms.InputTag("tagMTModule"),
         alternativeMass = cms.InputTag("pairAlternativeMass"),
+        nVertices   = cms.InputTag("nverticesModule"),
+        ## Gen related variables
         ZDecayMode = cms.InputTag("ZDecayMode"),        
-        ## Gen related variables                                                                                                                                                                                                 
         genWeight    = cms.InputTag("genAdditionalInfo", "genWeight"),
         truePileUp   = cms.InputTag("genAdditionalInfo", "truePileUp"),
         actualPileUp = cms.InputTag("genAdditionalInfo", "actualPileUp"),
@@ -239,7 +255,6 @@ process.nverticesModule.objects = cms.InputTag("offlineSlimmedPrimaryVertices")
 process.genAdditionalInfo.pileUpInfoTag = cms.InputTag("slimmedAddPileupInfo")
 
 ###Rerun tauID
-process.load('RecoTauTag.Configuration.loadRecoTauTagMVAsFromPrepDB_cfi')
 from tauIdRerun import *
 addMVA_WPs_run2_2017(process)
 ##############
@@ -265,8 +280,7 @@ process.tnpSimpleSequence = cms.Sequence(
 
 process.tagAndProbe = cms.Path( 
     process.fastFilter +
-    process.rerunMvaIsolation2SeqRun2 + 
-    getattr(process, "NewTauIDsEmbedded") +
+    process.newTauMVAIDsSeq + 
     process.mergedTaus +                 
     process.tnpSimpleSequence
 )

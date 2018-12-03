@@ -3,6 +3,21 @@ import FWCore.ParameterSet.Config as cms
 import commands
 import subprocess
 
+#Checkout DNN training files if those are not present in the working area
+#(dut to size the DNN training files should not be send with input sandbox)
+import os
+
+DNN_data_path = os.environ["CMSSW_BASE"]+"/external/"+os.environ["SCRAM_ARCH"]+"/data/RecoTauTag/TrainingFiles/data"
+isDNN_present = os.path.exists(DNN_data_path)
+
+print "isDNN_present:",isDNN_present
+
+if not isDNN_present:
+    command = "cd $CMSSW_BASE/src; "
+    command += "git clone https://github.com/cms-tau-pog/RecoTauTag-TrainingFiles -b nonQuantizedDNN RecoTauTag/TrainingFiles/data; "
+    command += "cd -;"
+    os.system(command)
+
 process = cms.Process("TagProbe")
 
 process.load('Configuration.StandardSequences.Services_cff')
@@ -23,20 +38,17 @@ process.load("Configuration.StandardSequences.Reconstruction_cff")
 import os
 if "CMSSW_8_0_" in os.environ['CMSSW_VERSION']:
     process.GlobalTag.globaltag = cms.string('80X_dataRun2_2016SeptRepro_v6')
-else: raise RuntimeError, "Unknown CMSSW version %s" % os.environ['CMSSW_VERSION']
-
-if "CMSSW_9_4_" in os.environ['CMSSW_VERSION']:
+elif "CMSSW_9_4_" in os.environ['CMSSW_VERSION']:
     process.GlobalTag.globaltag = cms.string('94X_dataRun2_ReReco_EOY17_v2')
 else: raise RuntimeError, "Unknown CMSSW version %s" % os.environ['CMSSW_VERSION']
 
-'''
-dataPath = "/scratch_local/akalinow/CMS/TauID/Data/SingleMuon/Run2015D-16Dec2015-v1/MINIAOD"
+dataPath = "/home/akalinow/scratch/CMS/TauID/Data/SingleMuon/Run2017B-17Nov2017-v1/MINIAOD/"
 command = "ls "+dataPath+"/*.root"
 fileList = commands.getoutput(command).split("\n")   
 process.source.fileNames =  cms.untracked.vstring()
 for aFile in fileList:
     process.source.fileNames.append('file:'+aFile)
-'''
+
 
 ## SELECT WHAT DATASET YOU'RE RUNNING ON
 TRIGGER="SingleMu"
@@ -113,7 +125,7 @@ process.mergedTaus = cms.EDProducer("PFTauMerger",
 
 process.probeTaus = cms.EDFilter("PATTauSelector",
     src = cms.InputTag("mergedTaus"),
-    cut = cms.string('tauID("byTightIsolationMVArun2v1DBoldDMwLTNew")==1'),
+    cut = cms.string('tauID("byTightIsolationMVArun2v1DBnewDMwLT2017v2")==1'),
     minNumber = cms.uint32(1)
 )
 
@@ -171,7 +183,7 @@ process.tpTree = cms.EDAnalyzer("TagProbeFitTreeProducer",
     flags = cms.PSet(
         decayModeFinding =  cms.string('tauID("decayModeFinding")'),
         decayModeFindingNewDMs =  cms.string('tauID("decayModeFindingNewDMs")'),
-        byTightIsolationMVArun2v1DBoldDMwLTNew = cms.string('tauID("byTightIsolationMVArun2v1DBoldDMwLTNew")'),
+        byTightIsolationMVArun2v1DBnewDMwLT2017v2 = cms.string('tauID("byTightIsolationMVArun2v1DBnewDMwLT2017v2")'),
         againstMuonLoose3 =  cms.string('tauID("againstMuonLoose3")'),
         againstMuonTight3 =  cms.string('tauID("againstMuonTight3")')
     ),
@@ -180,6 +192,7 @@ process.tpTree = cms.EDAnalyzer("TagProbeFitTreeProducer",
         dB = cms.string("dB"),
         triggerMatch = cms.InputTag("tagTriggerMatchModule"),
         nVertices   = cms.InputTag("nverticesModule"),
+        isolation = MuonIDFlags2016.IsolationValue2016
     ),
     tagFlags = cms.PSet(),
     pairVariables = cms.PSet(
@@ -205,7 +218,6 @@ process.tpTree = cms.EDAnalyzer("TagProbeFitTreeProducer",
 process.nverticesModule.objects = cms.InputTag("offlineSlimmedPrimaryVertices")
 
 ###Rerun tauID
-process.load('RecoTauTag.Configuration.loadRecoTauTagMVAsFromPrepDB_cfi')
 from tauIdRerun import *
 addMVA_WPs_run2_2017(process)
 ##############
@@ -229,8 +241,7 @@ process.tnpSimpleSequence = cms.Sequence(
 
 process.tagAndProbe = cms.Path( 
     process.fastFilter +
-    process.rerunMvaIsolation2SeqRun2 + 
-    getattr(process, "NewTauIDsEmbedded") +
+    process.newTauMVAIDsSeq + 
     process.mergedTaus +                 
     process.tnpSimpleSequence
 )
