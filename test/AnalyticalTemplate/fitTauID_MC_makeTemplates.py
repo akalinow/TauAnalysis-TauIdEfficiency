@@ -6,12 +6,13 @@ process.load('FWCore.MessageService.MessageLogger_cfi')
 process.source = cms.Source("EmptySource")
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1) )
 
-filePath = "/dmj/hep/akalinow/scratch/CMS/TauID/Crab/Data/TauID_TnP/18_01_2017/"
-filePath = "/cms/cms/akalinow/CMS/TauID/Crab/Data/TauID_TnP_2017/v6_Mu2Tau_2017/"
-filePath += "tnpZ_MCwithWeights.root"
+#filePath = "/dmj/hep/akalinow/scratch/CMS/TauID/Crab/Data/TauID_TnP/18_01_2017/"
+#filePath = "/cms/cms/akalinow/CMS/TauID/Crab/Data/TauID_TnP_2017/v6_Mu2Tau_2017/"
+filePath = "/mnt/shared/scratch_local/akalinow/CMS/TauID/Crab/Data/TauID_TnP_2017/Mu2Tau_2017_v9/"
+filePath += "tnpZ_MCwithWeights_filtered.root"
 
 efficiencyPSetTemplate = cms.PSet(
-    UnbinnedVariables = cms.vstring("mass","weight", "alternatLorentzVectPt", "alternatLorentzVectEta", "tag_pt", "tag_triggerMatch", "tag_dB", "pair_dz", "pair_deltaR", "pair_probeMultiplicity", "pair_BestZ", "pair_MET", "pair_MTtag", "pair_MTprobe", "decayModeFinding", "byLooseCombinedIsolationDeltaBetaCorr3Hits"),
+    UnbinnedVariables = cms.vstring("mass", "weight"),
     EfficiencyCategoryAndState = cms.vstring("againstMuonLoose3", "pass"), ## Numerator definition
     BinnedVariables = cms.PSet(
         ## Binning in continuous variables
@@ -45,10 +46,10 @@ Zmumu_Model = cms.vstring(
     "SUM::signalPass(vFracPass[0.9, 0,1]*signal1Pass, signal2Pass)",
     
     "Exponential::backgroundPass1(mass, lp1[-0.033])",
-    "SUM::backgroundPass(0*backgroundPass1)",
+    "SUM::backgroundPass(0.0*backgroundPass1)",
     
     "Exponential::backgroundFail1(mass, lf[-0.039])",
-    "SUM::backgroundFail(0*backgroundFail1)",
+    "SUM::backgroundFail(0.0*backgroundFail1)",
     
     "efficiency[0.001,0,0.01]",
     "signalFractionInPassing[0.9]"
@@ -56,10 +57,10 @@ Zmumu_Model = cms.vstring(
 
 Ztautau_Model = cms.vstring(
     "Voigtian::signal1Fail(mass, mean1Fail[90.95], width[2.495], sigma1Fail[1.32])",
-    "SUM::signalFail(0*signal1Fail)",
+    "SUM::signalFail(0.0*signal1Fail)",
     
     "Voigtian::signal1Pass(mass, mean1Pass[90.96], width[2.495], sigma1Pass[1.3])",
-    "SUM::signalPass(0*signal1Pass)",
+    "SUM::signalPass(0.0*signal1Pass)",
 
     "Gaussian::backgroundPass1(mass, mean1p[55, 50,60], sigma1p[12,10,20])",
     "Chebychev::backgroundPass2(mass, cPass[0,-1,1])",
@@ -82,14 +83,14 @@ process.TnP_Muon_ID = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
     OutputFileName = cms.string("TnP_MuonToTau_MisID_MC_Templates.root"),
     InputTreeName = cms.string("fitter_tree"), 
     InputDirectoryName = cms.string("tpTree"),  
-    WeightVariable = cms.string("weight"),
+    #WeightVariable = cms.string("weight"),
     ## Variables for binning
     Variables = cms.PSet(
         mass   = cms.vstring("Tag-muon Mass", "60", "120", "GeV/c^{2}"),
         abseta = cms.vstring("muon |#eta|", "0", "2.3", ""),
         alternatLorentzVectPt = cms.vstring("probe tau pT", "20", "1500", ""),
         alternatLorentzVectEta = cms.vstring("probe tau eta", "-2.3", "2.3", ""),
-        tag_pt  = cms.vstring("tag pT", "0", "1500", ""),
+        tag_pt  = cms.vstring("tag pT", "25", "1500", ""),
         tag_triggerMatch = cms.vstring("Tag matched to HLT item", "0.5", "1.0", ""),
         tag_dB  = cms.vstring("dB", "0.0", "0.004", ""),
         pair_dz = cms.vstring("#Deltaz between two muons", "-0.01", "0.01", "cm"),
@@ -99,9 +100,8 @@ process.TnP_Muon_ID = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
         pair_MET = cms.vstring("MET", "0", "2500", ""),
         pair_MTtag = cms.vstring("MTtag", "0", "40", ""),
         pair_MTprobe = cms.vstring("MTprobe", "0", "4000", ""),
-        decayModeFinding = cms.vstring("Decay mode finding", "0.5", "1.0", ""),
-        #decayModeFindingNewDMs = cms.vstring("Decay mode finding NewDMs", "0.5", "1.0", ""),
-        byLooseCombinedIsolationDeltaBetaCorr3Hits = cms.vstring("Combined loose isolation", "0.5", "1.0", ""),
+        decayModeFindingNewDMs = cms.vstring("Decay mode finding NewDMs", "0.5", "1.0", ""),
+        byTightIsolationMVArun2v1DBnewDMwLT2017v2 = cms.vstring("Tight MVARun2_2017v2 id.", "0.5", "1.0", ""),
         mcTrue = cms.vstring("Match to gen muons", "0.0", "1.0", ""),
 	weight = cms.vstring("weight","0","10","")
     ),
