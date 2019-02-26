@@ -13,7 +13,7 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 10000
 process.source = cms.Source("PoolSource", 
     fileNames = cms.untracked.vstring(),
 )
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )    
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10000) )    
 
 process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
 process.load('Configuration.StandardSequences.MagneticField_cff')
@@ -63,10 +63,9 @@ process.triggerResultsFilter.l1tResults = "gtStage2Digis"
 process.triggerResultsFilter.throw = False
 process.triggerResultsFilter.hltResults = cms.InputTag("TriggerResults","","HLT")
 
-process.muonFilter = cms.EDFilter("PATCandViewCountFilter",
+process.muonFilter = cms.EDFilter("CandViewCountFilter",
                                   src = cms.InputTag("slimmedMuons"),
-                                  minNumber = cms.uint32(1),
-                                  maxNumber = cms.uint32(2))
+                                  minNumber = cms.uint32(1))                                  
 
 process.fastFilter     = cms.Sequence(process.goodVertexFilter + process.triggerResultsFilter +  process.muonFilter)
 

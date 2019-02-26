@@ -26,7 +26,8 @@ if "CMSSW_8_0_" in os.environ['CMSSW_VERSION']:
 elif "CMSSW_9_4_" in os.environ['CMSSW_VERSION']:
     process.GlobalTag.globaltag = cms.string('94X_dataRun2_v6')
 elif "CMSSW_10_2_" in os.environ['CMSSW_VERSION']:
-    process.GlobalTag.globaltag = cms.string('102X_dataRun2_Sep2018Rereco_v1')    
+    process.GlobalTag.globaltag = cms.string('102X_dataRun2_Sep2018Rereco_v1')
+    #process.GlobalTag.globaltag = cms.string('102X_dataRun2_Prompt_v11')
 else: raise RuntimeError, "Unknown CMSSW version %s" % os.environ['CMSSW_VERSION']
 
 #dataPath = "/home/akalinow/scratch/CMS/TauID/Data/SingleMuon/Run2017B-17Nov2017-v1/MINIAOD/"
@@ -60,10 +61,9 @@ process.triggerResultsFilter.l1tResults = "gtStage2Digis"
 process.triggerResultsFilter.throw = False
 process.triggerResultsFilter.hltResults = cms.InputTag("TriggerResults","","HLT")
 
-process.muonFilter = cms.EDFilter("PATCandViewCountFilter",
+process.muonFilter = cms.EDFilter("CandViewCountFilter",
                                   src = cms.InputTag("slimmedMuons"),
-                                  minNumber = cms.uint32(1),
-                                  maxNumber = cms.uint32(2))
+                                  minNumber = cms.uint32(1))
 
 process.fastFilter     = cms.Sequence(process.goodVertexFilter + process.triggerResultsFilter +  process.muonFilter)
 
