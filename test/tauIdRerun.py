@@ -32,6 +32,8 @@ def addMVA_WPs_run2_2017(process):
         process.patTauDiscriminationByIsolationMVArun2v1DBnewDMwLTSeq+
         process.slimmedTausNewMVAIDs
     )
+
+    '''
     #DNN-based tau-IDs
     # deepTau
     from RecoTauTag.RecoTau.DeepTauId_cfi import deepTauIdraw
@@ -79,7 +81,7 @@ def addMVA_WPs_run2_2017(process):
         process.slimmedTausNewMVAIDs.tauIDSources,
         dpfTau2016Sources_
     )
-
+    '''
    
 
 

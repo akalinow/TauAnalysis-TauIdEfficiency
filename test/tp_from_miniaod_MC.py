@@ -3,21 +3,6 @@ import FWCore.ParameterSet.Config as cms
 import commands
 import subprocess
 
-#Checkout DNN training files if those are not present in the working area
-#(dut to size the DNN training files should not be send with input sandbox)
-import os
-
-DNN_data_path = os.environ["CMSSW_BASE"]+"/external/"+os.environ["SCRAM_ARCH"]+"/data/RecoTauTag/TrainingFiles/data"
-isDNN_present = os.path.exists(DNN_data_path)
-
-print "isDNN_present:",isDNN_present
-
-if not isDNN_present:
-    command = "cd $CMSSW_BASE/src; "
-    command += "git clone https://github.com/cms-tau-pog/RecoTauTag-TrainingFiles -b nonQuantizedDNN RecoTauTag/TrainingFiles/data; "
-    command += "cd -;"
-    os.system(command)
-
 process = cms.Process("TagProbe")
 
 process.load('Configuration.StandardSequences.Services_cff')
@@ -42,6 +27,9 @@ elif "CMSSW_9_2_" in os.environ['CMSSW_VERSION']:
     process.GlobalTag.globaltag = cms.string('92X_upgrade2017_realistic_v10')
 elif "CMSSW_9_4_" in os.environ['CMSSW_VERSION']:
     process.GlobalTag.globaltag = cms.string('94X_mc2017_realistic_v15')
+elif "CMSSW_10_2_" in os.environ['CMSSW_VERSION']:
+    process.GlobalTag.globaltag = cms.string('102X_upgrade2018_realistic_v12')
+    
 else: raise RuntimeError, "Unknown CMSSW version %s" % os.environ['CMSSW_VERSION']
 
 
