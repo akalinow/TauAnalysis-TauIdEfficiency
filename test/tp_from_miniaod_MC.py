@@ -3,21 +3,6 @@ import FWCore.ParameterSet.Config as cms
 import commands
 import subprocess
 
-#Checkout DNN training files if those are not present in the working area
-#(dut to size the DNN training files should not be send with input sandbox)
-import os
-
-DNN_data_path = os.environ["CMSSW_BASE"]+"/external/"+os.environ["SCRAM_ARCH"]+"/data/RecoTauTag/TrainingFiles/data"
-isDNN_present = os.path.exists(DNN_data_path)
-
-print "isDNN_present:",isDNN_present
-
-if not isDNN_present:
-    command = "cd $CMSSW_BASE/src; "
-    command += "git clone https://github.com/cms-tau-pog/RecoTauTag-TrainingFiles -b nonQuantizedDNN RecoTauTag/TrainingFiles/data; "
-    command += "cd -;"
-    os.system(command)
-
 process = cms.Process("TagProbe")
 
 process.load('Configuration.StandardSequences.Services_cff')
@@ -42,10 +27,14 @@ elif "CMSSW_9_2_" in os.environ['CMSSW_VERSION']:
     process.GlobalTag.globaltag = cms.string('92X_upgrade2017_realistic_v10')
 elif "CMSSW_9_4_" in os.environ['CMSSW_VERSION']:
     process.GlobalTag.globaltag = cms.string('94X_mc2017_realistic_v15')
+elif "CMSSW_10_2_" in os.environ['CMSSW_VERSION']:
+    process.GlobalTag.globaltag = cms.string('102X_upgrade2018_realistic_v12')
+    
 else: raise RuntimeError, "Unknown CMSSW version %s" % os.environ['CMSSW_VERSION']
 
+#dataPath = "/home/akalinow/scratch/CMS/TauID/Data/DYJetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU2017RECOSIMstep_12Apr2018_94X_mc2017_realistic_v14-v1/"
+dataPath = "/home/akalinow/scratch/CMS/TauID/Data/DYJetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v1/MINIAODSIM/"
 
-dataPath = "/home/akalinow/scratch/CMS/TauID/Data/DYJetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU2017RECOSIMstep_12Apr2018_94X_mc2017_realistic_v14-v1/"
 command = "ls "+dataPath+"/*.root"
 fileList = commands.getoutput(command).split("\n")   
 process.source.fileNames =  cms.untracked.vstring()
@@ -74,7 +63,7 @@ process.triggerResultsFilter.l1tResults = "gtStage2Digis"
 process.triggerResultsFilter.throw = False
 process.triggerResultsFilter.hltResults = cms.InputTag("TriggerResults","","HLT")
 
-process.muonFilter = cms.EDFilter("CandViewCountFilter",
+process.muonFilter = cms.EDFilter("PATCandViewCountFilter",
                                   src = cms.InputTag("slimmedMuons"),
                                   minNumber = cms.uint32(1),
                                   maxNumber = cms.uint32(2))

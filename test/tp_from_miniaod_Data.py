@@ -3,21 +3,6 @@ import FWCore.ParameterSet.Config as cms
 import commands
 import subprocess
 
-#Checkout DNN training files if those are not present in the working area
-#(dut to size the DNN training files should not be send with input sandbox)
-import os
-
-DNN_data_path = os.environ["CMSSW_BASE"]+"/external/"+os.environ["SCRAM_ARCH"]+"/data/RecoTauTag/TrainingFiles/data"
-isDNN_present = os.path.exists(DNN_data_path)
-
-print "isDNN_present:",isDNN_present
-
-if not isDNN_present:
-    command = "cd $CMSSW_BASE/src; "
-    command += "git clone https://github.com/cms-tau-pog/RecoTauTag-TrainingFiles -b nonQuantizedDNN RecoTauTag/TrainingFiles/data; "
-    command += "cd -;"
-    os.system(command)
-
 process = cms.Process("TagProbe")
 
 process.load('Configuration.StandardSequences.Services_cff')
@@ -39,10 +24,13 @@ import os
 if "CMSSW_8_0_" in os.environ['CMSSW_VERSION']:
     process.GlobalTag.globaltag = cms.string('80X_dataRun2_2016SeptRepro_v6')
 elif "CMSSW_9_4_" in os.environ['CMSSW_VERSION']:
-    process.GlobalTag.globaltag = cms.string('94X_dataRun2_ReReco_EOY17_v2')
+    process.GlobalTag.globaltag = cms.string('94X_dataRun2_v6')
+elif "CMSSW_10_2_" in os.environ['CMSSW_VERSION']:
+    process.GlobalTag.globaltag = cms.string('102X_dataRun2_Sep2018Rereco_v1')    
 else: raise RuntimeError, "Unknown CMSSW version %s" % os.environ['CMSSW_VERSION']
 
-dataPath = "/home/akalinow/scratch/CMS/TauID/Data/SingleMuon/Run2017B-17Nov2017-v1/MINIAOD/"
+#dataPath = "/home/akalinow/scratch/CMS/TauID/Data/SingleMuon/Run2017B-17Nov2017-v1/MINIAOD/"
+dataPath = "/home/akalinow/scratch/CMS/TauID/Data/SingleMuon/Run2018A-17Sep2018-v2/MINIAOD/"
 command = "ls "+dataPath+"/*.root"
 fileList = commands.getoutput(command).split("\n")   
 process.source.fileNames =  cms.untracked.vstring()
@@ -72,7 +60,7 @@ process.triggerResultsFilter.l1tResults = "gtStage2Digis"
 process.triggerResultsFilter.throw = False
 process.triggerResultsFilter.hltResults = cms.InputTag("TriggerResults","","HLT")
 
-process.muonFilter = cms.EDFilter("CandViewCountFilter",
+process.muonFilter = cms.EDFilter("PATCandViewCountFilter",
                                   src = cms.InputTag("slimmedMuons"),
                                   minNumber = cms.uint32(1),
                                   maxNumber = cms.uint32(2))
@@ -115,7 +103,7 @@ process.tagTriggerMatchModule = cms.EDProducer("TriggerObjectStandAloneMatch",
 ##
 process.mergedTaus = cms.EDProducer("PFTauMerger",
     mergeTracks = cms.bool(True),
-    taus     = cms.InputTag("NewTauIDsEmbedded"),
+    taus     = cms.InputTag("slimmedTausNewMVAIDs"),
     photons     = cms.InputTag("slimmedPhotons"), 
     tracks    = cms.InputTag("packedPFCandidates"),
     ## Apply some minimal pt cut
