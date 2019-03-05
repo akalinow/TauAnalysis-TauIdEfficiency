@@ -9,11 +9,14 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1) )
 #filePath = "/cms/cms/akalinow/CMS/TauID/Crab/Data/TauID_TnP_2017/v6_Mu2Tau_2017/"
 #filePath += "tnpZ_Data.root"
 
-filePath = "/mnt/shared/scratch_local/akalinow/CMS/TauID/Crab/Data/TauID_TnP_2017/Mu2Tau_2017_v9/"
+#filePath = "/mnt/shared/cms/akalinow/CMS/TauID/Crab/Data/TauID_TnP_2017/Mu2Tau_2017_v9/"
+filePath = "/mnt/shared/cms/akalinow/CMS/TauID/Crab/Data/TauID_TnP_2018/Mu2Tau_2018_v2/"
+
 filePath += "tnpZ_Data_filtered.root"
 
 efficiencyPSetTemplate = cms.PSet(
-    UnbinnedVariables = cms.vstring("mass", "weight"),
+    #UnbinnedVariables = cms.vstring("mass","alternatLorentzVectPt", "alternatLorentzVectEta", "tag_pt", "tag_triggerMatch", "tag_dB", "pair_dz", "pair_deltaR", "pair_probeMultiplicity", "pair_BestZ", "pair_MET", "pair_MTtag", "pair_MTprobe", "decayModeFinding", "byLooseCombinedIsolationDeltaBetaCorr3Hits"),
+    UnbinnedVariables = cms.vstring("mass"),
     EfficiencyCategoryAndState = cms.vstring("againstMuonLoose3", "pass"), ## Numerator definition
     BinnedVariables = cms.PSet(
         ## Binning in continuous variables

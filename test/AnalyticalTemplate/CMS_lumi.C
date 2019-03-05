@@ -60,6 +60,12 @@ CMS_lumi( TPad* pad, int iPeriod, int iPosX )
       lumiText += "13 TeV, ";
       lumiText += lumi_13TeV;
     }
+  else if ( iPeriod==6 )
+    {
+      lumiText += "2018, ";
+      lumiText += "13 TeV, ";
+      lumiText += lumi_13TeV;
+    }
   else if ( iPeriod==7 )
     { 
       if( outOfFrame ) lumiText += "#scale[0.85]{";

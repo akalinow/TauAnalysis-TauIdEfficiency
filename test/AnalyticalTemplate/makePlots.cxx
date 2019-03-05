@@ -109,7 +109,7 @@ void plotFitCanvas(std::string category = "againstMuonLoose3_Zmumu",
     if(category.find("Tight")!=std::string::npos) label = "#splitline{Tight " + label;
     TLatex * aLatex = new TLatex(0,0,"");
       
-    int iPeriod = 5;//Luminosity period
+    int iPeriod = 6;//Luminosity period
     int iPosX = 0;
     lumiTextSize = 1.0;
     cmsTextSize = 0.85;
@@ -369,7 +369,7 @@ void plotMistagRateData(std::string category = "againstMuonLoose3"){
   aGraphData->Draw("p");
   aLegend->Draw();
   aLatex->DrawLatexNDC(0.7,0.6,label.c_str());
-  int iPeriod = 5;//Luminosity period
+  int iPeriod = 6;//Luminosity period
   int iPosX = 0;
   lumiTextSize = 0.9;
   cmsTextSize = 1.0;
@@ -754,8 +754,9 @@ void plotAll(){
   extraText  = "Preliminary";  // default extra text is "Preliminary"
   lumi_8TeV  = "19.1 fb^{-1}"; // default is "19.7 fb^{-1}"
   lumi_7TeV  = "4.9 fb^{-1}";  // default is "5.1 fb^{-1}"
-  //lumi_13TeV  = "36.8 fb^{-1}";  // default is "20.1 fb^{-1}" Run2016
-  lumi_13TeV  = "41.4 fb^{-1}";  // default is "20.1 fb^{-1}" Run2017
+  //lumi_13TeV  = "36.8 fb^{-1}";//  Run2016
+  //lumi_13TeV  = "41.4 fb^{-1}";//  Run2017
+  lumi_13TeV  = "59.5 fb^{-1}";  //  Run2018
 
 
   plotFittedParams("sigmaPass", "againstMuonLoose3", "signalPass");

@@ -8,10 +8,13 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1) )
 
 #filePath = "/dmj/hep/akalinow/scratch/CMS/TauID/Crab/Data/TauID_TnP/18_01_2017/"
 #filePath = "/cms/cms/akalinow/CMS/TauID/Crab/Data/TauID_TnP_2017/v6_Mu2Tau_2017/"
-filePath = "/mnt/shared/scratch_local/akalinow/CMS/TauID/Crab/Data/TauID_TnP_2017/Mu2Tau_2017_v9/"
+#filePath = "/mnt/shared/cms/akalinow/CMS/TauID/Crab/Data/TauID_TnP_2017/Mu2Tau_2017_v9/"
+filePath = "/mnt/shared/cms/akalinow/CMS/TauID/Crab/Data/TauID_TnP_2018/Mu2Tau_2018_v2/"
+
 filePath += "tnpZ_MCwithWeights_filtered.root"
 
 efficiencyPSetTemplate = cms.PSet(
+    #UnbinnedVariables = cms.vstring("mass", "weight", "alternatLorentzVectPt", "alternatLorentzVectEta", "tag_pt", "tag_triggerMatch", "tag_dB", "pair_dz", "pair_deltaR", "pair_probeMultiplicity", "pair_BestZ", "pair_MET", "pair_MTtag", "pair_MTprobe", "decayModeFinding", "byLooseCombinedIsolationDeltaBetaCorr3Hits"),
     UnbinnedVariables = cms.vstring("mass", "weight"),
     EfficiencyCategoryAndState = cms.vstring("againstMuonLoose3", "pass"), ## Numerator definition
     BinnedVariables = cms.PSet(
@@ -137,7 +140,7 @@ process.TnP_Muon_ID = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
     OutputFileName = cms.string("TnP_MuonToTau_MisID_MC.root"),
     InputTreeName = cms.string("fitter_tree"), 
     InputDirectoryName = cms.string("tpTree"),  
-    #WeightVariable = cms.string("weight"),
+    WeightVariable = cms.string("weight"),
     ## Variables for binning
     Variables = cms.PSet(
         mass   = cms.vstring("Tag-muon Mass", "60", "120", "GeV/c^{2}"),
